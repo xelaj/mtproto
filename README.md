@@ -126,7 +126,7 @@ After that you can generate source structures of methods and functions if you wi
 go generate github.com/xelaj/mtproto
 ```
 
-That's it! Simple!
+That's it! 
 
 ### What is InvokeWithLayer?
 
@@ -179,7 +179,7 @@ That's it! You don't need any cycles, the code is fully ready for asynchronous e
  
 ### Docs are empty. Why?
 
-It is a pretty huge chunk of documentation. We are ready to describe every method and object, but its requires a lot of work. Although **all** methods are **already** described [here](https://core.telegram.org/methods).
+There is a pretty huge chunk of documentation. We are ready to describe every method and object, but its requires a lot of work. Although **all** methods are **already** described [here](https://core.telegram.org/methods).
 
 ### Does this project support Windows?
 
