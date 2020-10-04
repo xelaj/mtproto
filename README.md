@@ -28,35 +28,35 @@ gitlab pipelines
 <div align="right">
 <h3>Full native implementation</h3>
 <img src="docs/assets/ezgif-3-a6bd45965060.gif" align="right"/>
-Вся библиотека начиная с отправки запросов и шифрования и заканчивая сериализацией шифровния написаны исключительно на golang. Для работы с библиотекой не требуется никаких лишних зависимостей.
+All code  from sending requests to encryption serialisation is written on pure golang. You dont need to download any additional dependencies.
 </br></br></br></br></br></br>
 </div>
 
 <div align="left">
 <h3>Latest API version (117+)</h3>
 <img src="docs/assets/ezgif-3-19ced73bc71f.gif" align="left"/>
-Реализована поддержка всех возможностей API Telegram и MTProto включая функцию видеозвонков и комментариев к постам. Вы можете сделать дополнительный pull request на обновление данных!
+It supports all the API and MTProto features, including video calls and post comments. You can create additional pull request to renew the data (???)! 
 </br></br></br></br></br></br></br>
 </div>
 
 <div align="right">
 <h3>Reactive API updates (generated from TL schema)</h3>
 <img src="docs/assets/ezgif-3-5b6a808d2774.gif" align="right"/>
-Все изменения в клиентах TDLib и Android мониторятся на предмет появления новых фич и изменений в TL схемах. Новые методы и объекты появляются просто по добавлению новых строк в схеме и обновления сгенерированного кода!
+All the changes in TDLib and Android and being monitored to get the latests features and changes in TL schemas. New methods are created by adding new lines into the schema and updating generated code!
 </br></br></br></br></br>
 </div>
 
 <div align="left">
 <h3>Implements ONLY network tools</h3>
 <img src="docs/assets/ezgif-3-3ac8a3ea5713.gif" align="left"/>
-Никаких SQLite баз данных и кеширования ненужных <b>вам</b> файлов. Вы можете использовать только тот функционал, который вам нужен. Вы так же можете управлять способом сохранения сессий, процессом авторизации, буквально всем, что вам необходимо!
+No SQLite databases and caching files, that <b>you</b> do not need. You can use only things you need. Also you can control how sessions are stored, authorisation process and literally everything you need!
 </br></br></br></br></br>
 </div>
 
 <div align="right">
 <h3>Multiaccounting, Gateway mode</h3>
 <img src="docs/assets/ezgif-3-7bcf6dc78388.gif" align="right"/>
-Вы можете использовать больше 10 аккаунтов одновременно! xelaj/MTProto не создает большого оверхеда по вычислительным ресурсам, поэтому вы можете иметь огромное количество инстансов соединений и не переживать за перерасход памяти!
+You can use more than 10 accounts at aa time! xelaj/MTProto does not create big overhead in memory and cpu consumption. Because of that you should not worry about having huge number of connection instances!  
 </br></br></br></br></br>
 </div>
 
@@ -67,7 +67,7 @@ gitlab pipelines
 ![preview]({{ .PreviewUrl }})
 -->
 
-MTProto очень сложен в реализации, но при этом очень прост в использовании. По сути вы общаетесь с серверами Telegram посредством отправки сериализованых структур (аналог gRPC, разработанный Telegram llc.). Выглядит это примерно так:
+MTProto has a quiet hard implementation, but is quiet easy to use. In fact you are sending serialized structures to Telegram servers (just like gRPC, but from Telegram LLC.). It looks like this:
 
 ```go
 func main() {
@@ -85,7 +85,7 @@ func main() {
 }
 ```
 
-Однако, есть более простой способ отправить запрос, который уже записан в TL спецификации API:
+But there is even easier way to send request, which is included in TL API specification:
 
 ```go
 func main() {
@@ -104,7 +104,7 @@ func main() {
 }
 ```
 
-Вам не стоит задумываться о реализации шифрования, обмена ключами, сохранении и восстановлении сессии, все уже сделано за вас.
+You dont need to think about encryption, key exchange, saving and restoring a session. It is already implemented for you.
 
 **Code examples are [here](https://github.com/xelaj/mtproto/blob/master/examples)**
 
@@ -114,23 +114,23 @@ func main() {
 
 ### Simple How-To
 
-Все как обычно, вам необходимо загрузить пакет с помощью `go get`:
+Installation is simple. Just do `go get`:
 
 ``` bash
 go get github.com/xelaj/mtproto
 ```
 
-Далее по желанию вы можете заново сгенерировать исходники структур методов и функций, для этого используйте команду `go generate`
+After that you can generate source structures of methods and functions if you wish to. To do it, use `go generate`
 
 ``` bash
 go generate github.com/xelaj/mtproto
 ```
 
-Все! Больше ничего и не надо!
+Thats it! Simple!
 
-### что за InvokeWithLayer?
+### What is InvokeWithLayer?
 
-Это специфическая особенность Telegram, для создания соединения и получения информации о текущей конфигурации серверов, нужно сделать что-то подобное:
+It is Telegram specific feature. I you want to create and get information about the current servers configuration, you need to do this:
 
 ```go
     resp, err := client.InvokeWithLayer(apiVersion, &telegram.InitConnectionParams{
@@ -147,9 +147,10 @@ go generate github.com/xelaj/mtproto
     })
 ```
 
-### Как произвести авторизацию по телефону?
+### How to use phone authorization?
 
-**Пример [здесь](https://github.com/xelaj/mtproto/blob/master/examples/auth)**
+**Example [here](https://github.com/xelaj/mtproto/blob/master/examples/auth)**
+
 
 ```go
 func AuthByPhone() {
@@ -174,15 +175,15 @@ func AuthByPhone() {
 }
 ```
 
-Все! вам не требуется никаких циклов или чего-то подобного, код уже готов к асинхронному выполнению, вам нужно только выполнить действия прописанные в документации к Telegram API
+Thats it! You dont need any cycles, the code is fully ready for asynchronous execution. You just need to follow the official Telegram API documentation
+ 
+### Docs are empty. Why?
 
-### Документация пустует! Почему?
+It is a pretty huge chunk of documentation. We are ready to describe every method and object, but its requires a lot of work. Although **all** methos are **already** described [here](https://core.telegram.org/methods).
 
-Объем документации невероятно огромен. Мы бы готовы задокументировать каждый метод и объект, но это огромное количество работы. Несмотря на это, **все** методы **уже** описаны [здесь](https://core.telegram.org/methods), вы можете так же спокойно их
+### Does this project support Windows?
 
-### Работает ли этот проект под Windows?
-
-Технически — да. Компоненты не были заточены под определенную архитектуру. Однако, возможности протестировать у разработчиков не было. Если у вас возникли проблемы, напишите в issues, мы постараемся помочь
+Technically yes. The components don't require specific architecture. Although we did not test it. If you have any problems running it, just create an issue, we will help.
 
 ## Who use it
 
