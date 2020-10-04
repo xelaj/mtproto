@@ -28,35 +28,35 @@ gitlab pipelines
 <div align="right">
 <h3>Full native implementation</h3>
 <img src="docs/assets/ezgif-3-a6bd45965060.gif" align="right"/>
-All code  from sending requests to encryption serialisation is written on pure golang. You dont need to download any additional dependencies.
+All code, from sending requests to encryption serialization is written on pure golang. You don't need to fetch any additional dependencies.
 </br></br></br></br></br></br>
 </div>
 
 <div align="left">
 <h3>Latest API version (117+)</h3>
 <img src="docs/assets/ezgif-3-19ced73bc71f.gif" align="left"/>
-It supports all the API and MTProto features, including video calls and post comments. You can create additional pull request to renew the data (???)! 
+Lib is supports all the API and MTProto features, including video calls and post comments. You can create additional pull request to push api updates! 
 </br></br></br></br></br></br></br>
 </div>
 
 <div align="right">
 <h3>Reactive API updates (generated from TL schema)</h3>
 <img src="docs/assets/ezgif-3-5b6a808d2774.gif" align="right"/>
-All the changes in TDLib and Android and being monitored to get the latests features and changes in TL schemas. New methods are created by adding new lines into the schema and updating generated code!
+All changes in TDLib and Android client are monitoring to get the latest features and changes in TL schemas. New methods are creates by adding new lines into TL schema and updating generated code!
 </br></br></br></br></br>
 </div>
 
 <div align="left">
 <h3>Implements ONLY network tools</h3>
 <img src="docs/assets/ezgif-3-3ac8a3ea5713.gif" align="left"/>
-No SQLite databases and caching files are required. You can use only things you need. Also you can control how sessions are stored, authorisation process and literally everything you need!
+No more SQLite databases and caching unnecessary files, that **you** don't need. Also you can control how sessions are stored, auth process and literally everything that you need!
 </br></br></br></br></br>
 </div>
 
 <div align="right">
 <h3>Multiaccounting, Gateway mode</h3>
 <img src="docs/assets/ezgif-3-7bcf6dc78388.gif" align="right"/>
-You can use more than 10 accounts at a time! _xelaj/MTProto_ does not create big overhead in memory and cpu consumption. Because of that you should not worry about having huge number of connection instances!  
+You can use more than 10 accounts at same time! _xelaj/MTProto_ doesn't create huge overhead in memory or cpu consumption as TDLib. Thanks for that, you can create huge number of connection instances and don't worry about memory overload! 
 </br></br></br></br></br>
 </div>
 
@@ -67,7 +67,7 @@ You can use more than 10 accounts at a time! _xelaj/MTProto_ does not create big
 ![preview]({{ .PreviewUrl }})
 -->
 
-MTProto has a quiet hard implementation, but is quiet easy to use. In fact, you are sending serialized structures to Telegram servers (just like gRPC, but from Telegram LLC.). It looks like this:
+MTProto is really hard in implementation, but it's really easy to use. Basically, this lib sends serialized structures to Telegram servers (just like gRPC, but from Telegram LLC.). It looks like this:
 
 ```go
 func main() {
@@ -85,7 +85,7 @@ func main() {
 }
 ```
 
-But there is even easier way to send request, which is included in TL API specification:
+Not so hard, huh? But there is even easier way to send request, which is included in TL API specification:
 
 ```go
 func main() {
@@ -104,7 +104,7 @@ func main() {
 }
 ```
 
-You do not need to think about encryption, key exchange, saving and restoring a session. It is already implemented for you.
+You do not need to think about encryption, key exchange, saving and restoring session, and more routine things. It is already implemented just for you.
 
 **Code examples are [here](https://github.com/xelaj/mtproto/blob/master/examples)**
 
@@ -126,11 +126,11 @@ After that you can generate source structures of methods and functions if you wi
 go generate github.com/xelaj/mtproto
 ```
 
-That's it! 
+That's it! You don't need to do anything more!
 
 ### What is InvokeWithLayer?
 
-It is Telegram specific feature. I you want to create and get information about the current servers configuration, you need to do this:
+It's Telegram specific feature. I you want to create client instance and get information about the current servers configuration, you need to do something like this:
 
 ```go
     resp, err := client.InvokeWithLayer(apiVersion, &telegram.InitConnectionParams{
@@ -138,14 +138,15 @@ It is Telegram specific feature. I you want to create and get information about 
         DeviceModel:    "Unknown",
         SystemVersion:  "linux/amd64",
         AppVersion:     "0.1.0",
+	// just use "en", any other language codes will recieve error. See telegram docs for more info.
         SystemLangCode: "en",
-        LangCode:       "en",
-        Proxy:          nil,
-        Params:         nil,
+        LangCode:       "en", 
         // HelpGetConfig() is ACTUAL request, but wrapped in IvokeWithLayer
         Query:          &telegram.HelpGetConfigParams{},
     })
 ```
+
+Why? We don't know! This method is described in Telegram API docs, any other starting requests will recieve error.
 
 ### How to use phone authorization?
 
@@ -164,26 +165,28 @@ func AuthByPhone() {
         panic(err)
     }
 
-    // Можно выбрать любой удобный вам способ ввода,
-    // базовые параметры сессии можно сохранить в любом месте
+
+    // You can make any way to enter verification code, like in 
+    // http requests, or what you like. You just need to call two 
+    // requests, that's main method.
 	fmt.Print("Auth code:")
 	code, _ := bufio.NewReader(os.Stdin).ReadString('\n')
     code = strings.Replace(code, "\n", "", -1)
 
-    // это весь процесс авторизации!
+    // this is ALL process of authorization! :)
     fmt.Println(client.AuthSignIn(yourPhone, resp.PhoneCodeHash, code))
 }
 ```
 
-That's it! You don't need any cycles, the code is fully ready for asynchronous execution. You just need to follow the official Telegram API documentation.
- 
+That's it! You don't need any cycles, code is ready-to-go for async execution. You just need to follow the official Telegram API documentation.
+
 ### Docs are empty. Why?
 
 There is a pretty huge chunk of documentation. We are ready to describe every method and object, but its requires a lot of work. Although **all** methods are **already** described [here](https://core.telegram.org/methods).
 
 ### Does this project support Windows?
 
-Yes in theory. The components don't require specific architecture. Although we did not test it. If you have any problems running it, just create an issue, we will help.
+Technically — yes. In practice — components don't require specific architecture, but we didn't test it yet. If you have any problems running it, just create an issue, we will try to help.
 
 ## Who use it
 
@@ -193,7 +196,7 @@ Please read [contributing guide](https://github.com/xelaj/mtproto/blob/master/do
 
 ## TODO
 
-[ ]
+[ ] 
 
 ## Authors
 
