@@ -49,14 +49,14 @@ All the changes in TDLib and Android and being monitored to get the latests feat
 <div align="left">
 <h3>Implements ONLY network tools</h3>
 <img src="docs/assets/ezgif-3-3ac8a3ea5713.gif" align="left"/>
-No SQLite databases and caching files, that <b>you</b> do not need. You can use only things you need. Also you can control how sessions are stored, authorisation process and literally everything you need!
+No SQLite databases and caching files are required. You can use only things you need. Also you can control how sessions are stored, authorisation process and literally everything you need!
 </br></br></br></br></br>
 </div>
 
 <div align="right">
 <h3>Multiaccounting, Gateway mode</h3>
 <img src="docs/assets/ezgif-3-7bcf6dc78388.gif" align="right"/>
-You can use more than 10 accounts at aa time! xelaj/MTProto does not create big overhead in memory and cpu consumption. Because of that you should not worry about having huge number of connection instances!  
+You can use more than 10 accounts at a time! _xelaj/MTProto_ does not create big overhead in memory and cpu consumption. Because of that you should not worry about having huge number of connection instances!  
 </br></br></br></br></br>
 </div>
 
@@ -67,7 +67,7 @@ You can use more than 10 accounts at aa time! xelaj/MTProto does not create big 
 ![preview]({{ .PreviewUrl }})
 -->
 
-MTProto has a quiet hard implementation, but is quiet easy to use. In fact you are sending serialized structures to Telegram servers (just like gRPC, but from Telegram LLC.). It looks like this:
+MTProto has a quiet hard implementation, but is quiet easy to use. In fact, you are sending serialized structures to Telegram servers (just like gRPC, but from Telegram LLC.). It looks like this:
 
 ```go
 func main() {
@@ -104,7 +104,7 @@ func main() {
 }
 ```
 
-You dont need to think about encryption, key exchange, saving and restoring a session. It is already implemented for you.
+You do not need to think about encryption, key exchange, saving and restoring a session. It is already implemented for you.
 
 **Code examples are [here](https://github.com/xelaj/mtproto/blob/master/examples)**
 
@@ -126,7 +126,7 @@ After that you can generate source structures of methods and functions if you wi
 go generate github.com/xelaj/mtproto
 ```
 
-Thats it! Simple!
+That's it! Simple!
 
 ### What is InvokeWithLayer?
 
@@ -175,15 +175,15 @@ func AuthByPhone() {
 }
 ```
 
-Thats it! You dont need any cycles, the code is fully ready for asynchronous execution. You just need to follow the official Telegram API documentation
+That's it! You don't need any cycles, the code is fully ready for asynchronous execution. You just need to follow the official Telegram API documentation.
  
 ### Docs are empty. Why?
 
-It is a pretty huge chunk of documentation. We are ready to describe every method and object, but its requires a lot of work. Although **all** methos are **already** described [here](https://core.telegram.org/methods).
+It is a pretty huge chunk of documentation. We are ready to describe every method and object, but its requires a lot of work. Although **all** methods are **already** described [here](https://core.telegram.org/methods).
 
 ### Does this project support Windows?
 
-Technically yes. The components don't require specific architecture. Although we did not test it. If you have any problems running it, just create an issue, we will help.
+Yes in theory. The components don't require specific architecture. Although we did not test it. If you have any problems running it, just create an issue, we will help.
 
 ## Who use it
 
