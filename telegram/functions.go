@@ -19,46 +19,6 @@ func (t *HelpGetConfigParams) Encode() []byte {
 	return buf.Result()
 }
 
-type AuthSendCodeParams struct {
-	PhoneNumber string
-	ApiID       int
-	ApiHash     string
-	Settings    *CodeSettings
-}
-
-func (_ *AuthSendCodeParams) CRC() uint32 {
-	return 0xa677244f
-}
-
-func (t *AuthSendCodeParams) Encode() []byte {
-	buf := serialize.NewEncoder()
-	buf.PutUint(t.CRC())
-	buf.PutString(t.PhoneNumber)
-	buf.PutInt(int32(t.ApiID))
-	buf.PutString(t.ApiHash)
-	buf.PutRawBytes(t.Settings.Encode())
-	return buf.Result()
-}
-
-func (c *Client) AuthSendCode(PhoneNumber string, ApiID int, ApiHash string, Settings *CodeSettings) (*AuthSentCode, error) {
-	data, err := c.MakeRequest(&AuthSendCodeParams{
-		PhoneNumber: PhoneNumber,
-		ApiID:       ApiID,
-		ApiHash:     ApiHash,
-		Settings:    Settings,
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, "sending AuthSendCode")
-	}
-
-	resp, ok := data.(*AuthSentCode)
-	if !ok {
-		panic(errors.New("got invalid response type: " + reflect.TypeOf(data).String()))
-	}
-
-	return resp, nil
-
-}
 
 type AuthSignInParams struct {
 	PhoneNumber   string
