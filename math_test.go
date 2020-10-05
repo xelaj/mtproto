@@ -1,8 +1,6 @@
 package mtproto
 
 import (
-	"bytes"
-	"encoding/hex"
 	"math/big"
 	"testing"
 )
@@ -23,4 +21,3 @@ func TestSplitPQ(t *testing.T) {
 		}
 	}
 }
-
