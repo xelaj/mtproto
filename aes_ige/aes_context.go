@@ -94,7 +94,53 @@ type (
 
 // generateAESIGE ЭТО ЕБАНАЯ МАГИЧЕСКАЯ ФУНКЦИЯ ОНА НАХУЙ РАБОТАЕТ ПРОСТО БЛЯТЬ НЕ ТРОГАЙ ШАКАЛ ЕБАНЫЙ
 // TODO: порезать себе вены
-func generateAESIGE(msgKey, authKey []byte, decode bool) ([]byte, []byte) {
+func generateAESIGE(msg_key, auth_key []byte, decode bool) ([]byte, []byte) {
+	var x int
+	if decode {
+		x = 8
+	} else {
+		x = 0
+	}
+	aes_key := make([]byte, 0, 32)
+	aes_iv := make([]byte, 0, 32)
+	t_a := make([]byte, 0, 48)
+	t_b := make([]byte, 0, 48)
+	t_c := make([]byte, 0, 48)
+	t_d := make([]byte, 0, 48)
+
+	t_a = append(t_a, msg_key...)
+	t_a = append(t_a, auth_key[x:x+32]...)
+
+	t_b = append(t_b, auth_key[32+x:32+x+16]...)
+	t_b = append(t_b, msg_key...)
+	t_b = append(t_b, auth_key[48+x:48+x+16]...)
+
+	t_c = append(t_c, auth_key[64+x:64+x+32]...)
+	t_c = append(t_c, msg_key...)
+
+	t_d = append(t_d, msg_key...)
+	t_d = append(t_d, auth_key[96+x:96+x+32]...)
+
+	sha1_a := dry.Sha1Byte(t_a)
+	sha1_b := dry.Sha1Byte(t_b)
+	sha1_c := dry.Sha1Byte(t_c)
+	sha1_d := dry.Sha1Byte(t_d)
+
+	aes_key = append(aes_key, sha1_a[0:8]...)
+	aes_key = append(aes_key, sha1_b[8:8+12]...)
+	aes_key = append(aes_key, sha1_c[4:4+12]...)
+
+	aes_iv = append(aes_iv, sha1_a[8:8+12]...)
+	aes_iv = append(aes_iv, sha1_b[0:8]...)
+	aes_iv = append(aes_iv, sha1_c[16:16+4]...)
+	aes_iv = append(aes_iv, sha1_d[0:8]...)
+
+	return aes_key, aes_iv
+}
+
+// generateAESIGE ЭТО ЕБАНАЯ МАГИЧЕСКАЯ ФУНКЦИЯ ОНА НАХУЙ РАБОТАЕТ ПРОСТО БЛЯТЬ НЕ ТРОГАЙ ШАКАЛ ЕБАНЫЙ
+// TODO: порезать себе вены
+func generateAESIGEv2(msgKey, authKey []byte, decode bool) ([]byte, []byte) {
 	var (
 		kvBlock  [2]AesKV
 		igeBlock [4]AesIgeBlock
