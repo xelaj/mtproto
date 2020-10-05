@@ -71,7 +71,8 @@ func TestDoAES256IGEdecrypt(t *testing.T) {
 			Hexed("99706487A1CDE613BC6DE0B6F24B1C7AA448C8B9C3403E3467A8CAD89340F53B"),
 		},
 	} {
-		result, err := doAES256IGEdecrypt(tcase.ciphertext, tcase.key, tcase.initVector)
+		result := make([]byte, len(tcase.ciphertext))
+		err := doAES256IGEdecrypt(tcase.ciphertext, result, tcase.key, tcase.initVector)
 		assert.NoError(t, err)
 		assert.Equal(t, tcase.expected, result)
 	}
