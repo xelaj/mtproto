@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"unicode"
@@ -13,16 +15,6 @@ import (
 	"github.com/k0kubun/pp"
 	"github.com/xelaj/go-dry"
 )
-
-type nametype struct {
-	name  string
-	_type string
-}
-
-type constuctor struct {
-	predicate string
-	params    []nametype
-}
 
 func normalizeID(s string, isType bool) string {
 	isVector := strings.HasPrefix(s, "Vector<")
@@ -67,33 +59,75 @@ func normalizeID(s string, isType bool) string {
 	}
 }
 
+const helpMsg = `generate-tl-files
+usage: generate-tl-files input_file.tl output_dir/
+
+THIS TOOL IS USING ONLY FOR AUTOMATIC CODE
+GENERATION, DO NOT GENERATE FILES BY HAND!
+
+No, seriously. Don't. go generate is amazing. You
+are amazing too, but lesser 😏
+`
+
 func main() {
-	// read json file from stdin
-	data, err := ioutil.ReadAll(os.Stdin)
-	if err != nil {
-		fmt.Println(err)
-		return
+	// TODO: use awesome github.com/xelaj/args lib for amazing cli insead this shit
+	if dry.StringInSlice("--help", os.Args) {
+		fmt.Println(helpMsg)
+		os.Exit(0)
 	}
+
+	if len(os.Args) < 2 {
+		fmt.Println(helpMsg)
+		os.Exit(1)
+	}
+
+	inputFilePath := os.Args[1]
+	if !dry.FileExists(inputFilePath) {
+		fmt.Println("'"+inputFilePath+"'", "file not found. Are you sure, that it's exist?")
+		os.Exit(1)
+	}
+
+	outputDir := os.Args[2]
+	if !dry.FileExists(inputFilePath) {
+		err := os.MkdirAll(outputDir, 0775)
+		dry.PanicIfErr(err)
+	}
+
+	if !dry.FileIsDir(outputDir) {
+		fmt.Println("'"+inputFilePath+"'", "is not a directory. Check output path twice, litle hacker 👾👾👾")
+		os.Exit(1)
+	}
+
+	data, err := ioutil.ReadFile(inputFilePath)
+	dry.PanicIfErr(err)
 
 	res, err := ParseTL(string(data))
 	dry.PanicIfErr(err)
+
 	s, err := FileFromTlSchema(res)
 	dry.PanicIfErr(err)
 
+	GenerateAndWirteTo(GenerateEnumDefinitions, s, filepath.Join(outputDir, "enums.go"))
+	GenerateAndWirteTo(GenerateSpecificStructs, s, filepath.Join(outputDir, "types.go"))
+	//GenerateInterfaces(file, s)
+	GenerateAndWirteTo(GenerateConstructorRouter, s, filepath.Join(outputDir, "constructor.go"))
+
+}
+
+func GenerateAndWirteTo(f func(file *jen.File, data *FileStructure) error, data *FileStructure, storeTo string) {
 	file := jen.NewFile("telegram")
 	file.ImportAlias("github.com/xelaj/go-dry", "dry")
 
-	dry.PanicIfErr(GenerateEnumDefinitions(file, s))
-	GenerateSpecificStructs(file, s)
-	GenerateInterfaces(file, s)
-	GenerateConstructorRouter(file, s)
+	f(file, data)
 
-	err = file.Render(os.Stdout)
+	buf := bytes.NewBuffer([]byte{})
+	err := file.Render(buf)
 	if err != nil {
 		pp.Fprintln(os.Stderr, err)
 		panic("ошибка!")
 	}
-
+	err = ioutil.WriteFile(storeTo, buf.Bytes(), 0644)
+	dry.PanicIfErr(err)
 }
 
 // TODO: переписать нормально, а то ад какой-то

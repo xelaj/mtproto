@@ -15,47 +15,48 @@ go version
 gitlab pipelines
 -->
 
-![FINALLY!](docs/assets/finally.jpg) Full-native implementation of MTProto protocol on Golang!
+![FINALLY!](/docs/assets/finally.jpg) Полностью нативная имплементация MTProto на Golang!
+
 
 [english](https://github.com/xelaj/mtproto/blob/master/docs/en_US/README.md) **русский**
 
 <p align="center">
-<img src="docs/assets/MuffinMan-AgADRAADO2AkFA.gif"/>
+<img src="/docs/assets/MuffinMan-AgADRAADO2AkFA.gif"/>
 </p>
 
-## <p align="center">Features</p>
+## <p align="center">Фичи</p>
 
 <div align="right">
-<h3>Full native implementation</h3>
-<img src="docs/assets/ezgif-3-a6bd45965060.gif" align="right"/>
+<h3>Полностью нативная реализация</h3>
+<img src="/docs/assets/ezgif-3-a6bd45965060.gif" align="right"/>
 Вся библиотека начиная с отправки запросов и шифрования и заканчивая сериализацией шифровния написаны исключительно на golang. Для работы с библиотекой не требуется никаких лишних зависимостей.
 </br></br></br></br></br></br>
 </div>
 
 <div align="left">
-<h3>Latest API version (117+)</h3>
-<img src="docs/assets/ezgif-3-19ced73bc71f.gif" align="left"/>
+<h3>Самая свежая версия API (117+)</h3>
+<img src="/docs/assets/ezgif-3-19ced73bc71f.gif" align="left"/>
 Реализована поддержка всех возможностей API Telegram и MTProto включая функцию видеозвонков и комментариев к постам. Вы можете сделать дополнительный pull request на обновление данных!
 </br></br></br></br></br></br></br>
 </div>
 
 <div align="right">
-<h3>Reactive API updates (generated from TL schema)</h3>
-<img src="docs/assets/ezgif-3-5b6a808d2774.gif" align="right"/>
+<h3>Реактивные обновления (сгенерировано из TL спецификаций)</h3>
+<img src="/docs/assets/ezgif-3-5b6a808d2774.gif" align="right"/>
 Все изменения в клиентах TDLib и Android мониторятся на предмет появления новых фич и изменений в TL схемах. Новые методы и объекты появляются просто по добавлению новых строк в схеме и обновления сгенерированного кода!
 </br></br></br></br></br>
 </div>
 
 <div align="left">
 <h3>Implements ONLY network tools</h3>
-<img src="docs/assets/ezgif-3-3ac8a3ea5713.gif" align="left"/>
+<img src="/docs/assets/ezgif-3-3ac8a3ea5713.gif" align="left"/>
 Никаких SQLite баз данных и кеширования ненужных <b>вам</b> файлов. Вы можете использовать только тот функционал, который вам нужен. Вы так же можете управлять способом сохранения сессий, процессом авторизации, буквально всем, что вам необходимо!
 </br></br></br></br></br>
 </div>
 
 <div align="right">
 <h3>Multiaccounting, Gateway mode</h3>
-<img src="docs/assets/ezgif-3-7bcf6dc78388.gif" align="right"/>
+<img src="/docs/assets/ezgif-3-7bcf6dc78388.gif" align="right"/>
 Вы можете использовать больше 10 аккаунтов одновременно! xelaj/MTProto не создает большого оверхеда по вычислительным ресурсам, поэтому вы можете иметь огромное количество инстансов соединений и не переживать за перерасход памяти!
 </br></br></br></br></br>
 </div>

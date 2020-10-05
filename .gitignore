@@ -1,0 +1,19 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# any tests
+*.test
+
+# eitri things (build, precompiled files, tool outs etc)
+.eitri/
+*.out
+
+# Dependencies if it has to exist (but why?)
+vendor/
+
+# playgorund
+playground/
