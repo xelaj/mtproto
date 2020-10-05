@@ -295,9 +295,8 @@ type TLSchema struct {
 func ParseTL(data string) (*TLSchema, error) {
 	objects := make([]*DefinitionObject, 0)
 	methods := make([]*DefinitionMethod, 0)
-	splitted := strings.Split(string(data), "\n")
 	definingFuncs := false
-	for lineNumber, line := range splitted {
+	for lineNumber, line := range strings.Split(data, "\n") {
 		lineNumber++ // т.к. начинаем с нуля, а строчки то с 1
 		if strings.Contains(line, "---functions---") {
 			definingFuncs = true // функции отдельно отрабатываем

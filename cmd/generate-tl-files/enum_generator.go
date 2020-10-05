@@ -1,11 +1,23 @@
 package main
 
 import (
+	"sort"
+
 	"github.com/dave/jennifer/jen"
 )
 
 func GenerateEnumDefinitions(file *jen.File, data *FileStructure) error {
-	for enumType, values := range data.Enums {
+	enumTypes := make([]typeName, len(data.Enums))
+	enumIndex := 0
+	for _type := range data.Enums {
+		enumTypes[enumIndex] = _type
+		enumIndex++
+	}
+
+	sort.Strings(enumTypes)
+
+	for _, enumType := range enumTypes {
+		values := data.Enums[enumType]
 		file.Add(GenerateSpecificEnum(enumType, values)...)
 	}
 	return nil
@@ -38,7 +50,7 @@ func GenerateSpecificEnum(enumType string, enumValues []*EnumObject) []jen.Code 
 
 	total = append(total, f, jen.Line())
 
-	//CRC() uint32
+	// CRC() uint32
 	f = jen.Func().Params(jen.Id("e").Id(typeId)).Id("CRC").Params().Uint32().Block(
 		jen.Return(jen.Uint32().Call(jen.Id("e"))),
 	)
@@ -47,7 +59,7 @@ func GenerateSpecificEnum(enumType string, enumValues []*EnumObject) []jen.Code 
 
 	// Ecncode() []byte
 	f = jen.Func().Params(jen.Id("e").Id(typeId)).Id("Encode").Params().Index().Byte().Block(
-		jen.Id("buf").Op(":=").Qual("github.com/xelaj/mtproto", "NewEncoder").Call(),
+		jen.Id("buf").Op(":=").Qual("github.com/xelaj/mtproto/serialize", "NewEncoder").Call(),
 		jen.Id("buf.PutCRC").Call(jen.Uint32().Call(jen.Id("e"))),
 		jen.Line(),
 		jen.Return(jen.Id("buf.Result").Call()),

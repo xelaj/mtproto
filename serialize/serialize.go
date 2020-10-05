@@ -14,6 +14,7 @@ const (
 	Int128Len = WordLen * 4 // int128 16 байт
 	Int256Len = WordLen * 8 // int256 32 байт
 
+	// Блядские магические числа
 	FuckingMagicNumber = 254  // 253 элемента максимум можно закодировать в массиве элементов
 	ByteLenMagicNumber = 0xfe // ???
 
@@ -26,8 +27,8 @@ const (
 
 var (
 	int64Type = reflect.TypeOf(int64(0))
-	//int128Type = reflect.TypeOf(&Int128{})
-	//int256Type = reflect.TypeOf(&Int256{})
+	// int128Type = reflect.TypeOf(&Int128{})
+	// int256Type = reflect.TypeOf(&Int256{})
 )
 
 type TL interface {

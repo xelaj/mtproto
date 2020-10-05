@@ -1,3 +1,4 @@
+// TODO: finish this example schema for testing code generator
 // structs with interface
 inputPeerEmpty#7f3b18ea = InputPeer;
 inputPeerSelf#7da07ec9 = InputPeer;
