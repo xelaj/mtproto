@@ -7,37 +7,40 @@ import (
 	"github.com/xelaj/go-dry"
 )
 
-type aesCtx struct {
-	block   cipher.Block
-	v       [3 * aes.BlockSize]byte
-	t, x, y []byte
-}
+type (
+	AesBlock [aes.BlockSize]byte
+
+	aesCtx struct {
+		block   cipher.Block
+		v       [3]AesBlock
+		t, x, y []byte
+	}
+)
 
 func newAesCtx(key, iv []byte) (*aesCtx, error) {
 	const (
-		firstOffStart = iota * aes.BlockSize
-		secondOffStart
-		thirdOffStart
-		fourthOffsetStart
+		firstBlock = iota
+		secondBlock
+		thirdBlock
 	)
 
 	var err error
 
 	c := new(aesCtx)
-
 	c.block, err = aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
 
-	c.t = c.v[firstOffStart:secondOffStart]
-	c.x = c.v[secondOffStart:thirdOffStart]
-	c.y = c.v[thirdOffStart:fourthOffsetStart]
+	c.t = c.v[firstBlock][:]
+	c.x = c.v[secondBlock][:]
+	c.y = c.v[thirdBlock][:]
 	copy(c.x, iv[:aes.BlockSize])
 	copy(c.y, iv[aes.BlockSize:])
 
 	return c, nil
 }
+
 func (c *aesCtx) doAES256IGEencrypt(in, out []byte) error {
 	if err := c.isCorrectData(in); err != nil {
 		return err
@@ -52,6 +55,7 @@ func (c *aesCtx) doAES256IGEencrypt(in, out []byte) error {
 	}
 	return nil
 }
+
 func (c *aesCtx) doAES256IGEdecrypt(in, out []byte) error {
 	if err := c.isCorrectData(in); err != nil {
 		return err
@@ -66,6 +70,7 @@ func (c *aesCtx) doAES256IGEdecrypt(in, out []byte) error {
 	}
 	return nil
 }
+
 func (c *aesCtx) isCorrectData(data []byte) error {
 	if len(data) < aes.BlockSize {
 		return ErrDataTooSmall
@@ -82,34 +87,95 @@ func xor(dst, src []byte) {
 	}
 }
 
+type (
+	AesKV       [32]byte
+	AesIgeBlock [48]byte
+)
+
 // generateAESIGE ЭТО ЕБАНАЯ МАГИЧЕСКАЯ ФУНКЦИЯ ОНА НАХУЙ РАБОТАЕТ ПРОСТО БЛЯТЬ НЕ ТРОГАЙ ШАКАЛ ЕБАНЫЙ
 // TODO: порезать себе вены
 func generateAESIGE(msgKey, authKey []byte, decode bool) ([]byte, []byte) {
-	var x int
+	var (
+		kvBlock  [2]AesKV
+		igeBlock [4]AesIgeBlock
+	)
+
+	aesKey := kvBlock[0][:]
+	aesIv := kvBlock[1][:]
+
+	tA := igeBlock[0][:]
+	tB := igeBlock[1][:]
+	tC := igeBlock[2][:]
+	tD := igeBlock[3][:]
+
 	if decode {
-		x = 8
+		const (
+			x = 0
+
+			step       = 32
+			tAOffStart = x
+			tAOffEnd   = tAOffStart + step
+
+			tBOffP0Start = tAOffEnd
+			tBOffP0End   = tBOffP0Start + aes.BlockSize
+
+			tBOffP1Start = tAOffEnd + aes.BlockSize
+			tBOffP1End   = tBOffP1Start + aes.BlockSize
+
+			tCOffStart = x + 64
+			tCOffEnd   = tCOffStart + step
+
+			tDOffStart = x + 96
+			tDOffEnd   = tDOffStart + step
+		)
+
+		tA = append(tA, msgKey...)
+		tA = append(tA, authKey[tAOffStart:tAOffEnd]...)
+
+		tB = append(tB, authKey[tBOffP0Start:tBOffP0End]...)
+		tB = append(tB, msgKey...)
+		tB = append(tB, authKey[tBOffP1Start:tBOffP1End]...)
+
+		tC = append(tC, authKey[tCOffStart:tCOffEnd]...)
+		tC = append(tC, msgKey...)
+
+		tD = append(tD, msgKey...)
+		tD = append(tD, authKey[tDOffStart:tDOffEnd]...)
+
 	} else {
-		x = 0
+		const (
+			x = 0
+
+			step       = 32
+			tAOffStart = x
+			tAOffEnd   = tAOffStart + step
+
+			tBOffP0Start = tAOffEnd
+			tBOffP0End   = tBOffP0Start + aes.BlockSize
+
+			tBOffP1Start = tAOffEnd + aes.BlockSize
+			tBOffP1End   = tBOffP1Start + aes.BlockSize
+
+			tCOffStart = x + 64
+			tCOffEnd   = tCOffStart + step
+
+			tDOffStart = x + 96
+			tDOffEnd   = tDOffStart + step
+		)
+
+		tA = append(tA, msgKey...)
+		tA = append(tA, authKey[tAOffStart:tAOffEnd]...)
+
+		tB = append(tB, authKey[tBOffP0Start:tBOffP0End]...)
+		tB = append(tB, msgKey...)
+		tB = append(tB, authKey[tBOffP1Start:tBOffP1End]...)
+
+		tC = append(tC, authKey[tCOffStart:tCOffEnd]...)
+		tC = append(tC, msgKey...)
+
+		tD = append(tD, msgKey...)
+		tD = append(tD, authKey[tDOffStart:tDOffEnd]...)
 	}
-	aesKey := make([]byte, 0, 32)
-	aesIv := make([]byte, 0, 32)
-	tA := make([]byte, 0, 48)
-	tB := make([]byte, 0, 48)
-	tC := make([]byte, 0, 48)
-	tD := make([]byte, 0, 48)
-
-	tA = append(tA, msgKey...)
-	tA = append(tA, authKey[x:x+32]...)
-
-	tB = append(tB, authKey[32+x:32+x+16]...)
-	tB = append(tB, msgKey...)
-	tB = append(tB, authKey[48+x:48+x+16]...)
-
-	tC = append(tC, authKey[64+x:64+x+32]...)
-	tC = append(tC, msgKey...)
-
-	tD = append(tD, msgKey...)
-	tD = append(tD, authKey[96+x:96+x+32]...)
 
 	sha1PartA := dry.Sha1Byte(tA)
 	sha1PartB := dry.Sha1Byte(tB)
