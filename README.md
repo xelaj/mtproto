@@ -138,7 +138,7 @@ It's Telegram specific feature. I you want to create client instance and get inf
         DeviceModel:    "Unknown",
         SystemVersion:  "linux/amd64",
         AppVersion:     "0.1.0",
-	// just use "en", any other language codes will recieve error. See telegram docs for more info.
+	// just use "en", any other language codes will receive error. See telegram docs for more info.
         SystemLangCode: "en",
         LangCode:       "en", 
         // HelpGetConfig() is ACTUAL request, but wrapped in IvokeWithLayer
@@ -146,7 +146,7 @@ It's Telegram specific feature. I you want to create client instance and get inf
     })
 ```
 
-Why? We don't know! This method is described in Telegram API docs, any other starting requests will recieve error.
+Why? We don't know! This method is described in Telegram API docs, any other starting requests will receive error.
 
 ### How to use phone authorization?
 
