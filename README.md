@@ -56,7 +56,7 @@ No more SQLite databases and caching unnecessary files, that **you** don't need.
 <div align="right">
 <h3>Multiaccounting, Gateway mode</h3>
 <img src="docs/assets/ezgif-3-7bcf6dc78388.gif" align="right"/>
-You can use more than 10 accounts at same time! _xelaj/MTProto_ doesn't create huge overhead in memory or cpu consumption as TDLib. Thanks for that, you can create huge number of connection instances and don't worry about memory overload! 
+You can use more than 10 accounts at same time! <i>xelaj/MTProto</i> doesn't create huge overhead in memory or cpu consumption as TDLib. Thanks for that, you can create huge number of connection instances and don't worry about memory overload! 
 </br></br></br></br></br>
 </div>
 
