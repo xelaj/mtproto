@@ -5,6 +5,10 @@ import (
 	"github.com/xelaj/mtproto/serialize"
 )
 
+const (
+	ApiVersion = 117
+)
+
 func init() {
 	serialize.AddObjectConstructor(GenerateStructByConstructor)
 }

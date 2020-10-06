@@ -84,10 +84,17 @@ func GenerateSpecificStructs(file *jen.File, data *FileStructure) error {
 			}
 
 			putFunc := jen.Null()
-			if putFuncId == "buf.PutRawBytes" {
+			switch {
+			case name == "__flagsPosition":
+				putFunc = jen.Id("buf.PutUint").Call(jen.Id("flag"))
+			case ЗНАЧЕНИЕ_В_ФЛАГЕ:
+				// не делаем ничего, значение уже заложили в флаг
+			case putFuncId == "buf.PutRawBytes":
 				putFunc = jen.Id(putFuncId).Call(jen.Id("e." + name).Dot("Encode").Call())
-			} else if putFuncId != "" {
+			case putFuncId != "":
 				putFunc = jen.Id(putFuncId).Call(jen.Id("e." + name))
+			default:
+				panic("putFincID is empty!")
 			}
 
 			tags := map[string]string{}

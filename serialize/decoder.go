@@ -289,6 +289,17 @@ func (d *Decoder) PopToObjUsingReflection(item TL, ignoreCRCReading bool) {
 				panic("неизвестная штука: " + value.Field(i).Type().String())
 			}
 
+		case reflect.Interface:
+			if !value.Field(i).Type().Implements(reflect.TypeOf((*TL)(nil)).Elem()) {
+				panic("can't parse any type, if it don't implement TL")
+			}
+			field := d.PopObj()
+
+			if !reflect.TypeOf(field).Implements(value.Field(i).Type()) {
+				panic("recieved value " + reflect.TypeOf(field).String() + "; expected " + value.Field(i).Type().String())
+			}
+			value.Field(i).Set(reflect.ValueOf(field))
+
 		default:
 			panic("неизвестная штука: " + value.Field(i).Type().String())
 		}

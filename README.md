@@ -35,7 +35,7 @@ All code, from sending requests to encryption serialization is written on pure g
 <div align="left">
 <h3>Latest API version (117+)</h3>
 <img src="docs/assets/ezgif-3-19ced73bc71f.gif" align="left"/>
-Lib is supports all the API and MTProto features, including video calls and post comments. You can create additional pull request to push api updates! 
+Lib is supports all the API and MTProto features, including video calls and post comments. You can create additional pull request to push api updates!
 </br></br></br></br></br></br></br>
 </div>
 
@@ -49,14 +49,14 @@ All changes in TDLib and Android client are monitoring to get the latest feature
 <div align="left">
 <h3>Implements ONLY network tools</h3>
 <img src="docs/assets/ezgif-3-3ac8a3ea5713.gif" align="left"/>
-No more SQLite databases and caching unnecessary files, that **you** don't need. Also you can control how sessions are stored, auth process and literally everything that you need!
+No more SQLite databases and caching unnecessary files, that <b>you</b> don't need. Also you can control how sessions are stored, auth process and literally everything that you need!
 </br></br></br></br></br>
 </div>
 
 <div align="right">
 <h3>Multiaccounting, Gateway mode</h3>
 <img src="docs/assets/ezgif-3-7bcf6dc78388.gif" align="right"/>
-You can use more than 10 accounts at same time! <i>xelaj/MTProto</i> doesn't create huge overhead in memory or cpu consumption as TDLib. Thanks for that, you can create huge number of connection instances and don't worry about memory overload! 
+You can use more than 10 accounts at same time! <i>xelaj/MTProto</i> doesn't create huge overhead in memory or cpu consumption as TDLib. Thanks for that, you can create huge number of connection instances and don't worry about memory overload!
 </br></br></br></br></br>
 </div>
 
@@ -140,7 +140,7 @@ It's Telegram specific feature. I you want to create client instance and get inf
         AppVersion:     "0.1.0",
 	// just use "en", any other language codes will receive error. See telegram docs for more info.
         SystemLangCode: "en",
-        LangCode:       "en", 
+        LangCode:       "en",
         // HelpGetConfig() is ACTUAL request, but wrapped in IvokeWithLayer
         Query:          &telegram.HelpGetConfigParams{},
     })
@@ -166,8 +166,8 @@ func AuthByPhone() {
     }
 
 
-    // You can make any way to enter verification code, like in 
-    // http requests, or what you like. You just need to call two 
+    // You can make any way to enter verification code, like in
+    // http requests, or what you like. You just need to call two
     // requests, that's main method.
 	fmt.Print("Auth code:")
 	code, _ := bufio.NewReader(os.Stdin).ReadString('\n')
@@ -196,7 +196,7 @@ Please read [contributing guide](https://github.com/xelaj/mtproto/blob/master/do
 
 ## TODO
 
-[ ] 
+[ ]
 
 ## Authors
 

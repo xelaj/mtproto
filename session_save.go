@@ -5,11 +5,13 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"io/ioutil"
+	"os"
+	"path/filepath"
 
 	"github.com/pkg/errors"
-	"github.com/xelaj/mtproto/serialize"
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
+	"github.com/xelaj/mtproto/serialize"
 )
 
 func (m *MTProto) SaveSession() (err error) {
@@ -99,6 +101,17 @@ func SaveSession(s *Session, path string) error {
 	file.Hostname = s.Hostname
 
 	data, _ := json.Marshal(file)
+
+	dir, _ := filepath.Split(path)
+	if !dry.FileExists(dir) {
+		err := os.MkdirAll(dir, 0700)
+		if err != nil {
+			return errors.Wrap(err, "creating directory")
+		}
+	}
+	if !dry.FileIsDir(dir) {
+		return errors.New(path + ": not a directory")
+	}
 
 	return ioutil.WriteFile(path, data, 0600)
 }

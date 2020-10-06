@@ -79,8 +79,6 @@ type Config struct {
 	AuthKeyFile string
 	ServerHost  string
 	PublicKey   *rsa.PublicKey
-	AppID       int
-	AppHash     string
 }
 
 func NewMTProto(c Config) (*MTProto, error) {

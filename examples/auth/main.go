@@ -7,71 +7,40 @@ import (
 	"strings"
 
 	"github.com/k0kubun/pp"
-	"github.com/pkg/errors"
 	"github.com/xelaj/go-dry"
-
-	"github.com/xelaj/mtproto"
-	"github.com/xelaj/mtproto/keys"
 	"github.com/xelaj/mtproto/telegram"
 )
 
-var client *telegram.Client
-
 func main() {
-	keyfile := "/home/r0ck3t/go/src/github.com/xelaj/mtproto/keys/keys.pem"
-	TelegramPublicKeys, err := keys.ReadFromFile(keyfile)
-	dry.PanicIfErr(err)
-
-	m, err := mtproto.NewMTProto(mtproto.Config{
-		AuthKeyFile: "~/.local/var/lib/mtproto/session.json.lol",
-		ServerHost:  "149.154.167.50:443",
-		PublicKey:   TelegramPublicKeys[0],
-		AppID:       94575,
-		AppHash:     "a3406de8d171bb422bb6ddf3bbd800e2",
-	})
-	if err != nil {
-		panic(errors.Wrap(err, "Create failed"))
+	if len(os.Args) < 2 {
+		fmt.Println("second argument must be phone number!")
+		os.Exit(1)
 	}
-	client = &telegram.Client{m}
-
-	err = client.CreateConnection()
-	if err != nil {
-		panic(errors.Wrap(err, "Connect failed"))
-	}
-
-	resp, err := client.InvokeWithLayer(117, &telegram.InitConnectionParams{
-		ApiID:          94575,
-		DeviceModel:    "Unknown",
-		SystemVersion:  "linux/amd64",
-		AppVersion:     "0.0.1",
-		SystemLangCode: "en",
-		LangCode:       "en",
-		Proxy:          nil,
-		Params:         nil,
-		Query:          &telegram.HelpGetConfigParams{},
-	})
-	dry.PanicIfErr(err)
-	pp.Println("resp:", resp)
-
-	switch resp.(type) {
-	case *telegram.Config:
-	default:
-		panic(fmt.Sprintf("Got: %T", resp))
-	}
-
 	phoneNumber := os.Args[1]
+
+	// edit these params for you!
+	client, err := telegram.NewClient(telegram.ClientConfig{
+		// where to store session configuration. must be set
+		SessionFile: "/home/r0ck3t/.local/var/lib/mtproto/session1.json",
+		// host address of mtproto server. actualy, it can'be mtproxy, not only official
+		ServerHost: "149.154.167.50:443",
+		// public keys file is patrh to file with public keys, which you must get from https://my.telelgram.org
+		PublicKeysFile: "/home/r0ck3t/go/src/github.com/xelaj/mtproto/keys/keys.pem",
+		AppID:          94575,                              // app id, could be find at https://my.telegram.org
+		AppHash:        "a3406de8d171bb422bb6ddf3bbd800e2", // app hash, could be find at https://my.telegram.org
+	})
+	dry.PanicIfErr(err)
 
 	setCode, err := client.AuthSendCode(&telegram.AuthSendCodeParams{
 		phoneNumber, 94575, "a3406de8d171bb422bb6ddf3bbd800e2", &telegram.CodeSettings{},
 	})
 	dry.PanicIfErr(err)
-	pp.Println(resp)
+	pp.Println(setCode)
 
 	fmt.Print("Код авторизации:")
 	code, _ := bufio.NewReader(os.Stdin).ReadString('\n')
 	code = strings.Replace(code, "\n", "", -1)
 
-	pp.Println(os.Args[2], setCode.PhoneCodeHash, code)
 	pp.Println(client.AuthSignIn(&telegram.AuthSignInParams{
 		phoneNumber, setCode.PhoneCodeHash, code,
 	}))
