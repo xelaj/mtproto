@@ -200,7 +200,7 @@ func GenerateMethods(file *jen.File, data *FileStructure) error {
 		}
 
 		calls = append(calls,
-			jen.Id("buf").Op(":=").Qual("github.com/xelaj/mtproto", "NewEncoder").Call(),
+			jen.Id("buf").Op(":=").Qual("github.com/xelaj/mtproto/serialize", "NewEncoder").Call(),
 			jen.Id("buf.PutUint").Call(jen.Id("e.CRC").Call()),
 		)
 
@@ -212,7 +212,7 @@ func GenerateMethods(file *jen.File, data *FileStructure) error {
 			jen.Return(jen.Id("buf.Result").Call()),
 		)
 
-		f := jen.Func().Params(jen.Id("e").Id("*" + methodName)).Id("Encode").Params().Index().Byte().Block(
+		f := jen.Func().Params(jen.Id("e").Id("*" + typeName)).Id("Encode").Params().Index().Byte().Block(
 			calls...,
 		)
 
@@ -246,12 +246,25 @@ func GenerateMethods(file *jen.File, data *FileStructure) error {
 		if _, ok := data.SingleInterfaceCanonical[method.Returns.Type]; ok {
 			assertedType = "*" + assertedType
 		}
+		firstErrorReturn := jen.Code(jen.Nil())
+		if assertedType == "Bool" {
+			assertedType = "*serialize.Bool"
+			// firstErrorReturn = jen.False()
+		}
+		if assertedType == "Long" {
+			assertedType = "*serialize.Long"
+			// firstErrorReturn = jen.Lit(0)
+		}
+		if assertedType == "Int" {
+			assertedType = "*serialize.Int"
+			// firstErrorReturn = jen.Lit(0)
+		}
 
 		calls = make([]jen.Code, 0)
 		calls = append(calls,
 			jen.List(jen.Id("data"), jen.Err()).Op(":=").Id("c.MakeRequest").Call(requestStruct),
 			jen.If(jen.Err().Op("!=").Nil()).Block(
-				jen.Return(jen.Nil(), jen.Qual("github.com/pkg/errors", "Wrap").Call(jen.Err(), jen.Lit("sedning "+methodName))),
+				jen.Return(firstErrorReturn, jen.Qual("github.com/pkg/errors", "Wrap").Call(jen.Err(), jen.Lit("sedning "+methodName))),
 			),
 			jen.Line(),
 			jen.List(jen.Id("resp"), jen.Id("ok")).Op(":=").Id("data").Assert(jen.Id(assertedType)),
@@ -262,7 +275,7 @@ func GenerateMethods(file *jen.File, data *FileStructure) error {
 			jen.Return(jen.Id("resp"), jen.Nil()),
 		)
 
-		f = jen.Func().Params(jen.Id("с").Id("*Client")).Id(methodName).Params(funcParameters...).Block(
+		f = jen.Func().Params(jen.Id("c").Id("*Client")).Id(methodName).Params(funcParameters...).Params(jen.Id(assertedType), jen.Error()).Block(
 			calls...,
 		)
 

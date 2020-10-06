@@ -135,7 +135,7 @@ func GenerateInterfaces(file *jen.File, data *FileStructure) error {
 			file.Line()
 
 			// Implements<InterfaceName>()
-			file.Add(jen.Func().Params(jen.Id("*" + structName)).Id("Implements" + normalizeID(i, true)).Params().Uint32().Block())
+			file.Add(jen.Func().Params(jen.Id("*" + structName)).Id("Implements" + normalizeID(i, true)).Params().Block())
 			file.Line()
 
 			// Ecncode() []byte
@@ -190,7 +190,7 @@ func GenerateInterfaces(file *jen.File, data *FileStructure) error {
 			}
 
 			calls = append(calls,
-				jen.Id("buf").Op(":=").Qual("github.com/xelaj/mtproto", "NewEncoder").Call(),
+				jen.Id("buf").Op(":=").Qual("github.com/xelaj/mtproto/serialize", "NewEncoder").Call(),
 				jen.Id("buf.PutUint").Call(jen.Id("e.CRC").Call()),
 			)
 

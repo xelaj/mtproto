@@ -58,6 +58,3 @@ func (m *MTProto) SetAuthKey(key []byte) {
 func (m *MTProto) MakeRequest(msg serialize.TL) (serialize.TL, error) {
 	return m.makeRequest(msg)
 }
-
-
-

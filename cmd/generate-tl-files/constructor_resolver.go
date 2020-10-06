@@ -44,6 +44,7 @@ func GenerateConstructorRouter(file *jen.File, data *FileStructure) error {
 		Params(
 			jen.Id("object").Qual("github.com/xelaj/mtproto/serialize", "TL"),
 			jen.Id("isEnum").Bool(),
+			jen.Id("err").Error(),
 		).
 		Block(
 			jen.Switch(jen.Id("constructorID")).Block(cases...),

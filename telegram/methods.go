@@ -7,7 +7,7 @@ import (
 	errors "github.com/pkg/errors"
 	zero "github.com/vikyd/zero"
 	dry "github.com/xelaj/go-dry"
-	mtproto "github.com/xelaj/mtproto"
+	serialize "github.com/xelaj/mtproto/serialize"
 	"reflect"
 )
 
@@ -22,11 +22,11 @@ func (e *AuthSendCodeParams) CRC() uint32 {
 	return uint32(0xa677244f)
 }
 
-func (e *AuthSendCode) Encode() []byte {
+func (e *AuthSendCodeParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.PhoneNumber)
 	buf.PutInt(e.ApiId)
@@ -35,7 +35,7 @@ func (e *AuthSendCode) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) AuthSendCode(params *AuthSendCodeParams) {
+func (c *Client) AuthSendCode(params *AuthSendCodeParams) (*AuthSentCode, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AuthSendCode")
@@ -60,11 +60,11 @@ func (e *AuthSignUpParams) CRC() uint32 {
 	return uint32(0x80eee427)
 }
 
-func (e *AuthSignUp) Encode() []byte {
+func (e *AuthSignUpParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.PhoneNumber)
 	buf.PutString(e.PhoneCodeHash)
@@ -73,7 +73,7 @@ func (e *AuthSignUp) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) AuthSignUp(params *AuthSignUpParams) {
+func (c *Client) AuthSignUp(params *AuthSignUpParams) (AuthAuthorization, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AuthSignUp")
@@ -97,11 +97,11 @@ func (e *AuthSignInParams) CRC() uint32 {
 	return uint32(0xbcd51581)
 }
 
-func (e *AuthSignIn) Encode() []byte {
+func (e *AuthSignInParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.PhoneNumber)
 	buf.PutString(e.PhoneCodeHash)
@@ -109,7 +109,7 @@ func (e *AuthSignIn) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) AuthSignIn(params *AuthSignInParams) {
+func (c *Client) AuthSignIn(params *AuthSignInParams) (AuthAuthorization, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AuthSignIn")
@@ -129,19 +129,19 @@ func (e *AuthLogOutParams) CRC() uint32 {
 	return uint32(0x5717da40)
 }
 
-func (e *AuthLogOut) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *AuthLogOutParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) AuthLogOut() {
+func (c *Client) AuthLogOut() (*serialize.Bool, error) {
 	data, err := c.MakeRequest(&AuthLogOutParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AuthLogOut")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -155,19 +155,19 @@ func (e *AuthResetAuthorizationsParams) CRC() uint32 {
 	return uint32(0x9fab0d1a)
 }
 
-func (e *AuthResetAuthorizations) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *AuthResetAuthorizationsParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) AuthResetAuthorizations() {
+func (c *Client) AuthResetAuthorizations() (*serialize.Bool, error) {
 	data, err := c.MakeRequest(&AuthResetAuthorizationsParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AuthResetAuthorizations")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -183,17 +183,17 @@ func (e *AuthExportAuthorizationParams) CRC() uint32 {
 	return uint32(0xe5bfffcd)
 }
 
-func (e *AuthExportAuthorization) Encode() []byte {
+func (e *AuthExportAuthorizationParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.DcId)
 	return buf.Result()
 }
 
-func (с *Client) AuthExportAuthorization(params *AuthExportAuthorizationParams) {
+func (c *Client) AuthExportAuthorization(params *AuthExportAuthorizationParams) (*AuthExportedAuthorization, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AuthExportAuthorization")
@@ -216,18 +216,18 @@ func (e *AuthImportAuthorizationParams) CRC() uint32 {
 	return uint32(0xe3ef9613)
 }
 
-func (e *AuthImportAuthorization) Encode() []byte {
+func (e *AuthImportAuthorizationParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.Id)
 	buf.PutMessage(e.Bytes)
 	return buf.Result()
 }
 
-func (с *Client) AuthImportAuthorization(params *AuthImportAuthorizationParams) {
+func (c *Client) AuthImportAuthorization(params *AuthImportAuthorizationParams) (AuthAuthorization, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AuthImportAuthorization")
@@ -252,11 +252,11 @@ func (e *AuthBindTempAuthKeyParams) CRC() uint32 {
 	return uint32(0xcdd42a05)
 }
 
-func (e *AuthBindTempAuthKey) Encode() []byte {
+func (e *AuthBindTempAuthKeyParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutLong(e.PermAuthKeyId)
 	buf.PutLong(e.Nonce)
@@ -265,13 +265,13 @@ func (e *AuthBindTempAuthKey) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) AuthBindTempAuthKey(params *AuthBindTempAuthKeyParams) {
+func (c *Client) AuthBindTempAuthKey(params *AuthBindTempAuthKeyParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AuthBindTempAuthKey")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -290,11 +290,11 @@ func (e *AuthImportBotAuthorizationParams) CRC() uint32 {
 	return uint32(0x67a3ff2c)
 }
 
-func (e *AuthImportBotAuthorization) Encode() []byte {
+func (e *AuthImportBotAuthorizationParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.Flags)
 	buf.PutInt(e.ApiId)
@@ -303,7 +303,7 @@ func (e *AuthImportBotAuthorization) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) AuthImportBotAuthorization(params *AuthImportBotAuthorizationParams) {
+func (c *Client) AuthImportBotAuthorization(params *AuthImportBotAuthorizationParams) (AuthAuthorization, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AuthImportBotAuthorization")
@@ -325,17 +325,17 @@ func (e *AuthCheckPasswordParams) CRC() uint32 {
 	return uint32(0xd18b4d16)
 }
 
-func (e *AuthCheckPassword) Encode() []byte {
+func (e *AuthCheckPasswordParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Password.Encode())
 	return buf.Result()
 }
 
-func (с *Client) AuthCheckPassword(params *AuthCheckPasswordParams) {
+func (c *Client) AuthCheckPassword(params *AuthCheckPasswordParams) (AuthAuthorization, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AuthCheckPassword")
@@ -355,13 +355,13 @@ func (e *AuthRequestPasswordRecoveryParams) CRC() uint32 {
 	return uint32(0xd897bc66)
 }
 
-func (e *AuthRequestPasswordRecovery) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *AuthRequestPasswordRecoveryParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) AuthRequestPasswordRecovery() {
+func (c *Client) AuthRequestPasswordRecovery() (*AuthPasswordRecovery, error) {
 	data, err := c.MakeRequest(&AuthRequestPasswordRecoveryParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AuthRequestPasswordRecovery")
@@ -383,17 +383,17 @@ func (e *AuthRecoverPasswordParams) CRC() uint32 {
 	return uint32(0x4ea56e92)
 }
 
-func (e *AuthRecoverPassword) Encode() []byte {
+func (e *AuthRecoverPasswordParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.Code)
 	return buf.Result()
 }
 
-func (с *Client) AuthRecoverPassword(params *AuthRecoverPasswordParams) {
+func (c *Client) AuthRecoverPassword(params *AuthRecoverPasswordParams) (AuthAuthorization, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AuthRecoverPassword")
@@ -416,18 +416,18 @@ func (e *AuthResendCodeParams) CRC() uint32 {
 	return uint32(0x3ef1a9bf)
 }
 
-func (e *AuthResendCode) Encode() []byte {
+func (e *AuthResendCodeParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.PhoneNumber)
 	buf.PutString(e.PhoneCodeHash)
 	return buf.Result()
 }
 
-func (с *Client) AuthResendCode(params *AuthResendCodeParams) {
+func (c *Client) AuthResendCode(params *AuthResendCodeParams) (*AuthSentCode, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AuthResendCode")
@@ -450,24 +450,24 @@ func (e *AuthCancelCodeParams) CRC() uint32 {
 	return uint32(0x1f040578)
 }
 
-func (e *AuthCancelCode) Encode() []byte {
+func (e *AuthCancelCodeParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.PhoneNumber)
 	buf.PutString(e.PhoneCodeHash)
 	return buf.Result()
 }
 
-func (с *Client) AuthCancelCode(params *AuthCancelCodeParams) {
+func (c *Client) AuthCancelCode(params *AuthCancelCodeParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AuthCancelCode")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -483,23 +483,23 @@ func (e *AuthDropTempAuthKeysParams) CRC() uint32 {
 	return uint32(0x8e48a188)
 }
 
-func (e *AuthDropTempAuthKeys) Encode() []byte {
+func (e *AuthDropTempAuthKeysParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutVector(e.ExceptAuthKeys)
 	return buf.Result()
 }
 
-func (с *Client) AuthDropTempAuthKeys(params *AuthDropTempAuthKeysParams) {
+func (c *Client) AuthDropTempAuthKeys(params *AuthDropTempAuthKeysParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AuthDropTempAuthKeys")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -517,11 +517,11 @@ func (e *AuthExportLoginTokenParams) CRC() uint32 {
 	return uint32(0xb1b41517)
 }
 
-func (e *AuthExportLoginToken) Encode() []byte {
+func (e *AuthExportLoginTokenParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.ApiId)
 	buf.PutString(e.ApiHash)
@@ -529,7 +529,7 @@ func (e *AuthExportLoginToken) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) AuthExportLoginToken(params *AuthExportLoginTokenParams) {
+func (c *Client) AuthExportLoginToken(params *AuthExportLoginTokenParams) (AuthLoginToken, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AuthExportLoginToken")
@@ -551,17 +551,17 @@ func (e *AuthImportLoginTokenParams) CRC() uint32 {
 	return uint32(0x95ac5ce4)
 }
 
-func (e *AuthImportLoginToken) Encode() []byte {
+func (e *AuthImportLoginTokenParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutMessage(e.Token)
 	return buf.Result()
 }
 
-func (с *Client) AuthImportLoginToken(params *AuthImportLoginTokenParams) {
+func (c *Client) AuthImportLoginToken(params *AuthImportLoginTokenParams) (AuthLoginToken, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AuthImportLoginToken")
@@ -583,17 +583,17 @@ func (e *AuthAcceptLoginTokenParams) CRC() uint32 {
 	return uint32(0xe894ad4d)
 }
 
-func (e *AuthAcceptLoginToken) Encode() []byte {
+func (e *AuthAcceptLoginTokenParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutMessage(e.Token)
 	return buf.Result()
 }
 
-func (с *Client) AuthAcceptLoginToken(params *AuthAcceptLoginTokenParams) {
+func (c *Client) AuthAcceptLoginToken(params *AuthAcceptLoginTokenParams) (*Authorization, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AuthAcceptLoginToken")
@@ -621,7 +621,7 @@ func (e *AccountRegisterDeviceParams) CRC() uint32 {
 	return uint32(0x68976c6f)
 }
 
-func (e *AccountRegisterDevice) Encode() []byte {
+func (e *AccountRegisterDeviceParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -629,7 +629,7 @@ func (e *AccountRegisterDevice) Encode() []byte {
 	if !zero.IsZeroVal(e.NoMuted) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutInt(e.TokenType)
@@ -640,13 +640,13 @@ func (e *AccountRegisterDevice) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) AccountRegisterDevice(params *AccountRegisterDeviceParams) {
+func (c *Client) AccountRegisterDevice(params *AccountRegisterDeviceParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountRegisterDevice")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -664,11 +664,11 @@ func (e *AccountUnregisterDeviceParams) CRC() uint32 {
 	return uint32(0x3076c4bf)
 }
 
-func (e *AccountUnregisterDevice) Encode() []byte {
+func (e *AccountUnregisterDeviceParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.TokenType)
 	buf.PutString(e.Token)
@@ -676,13 +676,13 @@ func (e *AccountUnregisterDevice) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) AccountUnregisterDevice(params *AccountUnregisterDeviceParams) {
+func (c *Client) AccountUnregisterDevice(params *AccountUnregisterDeviceParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountUnregisterDevice")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -699,24 +699,24 @@ func (e *AccountUpdateNotifySettingsParams) CRC() uint32 {
 	return uint32(0x84be5b93)
 }
 
-func (e *AccountUpdateNotifySettings) Encode() []byte {
+func (e *AccountUpdateNotifySettingsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutRawBytes(e.Settings.Encode())
 	return buf.Result()
 }
 
-func (с *Client) AccountUpdateNotifySettings(params *AccountUpdateNotifySettingsParams) {
+func (c *Client) AccountUpdateNotifySettings(params *AccountUpdateNotifySettingsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountUpdateNotifySettings")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -732,17 +732,17 @@ func (e *AccountGetNotifySettingsParams) CRC() uint32 {
 	return uint32(0x12b3ad31)
 }
 
-func (e *AccountGetNotifySettings) Encode() []byte {
+func (e *AccountGetNotifySettingsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	return buf.Result()
 }
 
-func (с *Client) AccountGetNotifySettings(params *AccountGetNotifySettingsParams) {
+func (c *Client) AccountGetNotifySettings(params *AccountGetNotifySettingsParams) (*PeerNotifySettings, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountGetNotifySettings")
@@ -762,19 +762,19 @@ func (e *AccountResetNotifySettingsParams) CRC() uint32 {
 	return uint32(0xdb7e1747)
 }
 
-func (e *AccountResetNotifySettings) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *AccountResetNotifySettingsParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) AccountResetNotifySettings() {
+func (c *Client) AccountResetNotifySettings() (*serialize.Bool, error) {
 	data, err := c.MakeRequest(&AccountResetNotifySettingsParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountResetNotifySettings")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -793,7 +793,7 @@ func (e *AccountUpdateProfileParams) CRC() uint32 {
 	return uint32(0x78515775)
 }
 
-func (e *AccountUpdateProfile) Encode() []byte {
+func (e *AccountUpdateProfileParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -807,7 +807,7 @@ func (e *AccountUpdateProfile) Encode() []byte {
 	if !zero.IsZeroVal(e.About) {
 		flag |= 1 << 2
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	if !zero.IsZeroVal(e.FirstName) {
@@ -822,7 +822,7 @@ func (e *AccountUpdateProfile) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) AccountUpdateProfile(params *AccountUpdateProfileParams) {
+func (c *Client) AccountUpdateProfile(params *AccountUpdateProfileParams) (User, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountUpdateProfile")
@@ -844,23 +844,23 @@ func (e *AccountUpdateStatusParams) CRC() uint32 {
 	return uint32(0x6628562c)
 }
 
-func (e *AccountUpdateStatus) Encode() []byte {
+func (e *AccountUpdateStatusParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutBool(e.Offline)
 	return buf.Result()
 }
 
-func (с *Client) AccountUpdateStatus(params *AccountUpdateStatusParams) {
+func (c *Client) AccountUpdateStatus(params *AccountUpdateStatusParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountUpdateStatus")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -876,17 +876,17 @@ func (e *AccountGetWallPapersParams) CRC() uint32 {
 	return uint32(0xaabb1763)
 }
 
-func (e *AccountGetWallPapers) Encode() []byte {
+func (e *AccountGetWallPapersParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.Hash)
 	return buf.Result()
 }
 
-func (с *Client) AccountGetWallPapers(params *AccountGetWallPapersParams) {
+func (c *Client) AccountGetWallPapers(params *AccountGetWallPapersParams) (AccountWallPapers, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountGetWallPapers")
@@ -909,24 +909,24 @@ func (e *AccountReportPeerParams) CRC() uint32 {
 	return uint32(0xae189d5f)
 }
 
-func (e *AccountReportPeer) Encode() []byte {
+func (e *AccountReportPeerParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutRawBytes(e.Reason.Encode())
 	return buf.Result()
 }
 
-func (с *Client) AccountReportPeer(params *AccountReportPeerParams) {
+func (c *Client) AccountReportPeer(params *AccountReportPeerParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountReportPeer")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -942,23 +942,23 @@ func (e *AccountCheckUsernameParams) CRC() uint32 {
 	return uint32(0x2714d86c)
 }
 
-func (e *AccountCheckUsername) Encode() []byte {
+func (e *AccountCheckUsernameParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.Username)
 	return buf.Result()
 }
 
-func (с *Client) AccountCheckUsername(params *AccountCheckUsernameParams) {
+func (c *Client) AccountCheckUsername(params *AccountCheckUsernameParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountCheckUsername")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -974,17 +974,17 @@ func (e *AccountUpdateUsernameParams) CRC() uint32 {
 	return uint32(0x3e0bdd7c)
 }
 
-func (e *AccountUpdateUsername) Encode() []byte {
+func (e *AccountUpdateUsernameParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.Username)
 	return buf.Result()
 }
 
-func (с *Client) AccountUpdateUsername(params *AccountUpdateUsernameParams) {
+func (c *Client) AccountUpdateUsername(params *AccountUpdateUsernameParams) (User, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountUpdateUsername")
@@ -1006,17 +1006,17 @@ func (e *AccountGetPrivacyParams) CRC() uint32 {
 	return uint32(0xdadbc950)
 }
 
-func (e *AccountGetPrivacy) Encode() []byte {
+func (e *AccountGetPrivacyParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Key.Encode())
 	return buf.Result()
 }
 
-func (с *Client) AccountGetPrivacy(params *AccountGetPrivacyParams) {
+func (c *Client) AccountGetPrivacy(params *AccountGetPrivacyParams) (*AccountPrivacyRules, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountGetPrivacy")
@@ -1039,18 +1039,18 @@ func (e *AccountSetPrivacyParams) CRC() uint32 {
 	return uint32(0xc9f81ce8)
 }
 
-func (e *AccountSetPrivacy) Encode() []byte {
+func (e *AccountSetPrivacyParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Key.Encode())
 	buf.PutVector(e.Rules)
 	return buf.Result()
 }
 
-func (с *Client) AccountSetPrivacy(params *AccountSetPrivacyParams) {
+func (c *Client) AccountSetPrivacy(params *AccountSetPrivacyParams) (*AccountPrivacyRules, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountSetPrivacy")
@@ -1072,23 +1072,23 @@ func (e *AccountDeleteAccountParams) CRC() uint32 {
 	return uint32(0x418d4e0b)
 }
 
-func (e *AccountDeleteAccount) Encode() []byte {
+func (e *AccountDeleteAccountParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.Reason)
 	return buf.Result()
 }
 
-func (с *Client) AccountDeleteAccount(params *AccountDeleteAccountParams) {
+func (c *Client) AccountDeleteAccount(params *AccountDeleteAccountParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountDeleteAccount")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -1102,13 +1102,13 @@ func (e *AccountGetAccountTTLParams) CRC() uint32 {
 	return uint32(0x8fc711d)
 }
 
-func (e *AccountGetAccountTTL) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *AccountGetAccountTTLParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) AccountGetAccountTTL() {
+func (c *Client) AccountGetAccountTTL() (*AccountDaysTTL, error) {
 	data, err := c.MakeRequest(&AccountGetAccountTTLParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountGetAccountTTL")
@@ -1130,23 +1130,23 @@ func (e *AccountSetAccountTTLParams) CRC() uint32 {
 	return uint32(0x2442485e)
 }
 
-func (e *AccountSetAccountTTL) Encode() []byte {
+func (e *AccountSetAccountTTLParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Ttl.Encode())
 	return buf.Result()
 }
 
-func (с *Client) AccountSetAccountTTL(params *AccountSetAccountTTLParams) {
+func (c *Client) AccountSetAccountTTL(params *AccountSetAccountTTLParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountSetAccountTTL")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -1163,18 +1163,18 @@ func (e *AccountSendChangePhoneCodeParams) CRC() uint32 {
 	return uint32(0x82574ae5)
 }
 
-func (e *AccountSendChangePhoneCode) Encode() []byte {
+func (e *AccountSendChangePhoneCodeParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.PhoneNumber)
 	buf.PutRawBytes(e.Settings.Encode())
 	return buf.Result()
 }
 
-func (с *Client) AccountSendChangePhoneCode(params *AccountSendChangePhoneCodeParams) {
+func (c *Client) AccountSendChangePhoneCode(params *AccountSendChangePhoneCodeParams) (*AuthSentCode, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountSendChangePhoneCode")
@@ -1198,11 +1198,11 @@ func (e *AccountChangePhoneParams) CRC() uint32 {
 	return uint32(0x70c32edb)
 }
 
-func (e *AccountChangePhone) Encode() []byte {
+func (e *AccountChangePhoneParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.PhoneNumber)
 	buf.PutString(e.PhoneCodeHash)
@@ -1210,7 +1210,7 @@ func (e *AccountChangePhone) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) AccountChangePhone(params *AccountChangePhoneParams) {
+func (c *Client) AccountChangePhone(params *AccountChangePhoneParams) (User, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountChangePhone")
@@ -1232,23 +1232,23 @@ func (e *AccountUpdateDeviceLockedParams) CRC() uint32 {
 	return uint32(0x38df3532)
 }
 
-func (e *AccountUpdateDeviceLocked) Encode() []byte {
+func (e *AccountUpdateDeviceLockedParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.Period)
 	return buf.Result()
 }
 
-func (с *Client) AccountUpdateDeviceLocked(params *AccountUpdateDeviceLockedParams) {
+func (c *Client) AccountUpdateDeviceLocked(params *AccountUpdateDeviceLockedParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountUpdateDeviceLocked")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -1262,13 +1262,13 @@ func (e *AccountGetAuthorizationsParams) CRC() uint32 {
 	return uint32(0xe320c158)
 }
 
-func (e *AccountGetAuthorizations) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *AccountGetAuthorizationsParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) AccountGetAuthorizations() {
+func (c *Client) AccountGetAuthorizations() (*AccountAuthorizations, error) {
 	data, err := c.MakeRequest(&AccountGetAuthorizationsParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountGetAuthorizations")
@@ -1290,23 +1290,23 @@ func (e *AccountResetAuthorizationParams) CRC() uint32 {
 	return uint32(0xdf77f3bc)
 }
 
-func (e *AccountResetAuthorization) Encode() []byte {
+func (e *AccountResetAuthorizationParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutLong(e.Hash)
 	return buf.Result()
 }
 
-func (с *Client) AccountResetAuthorization(params *AccountResetAuthorizationParams) {
+func (c *Client) AccountResetAuthorization(params *AccountResetAuthorizationParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountResetAuthorization")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -1320,13 +1320,13 @@ func (e *AccountGetPasswordParams) CRC() uint32 {
 	return uint32(0x548a30f5)
 }
 
-func (e *AccountGetPassword) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *AccountGetPasswordParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) AccountGetPassword() {
+func (c *Client) AccountGetPassword() (*AccountPassword, error) {
 	data, err := c.MakeRequest(&AccountGetPasswordParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountGetPassword")
@@ -1348,17 +1348,17 @@ func (e *AccountGetPasswordSettingsParams) CRC() uint32 {
 	return uint32(0x9cd4eaf9)
 }
 
-func (e *AccountGetPasswordSettings) Encode() []byte {
+func (e *AccountGetPasswordSettingsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Password.Encode())
 	return buf.Result()
 }
 
-func (с *Client) AccountGetPasswordSettings(params *AccountGetPasswordSettingsParams) {
+func (c *Client) AccountGetPasswordSettings(params *AccountGetPasswordSettingsParams) (*AccountPasswordSettings, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountGetPasswordSettings")
@@ -1381,24 +1381,24 @@ func (e *AccountUpdatePasswordSettingsParams) CRC() uint32 {
 	return uint32(0xa59b102f)
 }
 
-func (e *AccountUpdatePasswordSettings) Encode() []byte {
+func (e *AccountUpdatePasswordSettingsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Password.Encode())
 	buf.PutRawBytes(e.NewSettings.Encode())
 	return buf.Result()
 }
 
-func (с *Client) AccountUpdatePasswordSettings(params *AccountUpdatePasswordSettingsParams) {
+func (c *Client) AccountUpdatePasswordSettings(params *AccountUpdatePasswordSettingsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountUpdatePasswordSettings")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -1415,18 +1415,18 @@ func (e *AccountSendConfirmPhoneCodeParams) CRC() uint32 {
 	return uint32(0x1b3faa88)
 }
 
-func (e *AccountSendConfirmPhoneCode) Encode() []byte {
+func (e *AccountSendConfirmPhoneCodeParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.Hash)
 	buf.PutRawBytes(e.Settings.Encode())
 	return buf.Result()
 }
 
-func (с *Client) AccountSendConfirmPhoneCode(params *AccountSendConfirmPhoneCodeParams) {
+func (c *Client) AccountSendConfirmPhoneCode(params *AccountSendConfirmPhoneCodeParams) (*AuthSentCode, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountSendConfirmPhoneCode")
@@ -1449,24 +1449,24 @@ func (e *AccountConfirmPhoneParams) CRC() uint32 {
 	return uint32(0x5f2178c3)
 }
 
-func (e *AccountConfirmPhone) Encode() []byte {
+func (e *AccountConfirmPhoneParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.PhoneCodeHash)
 	buf.PutString(e.PhoneCode)
 	return buf.Result()
 }
 
-func (с *Client) AccountConfirmPhone(params *AccountConfirmPhoneParams) {
+func (c *Client) AccountConfirmPhone(params *AccountConfirmPhoneParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountConfirmPhone")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -1483,18 +1483,18 @@ func (e *AccountGetTmpPasswordParams) CRC() uint32 {
 	return uint32(0x449e0b51)
 }
 
-func (e *AccountGetTmpPassword) Encode() []byte {
+func (e *AccountGetTmpPasswordParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Password.Encode())
 	buf.PutInt(e.Period)
 	return buf.Result()
 }
 
-func (с *Client) AccountGetTmpPassword(params *AccountGetTmpPasswordParams) {
+func (c *Client) AccountGetTmpPassword(params *AccountGetTmpPasswordParams) (*AccountTmpPassword, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountGetTmpPassword")
@@ -1514,13 +1514,13 @@ func (e *AccountGetWebAuthorizationsParams) CRC() uint32 {
 	return uint32(0x182e6d6f)
 }
 
-func (e *AccountGetWebAuthorizations) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *AccountGetWebAuthorizationsParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) AccountGetWebAuthorizations() {
+func (c *Client) AccountGetWebAuthorizations() (*AccountWebAuthorizations, error) {
 	data, err := c.MakeRequest(&AccountGetWebAuthorizationsParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountGetWebAuthorizations")
@@ -1542,23 +1542,23 @@ func (e *AccountResetWebAuthorizationParams) CRC() uint32 {
 	return uint32(0x2d01b9ef)
 }
 
-func (e *AccountResetWebAuthorization) Encode() []byte {
+func (e *AccountResetWebAuthorizationParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutLong(e.Hash)
 	return buf.Result()
 }
 
-func (с *Client) AccountResetWebAuthorization(params *AccountResetWebAuthorizationParams) {
+func (c *Client) AccountResetWebAuthorization(params *AccountResetWebAuthorizationParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountResetWebAuthorization")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -1572,19 +1572,19 @@ func (e *AccountResetWebAuthorizationsParams) CRC() uint32 {
 	return uint32(0x682d2594)
 }
 
-func (e *AccountResetWebAuthorizations) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *AccountResetWebAuthorizationsParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) AccountResetWebAuthorizations() {
+func (c *Client) AccountResetWebAuthorizations() (*serialize.Bool, error) {
 	data, err := c.MakeRequest(&AccountResetWebAuthorizationsParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountResetWebAuthorizations")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -1598,13 +1598,13 @@ func (e *AccountGetAllSecureValuesParams) CRC() uint32 {
 	return uint32(0xb288bc7d)
 }
 
-func (e *AccountGetAllSecureValues) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *AccountGetAllSecureValuesParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) AccountGetAllSecureValues() {
+func (c *Client) AccountGetAllSecureValues() (*SecureValue, error) {
 	data, err := c.MakeRequest(&AccountGetAllSecureValuesParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountGetAllSecureValues")
@@ -1626,17 +1626,17 @@ func (e *AccountGetSecureValueParams) CRC() uint32 {
 	return uint32(0x73665bc2)
 }
 
-func (e *AccountGetSecureValue) Encode() []byte {
+func (e *AccountGetSecureValueParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutVector(e.Types)
 	return buf.Result()
 }
 
-func (с *Client) AccountGetSecureValue(params *AccountGetSecureValueParams) {
+func (c *Client) AccountGetSecureValue(params *AccountGetSecureValueParams) (*SecureValue, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountGetSecureValue")
@@ -1659,18 +1659,18 @@ func (e *AccountSaveSecureValueParams) CRC() uint32 {
 	return uint32(0x899fe31d)
 }
 
-func (e *AccountSaveSecureValue) Encode() []byte {
+func (e *AccountSaveSecureValueParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Value.Encode())
 	buf.PutLong(e.SecureSecretId)
 	return buf.Result()
 }
 
-func (с *Client) AccountSaveSecureValue(params *AccountSaveSecureValueParams) {
+func (c *Client) AccountSaveSecureValue(params *AccountSaveSecureValueParams) (*SecureValue, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountSaveSecureValue")
@@ -1692,23 +1692,23 @@ func (e *AccountDeleteSecureValueParams) CRC() uint32 {
 	return uint32(0xb880bc4b)
 }
 
-func (e *AccountDeleteSecureValue) Encode() []byte {
+func (e *AccountDeleteSecureValueParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutVector(e.Types)
 	return buf.Result()
 }
 
-func (с *Client) AccountDeleteSecureValue(params *AccountDeleteSecureValueParams) {
+func (c *Client) AccountDeleteSecureValue(params *AccountDeleteSecureValueParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountDeleteSecureValue")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -1726,11 +1726,11 @@ func (e *AccountGetAuthorizationFormParams) CRC() uint32 {
 	return uint32(0xb86ba8e1)
 }
 
-func (e *AccountGetAuthorizationForm) Encode() []byte {
+func (e *AccountGetAuthorizationFormParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.BotId)
 	buf.PutString(e.Scope)
@@ -1738,7 +1738,7 @@ func (e *AccountGetAuthorizationForm) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) AccountGetAuthorizationForm(params *AccountGetAuthorizationFormParams) {
+func (c *Client) AccountGetAuthorizationForm(params *AccountGetAuthorizationFormParams) (*AccountAuthorizationForm, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountGetAuthorizationForm")
@@ -1764,11 +1764,11 @@ func (e *AccountAcceptAuthorizationParams) CRC() uint32 {
 	return uint32(0xe7027c94)
 }
 
-func (e *AccountAcceptAuthorization) Encode() []byte {
+func (e *AccountAcceptAuthorizationParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.BotId)
 	buf.PutString(e.Scope)
@@ -1778,13 +1778,13 @@ func (e *AccountAcceptAuthorization) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) AccountAcceptAuthorization(params *AccountAcceptAuthorizationParams) {
+func (c *Client) AccountAcceptAuthorization(params *AccountAcceptAuthorizationParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountAcceptAuthorization")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -1801,18 +1801,18 @@ func (e *AccountSendVerifyPhoneCodeParams) CRC() uint32 {
 	return uint32(0xa5a356f9)
 }
 
-func (e *AccountSendVerifyPhoneCode) Encode() []byte {
+func (e *AccountSendVerifyPhoneCodeParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.PhoneNumber)
 	buf.PutRawBytes(e.Settings.Encode())
 	return buf.Result()
 }
 
-func (с *Client) AccountSendVerifyPhoneCode(params *AccountSendVerifyPhoneCodeParams) {
+func (c *Client) AccountSendVerifyPhoneCode(params *AccountSendVerifyPhoneCodeParams) (*AuthSentCode, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountSendVerifyPhoneCode")
@@ -1836,11 +1836,11 @@ func (e *AccountVerifyPhoneParams) CRC() uint32 {
 	return uint32(0x4dd3a7f6)
 }
 
-func (e *AccountVerifyPhone) Encode() []byte {
+func (e *AccountVerifyPhoneParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.PhoneNumber)
 	buf.PutString(e.PhoneCodeHash)
@@ -1848,13 +1848,13 @@ func (e *AccountVerifyPhone) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) AccountVerifyPhone(params *AccountVerifyPhoneParams) {
+func (c *Client) AccountVerifyPhone(params *AccountVerifyPhoneParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountVerifyPhone")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -1870,17 +1870,17 @@ func (e *AccountSendVerifyEmailCodeParams) CRC() uint32 {
 	return uint32(0x7011509f)
 }
 
-func (e *AccountSendVerifyEmailCode) Encode() []byte {
+func (e *AccountSendVerifyEmailCodeParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.Email)
 	return buf.Result()
 }
 
-func (с *Client) AccountSendVerifyEmailCode(params *AccountSendVerifyEmailCodeParams) {
+func (c *Client) AccountSendVerifyEmailCode(params *AccountSendVerifyEmailCodeParams) (*AccountSentEmailCode, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountSendVerifyEmailCode")
@@ -1903,24 +1903,24 @@ func (e *AccountVerifyEmailParams) CRC() uint32 {
 	return uint32(0xecba39db)
 }
 
-func (e *AccountVerifyEmail) Encode() []byte {
+func (e *AccountVerifyEmailParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.Email)
 	buf.PutString(e.Code)
 	return buf.Result()
 }
 
-func (с *Client) AccountVerifyEmail(params *AccountVerifyEmailParams) {
+func (c *Client) AccountVerifyEmail(params *AccountVerifyEmailParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountVerifyEmail")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -1943,7 +1943,7 @@ func (e *AccountInitTakeoutSessionParams) CRC() uint32 {
 	return uint32(0xf05b4804)
 }
 
-func (e *AccountInitTakeoutSession) Encode() []byte {
+func (e *AccountInitTakeoutSessionParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -1966,7 +1966,7 @@ func (e *AccountInitTakeoutSession) Encode() []byte {
 	if !zero.IsZeroVal(e.Files) || !zero.IsZeroVal(e.FileMaxSize) {
 		flag |= 1 << 5
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	if !zero.IsZeroVal(e.FileMaxSize) {
@@ -1975,7 +1975,7 @@ func (e *AccountInitTakeoutSession) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) AccountInitTakeoutSession(params *AccountInitTakeoutSessionParams) {
+func (c *Client) AccountInitTakeoutSession(params *AccountInitTakeoutSessionParams) (*AccountTakeout, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountInitTakeoutSession")
@@ -1998,7 +1998,7 @@ func (e *AccountFinishTakeoutSessionParams) CRC() uint32 {
 	return uint32(0x1d2652ee)
 }
 
-func (e *AccountFinishTakeoutSession) Encode() []byte {
+func (e *AccountFinishTakeoutSessionParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -2006,19 +2006,19 @@ func (e *AccountFinishTakeoutSession) Encode() []byte {
 	if !zero.IsZeroVal(e.Success) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	return buf.Result()
 }
 
-func (с *Client) AccountFinishTakeoutSession(params *AccountFinishTakeoutSessionParams) {
+func (c *Client) AccountFinishTakeoutSession(params *AccountFinishTakeoutSessionParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountFinishTakeoutSession")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -2034,23 +2034,23 @@ func (e *AccountConfirmPasswordEmailParams) CRC() uint32 {
 	return uint32(0x8fdf1920)
 }
 
-func (e *AccountConfirmPasswordEmail) Encode() []byte {
+func (e *AccountConfirmPasswordEmailParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.Code)
 	return buf.Result()
 }
 
-func (с *Client) AccountConfirmPasswordEmail(params *AccountConfirmPasswordEmailParams) {
+func (c *Client) AccountConfirmPasswordEmail(params *AccountConfirmPasswordEmailParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountConfirmPasswordEmail")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -2064,19 +2064,19 @@ func (e *AccountResendPasswordEmailParams) CRC() uint32 {
 	return uint32(0x7a7f2a15)
 }
 
-func (e *AccountResendPasswordEmail) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *AccountResendPasswordEmailParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) AccountResendPasswordEmail() {
+func (c *Client) AccountResendPasswordEmail() (*serialize.Bool, error) {
 	data, err := c.MakeRequest(&AccountResendPasswordEmailParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountResendPasswordEmail")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -2090,19 +2090,19 @@ func (e *AccountCancelPasswordEmailParams) CRC() uint32 {
 	return uint32(0xc1cbd5b6)
 }
 
-func (e *AccountCancelPasswordEmail) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *AccountCancelPasswordEmailParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) AccountCancelPasswordEmail() {
+func (c *Client) AccountCancelPasswordEmail() (*serialize.Bool, error) {
 	data, err := c.MakeRequest(&AccountCancelPasswordEmailParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountCancelPasswordEmail")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -2116,19 +2116,19 @@ func (e *AccountGetContactSignUpNotificationParams) CRC() uint32 {
 	return uint32(0x9f07c728)
 }
 
-func (e *AccountGetContactSignUpNotification) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *AccountGetContactSignUpNotificationParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) AccountGetContactSignUpNotification() {
+func (c *Client) AccountGetContactSignUpNotification() (*serialize.Bool, error) {
 	data, err := c.MakeRequest(&AccountGetContactSignUpNotificationParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountGetContactSignUpNotification")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -2144,23 +2144,23 @@ func (e *AccountSetContactSignUpNotificationParams) CRC() uint32 {
 	return uint32(0xcff43f61)
 }
 
-func (e *AccountSetContactSignUpNotification) Encode() []byte {
+func (e *AccountSetContactSignUpNotificationParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutBool(e.Silent)
 	return buf.Result()
 }
 
-func (с *Client) AccountSetContactSignUpNotification(params *AccountSetContactSignUpNotificationParams) {
+func (c *Client) AccountSetContactSignUpNotification(params *AccountSetContactSignUpNotificationParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountSetContactSignUpNotification")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -2178,7 +2178,7 @@ func (e *AccountGetNotifyExceptionsParams) CRC() uint32 {
 	return uint32(0x53577479)
 }
 
-func (e *AccountGetNotifyExceptions) Encode() []byte {
+func (e *AccountGetNotifyExceptionsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -2189,7 +2189,7 @@ func (e *AccountGetNotifyExceptions) Encode() []byte {
 	if !zero.IsZeroVal(e.CompareSound) {
 		flag |= 1 << 1
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	if !zero.IsZeroVal(e.Peer) {
@@ -2198,7 +2198,7 @@ func (e *AccountGetNotifyExceptions) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) AccountGetNotifyExceptions(params *AccountGetNotifyExceptionsParams) {
+func (c *Client) AccountGetNotifyExceptions(params *AccountGetNotifyExceptionsParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountGetNotifyExceptions")
@@ -2220,17 +2220,17 @@ func (e *AccountGetWallPaperParams) CRC() uint32 {
 	return uint32(0xfc8ddbea)
 }
 
-func (e *AccountGetWallPaper) Encode() []byte {
+func (e *AccountGetWallPaperParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Wallpaper.Encode())
 	return buf.Result()
 }
 
-func (с *Client) AccountGetWallPaper(params *AccountGetWallPaperParams) {
+func (c *Client) AccountGetWallPaper(params *AccountGetWallPaperParams) (WallPaper, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountGetWallPaper")
@@ -2254,11 +2254,11 @@ func (e *AccountUploadWallPaperParams) CRC() uint32 {
 	return uint32(0xdd853661)
 }
 
-func (e *AccountUploadWallPaper) Encode() []byte {
+func (e *AccountUploadWallPaperParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.File.Encode())
 	buf.PutString(e.MimeType)
@@ -2266,7 +2266,7 @@ func (e *AccountUploadWallPaper) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) AccountUploadWallPaper(params *AccountUploadWallPaperParams) {
+func (c *Client) AccountUploadWallPaper(params *AccountUploadWallPaperParams) (WallPaper, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountUploadWallPaper")
@@ -2290,11 +2290,11 @@ func (e *AccountSaveWallPaperParams) CRC() uint32 {
 	return uint32(0x6c5a5b37)
 }
 
-func (e *AccountSaveWallPaper) Encode() []byte {
+func (e *AccountSaveWallPaperParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Wallpaper.Encode())
 	buf.PutBool(e.Unsave)
@@ -2302,13 +2302,13 @@ func (e *AccountSaveWallPaper) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) AccountSaveWallPaper(params *AccountSaveWallPaperParams) {
+func (c *Client) AccountSaveWallPaper(params *AccountSaveWallPaperParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountSaveWallPaper")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -2325,24 +2325,24 @@ func (e *AccountInstallWallPaperParams) CRC() uint32 {
 	return uint32(0xfeed5769)
 }
 
-func (e *AccountInstallWallPaper) Encode() []byte {
+func (e *AccountInstallWallPaperParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Wallpaper.Encode())
 	buf.PutRawBytes(e.Settings.Encode())
 	return buf.Result()
 }
 
-func (с *Client) AccountInstallWallPaper(params *AccountInstallWallPaperParams) {
+func (c *Client) AccountInstallWallPaper(params *AccountInstallWallPaperParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountInstallWallPaper")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -2356,19 +2356,19 @@ func (e *AccountResetWallPapersParams) CRC() uint32 {
 	return uint32(0xbb3b9804)
 }
 
-func (e *AccountResetWallPapers) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *AccountResetWallPapersParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) AccountResetWallPapers() {
+func (c *Client) AccountResetWallPapers() (*serialize.Bool, error) {
 	data, err := c.MakeRequest(&AccountResetWallPapersParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountResetWallPapers")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -2382,13 +2382,13 @@ func (e *AccountGetAutoDownloadSettingsParams) CRC() uint32 {
 	return uint32(0x56da0b3f)
 }
 
-func (e *AccountGetAutoDownloadSettings) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *AccountGetAutoDownloadSettingsParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) AccountGetAutoDownloadSettings() {
+func (c *Client) AccountGetAutoDownloadSettings() (*AccountAutoDownloadSettings, error) {
 	data, err := c.MakeRequest(&AccountGetAutoDownloadSettingsParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountGetAutoDownloadSettings")
@@ -2413,7 +2413,7 @@ func (e *AccountSaveAutoDownloadSettingsParams) CRC() uint32 {
 	return uint32(0x76f36233)
 }
 
-func (e *AccountSaveAutoDownloadSettings) Encode() []byte {
+func (e *AccountSaveAutoDownloadSettingsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -2424,20 +2424,20 @@ func (e *AccountSaveAutoDownloadSettings) Encode() []byte {
 	if !zero.IsZeroVal(e.High) {
 		flag |= 1 << 1
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Settings.Encode())
 	return buf.Result()
 }
 
-func (с *Client) AccountSaveAutoDownloadSettings(params *AccountSaveAutoDownloadSettingsParams) {
+func (c *Client) AccountSaveAutoDownloadSettings(params *AccountSaveAutoDownloadSettingsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountSaveAutoDownloadSettings")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -2457,7 +2457,7 @@ func (e *AccountUploadThemeParams) CRC() uint32 {
 	return uint32(0x1c3db333)
 }
 
-func (e *AccountUploadTheme) Encode() []byte {
+func (e *AccountUploadThemeParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -2465,7 +2465,7 @@ func (e *AccountUploadTheme) Encode() []byte {
 	if !zero.IsZeroVal(e.Thumb) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.File.Encode())
@@ -2477,7 +2477,7 @@ func (e *AccountUploadTheme) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) AccountUploadTheme(params *AccountUploadThemeParams) {
+func (c *Client) AccountUploadTheme(params *AccountUploadThemeParams) (Document, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountUploadTheme")
@@ -2503,7 +2503,7 @@ func (e *AccountCreateThemeParams) CRC() uint32 {
 	return uint32(0x8432c21f)
 }
 
-func (e *AccountCreateTheme) Encode() []byte {
+func (e *AccountCreateThemeParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -2514,7 +2514,7 @@ func (e *AccountCreateTheme) Encode() []byte {
 	if !zero.IsZeroVal(e.Settings) {
 		flag |= 1 << 3
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutString(e.Slug)
@@ -2528,7 +2528,7 @@ func (e *AccountCreateTheme) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) AccountCreateTheme(params *AccountCreateThemeParams) {
+func (c *Client) AccountCreateTheme(params *AccountCreateThemeParams) (*Theme, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountCreateTheme")
@@ -2556,7 +2556,7 @@ func (e *AccountUpdateThemeParams) CRC() uint32 {
 	return uint32(0x5cb367d5)
 }
 
-func (e *AccountUpdateTheme) Encode() []byte {
+func (e *AccountUpdateThemeParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -2573,7 +2573,7 @@ func (e *AccountUpdateTheme) Encode() []byte {
 	if !zero.IsZeroVal(e.Settings) {
 		flag |= 1 << 3
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutString(e.Format)
@@ -2593,7 +2593,7 @@ func (e *AccountUpdateTheme) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) AccountUpdateTheme(params *AccountUpdateThemeParams) {
+func (c *Client) AccountUpdateTheme(params *AccountUpdateThemeParams) (*Theme, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountUpdateTheme")
@@ -2616,24 +2616,24 @@ func (e *AccountSaveThemeParams) CRC() uint32 {
 	return uint32(0xf257106c)
 }
 
-func (e *AccountSaveTheme) Encode() []byte {
+func (e *AccountSaveThemeParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Theme.Encode())
 	buf.PutBool(e.Unsave)
 	return buf.Result()
 }
 
-func (с *Client) AccountSaveTheme(params *AccountSaveThemeParams) {
+func (c *Client) AccountSaveTheme(params *AccountSaveThemeParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountSaveTheme")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -2652,7 +2652,7 @@ func (e *AccountInstallThemeParams) CRC() uint32 {
 	return uint32(0x7ae43737)
 }
 
-func (e *AccountInstallTheme) Encode() []byte {
+func (e *AccountInstallThemeParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -2663,7 +2663,7 @@ func (e *AccountInstallTheme) Encode() []byte {
 	if !zero.IsZeroVal(e.Format) || !zero.IsZeroVal(e.Theme) {
 		flag |= 1 << 1
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	if !zero.IsZeroVal(e.Format) {
@@ -2675,13 +2675,13 @@ func (e *AccountInstallTheme) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) AccountInstallTheme(params *AccountInstallThemeParams) {
+func (c *Client) AccountInstallTheme(params *AccountInstallThemeParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountInstallTheme")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -2699,11 +2699,11 @@ func (e *AccountGetThemeParams) CRC() uint32 {
 	return uint32(0x8d9d742b)
 }
 
-func (e *AccountGetTheme) Encode() []byte {
+func (e *AccountGetThemeParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.Format)
 	buf.PutRawBytes(e.Theme.Encode())
@@ -2711,7 +2711,7 @@ func (e *AccountGetTheme) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) AccountGetTheme(params *AccountGetThemeParams) {
+func (c *Client) AccountGetTheme(params *AccountGetThemeParams) (*Theme, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountGetTheme")
@@ -2734,18 +2734,18 @@ func (e *AccountGetThemesParams) CRC() uint32 {
 	return uint32(0x285946f8)
 }
 
-func (e *AccountGetThemes) Encode() []byte {
+func (e *AccountGetThemesParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.Format)
 	buf.PutInt(e.Hash)
 	return buf.Result()
 }
 
-func (с *Client) AccountGetThemes(params *AccountGetThemesParams) {
+func (c *Client) AccountGetThemes(params *AccountGetThemesParams) (AccountThemes, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountGetThemes")
@@ -2768,7 +2768,7 @@ func (e *AccountSetContentSettingsParams) CRC() uint32 {
 	return uint32(0xb574b16b)
 }
 
-func (e *AccountSetContentSettings) Encode() []byte {
+func (e *AccountSetContentSettingsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -2776,19 +2776,19 @@ func (e *AccountSetContentSettings) Encode() []byte {
 	if !zero.IsZeroVal(e.SensitiveEnabled) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	return buf.Result()
 }
 
-func (с *Client) AccountSetContentSettings(params *AccountSetContentSettingsParams) {
+func (c *Client) AccountSetContentSettings(params *AccountSetContentSettingsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountSetContentSettings")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -2802,13 +2802,13 @@ func (e *AccountGetContentSettingsParams) CRC() uint32 {
 	return uint32(0x8b9b4dae)
 }
 
-func (e *AccountGetContentSettings) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *AccountGetContentSettingsParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) AccountGetContentSettings() {
+func (c *Client) AccountGetContentSettings() (*AccountContentSettings, error) {
 	data, err := c.MakeRequest(&AccountGetContentSettingsParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountGetContentSettings")
@@ -2830,17 +2830,17 @@ func (e *AccountGetMultiWallPapersParams) CRC() uint32 {
 	return uint32(0x65ad71dc)
 }
 
-func (e *AccountGetMultiWallPapers) Encode() []byte {
+func (e *AccountGetMultiWallPapersParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutVector(e.Wallpapers)
 	return buf.Result()
 }
 
-func (с *Client) AccountGetMultiWallPapers(params *AccountGetMultiWallPapersParams) {
+func (c *Client) AccountGetMultiWallPapers(params *AccountGetMultiWallPapersParams) (WallPaper, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountGetMultiWallPapers")
@@ -2860,13 +2860,13 @@ func (e *AccountGetGlobalPrivacySettingsParams) CRC() uint32 {
 	return uint32(0xeb2b4cf6)
 }
 
-func (e *AccountGetGlobalPrivacySettings) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *AccountGetGlobalPrivacySettingsParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) AccountGetGlobalPrivacySettings() {
+func (c *Client) AccountGetGlobalPrivacySettings() (*GlobalPrivacySettings, error) {
 	data, err := c.MakeRequest(&AccountGetGlobalPrivacySettingsParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountGetGlobalPrivacySettings")
@@ -2888,17 +2888,17 @@ func (e *AccountSetGlobalPrivacySettingsParams) CRC() uint32 {
 	return uint32(0x1edaaac2)
 }
 
-func (e *AccountSetGlobalPrivacySettings) Encode() []byte {
+func (e *AccountSetGlobalPrivacySettingsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Settings.Encode())
 	return buf.Result()
 }
 
-func (с *Client) AccountSetGlobalPrivacySettings(params *AccountSetGlobalPrivacySettingsParams) {
+func (c *Client) AccountSetGlobalPrivacySettings(params *AccountSetGlobalPrivacySettingsParams) (*GlobalPrivacySettings, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning AccountSetGlobalPrivacySettings")
@@ -2920,17 +2920,17 @@ func (e *UsersGetUsersParams) CRC() uint32 {
 	return uint32(0xd91a548)
 }
 
-func (e *UsersGetUsers) Encode() []byte {
+func (e *UsersGetUsersParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutVector(e.Id)
 	return buf.Result()
 }
 
-func (с *Client) UsersGetUsers(params *UsersGetUsersParams) {
+func (c *Client) UsersGetUsers(params *UsersGetUsersParams) (User, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning UsersGetUsers")
@@ -2952,17 +2952,17 @@ func (e *UsersGetFullUserParams) CRC() uint32 {
 	return uint32(0xca30a5b1)
 }
 
-func (e *UsersGetFullUser) Encode() []byte {
+func (e *UsersGetFullUserParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Id.Encode())
 	return buf.Result()
 }
 
-func (с *Client) UsersGetFullUser(params *UsersGetFullUserParams) {
+func (c *Client) UsersGetFullUser(params *UsersGetFullUserParams) (*UserFull, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning UsersGetFullUser")
@@ -2985,24 +2985,24 @@ func (e *UsersSetSecureValueErrorsParams) CRC() uint32 {
 	return uint32(0x90c894b5)
 }
 
-func (e *UsersSetSecureValueErrors) Encode() []byte {
+func (e *UsersSetSecureValueErrorsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Id.Encode())
 	buf.PutVector(e.Errors)
 	return buf.Result()
 }
 
-func (с *Client) UsersSetSecureValueErrors(params *UsersSetSecureValueErrorsParams) {
+func (c *Client) UsersSetSecureValueErrors(params *UsersSetSecureValueErrorsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning UsersSetSecureValueErrors")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -3018,23 +3018,23 @@ func (e *ContactsGetContactIDsParams) CRC() uint32 {
 	return uint32(0x2caa4a42)
 }
 
-func (e *ContactsGetContactIDs) Encode() []byte {
+func (e *ContactsGetContactIDsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.Hash)
 	return buf.Result()
 }
 
-func (с *Client) ContactsGetContactIDs(params *ContactsGetContactIDsParams) {
+func (c *Client) ContactsGetContactIDs(params *ContactsGetContactIDsParams) (*serialize.Int, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ContactsGetContactIDs")
 	}
 
-	resp, ok := data.(Int)
+	resp, ok := data.(*serialize.Int)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -3048,13 +3048,13 @@ func (e *ContactsGetStatusesParams) CRC() uint32 {
 	return uint32(0xc4a353ee)
 }
 
-func (e *ContactsGetStatuses) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *ContactsGetStatusesParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) ContactsGetStatuses() {
+func (c *Client) ContactsGetStatuses() (*ContactStatus, error) {
 	data, err := c.MakeRequest(&ContactsGetStatusesParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ContactsGetStatuses")
@@ -3076,17 +3076,17 @@ func (e *ContactsGetContactsParams) CRC() uint32 {
 	return uint32(0xc023849f)
 }
 
-func (e *ContactsGetContacts) Encode() []byte {
+func (e *ContactsGetContactsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.Hash)
 	return buf.Result()
 }
 
-func (с *Client) ContactsGetContacts(params *ContactsGetContactsParams) {
+func (c *Client) ContactsGetContacts(params *ContactsGetContactsParams) (ContactsContacts, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ContactsGetContacts")
@@ -3108,17 +3108,17 @@ func (e *ContactsImportContactsParams) CRC() uint32 {
 	return uint32(0x2c800be5)
 }
 
-func (e *ContactsImportContacts) Encode() []byte {
+func (e *ContactsImportContactsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutVector(e.Contacts)
 	return buf.Result()
 }
 
-func (с *Client) ContactsImportContacts(params *ContactsImportContactsParams) {
+func (c *Client) ContactsImportContacts(params *ContactsImportContactsParams) (*ContactsImportedContacts, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ContactsImportContacts")
@@ -3140,17 +3140,17 @@ func (e *ContactsDeleteContactsParams) CRC() uint32 {
 	return uint32(0x96a0e00)
 }
 
-func (e *ContactsDeleteContacts) Encode() []byte {
+func (e *ContactsDeleteContactsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutVector(e.Id)
 	return buf.Result()
 }
 
-func (с *Client) ContactsDeleteContacts(params *ContactsDeleteContactsParams) {
+func (c *Client) ContactsDeleteContacts(params *ContactsDeleteContactsParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ContactsDeleteContacts")
@@ -3172,23 +3172,23 @@ func (e *ContactsDeleteByPhonesParams) CRC() uint32 {
 	return uint32(0x1013fd9e)
 }
 
-func (e *ContactsDeleteByPhones) Encode() []byte {
+func (e *ContactsDeleteByPhonesParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutVector(e.Phones)
 	return buf.Result()
 }
 
-func (с *Client) ContactsDeleteByPhones(params *ContactsDeleteByPhonesParams) {
+func (c *Client) ContactsDeleteByPhones(params *ContactsDeleteByPhonesParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ContactsDeleteByPhones")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -3204,23 +3204,23 @@ func (e *ContactsBlockParams) CRC() uint32 {
 	return uint32(0x332b49fc)
 }
 
-func (e *ContactsBlock) Encode() []byte {
+func (e *ContactsBlockParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Id.Encode())
 	return buf.Result()
 }
 
-func (с *Client) ContactsBlock(params *ContactsBlockParams) {
+func (c *Client) ContactsBlock(params *ContactsBlockParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ContactsBlock")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -3236,23 +3236,23 @@ func (e *ContactsUnblockParams) CRC() uint32 {
 	return uint32(0xe54100bd)
 }
 
-func (e *ContactsUnblock) Encode() []byte {
+func (e *ContactsUnblockParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Id.Encode())
 	return buf.Result()
 }
 
-func (с *Client) ContactsUnblock(params *ContactsUnblockParams) {
+func (c *Client) ContactsUnblock(params *ContactsUnblockParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ContactsUnblock")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -3269,18 +3269,18 @@ func (e *ContactsGetBlockedParams) CRC() uint32 {
 	return uint32(0xf57c350f)
 }
 
-func (e *ContactsGetBlocked) Encode() []byte {
+func (e *ContactsGetBlockedParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.Offset)
 	buf.PutInt(e.Limit)
 	return buf.Result()
 }
 
-func (с *Client) ContactsGetBlocked(params *ContactsGetBlockedParams) {
+func (c *Client) ContactsGetBlocked(params *ContactsGetBlockedParams) (ContactsBlocked, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ContactsGetBlocked")
@@ -3303,18 +3303,18 @@ func (e *ContactsSearchParams) CRC() uint32 {
 	return uint32(0x11f812d8)
 }
 
-func (e *ContactsSearch) Encode() []byte {
+func (e *ContactsSearchParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.Q)
 	buf.PutInt(e.Limit)
 	return buf.Result()
 }
 
-func (с *Client) ContactsSearch(params *ContactsSearchParams) {
+func (c *Client) ContactsSearch(params *ContactsSearchParams) (*ContactsFound, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ContactsSearch")
@@ -3336,17 +3336,17 @@ func (e *ContactsResolveUsernameParams) CRC() uint32 {
 	return uint32(0xf93ccba3)
 }
 
-func (e *ContactsResolveUsername) Encode() []byte {
+func (e *ContactsResolveUsernameParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.Username)
 	return buf.Result()
 }
 
-func (с *Client) ContactsResolveUsername(params *ContactsResolveUsernameParams) {
+func (c *Client) ContactsResolveUsername(params *ContactsResolveUsernameParams) (*ContactsResolvedPeer, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ContactsResolveUsername")
@@ -3379,7 +3379,7 @@ func (e *ContactsGetTopPeersParams) CRC() uint32 {
 	return uint32(0xd4982db5)
 }
 
-func (e *ContactsGetTopPeers) Encode() []byte {
+func (e *ContactsGetTopPeersParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -3408,7 +3408,7 @@ func (e *ContactsGetTopPeers) Encode() []byte {
 	if !zero.IsZeroVal(e.Channels) {
 		flag |= 1 << 15
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutInt(e.Offset)
@@ -3417,7 +3417,7 @@ func (e *ContactsGetTopPeers) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) ContactsGetTopPeers(params *ContactsGetTopPeersParams) {
+func (c *Client) ContactsGetTopPeers(params *ContactsGetTopPeersParams) (ContactsTopPeers, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ContactsGetTopPeers")
@@ -3440,24 +3440,24 @@ func (e *ContactsResetTopPeerRatingParams) CRC() uint32 {
 	return uint32(0x1ae373ac)
 }
 
-func (e *ContactsResetTopPeerRating) Encode() []byte {
+func (e *ContactsResetTopPeerRatingParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Category.Encode())
 	buf.PutRawBytes(e.Peer.Encode())
 	return buf.Result()
 }
 
-func (с *Client) ContactsResetTopPeerRating(params *ContactsResetTopPeerRatingParams) {
+func (c *Client) ContactsResetTopPeerRating(params *ContactsResetTopPeerRatingParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ContactsResetTopPeerRating")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -3471,19 +3471,19 @@ func (e *ContactsResetSavedParams) CRC() uint32 {
 	return uint32(0x879537f1)
 }
 
-func (e *ContactsResetSaved) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *ContactsResetSavedParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) ContactsResetSaved() {
+func (c *Client) ContactsResetSaved() (*serialize.Bool, error) {
 	data, err := c.MakeRequest(&ContactsResetSavedParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ContactsResetSaved")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -3497,13 +3497,13 @@ func (e *ContactsGetSavedParams) CRC() uint32 {
 	return uint32(0x82f1e39f)
 }
 
-func (e *ContactsGetSaved) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *ContactsGetSavedParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) ContactsGetSaved() {
+func (c *Client) ContactsGetSaved() (*SavedContact, error) {
 	data, err := c.MakeRequest(&ContactsGetSavedParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ContactsGetSaved")
@@ -3525,23 +3525,23 @@ func (e *ContactsToggleTopPeersParams) CRC() uint32 {
 	return uint32(0x8514bdda)
 }
 
-func (e *ContactsToggleTopPeers) Encode() []byte {
+func (e *ContactsToggleTopPeersParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutBool(e.Enabled)
 	return buf.Result()
 }
 
-func (с *Client) ContactsToggleTopPeers(params *ContactsToggleTopPeersParams) {
+func (c *Client) ContactsToggleTopPeers(params *ContactsToggleTopPeersParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ContactsToggleTopPeers")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -3562,7 +3562,7 @@ func (e *ContactsAddContactParams) CRC() uint32 {
 	return uint32(0xe8f463d0)
 }
 
-func (e *ContactsAddContact) Encode() []byte {
+func (e *ContactsAddContactParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -3570,7 +3570,7 @@ func (e *ContactsAddContact) Encode() []byte {
 	if !zero.IsZeroVal(e.AddPhonePrivacyException) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Id.Encode())
@@ -3580,7 +3580,7 @@ func (e *ContactsAddContact) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) ContactsAddContact(params *ContactsAddContactParams) {
+func (c *Client) ContactsAddContact(params *ContactsAddContactParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ContactsAddContact")
@@ -3602,17 +3602,17 @@ func (e *ContactsAcceptContactParams) CRC() uint32 {
 	return uint32(0xf831a20f)
 }
 
-func (e *ContactsAcceptContact) Encode() []byte {
+func (e *ContactsAcceptContactParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Id.Encode())
 	return buf.Result()
 }
 
-func (с *Client) ContactsAcceptContact(params *ContactsAcceptContactParams) {
+func (c *Client) ContactsAcceptContact(params *ContactsAcceptContactParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ContactsAcceptContact")
@@ -3637,7 +3637,7 @@ func (e *ContactsGetLocatedParams) CRC() uint32 {
 	return uint32(0xd348bc44)
 }
 
-func (e *ContactsGetLocated) Encode() []byte {
+func (e *ContactsGetLocatedParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -3648,7 +3648,7 @@ func (e *ContactsGetLocated) Encode() []byte {
 	if !zero.IsZeroVal(e.Background) {
 		flag |= 1 << 1
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.GeoPoint.Encode())
@@ -3658,7 +3658,7 @@ func (e *ContactsGetLocated) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) ContactsGetLocated(params *ContactsGetLocatedParams) {
+func (c *Client) ContactsGetLocated(params *ContactsGetLocatedParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ContactsGetLocated")
@@ -3680,17 +3680,17 @@ func (e *MessagesGetMessagesParams) CRC() uint32 {
 	return uint32(0x63c66506)
 }
 
-func (e *MessagesGetMessages) Encode() []byte {
+func (e *MessagesGetMessagesParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutVector(e.Id)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetMessages(params *MessagesGetMessagesParams) {
+func (c *Client) MessagesGetMessages(params *MessagesGetMessagesParams) (MessagesMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetMessages")
@@ -3719,7 +3719,7 @@ func (e *MessagesGetDialogsParams) CRC() uint32 {
 	return uint32(0xa0ee3b73)
 }
 
-func (e *MessagesGetDialogs) Encode() []byte {
+func (e *MessagesGetDialogsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -3730,7 +3730,7 @@ func (e *MessagesGetDialogs) Encode() []byte {
 	if !zero.IsZeroVal(e.FolderId) {
 		flag |= 1 << 1
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	if !zero.IsZeroVal(e.FolderId) {
@@ -3744,7 +3744,7 @@ func (e *MessagesGetDialogs) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetDialogs(params *MessagesGetDialogsParams) {
+func (c *Client) MessagesGetDialogs(params *MessagesGetDialogsParams) (MessagesDialogs, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetDialogs")
@@ -3773,11 +3773,11 @@ func (e *MessagesGetHistoryParams) CRC() uint32 {
 	return uint32(0xdcbb8260)
 }
 
-func (e *MessagesGetHistory) Encode() []byte {
+func (e *MessagesGetHistoryParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutInt(e.OffsetId)
@@ -3790,7 +3790,7 @@ func (e *MessagesGetHistory) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetHistory(params *MessagesGetHistoryParams) {
+func (c *Client) MessagesGetHistory(params *MessagesGetHistoryParams) (MessagesMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetHistory")
@@ -3824,7 +3824,7 @@ func (e *MessagesSearchParams) CRC() uint32 {
 	return uint32(0x8614ef68)
 }
 
-func (e *MessagesSearch) Encode() []byte {
+func (e *MessagesSearchParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -3832,7 +3832,7 @@ func (e *MessagesSearch) Encode() []byte {
 	if !zero.IsZeroVal(e.FromId) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Peer.Encode())
@@ -3852,7 +3852,7 @@ func (e *MessagesSearch) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesSearch(params *MessagesSearchParams) {
+func (c *Client) MessagesSearch(params *MessagesSearchParams) (MessagesMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSearch")
@@ -3875,18 +3875,18 @@ func (e *MessagesReadHistoryParams) CRC() uint32 {
 	return uint32(0xe306d3a)
 }
 
-func (e *MessagesReadHistory) Encode() []byte {
+func (e *MessagesReadHistoryParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutInt(e.MaxId)
 	return buf.Result()
 }
 
-func (с *Client) MessagesReadHistory(params *MessagesReadHistoryParams) {
+func (c *Client) MessagesReadHistory(params *MessagesReadHistoryParams) (*MessagesAffectedMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesReadHistory")
@@ -3912,7 +3912,7 @@ func (e *MessagesDeleteHistoryParams) CRC() uint32 {
 	return uint32(0x1c015b09)
 }
 
-func (e *MessagesDeleteHistory) Encode() []byte {
+func (e *MessagesDeleteHistoryParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -3923,7 +3923,7 @@ func (e *MessagesDeleteHistory) Encode() []byte {
 	if !zero.IsZeroVal(e.Revoke) {
 		flag |= 1 << 1
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Peer.Encode())
@@ -3931,7 +3931,7 @@ func (e *MessagesDeleteHistory) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesDeleteHistory(params *MessagesDeleteHistoryParams) {
+func (c *Client) MessagesDeleteHistory(params *MessagesDeleteHistoryParams) (*MessagesAffectedHistory, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesDeleteHistory")
@@ -3955,7 +3955,7 @@ func (e *MessagesDeleteMessagesParams) CRC() uint32 {
 	return uint32(0xe58e95d2)
 }
 
-func (e *MessagesDeleteMessages) Encode() []byte {
+func (e *MessagesDeleteMessagesParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -3963,14 +3963,14 @@ func (e *MessagesDeleteMessages) Encode() []byte {
 	if !zero.IsZeroVal(e.Revoke) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutVector(e.Id)
 	return buf.Result()
 }
 
-func (с *Client) MessagesDeleteMessages(params *MessagesDeleteMessagesParams) {
+func (c *Client) MessagesDeleteMessages(params *MessagesDeleteMessagesParams) (*MessagesAffectedMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesDeleteMessages")
@@ -3992,17 +3992,17 @@ func (e *MessagesReceivedMessagesParams) CRC() uint32 {
 	return uint32(0x5a954c0)
 }
 
-func (e *MessagesReceivedMessages) Encode() []byte {
+func (e *MessagesReceivedMessagesParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.MaxId)
 	return buf.Result()
 }
 
-func (с *Client) MessagesReceivedMessages(params *MessagesReceivedMessagesParams) {
+func (c *Client) MessagesReceivedMessages(params *MessagesReceivedMessagesParams) (*ReceivedNotifyMessage, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesReceivedMessages")
@@ -4025,24 +4025,24 @@ func (e *MessagesSetTypingParams) CRC() uint32 {
 	return uint32(0xa3825e50)
 }
 
-func (e *MessagesSetTyping) Encode() []byte {
+func (e *MessagesSetTypingParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutRawBytes(e.Action.Encode())
 	return buf.Result()
 }
 
-func (с *Client) MessagesSetTyping(params *MessagesSetTypingParams) {
+func (c *Client) MessagesSetTyping(params *MessagesSetTypingParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSetTyping")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -4069,7 +4069,7 @@ func (e *MessagesSendMessageParams) CRC() uint32 {
 	return uint32(0x520c3870)
 }
 
-func (e *MessagesSendMessage) Encode() []byte {
+func (e *MessagesSendMessageParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -4098,7 +4098,7 @@ func (e *MessagesSendMessage) Encode() []byte {
 	if !zero.IsZeroVal(e.ScheduleDate) {
 		flag |= 1 << 10
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Peer.Encode())
@@ -4119,7 +4119,7 @@ func (e *MessagesSendMessage) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesSendMessage(params *MessagesSendMessageParams) {
+func (c *Client) MessagesSendMessage(params *MessagesSendMessageParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSendMessage")
@@ -4152,7 +4152,7 @@ func (e *MessagesSendMediaParams) CRC() uint32 {
 	return uint32(0x3491eba9)
 }
 
-func (e *MessagesSendMedia) Encode() []byte {
+func (e *MessagesSendMediaParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -4178,7 +4178,7 @@ func (e *MessagesSendMedia) Encode() []byte {
 	if !zero.IsZeroVal(e.ScheduleDate) {
 		flag |= 1 << 10
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Peer.Encode())
@@ -4200,7 +4200,7 @@ func (e *MessagesSendMedia) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesSendMedia(params *MessagesSendMediaParams) {
+func (c *Client) MessagesSendMedia(params *MessagesSendMediaParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSendMedia")
@@ -4231,7 +4231,7 @@ func (e *MessagesForwardMessagesParams) CRC() uint32 {
 	return uint32(0xd9fee60e)
 }
 
-func (e *MessagesForwardMessages) Encode() []byte {
+func (e *MessagesForwardMessagesParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -4251,7 +4251,7 @@ func (e *MessagesForwardMessages) Encode() []byte {
 	if !zero.IsZeroVal(e.ScheduleDate) {
 		flag |= 1 << 10
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.FromPeer.Encode())
@@ -4264,7 +4264,7 @@ func (e *MessagesForwardMessages) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesForwardMessages(params *MessagesForwardMessagesParams) {
+func (c *Client) MessagesForwardMessages(params *MessagesForwardMessagesParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesForwardMessages")
@@ -4286,23 +4286,23 @@ func (e *MessagesReportSpamParams) CRC() uint32 {
 	return uint32(0xcf1592db)
 }
 
-func (e *MessagesReportSpam) Encode() []byte {
+func (e *MessagesReportSpamParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	return buf.Result()
 }
 
-func (с *Client) MessagesReportSpam(params *MessagesReportSpamParams) {
+func (c *Client) MessagesReportSpam(params *MessagesReportSpamParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesReportSpam")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -4318,17 +4318,17 @@ func (e *MessagesGetPeerSettingsParams) CRC() uint32 {
 	return uint32(0x3672e09c)
 }
 
-func (e *MessagesGetPeerSettings) Encode() []byte {
+func (e *MessagesGetPeerSettingsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetPeerSettings(params *MessagesGetPeerSettingsParams) {
+func (c *Client) MessagesGetPeerSettings(params *MessagesGetPeerSettingsParams) (*PeerSettings, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetPeerSettings")
@@ -4352,11 +4352,11 @@ func (e *MessagesReportParams) CRC() uint32 {
 	return uint32(0xbd82b658)
 }
 
-func (e *MessagesReport) Encode() []byte {
+func (e *MessagesReportParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutVector(e.Id)
@@ -4364,13 +4364,13 @@ func (e *MessagesReport) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesReport(params *MessagesReportParams) {
+func (c *Client) MessagesReport(params *MessagesReportParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesReport")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -4386,17 +4386,17 @@ func (e *MessagesGetChatsParams) CRC() uint32 {
 	return uint32(0x3c6aa187)
 }
 
-func (e *MessagesGetChats) Encode() []byte {
+func (e *MessagesGetChatsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutVector(e.Id)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetChats(params *MessagesGetChatsParams) {
+func (c *Client) MessagesGetChats(params *MessagesGetChatsParams) (MessagesChats, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetChats")
@@ -4418,17 +4418,17 @@ func (e *MessagesGetFullChatParams) CRC() uint32 {
 	return uint32(0x3b831c66)
 }
 
-func (e *MessagesGetFullChat) Encode() []byte {
+func (e *MessagesGetFullChatParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.ChatId)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetFullChat(params *MessagesGetFullChatParams) {
+func (c *Client) MessagesGetFullChat(params *MessagesGetFullChatParams) (*MessagesChatFull, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetFullChat")
@@ -4451,18 +4451,18 @@ func (e *MessagesEditChatTitleParams) CRC() uint32 {
 	return uint32(0xdc452855)
 }
 
-func (e *MessagesEditChatTitle) Encode() []byte {
+func (e *MessagesEditChatTitleParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.ChatId)
 	buf.PutString(e.Title)
 	return buf.Result()
 }
 
-func (с *Client) MessagesEditChatTitle(params *MessagesEditChatTitleParams) {
+func (c *Client) MessagesEditChatTitle(params *MessagesEditChatTitleParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesEditChatTitle")
@@ -4485,18 +4485,18 @@ func (e *MessagesEditChatPhotoParams) CRC() uint32 {
 	return uint32(0xca4c79d8)
 }
 
-func (e *MessagesEditChatPhoto) Encode() []byte {
+func (e *MessagesEditChatPhotoParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.ChatId)
 	buf.PutRawBytes(e.Photo.Encode())
 	return buf.Result()
 }
 
-func (с *Client) MessagesEditChatPhoto(params *MessagesEditChatPhotoParams) {
+func (c *Client) MessagesEditChatPhoto(params *MessagesEditChatPhotoParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesEditChatPhoto")
@@ -4520,11 +4520,11 @@ func (e *MessagesAddChatUserParams) CRC() uint32 {
 	return uint32(0xf9a0aa09)
 }
 
-func (e *MessagesAddChatUser) Encode() []byte {
+func (e *MessagesAddChatUserParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.ChatId)
 	buf.PutRawBytes(e.UserId.Encode())
@@ -4532,7 +4532,7 @@ func (e *MessagesAddChatUser) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesAddChatUser(params *MessagesAddChatUserParams) {
+func (c *Client) MessagesAddChatUser(params *MessagesAddChatUserParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesAddChatUser")
@@ -4555,18 +4555,18 @@ func (e *MessagesDeleteChatUserParams) CRC() uint32 {
 	return uint32(0xe0611f16)
 }
 
-func (e *MessagesDeleteChatUser) Encode() []byte {
+func (e *MessagesDeleteChatUserParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.ChatId)
 	buf.PutRawBytes(e.UserId.Encode())
 	return buf.Result()
 }
 
-func (с *Client) MessagesDeleteChatUser(params *MessagesDeleteChatUserParams) {
+func (c *Client) MessagesDeleteChatUser(params *MessagesDeleteChatUserParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesDeleteChatUser")
@@ -4589,18 +4589,18 @@ func (e *MessagesCreateChatParams) CRC() uint32 {
 	return uint32(0x9cb126e)
 }
 
-func (e *MessagesCreateChat) Encode() []byte {
+func (e *MessagesCreateChatParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutVector(e.Users)
 	buf.PutString(e.Title)
 	return buf.Result()
 }
 
-func (с *Client) MessagesCreateChat(params *MessagesCreateChatParams) {
+func (c *Client) MessagesCreateChat(params *MessagesCreateChatParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesCreateChat")
@@ -4623,18 +4623,18 @@ func (e *MessagesGetDhConfigParams) CRC() uint32 {
 	return uint32(0x26cf8950)
 }
 
-func (e *MessagesGetDhConfig) Encode() []byte {
+func (e *MessagesGetDhConfigParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.Version)
 	buf.PutInt(e.RandomLength)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetDhConfig(params *MessagesGetDhConfigParams) {
+func (c *Client) MessagesGetDhConfig(params *MessagesGetDhConfigParams) (MessagesDhConfig, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetDhConfig")
@@ -4658,11 +4658,11 @@ func (e *MessagesRequestEncryptionParams) CRC() uint32 {
 	return uint32(0xf64daf43)
 }
 
-func (e *MessagesRequestEncryption) Encode() []byte {
+func (e *MessagesRequestEncryptionParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.UserId.Encode())
 	buf.PutInt(e.RandomId)
@@ -4670,7 +4670,7 @@ func (e *MessagesRequestEncryption) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesRequestEncryption(params *MessagesRequestEncryptionParams) {
+func (c *Client) MessagesRequestEncryption(params *MessagesRequestEncryptionParams) (EncryptedChat, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesRequestEncryption")
@@ -4694,11 +4694,11 @@ func (e *MessagesAcceptEncryptionParams) CRC() uint32 {
 	return uint32(0x3dbc0415)
 }
 
-func (e *MessagesAcceptEncryption) Encode() []byte {
+func (e *MessagesAcceptEncryptionParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutMessage(e.GB)
@@ -4706,7 +4706,7 @@ func (e *MessagesAcceptEncryption) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesAcceptEncryption(params *MessagesAcceptEncryptionParams) {
+func (c *Client) MessagesAcceptEncryption(params *MessagesAcceptEncryptionParams) (EncryptedChat, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesAcceptEncryption")
@@ -4728,23 +4728,23 @@ func (e *MessagesDiscardEncryptionParams) CRC() uint32 {
 	return uint32(0xedd923c5)
 }
 
-func (e *MessagesDiscardEncryption) Encode() []byte {
+func (e *MessagesDiscardEncryptionParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.ChatId)
 	return buf.Result()
 }
 
-func (с *Client) MessagesDiscardEncryption(params *MessagesDiscardEncryptionParams) {
+func (c *Client) MessagesDiscardEncryption(params *MessagesDiscardEncryptionParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesDiscardEncryption")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -4761,24 +4761,24 @@ func (e *MessagesSetEncryptedTypingParams) CRC() uint32 {
 	return uint32(0x791451ed)
 }
 
-func (e *MessagesSetEncryptedTyping) Encode() []byte {
+func (e *MessagesSetEncryptedTypingParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutBool(e.Typing)
 	return buf.Result()
 }
 
-func (с *Client) MessagesSetEncryptedTyping(params *MessagesSetEncryptedTypingParams) {
+func (c *Client) MessagesSetEncryptedTyping(params *MessagesSetEncryptedTypingParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSetEncryptedTyping")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -4795,24 +4795,24 @@ func (e *MessagesReadEncryptedHistoryParams) CRC() uint32 {
 	return uint32(0x7f4b690a)
 }
 
-func (e *MessagesReadEncryptedHistory) Encode() []byte {
+func (e *MessagesReadEncryptedHistoryParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutInt(e.MaxDate)
 	return buf.Result()
 }
 
-func (с *Client) MessagesReadEncryptedHistory(params *MessagesReadEncryptedHistoryParams) {
+func (c *Client) MessagesReadEncryptedHistory(params *MessagesReadEncryptedHistoryParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesReadEncryptedHistory")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -4830,11 +4830,11 @@ func (e *MessagesSendEncryptedParams) CRC() uint32 {
 	return uint32(0xa9776773)
 }
 
-func (e *MessagesSendEncrypted) Encode() []byte {
+func (e *MessagesSendEncryptedParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutLong(e.RandomId)
@@ -4842,7 +4842,7 @@ func (e *MessagesSendEncrypted) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesSendEncrypted(params *MessagesSendEncryptedParams) {
+func (c *Client) MessagesSendEncrypted(params *MessagesSendEncryptedParams) (MessagesSentEncryptedMessage, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSendEncrypted")
@@ -4867,11 +4867,11 @@ func (e *MessagesSendEncryptedFileParams) CRC() uint32 {
 	return uint32(0x9a901b66)
 }
 
-func (e *MessagesSendEncryptedFile) Encode() []byte {
+func (e *MessagesSendEncryptedFileParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutLong(e.RandomId)
@@ -4880,7 +4880,7 @@ func (e *MessagesSendEncryptedFile) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesSendEncryptedFile(params *MessagesSendEncryptedFileParams) {
+func (c *Client) MessagesSendEncryptedFile(params *MessagesSendEncryptedFileParams) (MessagesSentEncryptedMessage, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSendEncryptedFile")
@@ -4904,11 +4904,11 @@ func (e *MessagesSendEncryptedServiceParams) CRC() uint32 {
 	return uint32(0x32d439a4)
 }
 
-func (e *MessagesSendEncryptedService) Encode() []byte {
+func (e *MessagesSendEncryptedServiceParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutLong(e.RandomId)
@@ -4916,7 +4916,7 @@ func (e *MessagesSendEncryptedService) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesSendEncryptedService(params *MessagesSendEncryptedServiceParams) {
+func (c *Client) MessagesSendEncryptedService(params *MessagesSendEncryptedServiceParams) (MessagesSentEncryptedMessage, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSendEncryptedService")
@@ -4938,23 +4938,23 @@ func (e *MessagesReceivedQueueParams) CRC() uint32 {
 	return uint32(0x55a5bb66)
 }
 
-func (e *MessagesReceivedQueue) Encode() []byte {
+func (e *MessagesReceivedQueueParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.MaxQts)
 	return buf.Result()
 }
 
-func (с *Client) MessagesReceivedQueue(params *MessagesReceivedQueueParams) {
+func (c *Client) MessagesReceivedQueue(params *MessagesReceivedQueueParams) (*serialize.Long, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesReceivedQueue")
 	}
 
-	resp, ok := data.(Long)
+	resp, ok := data.(*serialize.Long)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -4970,23 +4970,23 @@ func (e *MessagesReportEncryptedSpamParams) CRC() uint32 {
 	return uint32(0x4b0c8c0f)
 }
 
-func (e *MessagesReportEncryptedSpam) Encode() []byte {
+func (e *MessagesReportEncryptedSpamParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	return buf.Result()
 }
 
-func (с *Client) MessagesReportEncryptedSpam(params *MessagesReportEncryptedSpamParams) {
+func (c *Client) MessagesReportEncryptedSpam(params *MessagesReportEncryptedSpamParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesReportEncryptedSpam")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -5002,17 +5002,17 @@ func (e *MessagesReadMessageContentsParams) CRC() uint32 {
 	return uint32(0x36a73f77)
 }
 
-func (e *MessagesReadMessageContents) Encode() []byte {
+func (e *MessagesReadMessageContentsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutVector(e.Id)
 	return buf.Result()
 }
 
-func (с *Client) MessagesReadMessageContents(params *MessagesReadMessageContentsParams) {
+func (c *Client) MessagesReadMessageContents(params *MessagesReadMessageContentsParams) (*MessagesAffectedMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesReadMessageContents")
@@ -5035,18 +5035,18 @@ func (e *MessagesGetStickersParams) CRC() uint32 {
 	return uint32(0x43d4f2c)
 }
 
-func (e *MessagesGetStickers) Encode() []byte {
+func (e *MessagesGetStickersParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.Emoticon)
 	buf.PutInt(e.Hash)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetStickers(params *MessagesGetStickersParams) {
+func (c *Client) MessagesGetStickers(params *MessagesGetStickersParams) (MessagesStickers, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetStickers")
@@ -5068,17 +5068,17 @@ func (e *MessagesGetAllStickersParams) CRC() uint32 {
 	return uint32(0x1c9618b1)
 }
 
-func (e *MessagesGetAllStickers) Encode() []byte {
+func (e *MessagesGetAllStickersParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.Hash)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetAllStickers(params *MessagesGetAllStickersParams) {
+func (c *Client) MessagesGetAllStickers(params *MessagesGetAllStickersParams) (MessagesAllStickers, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetAllStickers")
@@ -5102,7 +5102,7 @@ func (e *MessagesGetWebPagePreviewParams) CRC() uint32 {
 	return uint32(0x8b68b0cc)
 }
 
-func (e *MessagesGetWebPagePreview) Encode() []byte {
+func (e *MessagesGetWebPagePreviewParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -5110,7 +5110,7 @@ func (e *MessagesGetWebPagePreview) Encode() []byte {
 	if !zero.IsZeroVal(e.Entities) {
 		flag |= 1 << 3
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutString(e.Message)
@@ -5120,7 +5120,7 @@ func (e *MessagesGetWebPagePreview) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetWebPagePreview(params *MessagesGetWebPagePreviewParams) {
+func (c *Client) MessagesGetWebPagePreview(params *MessagesGetWebPagePreviewParams) (MessageMedia, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetWebPagePreview")
@@ -5142,17 +5142,17 @@ func (e *MessagesExportChatInviteParams) CRC() uint32 {
 	return uint32(0xdf7534c)
 }
 
-func (e *MessagesExportChatInvite) Encode() []byte {
+func (e *MessagesExportChatInviteParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	return buf.Result()
 }
 
-func (с *Client) MessagesExportChatInvite(params *MessagesExportChatInviteParams) {
+func (c *Client) MessagesExportChatInvite(params *MessagesExportChatInviteParams) (ExportedChatInvite, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesExportChatInvite")
@@ -5174,17 +5174,17 @@ func (e *MessagesCheckChatInviteParams) CRC() uint32 {
 	return uint32(0x3eadb1bb)
 }
 
-func (e *MessagesCheckChatInvite) Encode() []byte {
+func (e *MessagesCheckChatInviteParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.Hash)
 	return buf.Result()
 }
 
-func (с *Client) MessagesCheckChatInvite(params *MessagesCheckChatInviteParams) {
+func (c *Client) MessagesCheckChatInvite(params *MessagesCheckChatInviteParams) (ChatInvite, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesCheckChatInvite")
@@ -5206,17 +5206,17 @@ func (e *MessagesImportChatInviteParams) CRC() uint32 {
 	return uint32(0x6c50051c)
 }
 
-func (e *MessagesImportChatInvite) Encode() []byte {
+func (e *MessagesImportChatInviteParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.Hash)
 	return buf.Result()
 }
 
-func (с *Client) MessagesImportChatInvite(params *MessagesImportChatInviteParams) {
+func (c *Client) MessagesImportChatInvite(params *MessagesImportChatInviteParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesImportChatInvite")
@@ -5238,17 +5238,17 @@ func (e *MessagesGetStickerSetParams) CRC() uint32 {
 	return uint32(0x2619a90e)
 }
 
-func (e *MessagesGetStickerSet) Encode() []byte {
+func (e *MessagesGetStickerSetParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Stickerset.Encode())
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetStickerSet(params *MessagesGetStickerSetParams) {
+func (c *Client) MessagesGetStickerSet(params *MessagesGetStickerSetParams) (*MessagesStickerSet, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetStickerSet")
@@ -5271,18 +5271,18 @@ func (e *MessagesInstallStickerSetParams) CRC() uint32 {
 	return uint32(0xc78fe460)
 }
 
-func (e *MessagesInstallStickerSet) Encode() []byte {
+func (e *MessagesInstallStickerSetParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Stickerset.Encode())
 	buf.PutBool(e.Archived)
 	return buf.Result()
 }
 
-func (с *Client) MessagesInstallStickerSet(params *MessagesInstallStickerSetParams) {
+func (c *Client) MessagesInstallStickerSet(params *MessagesInstallStickerSetParams) (MessagesStickerSetInstallResult, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesInstallStickerSet")
@@ -5304,23 +5304,23 @@ func (e *MessagesUninstallStickerSetParams) CRC() uint32 {
 	return uint32(0xf96e55de)
 }
 
-func (e *MessagesUninstallStickerSet) Encode() []byte {
+func (e *MessagesUninstallStickerSetParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Stickerset.Encode())
 	return buf.Result()
 }
 
-func (с *Client) MessagesUninstallStickerSet(params *MessagesUninstallStickerSetParams) {
+func (c *Client) MessagesUninstallStickerSet(params *MessagesUninstallStickerSetParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesUninstallStickerSet")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -5339,11 +5339,11 @@ func (e *MessagesStartBotParams) CRC() uint32 {
 	return uint32(0xe6df7378)
 }
 
-func (e *MessagesStartBot) Encode() []byte {
+func (e *MessagesStartBotParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Bot.Encode())
 	buf.PutRawBytes(e.Peer.Encode())
@@ -5352,7 +5352,7 @@ func (e *MessagesStartBot) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesStartBot(params *MessagesStartBotParams) {
+func (c *Client) MessagesStartBot(params *MessagesStartBotParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesStartBot")
@@ -5376,11 +5376,11 @@ func (e *MessagesGetMessagesViewsParams) CRC() uint32 {
 	return uint32(0xc4c8a55d)
 }
 
-func (e *MessagesGetMessagesViews) Encode() []byte {
+func (e *MessagesGetMessagesViewsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutVector(e.Id)
@@ -5388,13 +5388,13 @@ func (e *MessagesGetMessagesViews) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetMessagesViews(params *MessagesGetMessagesViewsParams) {
+func (c *Client) MessagesGetMessagesViews(params *MessagesGetMessagesViewsParams) (*serialize.Int, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetMessagesViews")
 	}
 
-	resp, ok := data.(Int)
+	resp, ok := data.(*serialize.Int)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -5412,11 +5412,11 @@ func (e *MessagesEditChatAdminParams) CRC() uint32 {
 	return uint32(0xa9e69f2e)
 }
 
-func (e *MessagesEditChatAdmin) Encode() []byte {
+func (e *MessagesEditChatAdminParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.ChatId)
 	buf.PutRawBytes(e.UserId.Encode())
@@ -5424,13 +5424,13 @@ func (e *MessagesEditChatAdmin) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesEditChatAdmin(params *MessagesEditChatAdminParams) {
+func (c *Client) MessagesEditChatAdmin(params *MessagesEditChatAdminParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesEditChatAdmin")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -5446,17 +5446,17 @@ func (e *MessagesMigrateChatParams) CRC() uint32 {
 	return uint32(0x15a3b8e3)
 }
 
-func (e *MessagesMigrateChat) Encode() []byte {
+func (e *MessagesMigrateChatParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.ChatId)
 	return buf.Result()
 }
 
-func (с *Client) MessagesMigrateChat(params *MessagesMigrateChatParams) {
+func (c *Client) MessagesMigrateChat(params *MessagesMigrateChatParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesMigrateChat")
@@ -5484,7 +5484,7 @@ func (e *MessagesSearchGlobalParams) CRC() uint32 {
 	return uint32(0xbf7225a4)
 }
 
-func (e *MessagesSearchGlobal) Encode() []byte {
+func (e *MessagesSearchGlobalParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -5492,7 +5492,7 @@ func (e *MessagesSearchGlobal) Encode() []byte {
 	if !zero.IsZeroVal(e.FolderId) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	if !zero.IsZeroVal(e.FolderId) {
@@ -5506,7 +5506,7 @@ func (e *MessagesSearchGlobal) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesSearchGlobal(params *MessagesSearchGlobalParams) {
+func (c *Client) MessagesSearchGlobal(params *MessagesSearchGlobalParams) (MessagesMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSearchGlobal")
@@ -5530,7 +5530,7 @@ func (e *MessagesReorderStickerSetsParams) CRC() uint32 {
 	return uint32(0x78337739)
 }
 
-func (e *MessagesReorderStickerSets) Encode() []byte {
+func (e *MessagesReorderStickerSetsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -5538,20 +5538,20 @@ func (e *MessagesReorderStickerSets) Encode() []byte {
 	if !zero.IsZeroVal(e.Masks) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutVector(e.Order)
 	return buf.Result()
 }
 
-func (с *Client) MessagesReorderStickerSets(params *MessagesReorderStickerSetsParams) {
+func (c *Client) MessagesReorderStickerSets(params *MessagesReorderStickerSetsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesReorderStickerSets")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -5569,11 +5569,11 @@ func (e *MessagesGetDocumentByHashParams) CRC() uint32 {
 	return uint32(0x338e2464)
 }
 
-func (e *MessagesGetDocumentByHash) Encode() []byte {
+func (e *MessagesGetDocumentByHashParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutMessage(e.Sha256)
 	buf.PutInt(e.Size)
@@ -5581,7 +5581,7 @@ func (e *MessagesGetDocumentByHash) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetDocumentByHash(params *MessagesGetDocumentByHashParams) {
+func (c *Client) MessagesGetDocumentByHash(params *MessagesGetDocumentByHashParams) (Document, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetDocumentByHash")
@@ -5603,17 +5603,17 @@ func (e *MessagesGetSavedGifsParams) CRC() uint32 {
 	return uint32(0x83bf3d52)
 }
 
-func (e *MessagesGetSavedGifs) Encode() []byte {
+func (e *MessagesGetSavedGifsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.Hash)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetSavedGifs(params *MessagesGetSavedGifsParams) {
+func (c *Client) MessagesGetSavedGifs(params *MessagesGetSavedGifsParams) (MessagesSavedGifs, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetSavedGifs")
@@ -5636,24 +5636,24 @@ func (e *MessagesSaveGifParams) CRC() uint32 {
 	return uint32(0x327a30cb)
 }
 
-func (e *MessagesSaveGif) Encode() []byte {
+func (e *MessagesSaveGifParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Id.Encode())
 	buf.PutBool(e.Unsave)
 	return buf.Result()
 }
 
-func (с *Client) MessagesSaveGif(params *MessagesSaveGifParams) {
+func (c *Client) MessagesSaveGif(params *MessagesSaveGifParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSaveGif")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -5674,7 +5674,7 @@ func (e *MessagesGetInlineBotResultsParams) CRC() uint32 {
 	return uint32(0x514e999d)
 }
 
-func (e *MessagesGetInlineBotResults) Encode() []byte {
+func (e *MessagesGetInlineBotResultsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -5682,7 +5682,7 @@ func (e *MessagesGetInlineBotResults) Encode() []byte {
 	if !zero.IsZeroVal(e.GeoPoint) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Bot.Encode())
@@ -5695,7 +5695,7 @@ func (e *MessagesGetInlineBotResults) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetInlineBotResults(params *MessagesGetInlineBotResultsParams) {
+func (c *Client) MessagesGetInlineBotResults(params *MessagesGetInlineBotResultsParams) (*MessagesBotResults, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetInlineBotResults")
@@ -5724,7 +5724,7 @@ func (e *MessagesSetInlineBotResultsParams) CRC() uint32 {
 	return uint32(0xeb5ea206)
 }
 
-func (e *MessagesSetInlineBotResults) Encode() []byte {
+func (e *MessagesSetInlineBotResultsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -5741,7 +5741,7 @@ func (e *MessagesSetInlineBotResults) Encode() []byte {
 	if !zero.IsZeroVal(e.SwitchPm) {
 		flag |= 1 << 3
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutLong(e.QueryId)
@@ -5756,13 +5756,13 @@ func (e *MessagesSetInlineBotResults) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesSetInlineBotResults(params *MessagesSetInlineBotResultsParams) {
+func (c *Client) MessagesSetInlineBotResults(params *MessagesSetInlineBotResultsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSetInlineBotResults")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -5788,7 +5788,7 @@ func (e *MessagesSendInlineBotResultParams) CRC() uint32 {
 	return uint32(0x220815b0)
 }
 
-func (e *MessagesSendInlineBotResult) Encode() []byte {
+func (e *MessagesSendInlineBotResultParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -5811,7 +5811,7 @@ func (e *MessagesSendInlineBotResult) Encode() []byte {
 	if !zero.IsZeroVal(e.HideVia) {
 		flag |= 1 << 11
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Peer.Encode())
@@ -5827,7 +5827,7 @@ func (e *MessagesSendInlineBotResult) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesSendInlineBotResult(params *MessagesSendInlineBotResultParams) {
+func (c *Client) MessagesSendInlineBotResult(params *MessagesSendInlineBotResultParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSendInlineBotResult")
@@ -5850,18 +5850,18 @@ func (e *MessagesGetMessageEditDataParams) CRC() uint32 {
 	return uint32(0xfda68d36)
 }
 
-func (e *MessagesGetMessageEditData) Encode() []byte {
+func (e *MessagesGetMessageEditDataParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutInt(e.Id)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetMessageEditData(params *MessagesGetMessageEditDataParams) {
+func (c *Client) MessagesGetMessageEditData(params *MessagesGetMessageEditDataParams) (*MessagesMessageEditData, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetMessageEditData")
@@ -5891,7 +5891,7 @@ func (e *MessagesEditMessageParams) CRC() uint32 {
 	return uint32(0x48f71778)
 }
 
-func (e *MessagesEditMessage) Encode() []byte {
+func (e *MessagesEditMessageParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -5914,7 +5914,7 @@ func (e *MessagesEditMessage) Encode() []byte {
 	if !zero.IsZeroVal(e.ScheduleDate) {
 		flag |= 1 << 15
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Peer.Encode())
@@ -5937,7 +5937,7 @@ func (e *MessagesEditMessage) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesEditMessage(params *MessagesEditMessageParams) {
+func (c *Client) MessagesEditMessage(params *MessagesEditMessageParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesEditMessage")
@@ -5965,7 +5965,7 @@ func (e *MessagesEditInlineBotMessageParams) CRC() uint32 {
 	return uint32(0x83557dba)
 }
 
-func (e *MessagesEditInlineBotMessage) Encode() []byte {
+func (e *MessagesEditInlineBotMessageParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -5985,7 +5985,7 @@ func (e *MessagesEditInlineBotMessage) Encode() []byte {
 	if !zero.IsZeroVal(e.Media) {
 		flag |= 1 << 14
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Id.Encode())
@@ -6004,13 +6004,13 @@ func (e *MessagesEditInlineBotMessage) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesEditInlineBotMessage(params *MessagesEditInlineBotMessageParams) {
+func (c *Client) MessagesEditInlineBotMessage(params *MessagesEditInlineBotMessageParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesEditInlineBotMessage")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -6030,7 +6030,7 @@ func (e *MessagesGetBotCallbackAnswerParams) CRC() uint32 {
 	return uint32(0x810a9fec)
 }
 
-func (e *MessagesGetBotCallbackAnswer) Encode() []byte {
+func (e *MessagesGetBotCallbackAnswerParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -6041,7 +6041,7 @@ func (e *MessagesGetBotCallbackAnswer) Encode() []byte {
 	if !zero.IsZeroVal(e.Game) {
 		flag |= 1 << 1
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Peer.Encode())
@@ -6052,7 +6052,7 @@ func (e *MessagesGetBotCallbackAnswer) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetBotCallbackAnswer(params *MessagesGetBotCallbackAnswerParams) {
+func (c *Client) MessagesGetBotCallbackAnswer(params *MessagesGetBotCallbackAnswerParams) (*MessagesBotCallbackAnswer, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetBotCallbackAnswer")
@@ -6079,7 +6079,7 @@ func (e *MessagesSetBotCallbackAnswerParams) CRC() uint32 {
 	return uint32(0xd58f130a)
 }
 
-func (e *MessagesSetBotCallbackAnswer) Encode() []byte {
+func (e *MessagesSetBotCallbackAnswerParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -6093,7 +6093,7 @@ func (e *MessagesSetBotCallbackAnswer) Encode() []byte {
 	if !zero.IsZeroVal(e.Url) {
 		flag |= 1 << 2
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutLong(e.QueryId)
@@ -6107,13 +6107,13 @@ func (e *MessagesSetBotCallbackAnswer) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesSetBotCallbackAnswer(params *MessagesSetBotCallbackAnswerParams) {
+func (c *Client) MessagesSetBotCallbackAnswer(params *MessagesSetBotCallbackAnswerParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSetBotCallbackAnswer")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -6129,17 +6129,17 @@ func (e *MessagesGetPeerDialogsParams) CRC() uint32 {
 	return uint32(0xe470bcfd)
 }
 
-func (e *MessagesGetPeerDialogs) Encode() []byte {
+func (e *MessagesGetPeerDialogsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutVector(e.Peers)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetPeerDialogs(params *MessagesGetPeerDialogsParams) {
+func (c *Client) MessagesGetPeerDialogs(params *MessagesGetPeerDialogsParams) (*MessagesPeerDialogs, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetPeerDialogs")
@@ -6166,7 +6166,7 @@ func (e *MessagesSaveDraftParams) CRC() uint32 {
 	return uint32(0xbc39e14b)
 }
 
-func (e *MessagesSaveDraft) Encode() []byte {
+func (e *MessagesSaveDraftParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -6180,7 +6180,7 @@ func (e *MessagesSaveDraft) Encode() []byte {
 	if !zero.IsZeroVal(e.Entities) {
 		flag |= 1 << 3
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	if !zero.IsZeroVal(e.ReplyToMsgId) {
@@ -6194,13 +6194,13 @@ func (e *MessagesSaveDraft) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesSaveDraft(params *MessagesSaveDraftParams) {
+func (c *Client) MessagesSaveDraft(params *MessagesSaveDraftParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSaveDraft")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -6214,13 +6214,13 @@ func (e *MessagesGetAllDraftsParams) CRC() uint32 {
 	return uint32(0x6a3f8d65)
 }
 
-func (e *MessagesGetAllDrafts) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *MessagesGetAllDraftsParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetAllDrafts() {
+func (c *Client) MessagesGetAllDrafts() (Updates, error) {
 	data, err := c.MakeRequest(&MessagesGetAllDraftsParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetAllDrafts")
@@ -6242,17 +6242,17 @@ func (e *MessagesGetFeaturedStickersParams) CRC() uint32 {
 	return uint32(0x2dacca4f)
 }
 
-func (e *MessagesGetFeaturedStickers) Encode() []byte {
+func (e *MessagesGetFeaturedStickersParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.Hash)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetFeaturedStickers(params *MessagesGetFeaturedStickersParams) {
+func (c *Client) MessagesGetFeaturedStickers(params *MessagesGetFeaturedStickersParams) (MessagesFeaturedStickers, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetFeaturedStickers")
@@ -6274,23 +6274,23 @@ func (e *MessagesReadFeaturedStickersParams) CRC() uint32 {
 	return uint32(0x5b118126)
 }
 
-func (e *MessagesReadFeaturedStickers) Encode() []byte {
+func (e *MessagesReadFeaturedStickersParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutVector(e.Id)
 	return buf.Result()
 }
 
-func (с *Client) MessagesReadFeaturedStickers(params *MessagesReadFeaturedStickersParams) {
+func (c *Client) MessagesReadFeaturedStickers(params *MessagesReadFeaturedStickersParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesReadFeaturedStickers")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -6308,7 +6308,7 @@ func (e *MessagesGetRecentStickersParams) CRC() uint32 {
 	return uint32(0x5ea192c9)
 }
 
-func (e *MessagesGetRecentStickers) Encode() []byte {
+func (e *MessagesGetRecentStickersParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -6316,14 +6316,14 @@ func (e *MessagesGetRecentStickers) Encode() []byte {
 	if !zero.IsZeroVal(e.Attached) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutInt(e.Hash)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetRecentStickers(params *MessagesGetRecentStickersParams) {
+func (c *Client) MessagesGetRecentStickers(params *MessagesGetRecentStickersParams) (MessagesRecentStickers, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetRecentStickers")
@@ -6348,7 +6348,7 @@ func (e *MessagesSaveRecentStickerParams) CRC() uint32 {
 	return uint32(0x392718f8)
 }
 
-func (e *MessagesSaveRecentSticker) Encode() []byte {
+func (e *MessagesSaveRecentStickerParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -6356,7 +6356,7 @@ func (e *MessagesSaveRecentSticker) Encode() []byte {
 	if !zero.IsZeroVal(e.Attached) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Id.Encode())
@@ -6364,13 +6364,13 @@ func (e *MessagesSaveRecentSticker) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesSaveRecentSticker(params *MessagesSaveRecentStickerParams) {
+func (c *Client) MessagesSaveRecentSticker(params *MessagesSaveRecentStickerParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSaveRecentSticker")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -6387,7 +6387,7 @@ func (e *MessagesClearRecentStickersParams) CRC() uint32 {
 	return uint32(0x8999602d)
 }
 
-func (e *MessagesClearRecentStickers) Encode() []byte {
+func (e *MessagesClearRecentStickersParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -6395,19 +6395,19 @@ func (e *MessagesClearRecentStickers) Encode() []byte {
 	if !zero.IsZeroVal(e.Attached) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	return buf.Result()
 }
 
-func (с *Client) MessagesClearRecentStickers(params *MessagesClearRecentStickersParams) {
+func (c *Client) MessagesClearRecentStickers(params *MessagesClearRecentStickersParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesClearRecentStickers")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -6426,7 +6426,7 @@ func (e *MessagesGetArchivedStickersParams) CRC() uint32 {
 	return uint32(0x57f17692)
 }
 
-func (e *MessagesGetArchivedStickers) Encode() []byte {
+func (e *MessagesGetArchivedStickersParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -6434,7 +6434,7 @@ func (e *MessagesGetArchivedStickers) Encode() []byte {
 	if !zero.IsZeroVal(e.Masks) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutLong(e.OffsetId)
@@ -6442,7 +6442,7 @@ func (e *MessagesGetArchivedStickers) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetArchivedStickers(params *MessagesGetArchivedStickersParams) {
+func (c *Client) MessagesGetArchivedStickers(params *MessagesGetArchivedStickersParams) (*MessagesArchivedStickers, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetArchivedStickers")
@@ -6464,17 +6464,17 @@ func (e *MessagesGetMaskStickersParams) CRC() uint32 {
 	return uint32(0x65b8c79f)
 }
 
-func (e *MessagesGetMaskStickers) Encode() []byte {
+func (e *MessagesGetMaskStickersParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.Hash)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetMaskStickers(params *MessagesGetMaskStickersParams) {
+func (c *Client) MessagesGetMaskStickers(params *MessagesGetMaskStickersParams) (MessagesAllStickers, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetMaskStickers")
@@ -6496,17 +6496,17 @@ func (e *MessagesGetAttachedStickersParams) CRC() uint32 {
 	return uint32(0xcc5b67cc)
 }
 
-func (e *MessagesGetAttachedStickers) Encode() []byte {
+func (e *MessagesGetAttachedStickersParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Media.Encode())
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetAttachedStickers(params *MessagesGetAttachedStickersParams) {
+func (c *Client) MessagesGetAttachedStickers(params *MessagesGetAttachedStickersParams) (StickerSetCovered, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetAttachedStickers")
@@ -6534,7 +6534,7 @@ func (e *MessagesSetGameScoreParams) CRC() uint32 {
 	return uint32(0x8ef8ecc0)
 }
 
-func (e *MessagesSetGameScore) Encode() []byte {
+func (e *MessagesSetGameScoreParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -6545,7 +6545,7 @@ func (e *MessagesSetGameScore) Encode() []byte {
 	if !zero.IsZeroVal(e.Force) {
 		flag |= 1 << 1
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Peer.Encode())
@@ -6555,7 +6555,7 @@ func (e *MessagesSetGameScore) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesSetGameScore(params *MessagesSetGameScoreParams) {
+func (c *Client) MessagesSetGameScore(params *MessagesSetGameScoreParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSetGameScore")
@@ -6582,7 +6582,7 @@ func (e *MessagesSetInlineGameScoreParams) CRC() uint32 {
 	return uint32(0x15ad9f64)
 }
 
-func (e *MessagesSetInlineGameScore) Encode() []byte {
+func (e *MessagesSetInlineGameScoreParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -6593,7 +6593,7 @@ func (e *MessagesSetInlineGameScore) Encode() []byte {
 	if !zero.IsZeroVal(e.Force) {
 		flag |= 1 << 1
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Id.Encode())
@@ -6602,13 +6602,13 @@ func (e *MessagesSetInlineGameScore) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesSetInlineGameScore(params *MessagesSetInlineGameScoreParams) {
+func (c *Client) MessagesSetInlineGameScore(params *MessagesSetInlineGameScoreParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSetInlineGameScore")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -6626,11 +6626,11 @@ func (e *MessagesGetGameHighScoresParams) CRC() uint32 {
 	return uint32(0xe822649d)
 }
 
-func (e *MessagesGetGameHighScores) Encode() []byte {
+func (e *MessagesGetGameHighScoresParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutInt(e.Id)
@@ -6638,7 +6638,7 @@ func (e *MessagesGetGameHighScores) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetGameHighScores(params *MessagesGetGameHighScoresParams) {
+func (c *Client) MessagesGetGameHighScores(params *MessagesGetGameHighScoresParams) (*MessagesHighScores, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetGameHighScores")
@@ -6661,18 +6661,18 @@ func (e *MessagesGetInlineGameHighScoresParams) CRC() uint32 {
 	return uint32(0xf635e1b)
 }
 
-func (e *MessagesGetInlineGameHighScores) Encode() []byte {
+func (e *MessagesGetInlineGameHighScoresParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Id.Encode())
 	buf.PutRawBytes(e.UserId.Encode())
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetInlineGameHighScores(params *MessagesGetInlineGameHighScoresParams) {
+func (c *Client) MessagesGetInlineGameHighScores(params *MessagesGetInlineGameHighScoresParams) (*MessagesHighScores, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetInlineGameHighScores")
@@ -6696,11 +6696,11 @@ func (e *MessagesGetCommonChatsParams) CRC() uint32 {
 	return uint32(0xd0a48c4)
 }
 
-func (e *MessagesGetCommonChats) Encode() []byte {
+func (e *MessagesGetCommonChatsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.UserId.Encode())
 	buf.PutInt(e.MaxId)
@@ -6708,7 +6708,7 @@ func (e *MessagesGetCommonChats) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetCommonChats(params *MessagesGetCommonChatsParams) {
+func (c *Client) MessagesGetCommonChats(params *MessagesGetCommonChatsParams) (MessagesChats, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetCommonChats")
@@ -6730,17 +6730,17 @@ func (e *MessagesGetAllChatsParams) CRC() uint32 {
 	return uint32(0xeba80ff0)
 }
 
-func (e *MessagesGetAllChats) Encode() []byte {
+func (e *MessagesGetAllChatsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutVector(e.ExceptIds)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetAllChats(params *MessagesGetAllChatsParams) {
+func (c *Client) MessagesGetAllChats(params *MessagesGetAllChatsParams) (MessagesChats, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetAllChats")
@@ -6763,18 +6763,18 @@ func (e *MessagesGetWebPageParams) CRC() uint32 {
 	return uint32(0x32ca8f91)
 }
 
-func (e *MessagesGetWebPage) Encode() []byte {
+func (e *MessagesGetWebPageParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.Url)
 	buf.PutInt(e.Hash)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetWebPage(params *MessagesGetWebPageParams) {
+func (c *Client) MessagesGetWebPage(params *MessagesGetWebPageParams) (WebPage, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetWebPage")
@@ -6798,7 +6798,7 @@ func (e *MessagesToggleDialogPinParams) CRC() uint32 {
 	return uint32(0xa731e257)
 }
 
-func (e *MessagesToggleDialogPin) Encode() []byte {
+func (e *MessagesToggleDialogPinParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -6806,20 +6806,20 @@ func (e *MessagesToggleDialogPin) Encode() []byte {
 	if !zero.IsZeroVal(e.Pinned) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Peer.Encode())
 	return buf.Result()
 }
 
-func (с *Client) MessagesToggleDialogPin(params *MessagesToggleDialogPinParams) {
+func (c *Client) MessagesToggleDialogPin(params *MessagesToggleDialogPinParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesToggleDialogPin")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -6838,7 +6838,7 @@ func (e *MessagesReorderPinnedDialogsParams) CRC() uint32 {
 	return uint32(0x3b1adf37)
 }
 
-func (e *MessagesReorderPinnedDialogs) Encode() []byte {
+func (e *MessagesReorderPinnedDialogsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -6846,7 +6846,7 @@ func (e *MessagesReorderPinnedDialogs) Encode() []byte {
 	if !zero.IsZeroVal(e.Force) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutInt(e.FolderId)
@@ -6854,13 +6854,13 @@ func (e *MessagesReorderPinnedDialogs) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesReorderPinnedDialogs(params *MessagesReorderPinnedDialogsParams) {
+func (c *Client) MessagesReorderPinnedDialogs(params *MessagesReorderPinnedDialogsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesReorderPinnedDialogs")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -6876,17 +6876,17 @@ func (e *MessagesGetPinnedDialogsParams) CRC() uint32 {
 	return uint32(0xd6b94df2)
 }
 
-func (e *MessagesGetPinnedDialogs) Encode() []byte {
+func (e *MessagesGetPinnedDialogsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.FolderId)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetPinnedDialogs(params *MessagesGetPinnedDialogsParams) {
+func (c *Client) MessagesGetPinnedDialogs(params *MessagesGetPinnedDialogsParams) (*MessagesPeerDialogs, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetPinnedDialogs")
@@ -6911,7 +6911,7 @@ func (e *MessagesSetBotShippingResultsParams) CRC() uint32 {
 	return uint32(0xe5f672fa)
 }
 
-func (e *MessagesSetBotShippingResults) Encode() []byte {
+func (e *MessagesSetBotShippingResultsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -6922,7 +6922,7 @@ func (e *MessagesSetBotShippingResults) Encode() []byte {
 	if !zero.IsZeroVal(e.ShippingOptions) {
 		flag |= 1 << 1
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutLong(e.QueryId)
@@ -6935,13 +6935,13 @@ func (e *MessagesSetBotShippingResults) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesSetBotShippingResults(params *MessagesSetBotShippingResultsParams) {
+func (c *Client) MessagesSetBotShippingResults(params *MessagesSetBotShippingResultsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSetBotShippingResults")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -6960,7 +6960,7 @@ func (e *MessagesSetBotPrecheckoutResultsParams) CRC() uint32 {
 	return uint32(0x9c2dd95)
 }
 
-func (e *MessagesSetBotPrecheckoutResults) Encode() []byte {
+func (e *MessagesSetBotPrecheckoutResultsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -6971,7 +6971,7 @@ func (e *MessagesSetBotPrecheckoutResults) Encode() []byte {
 	if !zero.IsZeroVal(e.Success) {
 		flag |= 1 << 1
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutLong(e.QueryId)
@@ -6981,13 +6981,13 @@ func (e *MessagesSetBotPrecheckoutResults) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesSetBotPrecheckoutResults(params *MessagesSetBotPrecheckoutResultsParams) {
+func (c *Client) MessagesSetBotPrecheckoutResults(params *MessagesSetBotPrecheckoutResultsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSetBotPrecheckoutResults")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -7004,18 +7004,18 @@ func (e *MessagesUploadMediaParams) CRC() uint32 {
 	return uint32(0x519bc2b1)
 }
 
-func (e *MessagesUploadMedia) Encode() []byte {
+func (e *MessagesUploadMediaParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutRawBytes(e.Media.Encode())
 	return buf.Result()
 }
 
-func (с *Client) MessagesUploadMedia(params *MessagesUploadMediaParams) {
+func (c *Client) MessagesUploadMedia(params *MessagesUploadMediaParams) (MessageMedia, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesUploadMedia")
@@ -7039,11 +7039,11 @@ func (e *MessagesSendScreenshotNotificationParams) CRC() uint32 {
 	return uint32(0xc97df020)
 }
 
-func (e *MessagesSendScreenshotNotification) Encode() []byte {
+func (e *MessagesSendScreenshotNotificationParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutInt(e.ReplyToMsgId)
@@ -7051,7 +7051,7 @@ func (e *MessagesSendScreenshotNotification) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesSendScreenshotNotification(params *MessagesSendScreenshotNotificationParams) {
+func (c *Client) MessagesSendScreenshotNotification(params *MessagesSendScreenshotNotificationParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSendScreenshotNotification")
@@ -7073,17 +7073,17 @@ func (e *MessagesGetFavedStickersParams) CRC() uint32 {
 	return uint32(0x21ce0b0e)
 }
 
-func (e *MessagesGetFavedStickers) Encode() []byte {
+func (e *MessagesGetFavedStickersParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.Hash)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetFavedStickers(params *MessagesGetFavedStickersParams) {
+func (c *Client) MessagesGetFavedStickers(params *MessagesGetFavedStickersParams) (MessagesFavedStickers, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetFavedStickers")
@@ -7106,24 +7106,24 @@ func (e *MessagesFaveStickerParams) CRC() uint32 {
 	return uint32(0xb9ffc55b)
 }
 
-func (e *MessagesFaveSticker) Encode() []byte {
+func (e *MessagesFaveStickerParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Id.Encode())
 	buf.PutBool(e.Unfave)
 	return buf.Result()
 }
 
-func (с *Client) MessagesFaveSticker(params *MessagesFaveStickerParams) {
+func (c *Client) MessagesFaveSticker(params *MessagesFaveStickerParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesFaveSticker")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -7144,11 +7144,11 @@ func (e *MessagesGetUnreadMentionsParams) CRC() uint32 {
 	return uint32(0x46578472)
 }
 
-func (e *MessagesGetUnreadMentions) Encode() []byte {
+func (e *MessagesGetUnreadMentionsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutInt(e.OffsetId)
@@ -7159,7 +7159,7 @@ func (e *MessagesGetUnreadMentions) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetUnreadMentions(params *MessagesGetUnreadMentionsParams) {
+func (c *Client) MessagesGetUnreadMentions(params *MessagesGetUnreadMentionsParams) (MessagesMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetUnreadMentions")
@@ -7181,17 +7181,17 @@ func (e *MessagesReadMentionsParams) CRC() uint32 {
 	return uint32(0xf0189d3)
 }
 
-func (e *MessagesReadMentions) Encode() []byte {
+func (e *MessagesReadMentionsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	return buf.Result()
 }
 
-func (с *Client) MessagesReadMentions(params *MessagesReadMentionsParams) {
+func (c *Client) MessagesReadMentions(params *MessagesReadMentionsParams) (*MessagesAffectedHistory, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesReadMentions")
@@ -7215,11 +7215,11 @@ func (e *MessagesGetRecentLocationsParams) CRC() uint32 {
 	return uint32(0xbbc45b09)
 }
 
-func (e *MessagesGetRecentLocations) Encode() []byte {
+func (e *MessagesGetRecentLocationsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutInt(e.Limit)
@@ -7227,7 +7227,7 @@ func (e *MessagesGetRecentLocations) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetRecentLocations(params *MessagesGetRecentLocationsParams) {
+func (c *Client) MessagesGetRecentLocations(params *MessagesGetRecentLocationsParams) (MessagesMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetRecentLocations")
@@ -7256,7 +7256,7 @@ func (e *MessagesSendMultiMediaParams) CRC() uint32 {
 	return uint32(0xcc0110cb)
 }
 
-func (e *MessagesSendMultiMedia) Encode() []byte {
+func (e *MessagesSendMultiMediaParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -7276,7 +7276,7 @@ func (e *MessagesSendMultiMedia) Encode() []byte {
 	if !zero.IsZeroVal(e.ScheduleDate) {
 		flag |= 1 << 10
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Peer.Encode())
@@ -7290,7 +7290,7 @@ func (e *MessagesSendMultiMedia) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesSendMultiMedia(params *MessagesSendMultiMediaParams) {
+func (c *Client) MessagesSendMultiMedia(params *MessagesSendMultiMediaParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSendMultiMedia")
@@ -7313,18 +7313,18 @@ func (e *MessagesUploadEncryptedFileParams) CRC() uint32 {
 	return uint32(0x5057c497)
 }
 
-func (e *MessagesUploadEncryptedFile) Encode() []byte {
+func (e *MessagesUploadEncryptedFileParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutRawBytes(e.File.Encode())
 	return buf.Result()
 }
 
-func (с *Client) MessagesUploadEncryptedFile(params *MessagesUploadEncryptedFileParams) {
+func (c *Client) MessagesUploadEncryptedFile(params *MessagesUploadEncryptedFileParams) (EncryptedFile, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesUploadEncryptedFile")
@@ -7349,7 +7349,7 @@ func (e *MessagesSearchStickerSetsParams) CRC() uint32 {
 	return uint32(0xc2b7d08b)
 }
 
-func (e *MessagesSearchStickerSets) Encode() []byte {
+func (e *MessagesSearchStickerSetsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -7357,7 +7357,7 @@ func (e *MessagesSearchStickerSets) Encode() []byte {
 	if !zero.IsZeroVal(e.ExcludeFeatured) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutString(e.Q)
@@ -7365,7 +7365,7 @@ func (e *MessagesSearchStickerSets) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesSearchStickerSets(params *MessagesSearchStickerSetsParams) {
+func (c *Client) MessagesSearchStickerSets(params *MessagesSearchStickerSetsParams) (MessagesFoundStickerSets, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSearchStickerSets")
@@ -7385,13 +7385,13 @@ func (e *MessagesGetSplitRangesParams) CRC() uint32 {
 	return uint32(0x1cff7e08)
 }
 
-func (e *MessagesGetSplitRanges) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *MessagesGetSplitRangesParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetSplitRanges() {
+func (c *Client) MessagesGetSplitRanges() (*MessageRange, error) {
 	data, err := c.MakeRequest(&MessagesGetSplitRangesParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetSplitRanges")
@@ -7415,7 +7415,7 @@ func (e *MessagesMarkDialogUnreadParams) CRC() uint32 {
 	return uint32(0xc286d98f)
 }
 
-func (e *MessagesMarkDialogUnread) Encode() []byte {
+func (e *MessagesMarkDialogUnreadParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -7423,20 +7423,20 @@ func (e *MessagesMarkDialogUnread) Encode() []byte {
 	if !zero.IsZeroVal(e.Unread) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Peer.Encode())
 	return buf.Result()
 }
 
-func (с *Client) MessagesMarkDialogUnread(params *MessagesMarkDialogUnreadParams) {
+func (c *Client) MessagesMarkDialogUnread(params *MessagesMarkDialogUnreadParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesMarkDialogUnread")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -7450,13 +7450,13 @@ func (e *MessagesGetDialogUnreadMarksParams) CRC() uint32 {
 	return uint32(0x22e24e22)
 }
 
-func (e *MessagesGetDialogUnreadMarks) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *MessagesGetDialogUnreadMarksParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetDialogUnreadMarks() {
+func (c *Client) MessagesGetDialogUnreadMarks() (DialogPeer, error) {
 	data, err := c.MakeRequest(&MessagesGetDialogUnreadMarksParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetDialogUnreadMarks")
@@ -7476,19 +7476,19 @@ func (e *MessagesClearAllDraftsParams) CRC() uint32 {
 	return uint32(0x7e58ee9c)
 }
 
-func (e *MessagesClearAllDrafts) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *MessagesClearAllDraftsParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) MessagesClearAllDrafts() {
+func (c *Client) MessagesClearAllDrafts() (*serialize.Bool, error) {
 	data, err := c.MakeRequest(&MessagesClearAllDraftsParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesClearAllDrafts")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -7507,7 +7507,7 @@ func (e *MessagesUpdatePinnedMessageParams) CRC() uint32 {
 	return uint32(0xd2aaf7ec)
 }
 
-func (e *MessagesUpdatePinnedMessage) Encode() []byte {
+func (e *MessagesUpdatePinnedMessageParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -7515,7 +7515,7 @@ func (e *MessagesUpdatePinnedMessage) Encode() []byte {
 	if !zero.IsZeroVal(e.Silent) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Peer.Encode())
@@ -7523,7 +7523,7 @@ func (e *MessagesUpdatePinnedMessage) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesUpdatePinnedMessage(params *MessagesUpdatePinnedMessageParams) {
+func (c *Client) MessagesUpdatePinnedMessage(params *MessagesUpdatePinnedMessageParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesUpdatePinnedMessage")
@@ -7547,11 +7547,11 @@ func (e *MessagesSendVoteParams) CRC() uint32 {
 	return uint32(0x10ea6184)
 }
 
-func (e *MessagesSendVote) Encode() []byte {
+func (e *MessagesSendVoteParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutInt(e.MsgId)
@@ -7559,7 +7559,7 @@ func (e *MessagesSendVote) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesSendVote(params *MessagesSendVoteParams) {
+func (c *Client) MessagesSendVote(params *MessagesSendVoteParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSendVote")
@@ -7582,18 +7582,18 @@ func (e *MessagesGetPollResultsParams) CRC() uint32 {
 	return uint32(0x73bb643b)
 }
 
-func (e *MessagesGetPollResults) Encode() []byte {
+func (e *MessagesGetPollResultsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutInt(e.MsgId)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetPollResults(params *MessagesGetPollResultsParams) {
+func (c *Client) MessagesGetPollResults(params *MessagesGetPollResultsParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetPollResults")
@@ -7615,17 +7615,17 @@ func (e *MessagesGetOnlinesParams) CRC() uint32 {
 	return uint32(0x6e2be050)
 }
 
-func (e *MessagesGetOnlines) Encode() []byte {
+func (e *MessagesGetOnlinesParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetOnlines(params *MessagesGetOnlinesParams) {
+func (c *Client) MessagesGetOnlines(params *MessagesGetOnlinesParams) (*ChatOnlines, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetOnlines")
@@ -7650,7 +7650,7 @@ func (e *MessagesGetStatsURLParams) CRC() uint32 {
 	return uint32(0x812c2ae6)
 }
 
-func (e *MessagesGetStatsURL) Encode() []byte {
+func (e *MessagesGetStatsURLParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -7658,7 +7658,7 @@ func (e *MessagesGetStatsURL) Encode() []byte {
 	if !zero.IsZeroVal(e.Dark) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Peer.Encode())
@@ -7666,7 +7666,7 @@ func (e *MessagesGetStatsURL) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetStatsURL(params *MessagesGetStatsURLParams) {
+func (c *Client) MessagesGetStatsURL(params *MessagesGetStatsURLParams) (*StatsURL, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetStatsURL")
@@ -7689,24 +7689,24 @@ func (e *MessagesEditChatAboutParams) CRC() uint32 {
 	return uint32(0xdef60797)
 }
 
-func (e *MessagesEditChatAbout) Encode() []byte {
+func (e *MessagesEditChatAboutParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutString(e.About)
 	return buf.Result()
 }
 
-func (с *Client) MessagesEditChatAbout(params *MessagesEditChatAboutParams) {
+func (c *Client) MessagesEditChatAbout(params *MessagesEditChatAboutParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesEditChatAbout")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -7723,18 +7723,18 @@ func (e *MessagesEditChatDefaultBannedRightsParams) CRC() uint32 {
 	return uint32(0xa5866b41)
 }
 
-func (e *MessagesEditChatDefaultBannedRights) Encode() []byte {
+func (e *MessagesEditChatDefaultBannedRightsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutRawBytes(e.BannedRights.Encode())
 	return buf.Result()
 }
 
-func (с *Client) MessagesEditChatDefaultBannedRights(params *MessagesEditChatDefaultBannedRightsParams) {
+func (c *Client) MessagesEditChatDefaultBannedRights(params *MessagesEditChatDefaultBannedRightsParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesEditChatDefaultBannedRights")
@@ -7756,17 +7756,17 @@ func (e *MessagesGetEmojiKeywordsParams) CRC() uint32 {
 	return uint32(0x35a0e062)
 }
 
-func (e *MessagesGetEmojiKeywords) Encode() []byte {
+func (e *MessagesGetEmojiKeywordsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.LangCode)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetEmojiKeywords(params *MessagesGetEmojiKeywordsParams) {
+func (c *Client) MessagesGetEmojiKeywords(params *MessagesGetEmojiKeywordsParams) (*EmojiKeywordsDifference, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetEmojiKeywords")
@@ -7789,18 +7789,18 @@ func (e *MessagesGetEmojiKeywordsDifferenceParams) CRC() uint32 {
 	return uint32(0x1508b6af)
 }
 
-func (e *MessagesGetEmojiKeywordsDifference) Encode() []byte {
+func (e *MessagesGetEmojiKeywordsDifferenceParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.LangCode)
 	buf.PutInt(e.FromVersion)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetEmojiKeywordsDifference(params *MessagesGetEmojiKeywordsDifferenceParams) {
+func (c *Client) MessagesGetEmojiKeywordsDifference(params *MessagesGetEmojiKeywordsDifferenceParams) (*EmojiKeywordsDifference, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetEmojiKeywordsDifference")
@@ -7822,17 +7822,17 @@ func (e *MessagesGetEmojiKeywordsLanguagesParams) CRC() uint32 {
 	return uint32(0x4e9963b2)
 }
 
-func (e *MessagesGetEmojiKeywordsLanguages) Encode() []byte {
+func (e *MessagesGetEmojiKeywordsLanguagesParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutVector(e.LangCodes)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetEmojiKeywordsLanguages(params *MessagesGetEmojiKeywordsLanguagesParams) {
+func (c *Client) MessagesGetEmojiKeywordsLanguages(params *MessagesGetEmojiKeywordsLanguagesParams) (*EmojiLanguage, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetEmojiKeywordsLanguages")
@@ -7854,17 +7854,17 @@ func (e *MessagesGetEmojiURLParams) CRC() uint32 {
 	return uint32(0xd5b10c26)
 }
 
-func (e *MessagesGetEmojiURL) Encode() []byte {
+func (e *MessagesGetEmojiURLParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.LangCode)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetEmojiURL(params *MessagesGetEmojiURLParams) {
+func (c *Client) MessagesGetEmojiURL(params *MessagesGetEmojiURLParams) (*EmojiURL, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetEmojiURL")
@@ -7887,18 +7887,18 @@ func (e *MessagesGetSearchCountersParams) CRC() uint32 {
 	return uint32(0x732eef00)
 }
 
-func (e *MessagesGetSearchCounters) Encode() []byte {
+func (e *MessagesGetSearchCountersParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutVector(e.Filters)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetSearchCounters(params *MessagesGetSearchCountersParams) {
+func (c *Client) MessagesGetSearchCounters(params *MessagesGetSearchCountersParams) (*MessagesSearchCounter, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetSearchCounters")
@@ -7922,11 +7922,11 @@ func (e *MessagesRequestUrlAuthParams) CRC() uint32 {
 	return uint32(0xe33f5613)
 }
 
-func (e *MessagesRequestUrlAuth) Encode() []byte {
+func (e *MessagesRequestUrlAuthParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutInt(e.MsgId)
@@ -7934,7 +7934,7 @@ func (e *MessagesRequestUrlAuth) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesRequestUrlAuth(params *MessagesRequestUrlAuthParams) {
+func (c *Client) MessagesRequestUrlAuth(params *MessagesRequestUrlAuthParams) (UrlAuthResult, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesRequestUrlAuth")
@@ -7960,7 +7960,7 @@ func (e *MessagesAcceptUrlAuthParams) CRC() uint32 {
 	return uint32(0xf729ea98)
 }
 
-func (e *MessagesAcceptUrlAuth) Encode() []byte {
+func (e *MessagesAcceptUrlAuthParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -7968,7 +7968,7 @@ func (e *MessagesAcceptUrlAuth) Encode() []byte {
 	if !zero.IsZeroVal(e.WriteAllowed) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Peer.Encode())
@@ -7977,7 +7977,7 @@ func (e *MessagesAcceptUrlAuth) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesAcceptUrlAuth(params *MessagesAcceptUrlAuthParams) {
+func (c *Client) MessagesAcceptUrlAuth(params *MessagesAcceptUrlAuthParams) (UrlAuthResult, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesAcceptUrlAuth")
@@ -7999,23 +7999,23 @@ func (e *MessagesHidePeerSettingsBarParams) CRC() uint32 {
 	return uint32(0x4facb138)
 }
 
-func (e *MessagesHidePeerSettingsBar) Encode() []byte {
+func (e *MessagesHidePeerSettingsBarParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	return buf.Result()
 }
 
-func (с *Client) MessagesHidePeerSettingsBar(params *MessagesHidePeerSettingsBarParams) {
+func (c *Client) MessagesHidePeerSettingsBar(params *MessagesHidePeerSettingsBarParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesHidePeerSettingsBar")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -8032,18 +8032,18 @@ func (e *MessagesGetScheduledHistoryParams) CRC() uint32 {
 	return uint32(0xe2c2685b)
 }
 
-func (e *MessagesGetScheduledHistory) Encode() []byte {
+func (e *MessagesGetScheduledHistoryParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutInt(e.Hash)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetScheduledHistory(params *MessagesGetScheduledHistoryParams) {
+func (c *Client) MessagesGetScheduledHistory(params *MessagesGetScheduledHistoryParams) (MessagesMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetScheduledHistory")
@@ -8066,18 +8066,18 @@ func (e *MessagesGetScheduledMessagesParams) CRC() uint32 {
 	return uint32(0xbdbb0464)
 }
 
-func (e *MessagesGetScheduledMessages) Encode() []byte {
+func (e *MessagesGetScheduledMessagesParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutVector(e.Id)
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetScheduledMessages(params *MessagesGetScheduledMessagesParams) {
+func (c *Client) MessagesGetScheduledMessages(params *MessagesGetScheduledMessagesParams) (MessagesMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetScheduledMessages")
@@ -8100,18 +8100,18 @@ func (e *MessagesSendScheduledMessagesParams) CRC() uint32 {
 	return uint32(0xbd38850a)
 }
 
-func (e *MessagesSendScheduledMessages) Encode() []byte {
+func (e *MessagesSendScheduledMessagesParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutVector(e.Id)
 	return buf.Result()
 }
 
-func (с *Client) MessagesSendScheduledMessages(params *MessagesSendScheduledMessagesParams) {
+func (c *Client) MessagesSendScheduledMessages(params *MessagesSendScheduledMessagesParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesSendScheduledMessages")
@@ -8134,18 +8134,18 @@ func (e *MessagesDeleteScheduledMessagesParams) CRC() uint32 {
 	return uint32(0x59ae2b16)
 }
 
-func (e *MessagesDeleteScheduledMessages) Encode() []byte {
+func (e *MessagesDeleteScheduledMessagesParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutVector(e.Id)
 	return buf.Result()
 }
 
-func (с *Client) MessagesDeleteScheduledMessages(params *MessagesDeleteScheduledMessagesParams) {
+func (c *Client) MessagesDeleteScheduledMessages(params *MessagesDeleteScheduledMessagesParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesDeleteScheduledMessages")
@@ -8172,7 +8172,7 @@ func (e *MessagesGetPollVotesParams) CRC() uint32 {
 	return uint32(0xb86e380e)
 }
 
-func (e *MessagesGetPollVotes) Encode() []byte {
+func (e *MessagesGetPollVotesParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -8183,7 +8183,7 @@ func (e *MessagesGetPollVotes) Encode() []byte {
 	if !zero.IsZeroVal(e.Offset) {
 		flag |= 1 << 1
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Peer.Encode())
@@ -8198,7 +8198,7 @@ func (e *MessagesGetPollVotes) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetPollVotes(params *MessagesGetPollVotesParams) {
+func (c *Client) MessagesGetPollVotes(params *MessagesGetPollVotesParams) (*MessagesVotesList, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetPollVotes")
@@ -8224,7 +8224,7 @@ func (e *MessagesToggleStickerSetsParams) CRC() uint32 {
 	return uint32(0xb5052fea)
 }
 
-func (e *MessagesToggleStickerSets) Encode() []byte {
+func (e *MessagesToggleStickerSetsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -8238,20 +8238,20 @@ func (e *MessagesToggleStickerSets) Encode() []byte {
 	if !zero.IsZeroVal(e.Unarchive) {
 		flag |= 1 << 2
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutVector(e.Stickersets)
 	return buf.Result()
 }
 
-func (с *Client) MessagesToggleStickerSets(params *MessagesToggleStickerSetsParams) {
+func (c *Client) MessagesToggleStickerSets(params *MessagesToggleStickerSetsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesToggleStickerSets")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -8265,13 +8265,13 @@ func (e *MessagesGetDialogFiltersParams) CRC() uint32 {
 	return uint32(0xf19ed96d)
 }
 
-func (e *MessagesGetDialogFilters) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *MessagesGetDialogFiltersParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetDialogFilters() {
+func (c *Client) MessagesGetDialogFilters() (*DialogFilter, error) {
 	data, err := c.MakeRequest(&MessagesGetDialogFiltersParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetDialogFilters")
@@ -8291,13 +8291,13 @@ func (e *MessagesGetSuggestedDialogFiltersParams) CRC() uint32 {
 	return uint32(0xa29cd42c)
 }
 
-func (e *MessagesGetSuggestedDialogFilters) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *MessagesGetSuggestedDialogFiltersParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetSuggestedDialogFilters() {
+func (c *Client) MessagesGetSuggestedDialogFilters() (*DialogFilterSuggested, error) {
 	data, err := c.MakeRequest(&MessagesGetSuggestedDialogFiltersParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetSuggestedDialogFilters")
@@ -8321,7 +8321,7 @@ func (e *MessagesUpdateDialogFilterParams) CRC() uint32 {
 	return uint32(0x1ad4a04a)
 }
 
-func (e *MessagesUpdateDialogFilter) Encode() []byte {
+func (e *MessagesUpdateDialogFilterParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -8329,7 +8329,7 @@ func (e *MessagesUpdateDialogFilter) Encode() []byte {
 	if !zero.IsZeroVal(e.Filter) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutInt(e.Id)
@@ -8339,13 +8339,13 @@ func (e *MessagesUpdateDialogFilter) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesUpdateDialogFilter(params *MessagesUpdateDialogFilterParams) {
+func (c *Client) MessagesUpdateDialogFilter(params *MessagesUpdateDialogFilterParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesUpdateDialogFilter")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -8361,23 +8361,23 @@ func (e *MessagesUpdateDialogFiltersOrderParams) CRC() uint32 {
 	return uint32(0xc563c1e4)
 }
 
-func (e *MessagesUpdateDialogFiltersOrder) Encode() []byte {
+func (e *MessagesUpdateDialogFiltersOrderParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutVector(e.Order)
 	return buf.Result()
 }
 
-func (с *Client) MessagesUpdateDialogFiltersOrder(params *MessagesUpdateDialogFiltersOrderParams) {
+func (c *Client) MessagesUpdateDialogFiltersOrder(params *MessagesUpdateDialogFiltersOrderParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesUpdateDialogFiltersOrder")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -8395,11 +8395,11 @@ func (e *MessagesGetOldFeaturedStickersParams) CRC() uint32 {
 	return uint32(0x5fe7025b)
 }
 
-func (e *MessagesGetOldFeaturedStickers) Encode() []byte {
+func (e *MessagesGetOldFeaturedStickersParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.Offset)
 	buf.PutInt(e.Limit)
@@ -8407,7 +8407,7 @@ func (e *MessagesGetOldFeaturedStickers) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) MessagesGetOldFeaturedStickers(params *MessagesGetOldFeaturedStickersParams) {
+func (c *Client) MessagesGetOldFeaturedStickers(params *MessagesGetOldFeaturedStickersParams) (MessagesFeaturedStickers, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning MessagesGetOldFeaturedStickers")
@@ -8427,13 +8427,13 @@ func (e *UpdatesGetStateParams) CRC() uint32 {
 	return uint32(0xedd4882a)
 }
 
-func (e *UpdatesGetState) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *UpdatesGetStateParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) UpdatesGetState() {
+func (c *Client) UpdatesGetState() (*UpdatesState, error) {
 	data, err := c.MakeRequest(&UpdatesGetStateParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning UpdatesGetState")
@@ -8459,7 +8459,7 @@ func (e *UpdatesGetDifferenceParams) CRC() uint32 {
 	return uint32(0x25939651)
 }
 
-func (e *UpdatesGetDifference) Encode() []byte {
+func (e *UpdatesGetDifferenceParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -8467,7 +8467,7 @@ func (e *UpdatesGetDifference) Encode() []byte {
 	if !zero.IsZeroVal(e.PtsTotalLimit) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutInt(e.Pts)
@@ -8479,7 +8479,7 @@ func (e *UpdatesGetDifference) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) UpdatesGetDifference(params *UpdatesGetDifferenceParams) {
+func (c *Client) UpdatesGetDifference(params *UpdatesGetDifferenceParams) (UpdatesDifference, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning UpdatesGetDifference")
@@ -8506,7 +8506,7 @@ func (e *UpdatesGetChannelDifferenceParams) CRC() uint32 {
 	return uint32(0x3173d78)
 }
 
-func (e *UpdatesGetChannelDifference) Encode() []byte {
+func (e *UpdatesGetChannelDifferenceParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -8514,7 +8514,7 @@ func (e *UpdatesGetChannelDifference) Encode() []byte {
 	if !zero.IsZeroVal(e.Force) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Channel.Encode())
@@ -8524,7 +8524,7 @@ func (e *UpdatesGetChannelDifference) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) UpdatesGetChannelDifference(params *UpdatesGetChannelDifferenceParams) {
+func (c *Client) UpdatesGetChannelDifference(params *UpdatesGetChannelDifferenceParams) (UpdatesChannelDifference, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning UpdatesGetChannelDifference")
@@ -8546,17 +8546,17 @@ func (e *PhotosUpdateProfilePhotoParams) CRC() uint32 {
 	return uint32(0x72d4742c)
 }
 
-func (e *PhotosUpdateProfilePhoto) Encode() []byte {
+func (e *PhotosUpdateProfilePhotoParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Id.Encode())
 	return buf.Result()
 }
 
-func (с *Client) PhotosUpdateProfilePhoto(params *PhotosUpdateProfilePhotoParams) {
+func (c *Client) PhotosUpdateProfilePhoto(params *PhotosUpdateProfilePhotoParams) (*PhotosPhoto, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning PhotosUpdateProfilePhoto")
@@ -8581,7 +8581,7 @@ func (e *PhotosUploadProfilePhotoParams) CRC() uint32 {
 	return uint32(0x89f30f69)
 }
 
-func (e *PhotosUploadProfilePhoto) Encode() []byte {
+func (e *PhotosUploadProfilePhotoParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -8595,7 +8595,7 @@ func (e *PhotosUploadProfilePhoto) Encode() []byte {
 	if !zero.IsZeroVal(e.VideoStartTs) {
 		flag |= 1 << 2
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	if !zero.IsZeroVal(e.File) {
@@ -8610,7 +8610,7 @@ func (e *PhotosUploadProfilePhoto) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) PhotosUploadProfilePhoto(params *PhotosUploadProfilePhotoParams) {
+func (c *Client) PhotosUploadProfilePhoto(params *PhotosUploadProfilePhotoParams) (*PhotosPhoto, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning PhotosUploadProfilePhoto")
@@ -8632,23 +8632,23 @@ func (e *PhotosDeletePhotosParams) CRC() uint32 {
 	return uint32(0x87cf7f2f)
 }
 
-func (e *PhotosDeletePhotos) Encode() []byte {
+func (e *PhotosDeletePhotosParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutVector(e.Id)
 	return buf.Result()
 }
 
-func (с *Client) PhotosDeletePhotos(params *PhotosDeletePhotosParams) {
+func (c *Client) PhotosDeletePhotos(params *PhotosDeletePhotosParams) (*serialize.Long, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning PhotosDeletePhotos")
 	}
 
-	resp, ok := data.(Long)
+	resp, ok := data.(*serialize.Long)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -8667,11 +8667,11 @@ func (e *PhotosGetUserPhotosParams) CRC() uint32 {
 	return uint32(0x91cd32a8)
 }
 
-func (e *PhotosGetUserPhotos) Encode() []byte {
+func (e *PhotosGetUserPhotosParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.UserId.Encode())
 	buf.PutInt(e.Offset)
@@ -8680,7 +8680,7 @@ func (e *PhotosGetUserPhotos) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) PhotosGetUserPhotos(params *PhotosGetUserPhotosParams) {
+func (c *Client) PhotosGetUserPhotos(params *PhotosGetUserPhotosParams) (PhotosPhotos, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning PhotosGetUserPhotos")
@@ -8704,11 +8704,11 @@ func (e *UploadSaveFilePartParams) CRC() uint32 {
 	return uint32(0xb304a621)
 }
 
-func (e *UploadSaveFilePart) Encode() []byte {
+func (e *UploadSaveFilePartParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutLong(e.FileId)
 	buf.PutInt(e.FilePart)
@@ -8716,13 +8716,13 @@ func (e *UploadSaveFilePart) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) UploadSaveFilePart(params *UploadSaveFilePartParams) {
+func (c *Client) UploadSaveFilePart(params *UploadSaveFilePartParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning UploadSaveFilePart")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -8743,7 +8743,7 @@ func (e *UploadGetFileParams) CRC() uint32 {
 	return uint32(0xb15a9afc)
 }
 
-func (e *UploadGetFile) Encode() []byte {
+func (e *UploadGetFileParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -8754,7 +8754,7 @@ func (e *UploadGetFile) Encode() []byte {
 	if !zero.IsZeroVal(e.CdnSupported) {
 		flag |= 1 << 1
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Location.Encode())
@@ -8763,7 +8763,7 @@ func (e *UploadGetFile) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) UploadGetFile(params *UploadGetFileParams) {
+func (c *Client) UploadGetFile(params *UploadGetFileParams) (UploadFile, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning UploadGetFile")
@@ -8788,11 +8788,11 @@ func (e *UploadSaveBigFilePartParams) CRC() uint32 {
 	return uint32(0xde7b673d)
 }
 
-func (e *UploadSaveBigFilePart) Encode() []byte {
+func (e *UploadSaveBigFilePartParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutLong(e.FileId)
 	buf.PutInt(e.FilePart)
@@ -8801,13 +8801,13 @@ func (e *UploadSaveBigFilePart) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) UploadSaveBigFilePart(params *UploadSaveBigFilePartParams) {
+func (c *Client) UploadSaveBigFilePart(params *UploadSaveBigFilePartParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning UploadSaveBigFilePart")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -8825,11 +8825,11 @@ func (e *UploadGetWebFileParams) CRC() uint32 {
 	return uint32(0x24e6818d)
 }
 
-func (e *UploadGetWebFile) Encode() []byte {
+func (e *UploadGetWebFileParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Location.Encode())
 	buf.PutInt(e.Offset)
@@ -8837,7 +8837,7 @@ func (e *UploadGetWebFile) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) UploadGetWebFile(params *UploadGetWebFileParams) {
+func (c *Client) UploadGetWebFile(params *UploadGetWebFileParams) (*UploadWebFile, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning UploadGetWebFile")
@@ -8861,11 +8861,11 @@ func (e *UploadGetCdnFileParams) CRC() uint32 {
 	return uint32(0x2000bcc3)
 }
 
-func (e *UploadGetCdnFile) Encode() []byte {
+func (e *UploadGetCdnFileParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutMessage(e.FileToken)
 	buf.PutInt(e.Offset)
@@ -8873,7 +8873,7 @@ func (e *UploadGetCdnFile) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) UploadGetCdnFile(params *UploadGetCdnFileParams) {
+func (c *Client) UploadGetCdnFile(params *UploadGetCdnFileParams) (UploadCdnFile, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning UploadGetCdnFile")
@@ -8896,18 +8896,18 @@ func (e *UploadReuploadCdnFileParams) CRC() uint32 {
 	return uint32(0x9b2754a8)
 }
 
-func (e *UploadReuploadCdnFile) Encode() []byte {
+func (e *UploadReuploadCdnFileParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutMessage(e.FileToken)
 	buf.PutMessage(e.RequestToken)
 	return buf.Result()
 }
 
-func (с *Client) UploadReuploadCdnFile(params *UploadReuploadCdnFileParams) {
+func (c *Client) UploadReuploadCdnFile(params *UploadReuploadCdnFileParams) (*FileHash, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning UploadReuploadCdnFile")
@@ -8930,18 +8930,18 @@ func (e *UploadGetCdnFileHashesParams) CRC() uint32 {
 	return uint32(0x4da54231)
 }
 
-func (e *UploadGetCdnFileHashes) Encode() []byte {
+func (e *UploadGetCdnFileHashesParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutMessage(e.FileToken)
 	buf.PutInt(e.Offset)
 	return buf.Result()
 }
 
-func (с *Client) UploadGetCdnFileHashes(params *UploadGetCdnFileHashesParams) {
+func (c *Client) UploadGetCdnFileHashes(params *UploadGetCdnFileHashesParams) (*FileHash, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning UploadGetCdnFileHashes")
@@ -8964,18 +8964,18 @@ func (e *UploadGetFileHashesParams) CRC() uint32 {
 	return uint32(0xc7025931)
 }
 
-func (e *UploadGetFileHashes) Encode() []byte {
+func (e *UploadGetFileHashesParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Location.Encode())
 	buf.PutInt(e.Offset)
 	return buf.Result()
 }
 
-func (с *Client) UploadGetFileHashes(params *UploadGetFileHashesParams) {
+func (c *Client) UploadGetFileHashes(params *UploadGetFileHashesParams) (*FileHash, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning UploadGetFileHashes")
@@ -8995,13 +8995,13 @@ func (e *HelpGetConfigParams) CRC() uint32 {
 	return uint32(0xc4f9186b)
 }
 
-func (e *HelpGetConfig) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *HelpGetConfigParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) HelpGetConfig() {
+func (c *Client) HelpGetConfig() (*Config, error) {
 	data, err := c.MakeRequest(&HelpGetConfigParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning HelpGetConfig")
@@ -9021,13 +9021,13 @@ func (e *HelpGetNearestDcParams) CRC() uint32 {
 	return uint32(0x1fb33026)
 }
 
-func (e *HelpGetNearestDc) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *HelpGetNearestDcParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) HelpGetNearestDc() {
+func (c *Client) HelpGetNearestDc() (*NearestDc, error) {
 	data, err := c.MakeRequest(&HelpGetNearestDcParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning HelpGetNearestDc")
@@ -9049,17 +9049,17 @@ func (e *HelpGetAppUpdateParams) CRC() uint32 {
 	return uint32(0x522d5a7d)
 }
 
-func (e *HelpGetAppUpdate) Encode() []byte {
+func (e *HelpGetAppUpdateParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.Source)
 	return buf.Result()
 }
 
-func (с *Client) HelpGetAppUpdate(params *HelpGetAppUpdateParams) {
+func (c *Client) HelpGetAppUpdate(params *HelpGetAppUpdateParams) (HelpAppUpdate, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning HelpGetAppUpdate")
@@ -9079,13 +9079,13 @@ func (e *HelpGetInviteTextParams) CRC() uint32 {
 	return uint32(0x4d392343)
 }
 
-func (e *HelpGetInviteText) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *HelpGetInviteTextParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) HelpGetInviteText() {
+func (c *Client) HelpGetInviteText() (*HelpInviteText, error) {
 	data, err := c.MakeRequest(&HelpGetInviteTextParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning HelpGetInviteText")
@@ -9105,13 +9105,13 @@ func (e *HelpGetSupportParams) CRC() uint32 {
 	return uint32(0x9cdf08cd)
 }
 
-func (e *HelpGetSupport) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *HelpGetSupportParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) HelpGetSupport() {
+func (c *Client) HelpGetSupport() (*HelpSupport, error) {
 	data, err := c.MakeRequest(&HelpGetSupportParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning HelpGetSupport")
@@ -9133,17 +9133,17 @@ func (e *HelpGetAppChangelogParams) CRC() uint32 {
 	return uint32(0x9010ef6f)
 }
 
-func (e *HelpGetAppChangelog) Encode() []byte {
+func (e *HelpGetAppChangelogParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.PrevAppVersion)
 	return buf.Result()
 }
 
-func (с *Client) HelpGetAppChangelog(params *HelpGetAppChangelogParams) {
+func (c *Client) HelpGetAppChangelog(params *HelpGetAppChangelogParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning HelpGetAppChangelog")
@@ -9166,24 +9166,24 @@ func (e *HelpSetBotUpdatesStatusParams) CRC() uint32 {
 	return uint32(0xec22cfcd)
 }
 
-func (e *HelpSetBotUpdatesStatus) Encode() []byte {
+func (e *HelpSetBotUpdatesStatusParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.PendingUpdatesCount)
 	buf.PutString(e.Message)
 	return buf.Result()
 }
 
-func (с *Client) HelpSetBotUpdatesStatus(params *HelpSetBotUpdatesStatusParams) {
+func (c *Client) HelpSetBotUpdatesStatus(params *HelpSetBotUpdatesStatusParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning HelpSetBotUpdatesStatus")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -9197,13 +9197,13 @@ func (e *HelpGetCdnConfigParams) CRC() uint32 {
 	return uint32(0x52029342)
 }
 
-func (e *HelpGetCdnConfig) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *HelpGetCdnConfigParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) HelpGetCdnConfig() {
+func (c *Client) HelpGetCdnConfig() (*CdnConfig, error) {
 	data, err := c.MakeRequest(&HelpGetCdnConfigParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning HelpGetCdnConfig")
@@ -9225,17 +9225,17 @@ func (e *HelpGetRecentMeUrlsParams) CRC() uint32 {
 	return uint32(0x3dc0f114)
 }
 
-func (e *HelpGetRecentMeUrls) Encode() []byte {
+func (e *HelpGetRecentMeUrlsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.Referer)
 	return buf.Result()
 }
 
-func (с *Client) HelpGetRecentMeUrls(params *HelpGetRecentMeUrlsParams) {
+func (c *Client) HelpGetRecentMeUrls(params *HelpGetRecentMeUrlsParams) (*HelpRecentMeUrls, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning HelpGetRecentMeUrls")
@@ -9255,13 +9255,13 @@ func (e *HelpGetTermsOfServiceUpdateParams) CRC() uint32 {
 	return uint32(0x2ca51fd1)
 }
 
-func (e *HelpGetTermsOfServiceUpdate) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *HelpGetTermsOfServiceUpdateParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) HelpGetTermsOfServiceUpdate() {
+func (c *Client) HelpGetTermsOfServiceUpdate() (HelpTermsOfServiceUpdate, error) {
 	data, err := c.MakeRequest(&HelpGetTermsOfServiceUpdateParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning HelpGetTermsOfServiceUpdate")
@@ -9283,23 +9283,23 @@ func (e *HelpAcceptTermsOfServiceParams) CRC() uint32 {
 	return uint32(0xee72f79a)
 }
 
-func (e *HelpAcceptTermsOfService) Encode() []byte {
+func (e *HelpAcceptTermsOfServiceParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Id.Encode())
 	return buf.Result()
 }
 
-func (с *Client) HelpAcceptTermsOfService(params *HelpAcceptTermsOfServiceParams) {
+func (c *Client) HelpAcceptTermsOfService(params *HelpAcceptTermsOfServiceParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning HelpAcceptTermsOfService")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -9315,17 +9315,17 @@ func (e *HelpGetDeepLinkInfoParams) CRC() uint32 {
 	return uint32(0x3fedc75f)
 }
 
-func (e *HelpGetDeepLinkInfo) Encode() []byte {
+func (e *HelpGetDeepLinkInfoParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.Path)
 	return buf.Result()
 }
 
-func (с *Client) HelpGetDeepLinkInfo(params *HelpGetDeepLinkInfoParams) {
+func (c *Client) HelpGetDeepLinkInfo(params *HelpGetDeepLinkInfoParams) (HelpDeepLinkInfo, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning HelpGetDeepLinkInfo")
@@ -9345,13 +9345,13 @@ func (e *HelpGetAppConfigParams) CRC() uint32 {
 	return uint32(0x98914110)
 }
 
-func (e *HelpGetAppConfig) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *HelpGetAppConfigParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) HelpGetAppConfig() {
+func (c *Client) HelpGetAppConfig() (JSONValue, error) {
 	data, err := c.MakeRequest(&HelpGetAppConfigParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning HelpGetAppConfig")
@@ -9373,23 +9373,23 @@ func (e *HelpSaveAppLogParams) CRC() uint32 {
 	return uint32(0x6f02f748)
 }
 
-func (e *HelpSaveAppLog) Encode() []byte {
+func (e *HelpSaveAppLogParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutVector(e.Events)
 	return buf.Result()
 }
 
-func (с *Client) HelpSaveAppLog(params *HelpSaveAppLogParams) {
+func (c *Client) HelpSaveAppLog(params *HelpSaveAppLogParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning HelpSaveAppLog")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -9405,17 +9405,17 @@ func (e *HelpGetPassportConfigParams) CRC() uint32 {
 	return uint32(0xc661ad08)
 }
 
-func (e *HelpGetPassportConfig) Encode() []byte {
+func (e *HelpGetPassportConfigParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.Hash)
 	return buf.Result()
 }
 
-func (с *Client) HelpGetPassportConfig(params *HelpGetPassportConfigParams) {
+func (c *Client) HelpGetPassportConfig(params *HelpGetPassportConfigParams) (HelpPassportConfig, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning HelpGetPassportConfig")
@@ -9435,13 +9435,13 @@ func (e *HelpGetSupportNameParams) CRC() uint32 {
 	return uint32(0xd360e72c)
 }
 
-func (e *HelpGetSupportName) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *HelpGetSupportNameParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) HelpGetSupportName() {
+func (c *Client) HelpGetSupportName() (*HelpSupportName, error) {
 	data, err := c.MakeRequest(&HelpGetSupportNameParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning HelpGetSupportName")
@@ -9463,17 +9463,17 @@ func (e *HelpGetUserInfoParams) CRC() uint32 {
 	return uint32(0x38a08d3)
 }
 
-func (e *HelpGetUserInfo) Encode() []byte {
+func (e *HelpGetUserInfoParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.UserId.Encode())
 	return buf.Result()
 }
 
-func (с *Client) HelpGetUserInfo(params *HelpGetUserInfoParams) {
+func (c *Client) HelpGetUserInfo(params *HelpGetUserInfoParams) (HelpUserInfo, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning HelpGetUserInfo")
@@ -9497,11 +9497,11 @@ func (e *HelpEditUserInfoParams) CRC() uint32 {
 	return uint32(0x66b91b70)
 }
 
-func (e *HelpEditUserInfo) Encode() []byte {
+func (e *HelpEditUserInfoParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.UserId.Encode())
 	buf.PutString(e.Message)
@@ -9509,7 +9509,7 @@ func (e *HelpEditUserInfo) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) HelpEditUserInfo(params *HelpEditUserInfoParams) {
+func (c *Client) HelpEditUserInfo(params *HelpEditUserInfoParams) (HelpUserInfo, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning HelpEditUserInfo")
@@ -9529,13 +9529,13 @@ func (e *HelpGetPromoDataParams) CRC() uint32 {
 	return uint32(0xc0977421)
 }
 
-func (e *HelpGetPromoData) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *HelpGetPromoDataParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) HelpGetPromoData() {
+func (c *Client) HelpGetPromoData() (HelpPromoData, error) {
 	data, err := c.MakeRequest(&HelpGetPromoDataParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning HelpGetPromoData")
@@ -9557,23 +9557,23 @@ func (e *HelpHidePromoDataParams) CRC() uint32 {
 	return uint32(0x1e251c95)
 }
 
-func (e *HelpHidePromoData) Encode() []byte {
+func (e *HelpHidePromoDataParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	return buf.Result()
 }
 
-func (с *Client) HelpHidePromoData(params *HelpHidePromoDataParams) {
+func (c *Client) HelpHidePromoData(params *HelpHidePromoDataParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning HelpHidePromoData")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -9589,23 +9589,23 @@ func (e *HelpDismissSuggestionParams) CRC() uint32 {
 	return uint32(0x77fa99f)
 }
 
-func (e *HelpDismissSuggestion) Encode() []byte {
+func (e *HelpDismissSuggestionParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.Suggestion)
 	return buf.Result()
 }
 
-func (с *Client) HelpDismissSuggestion(params *HelpDismissSuggestionParams) {
+func (c *Client) HelpDismissSuggestion(params *HelpDismissSuggestionParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning HelpDismissSuggestion")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -9622,24 +9622,24 @@ func (e *ChannelsReadHistoryParams) CRC() uint32 {
 	return uint32(0xcc104937)
 }
 
-func (e *ChannelsReadHistory) Encode() []byte {
+func (e *ChannelsReadHistoryParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutInt(e.MaxId)
 	return buf.Result()
 }
 
-func (с *Client) ChannelsReadHistory(params *ChannelsReadHistoryParams) {
+func (c *Client) ChannelsReadHistory(params *ChannelsReadHistoryParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsReadHistory")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -9656,18 +9656,18 @@ func (e *ChannelsDeleteMessagesParams) CRC() uint32 {
 	return uint32(0x84c1fd4e)
 }
 
-func (e *ChannelsDeleteMessages) Encode() []byte {
+func (e *ChannelsDeleteMessagesParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutVector(e.Id)
 	return buf.Result()
 }
 
-func (с *Client) ChannelsDeleteMessages(params *ChannelsDeleteMessagesParams) {
+func (c *Client) ChannelsDeleteMessages(params *ChannelsDeleteMessagesParams) (*MessagesAffectedMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsDeleteMessages")
@@ -9690,18 +9690,18 @@ func (e *ChannelsDeleteUserHistoryParams) CRC() uint32 {
 	return uint32(0xd10dd71b)
 }
 
-func (e *ChannelsDeleteUserHistory) Encode() []byte {
+func (e *ChannelsDeleteUserHistoryParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutRawBytes(e.UserId.Encode())
 	return buf.Result()
 }
 
-func (с *Client) ChannelsDeleteUserHistory(params *ChannelsDeleteUserHistoryParams) {
+func (c *Client) ChannelsDeleteUserHistory(params *ChannelsDeleteUserHistoryParams) (*MessagesAffectedHistory, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsDeleteUserHistory")
@@ -9725,11 +9725,11 @@ func (e *ChannelsReportSpamParams) CRC() uint32 {
 	return uint32(0xfe087810)
 }
 
-func (e *ChannelsReportSpam) Encode() []byte {
+func (e *ChannelsReportSpamParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutRawBytes(e.UserId.Encode())
@@ -9737,13 +9737,13 @@ func (e *ChannelsReportSpam) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) ChannelsReportSpam(params *ChannelsReportSpamParams) {
+func (c *Client) ChannelsReportSpam(params *ChannelsReportSpamParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsReportSpam")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -9760,18 +9760,18 @@ func (e *ChannelsGetMessagesParams) CRC() uint32 {
 	return uint32(0xad8c9a23)
 }
 
-func (e *ChannelsGetMessages) Encode() []byte {
+func (e *ChannelsGetMessagesParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutVector(e.Id)
 	return buf.Result()
 }
 
-func (с *Client) ChannelsGetMessages(params *ChannelsGetMessagesParams) {
+func (c *Client) ChannelsGetMessages(params *ChannelsGetMessagesParams) (MessagesMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsGetMessages")
@@ -9797,11 +9797,11 @@ func (e *ChannelsGetParticipantsParams) CRC() uint32 {
 	return uint32(0x123e05e9)
 }
 
-func (e *ChannelsGetParticipants) Encode() []byte {
+func (e *ChannelsGetParticipantsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutRawBytes(e.Filter.Encode())
@@ -9811,7 +9811,7 @@ func (e *ChannelsGetParticipants) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) ChannelsGetParticipants(params *ChannelsGetParticipantsParams) {
+func (c *Client) ChannelsGetParticipants(params *ChannelsGetParticipantsParams) (ChannelsChannelParticipants, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsGetParticipants")
@@ -9834,18 +9834,18 @@ func (e *ChannelsGetParticipantParams) CRC() uint32 {
 	return uint32(0x546dd7a6)
 }
 
-func (e *ChannelsGetParticipant) Encode() []byte {
+func (e *ChannelsGetParticipantParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutRawBytes(e.UserId.Encode())
 	return buf.Result()
 }
 
-func (с *Client) ChannelsGetParticipant(params *ChannelsGetParticipantParams) {
+func (c *Client) ChannelsGetParticipant(params *ChannelsGetParticipantParams) (*ChannelsChannelParticipant, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsGetParticipant")
@@ -9867,17 +9867,17 @@ func (e *ChannelsGetChannelsParams) CRC() uint32 {
 	return uint32(0xa7f6bbb)
 }
 
-func (e *ChannelsGetChannels) Encode() []byte {
+func (e *ChannelsGetChannelsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutVector(e.Id)
 	return buf.Result()
 }
 
-func (с *Client) ChannelsGetChannels(params *ChannelsGetChannelsParams) {
+func (c *Client) ChannelsGetChannels(params *ChannelsGetChannelsParams) (MessagesChats, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsGetChannels")
@@ -9899,17 +9899,17 @@ func (e *ChannelsGetFullChannelParams) CRC() uint32 {
 	return uint32(0x8736a09)
 }
 
-func (e *ChannelsGetFullChannel) Encode() []byte {
+func (e *ChannelsGetFullChannelParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	return buf.Result()
 }
 
-func (с *Client) ChannelsGetFullChannel(params *ChannelsGetFullChannelParams) {
+func (c *Client) ChannelsGetFullChannel(params *ChannelsGetFullChannelParams) (*MessagesChatFull, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsGetFullChannel")
@@ -9937,7 +9937,7 @@ func (e *ChannelsCreateChannelParams) CRC() uint32 {
 	return uint32(0x3d5fb10f)
 }
 
-func (e *ChannelsCreateChannel) Encode() []byte {
+func (e *ChannelsCreateChannelParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -9951,7 +9951,7 @@ func (e *ChannelsCreateChannel) Encode() []byte {
 	if !zero.IsZeroVal(e.GeoPoint) || !zero.IsZeroVal(e.Address) {
 		flag |= 1 << 2
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutString(e.Title)
@@ -9965,7 +9965,7 @@ func (e *ChannelsCreateChannel) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) ChannelsCreateChannel(params *ChannelsCreateChannelParams) {
+func (c *Client) ChannelsCreateChannel(params *ChannelsCreateChannelParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsCreateChannel")
@@ -9990,11 +9990,11 @@ func (e *ChannelsEditAdminParams) CRC() uint32 {
 	return uint32(0xd33c8902)
 }
 
-func (e *ChannelsEditAdmin) Encode() []byte {
+func (e *ChannelsEditAdminParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutRawBytes(e.UserId.Encode())
@@ -10003,7 +10003,7 @@ func (e *ChannelsEditAdmin) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) ChannelsEditAdmin(params *ChannelsEditAdminParams) {
+func (c *Client) ChannelsEditAdmin(params *ChannelsEditAdminParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsEditAdmin")
@@ -10026,18 +10026,18 @@ func (e *ChannelsEditTitleParams) CRC() uint32 {
 	return uint32(0x566decd0)
 }
 
-func (e *ChannelsEditTitle) Encode() []byte {
+func (e *ChannelsEditTitleParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutString(e.Title)
 	return buf.Result()
 }
 
-func (с *Client) ChannelsEditTitle(params *ChannelsEditTitleParams) {
+func (c *Client) ChannelsEditTitle(params *ChannelsEditTitleParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsEditTitle")
@@ -10060,18 +10060,18 @@ func (e *ChannelsEditPhotoParams) CRC() uint32 {
 	return uint32(0xf12e57c9)
 }
 
-func (e *ChannelsEditPhoto) Encode() []byte {
+func (e *ChannelsEditPhotoParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutRawBytes(e.Photo.Encode())
 	return buf.Result()
 }
 
-func (с *Client) ChannelsEditPhoto(params *ChannelsEditPhotoParams) {
+func (c *Client) ChannelsEditPhoto(params *ChannelsEditPhotoParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsEditPhoto")
@@ -10094,24 +10094,24 @@ func (e *ChannelsCheckUsernameParams) CRC() uint32 {
 	return uint32(0x10e6bd2c)
 }
 
-func (e *ChannelsCheckUsername) Encode() []byte {
+func (e *ChannelsCheckUsernameParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutString(e.Username)
 	return buf.Result()
 }
 
-func (с *Client) ChannelsCheckUsername(params *ChannelsCheckUsernameParams) {
+func (c *Client) ChannelsCheckUsername(params *ChannelsCheckUsernameParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsCheckUsername")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -10128,24 +10128,24 @@ func (e *ChannelsUpdateUsernameParams) CRC() uint32 {
 	return uint32(0x3514b3de)
 }
 
-func (e *ChannelsUpdateUsername) Encode() []byte {
+func (e *ChannelsUpdateUsernameParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutString(e.Username)
 	return buf.Result()
 }
 
-func (с *Client) ChannelsUpdateUsername(params *ChannelsUpdateUsernameParams) {
+func (c *Client) ChannelsUpdateUsername(params *ChannelsUpdateUsernameParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsUpdateUsername")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -10161,17 +10161,17 @@ func (e *ChannelsJoinChannelParams) CRC() uint32 {
 	return uint32(0x24b524c5)
 }
 
-func (e *ChannelsJoinChannel) Encode() []byte {
+func (e *ChannelsJoinChannelParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	return buf.Result()
 }
 
-func (с *Client) ChannelsJoinChannel(params *ChannelsJoinChannelParams) {
+func (c *Client) ChannelsJoinChannel(params *ChannelsJoinChannelParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsJoinChannel")
@@ -10193,17 +10193,17 @@ func (e *ChannelsLeaveChannelParams) CRC() uint32 {
 	return uint32(0xf836aa95)
 }
 
-func (e *ChannelsLeaveChannel) Encode() []byte {
+func (e *ChannelsLeaveChannelParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	return buf.Result()
 }
 
-func (с *Client) ChannelsLeaveChannel(params *ChannelsLeaveChannelParams) {
+func (c *Client) ChannelsLeaveChannel(params *ChannelsLeaveChannelParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsLeaveChannel")
@@ -10226,18 +10226,18 @@ func (e *ChannelsInviteToChannelParams) CRC() uint32 {
 	return uint32(0x199f3a6c)
 }
 
-func (e *ChannelsInviteToChannel) Encode() []byte {
+func (e *ChannelsInviteToChannelParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutVector(e.Users)
 	return buf.Result()
 }
 
-func (с *Client) ChannelsInviteToChannel(params *ChannelsInviteToChannelParams) {
+func (c *Client) ChannelsInviteToChannel(params *ChannelsInviteToChannelParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsInviteToChannel")
@@ -10259,17 +10259,17 @@ func (e *ChannelsDeleteChannelParams) CRC() uint32 {
 	return uint32(0xc0111fe3)
 }
 
-func (e *ChannelsDeleteChannel) Encode() []byte {
+func (e *ChannelsDeleteChannelParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	return buf.Result()
 }
 
-func (с *Client) ChannelsDeleteChannel(params *ChannelsDeleteChannelParams) {
+func (c *Client) ChannelsDeleteChannel(params *ChannelsDeleteChannelParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsDeleteChannel")
@@ -10293,11 +10293,11 @@ func (e *ChannelsExportMessageLinkParams) CRC() uint32 {
 	return uint32(0xceb77163)
 }
 
-func (e *ChannelsExportMessageLink) Encode() []byte {
+func (e *ChannelsExportMessageLinkParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutInt(e.Id)
@@ -10305,7 +10305,7 @@ func (e *ChannelsExportMessageLink) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) ChannelsExportMessageLink(params *ChannelsExportMessageLinkParams) {
+func (c *Client) ChannelsExportMessageLink(params *ChannelsExportMessageLinkParams) (*ExportedMessageLink, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsExportMessageLink")
@@ -10328,18 +10328,18 @@ func (e *ChannelsToggleSignaturesParams) CRC() uint32 {
 	return uint32(0x1f69b606)
 }
 
-func (e *ChannelsToggleSignatures) Encode() []byte {
+func (e *ChannelsToggleSignaturesParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutBool(e.Enabled)
 	return buf.Result()
 }
 
-func (с *Client) ChannelsToggleSignatures(params *ChannelsToggleSignaturesParams) {
+func (c *Client) ChannelsToggleSignatures(params *ChannelsToggleSignaturesParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsToggleSignatures")
@@ -10363,7 +10363,7 @@ func (e *ChannelsGetAdminedPublicChannelsParams) CRC() uint32 {
 	return uint32(0xf8b036af)
 }
 
-func (e *ChannelsGetAdminedPublicChannels) Encode() []byte {
+func (e *ChannelsGetAdminedPublicChannelsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -10374,13 +10374,13 @@ func (e *ChannelsGetAdminedPublicChannels) Encode() []byte {
 	if !zero.IsZeroVal(e.CheckLimit) {
 		flag |= 1 << 1
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	return buf.Result()
 }
 
-func (с *Client) ChannelsGetAdminedPublicChannels(params *ChannelsGetAdminedPublicChannelsParams) {
+func (c *Client) ChannelsGetAdminedPublicChannels(params *ChannelsGetAdminedPublicChannelsParams) (MessagesChats, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsGetAdminedPublicChannels")
@@ -10404,11 +10404,11 @@ func (e *ChannelsEditBannedParams) CRC() uint32 {
 	return uint32(0x72796912)
 }
 
-func (e *ChannelsEditBanned) Encode() []byte {
+func (e *ChannelsEditBannedParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutRawBytes(e.UserId.Encode())
@@ -10416,7 +10416,7 @@ func (e *ChannelsEditBanned) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) ChannelsEditBanned(params *ChannelsEditBannedParams) {
+func (c *Client) ChannelsEditBanned(params *ChannelsEditBannedParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsEditBanned")
@@ -10445,7 +10445,7 @@ func (e *ChannelsGetAdminLogParams) CRC() uint32 {
 	return uint32(0x33ddf480)
 }
 
-func (e *ChannelsGetAdminLog) Encode() []byte {
+func (e *ChannelsGetAdminLogParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -10456,7 +10456,7 @@ func (e *ChannelsGetAdminLog) Encode() []byte {
 	if !zero.IsZeroVal(e.Admins) {
 		flag |= 1 << 1
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Channel.Encode())
@@ -10473,7 +10473,7 @@ func (e *ChannelsGetAdminLog) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) ChannelsGetAdminLog(params *ChannelsGetAdminLogParams) {
+func (c *Client) ChannelsGetAdminLog(params *ChannelsGetAdminLogParams) (*ChannelsAdminLogResults, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsGetAdminLog")
@@ -10496,24 +10496,24 @@ func (e *ChannelsSetStickersParams) CRC() uint32 {
 	return uint32(0xea8ca4f9)
 }
 
-func (e *ChannelsSetStickers) Encode() []byte {
+func (e *ChannelsSetStickersParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutRawBytes(e.Stickerset.Encode())
 	return buf.Result()
 }
 
-func (с *Client) ChannelsSetStickers(params *ChannelsSetStickersParams) {
+func (c *Client) ChannelsSetStickers(params *ChannelsSetStickersParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsSetStickers")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -10530,24 +10530,24 @@ func (e *ChannelsReadMessageContentsParams) CRC() uint32 {
 	return uint32(0xeab5dc38)
 }
 
-func (e *ChannelsReadMessageContents) Encode() []byte {
+func (e *ChannelsReadMessageContentsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutVector(e.Id)
 	return buf.Result()
 }
 
-func (с *Client) ChannelsReadMessageContents(params *ChannelsReadMessageContentsParams) {
+func (c *Client) ChannelsReadMessageContents(params *ChannelsReadMessageContentsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsReadMessageContents")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -10564,24 +10564,24 @@ func (e *ChannelsDeleteHistoryParams) CRC() uint32 {
 	return uint32(0xaf369d42)
 }
 
-func (e *ChannelsDeleteHistory) Encode() []byte {
+func (e *ChannelsDeleteHistoryParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutInt(e.MaxId)
 	return buf.Result()
 }
 
-func (с *Client) ChannelsDeleteHistory(params *ChannelsDeleteHistoryParams) {
+func (c *Client) ChannelsDeleteHistory(params *ChannelsDeleteHistoryParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsDeleteHistory")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -10598,18 +10598,18 @@ func (e *ChannelsTogglePreHistoryHiddenParams) CRC() uint32 {
 	return uint32(0xeabbb94c)
 }
 
-func (e *ChannelsTogglePreHistoryHidden) Encode() []byte {
+func (e *ChannelsTogglePreHistoryHiddenParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutBool(e.Enabled)
 	return buf.Result()
 }
 
-func (с *Client) ChannelsTogglePreHistoryHidden(params *ChannelsTogglePreHistoryHiddenParams) {
+func (c *Client) ChannelsTogglePreHistoryHidden(params *ChannelsTogglePreHistoryHiddenParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsTogglePreHistoryHidden")
@@ -10631,17 +10631,17 @@ func (e *ChannelsGetLeftChannelsParams) CRC() uint32 {
 	return uint32(0x8341ecc0)
 }
 
-func (e *ChannelsGetLeftChannels) Encode() []byte {
+func (e *ChannelsGetLeftChannelsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.Offset)
 	return buf.Result()
 }
 
-func (с *Client) ChannelsGetLeftChannels(params *ChannelsGetLeftChannelsParams) {
+func (c *Client) ChannelsGetLeftChannels(params *ChannelsGetLeftChannelsParams) (MessagesChats, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsGetLeftChannels")
@@ -10661,13 +10661,13 @@ func (e *ChannelsGetGroupsForDiscussionParams) CRC() uint32 {
 	return uint32(0xf5dad378)
 }
 
-func (e *ChannelsGetGroupsForDiscussion) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *ChannelsGetGroupsForDiscussionParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) ChannelsGetGroupsForDiscussion() {
+func (c *Client) ChannelsGetGroupsForDiscussion() (MessagesChats, error) {
 	data, err := c.MakeRequest(&ChannelsGetGroupsForDiscussionParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsGetGroupsForDiscussion")
@@ -10690,24 +10690,24 @@ func (e *ChannelsSetDiscussionGroupParams) CRC() uint32 {
 	return uint32(0x40582bb2)
 }
 
-func (e *ChannelsSetDiscussionGroup) Encode() []byte {
+func (e *ChannelsSetDiscussionGroupParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Broadcast.Encode())
 	buf.PutRawBytes(e.Group.Encode())
 	return buf.Result()
 }
 
-func (с *Client) ChannelsSetDiscussionGroup(params *ChannelsSetDiscussionGroupParams) {
+func (c *Client) ChannelsSetDiscussionGroup(params *ChannelsSetDiscussionGroupParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsSetDiscussionGroup")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -10725,11 +10725,11 @@ func (e *ChannelsEditCreatorParams) CRC() uint32 {
 	return uint32(0x8f38cd1f)
 }
 
-func (e *ChannelsEditCreator) Encode() []byte {
+func (e *ChannelsEditCreatorParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutRawBytes(e.UserId.Encode())
@@ -10737,7 +10737,7 @@ func (e *ChannelsEditCreator) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) ChannelsEditCreator(params *ChannelsEditCreatorParams) {
+func (c *Client) ChannelsEditCreator(params *ChannelsEditCreatorParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsEditCreator")
@@ -10761,11 +10761,11 @@ func (e *ChannelsEditLocationParams) CRC() uint32 {
 	return uint32(0x58e63f6d)
 }
 
-func (e *ChannelsEditLocation) Encode() []byte {
+func (e *ChannelsEditLocationParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutRawBytes(e.GeoPoint.Encode())
@@ -10773,13 +10773,13 @@ func (e *ChannelsEditLocation) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) ChannelsEditLocation(params *ChannelsEditLocationParams) {
+func (c *Client) ChannelsEditLocation(params *ChannelsEditLocationParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsEditLocation")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -10796,18 +10796,18 @@ func (e *ChannelsToggleSlowModeParams) CRC() uint32 {
 	return uint32(0xedd49ef0)
 }
 
-func (e *ChannelsToggleSlowMode) Encode() []byte {
+func (e *ChannelsToggleSlowModeParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Channel.Encode())
 	buf.PutInt(e.Seconds)
 	return buf.Result()
 }
 
-func (с *Client) ChannelsToggleSlowMode(params *ChannelsToggleSlowModeParams) {
+func (c *Client) ChannelsToggleSlowMode(params *ChannelsToggleSlowModeParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsToggleSlowMode")
@@ -10827,13 +10827,13 @@ func (e *ChannelsGetInactiveChannelsParams) CRC() uint32 {
 	return uint32(0x11e831ee)
 }
 
-func (e *ChannelsGetInactiveChannels) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *ChannelsGetInactiveChannelsParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) ChannelsGetInactiveChannels() {
+func (c *Client) ChannelsGetInactiveChannels() (*MessagesInactiveChats, error) {
 	data, err := c.MakeRequest(&ChannelsGetInactiveChannelsParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning ChannelsGetInactiveChannels")
@@ -10856,18 +10856,18 @@ func (e *BotsSendCustomRequestParams) CRC() uint32 {
 	return uint32(0xaa2769ed)
 }
 
-func (e *BotsSendCustomRequest) Encode() []byte {
+func (e *BotsSendCustomRequestParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.CustomMethod)
 	buf.PutRawBytes(e.Params.Encode())
 	return buf.Result()
 }
 
-func (с *Client) BotsSendCustomRequest(params *BotsSendCustomRequestParams) {
+func (c *Client) BotsSendCustomRequest(params *BotsSendCustomRequestParams) (*DataJSON, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning BotsSendCustomRequest")
@@ -10890,24 +10890,24 @@ func (e *BotsAnswerWebhookJSONQueryParams) CRC() uint32 {
 	return uint32(0xe6213f4d)
 }
 
-func (e *BotsAnswerWebhookJSONQuery) Encode() []byte {
+func (e *BotsAnswerWebhookJSONQueryParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutLong(e.QueryId)
 	buf.PutRawBytes(e.Data.Encode())
 	return buf.Result()
 }
 
-func (с *Client) BotsAnswerWebhookJSONQuery(params *BotsAnswerWebhookJSONQueryParams) {
+func (c *Client) BotsAnswerWebhookJSONQuery(params *BotsAnswerWebhookJSONQueryParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning BotsAnswerWebhookJSONQuery")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -10923,23 +10923,23 @@ func (e *BotsSetBotCommandsParams) CRC() uint32 {
 	return uint32(0x805d46f6)
 }
 
-func (e *BotsSetBotCommands) Encode() []byte {
+func (e *BotsSetBotCommandsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutVector(e.Commands)
 	return buf.Result()
 }
 
-func (с *Client) BotsSetBotCommands(params *BotsSetBotCommandsParams) {
+func (c *Client) BotsSetBotCommands(params *BotsSetBotCommandsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning BotsSetBotCommands")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -10955,17 +10955,17 @@ func (e *PaymentsGetPaymentFormParams) CRC() uint32 {
 	return uint32(0x99f09745)
 }
 
-func (e *PaymentsGetPaymentForm) Encode() []byte {
+func (e *PaymentsGetPaymentFormParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.MsgId)
 	return buf.Result()
 }
 
-func (с *Client) PaymentsGetPaymentForm(params *PaymentsGetPaymentFormParams) {
+func (c *Client) PaymentsGetPaymentForm(params *PaymentsGetPaymentFormParams) (*PaymentsPaymentForm, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning PaymentsGetPaymentForm")
@@ -10987,17 +10987,17 @@ func (e *PaymentsGetPaymentReceiptParams) CRC() uint32 {
 	return uint32(0xa092a980)
 }
 
-func (e *PaymentsGetPaymentReceipt) Encode() []byte {
+func (e *PaymentsGetPaymentReceiptParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.MsgId)
 	return buf.Result()
 }
 
-func (с *Client) PaymentsGetPaymentReceipt(params *PaymentsGetPaymentReceiptParams) {
+func (c *Client) PaymentsGetPaymentReceipt(params *PaymentsGetPaymentReceiptParams) (*PaymentsPaymentReceipt, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning PaymentsGetPaymentReceipt")
@@ -11022,7 +11022,7 @@ func (e *PaymentsValidateRequestedInfoParams) CRC() uint32 {
 	return uint32(0x770a8e74)
 }
 
-func (e *PaymentsValidateRequestedInfo) Encode() []byte {
+func (e *PaymentsValidateRequestedInfoParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -11030,7 +11030,7 @@ func (e *PaymentsValidateRequestedInfo) Encode() []byte {
 	if !zero.IsZeroVal(e.Save) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutInt(e.MsgId)
@@ -11038,7 +11038,7 @@ func (e *PaymentsValidateRequestedInfo) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) PaymentsValidateRequestedInfo(params *PaymentsValidateRequestedInfoParams) {
+func (c *Client) PaymentsValidateRequestedInfo(params *PaymentsValidateRequestedInfoParams) (*PaymentsValidatedRequestedInfo, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning PaymentsValidateRequestedInfo")
@@ -11064,7 +11064,7 @@ func (e *PaymentsSendPaymentFormParams) CRC() uint32 {
 	return uint32(0x2b8879b3)
 }
 
-func (e *PaymentsSendPaymentForm) Encode() []byte {
+func (e *PaymentsSendPaymentFormParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -11075,7 +11075,7 @@ func (e *PaymentsSendPaymentForm) Encode() []byte {
 	if !zero.IsZeroVal(e.ShippingOptionId) {
 		flag |= 1 << 1
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutInt(e.MsgId)
@@ -11089,7 +11089,7 @@ func (e *PaymentsSendPaymentForm) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) PaymentsSendPaymentForm(params *PaymentsSendPaymentFormParams) {
+func (c *Client) PaymentsSendPaymentForm(params *PaymentsSendPaymentFormParams) (PaymentsPaymentResult, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning PaymentsSendPaymentForm")
@@ -11109,13 +11109,13 @@ func (e *PaymentsGetSavedInfoParams) CRC() uint32 {
 	return uint32(0x227d824b)
 }
 
-func (e *PaymentsGetSavedInfo) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *PaymentsGetSavedInfoParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) PaymentsGetSavedInfo() {
+func (c *Client) PaymentsGetSavedInfo() (*PaymentsSavedInfo, error) {
 	data, err := c.MakeRequest(&PaymentsGetSavedInfoParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning PaymentsGetSavedInfo")
@@ -11139,7 +11139,7 @@ func (e *PaymentsClearSavedInfoParams) CRC() uint32 {
 	return uint32(0xd83d70c1)
 }
 
-func (e *PaymentsClearSavedInfo) Encode() []byte {
+func (e *PaymentsClearSavedInfoParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -11150,19 +11150,19 @@ func (e *PaymentsClearSavedInfo) Encode() []byte {
 	if !zero.IsZeroVal(e.Info) {
 		flag |= 1 << 1
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	return buf.Result()
 }
 
-func (с *Client) PaymentsClearSavedInfo(params *PaymentsClearSavedInfoParams) {
+func (c *Client) PaymentsClearSavedInfo(params *PaymentsClearSavedInfoParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning PaymentsClearSavedInfo")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -11178,17 +11178,17 @@ func (e *PaymentsGetBankCardDataParams) CRC() uint32 {
 	return uint32(0x2e79d779)
 }
 
-func (e *PaymentsGetBankCardData) Encode() []byte {
+func (e *PaymentsGetBankCardDataParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.Number)
 	return buf.Result()
 }
 
-func (с *Client) PaymentsGetBankCardData(params *PaymentsGetBankCardDataParams) {
+func (c *Client) PaymentsGetBankCardData(params *PaymentsGetBankCardDataParams) (*PaymentsBankCardData, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning PaymentsGetBankCardData")
@@ -11217,7 +11217,7 @@ func (e *StickersCreateStickerSetParams) CRC() uint32 {
 	return uint32(0xf1036780)
 }
 
-func (e *StickersCreateStickerSet) Encode() []byte {
+func (e *StickersCreateStickerSetParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -11231,7 +11231,7 @@ func (e *StickersCreateStickerSet) Encode() []byte {
 	if !zero.IsZeroVal(e.Thumb) {
 		flag |= 1 << 2
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.UserId.Encode())
@@ -11244,7 +11244,7 @@ func (e *StickersCreateStickerSet) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) StickersCreateStickerSet(params *StickersCreateStickerSetParams) {
+func (c *Client) StickersCreateStickerSet(params *StickersCreateStickerSetParams) (*MessagesStickerSet, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning StickersCreateStickerSet")
@@ -11266,17 +11266,17 @@ func (e *StickersRemoveStickerFromSetParams) CRC() uint32 {
 	return uint32(0xf7760f51)
 }
 
-func (e *StickersRemoveStickerFromSet) Encode() []byte {
+func (e *StickersRemoveStickerFromSetParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Sticker.Encode())
 	return buf.Result()
 }
 
-func (с *Client) StickersRemoveStickerFromSet(params *StickersRemoveStickerFromSetParams) {
+func (c *Client) StickersRemoveStickerFromSet(params *StickersRemoveStickerFromSetParams) (*MessagesStickerSet, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning StickersRemoveStickerFromSet")
@@ -11299,18 +11299,18 @@ func (e *StickersChangeStickerPositionParams) CRC() uint32 {
 	return uint32(0xffb6d4ca)
 }
 
-func (e *StickersChangeStickerPosition) Encode() []byte {
+func (e *StickersChangeStickerPositionParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Sticker.Encode())
 	buf.PutInt(e.Position)
 	return buf.Result()
 }
 
-func (с *Client) StickersChangeStickerPosition(params *StickersChangeStickerPositionParams) {
+func (c *Client) StickersChangeStickerPosition(params *StickersChangeStickerPositionParams) (*MessagesStickerSet, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning StickersChangeStickerPosition")
@@ -11333,18 +11333,18 @@ func (e *StickersAddStickerToSetParams) CRC() uint32 {
 	return uint32(0x8653febe)
 }
 
-func (e *StickersAddStickerToSet) Encode() []byte {
+func (e *StickersAddStickerToSetParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Stickerset.Encode())
 	buf.PutRawBytes(e.Sticker.Encode())
 	return buf.Result()
 }
 
-func (с *Client) StickersAddStickerToSet(params *StickersAddStickerToSetParams) {
+func (c *Client) StickersAddStickerToSet(params *StickersAddStickerToSetParams) (*MessagesStickerSet, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning StickersAddStickerToSet")
@@ -11367,18 +11367,18 @@ func (e *StickersSetStickerSetThumbParams) CRC() uint32 {
 	return uint32(0x9a364e30)
 }
 
-func (e *StickersSetStickerSetThumb) Encode() []byte {
+func (e *StickersSetStickerSetThumbParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Stickerset.Encode())
 	buf.PutRawBytes(e.Thumb.Encode())
 	return buf.Result()
 }
 
-func (с *Client) StickersSetStickerSetThumb(params *StickersSetStickerSetThumbParams) {
+func (c *Client) StickersSetStickerSetThumb(params *StickersSetStickerSetThumbParams) (*MessagesStickerSet, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning StickersSetStickerSetThumb")
@@ -11398,13 +11398,13 @@ func (e *PhoneGetCallConfigParams) CRC() uint32 {
 	return uint32(0x55451fa9)
 }
 
-func (e *PhoneGetCallConfig) Encode() []byte {
-	buf := mtproto.NewEncoder()
+func (e *PhoneGetCallConfigParams) Encode() []byte {
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	return buf.Result()
 }
 
-func (с *Client) PhoneGetCallConfig() {
+func (c *Client) PhoneGetCallConfig() (*DataJSON, error) {
 	data, err := c.MakeRequest(&PhoneGetCallConfigParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning PhoneGetCallConfig")
@@ -11431,7 +11431,7 @@ func (e *PhoneRequestCallParams) CRC() uint32 {
 	return uint32(0x42ff96ed)
 }
 
-func (e *PhoneRequestCall) Encode() []byte {
+func (e *PhoneRequestCallParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -11439,7 +11439,7 @@ func (e *PhoneRequestCall) Encode() []byte {
 	if !zero.IsZeroVal(e.Video) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.UserId.Encode())
@@ -11449,7 +11449,7 @@ func (e *PhoneRequestCall) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) PhoneRequestCall(params *PhoneRequestCallParams) {
+func (c *Client) PhoneRequestCall(params *PhoneRequestCallParams) (*PhonePhoneCall, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning PhoneRequestCall")
@@ -11473,11 +11473,11 @@ func (e *PhoneAcceptCallParams) CRC() uint32 {
 	return uint32(0x3bd2b4a0)
 }
 
-func (e *PhoneAcceptCall) Encode() []byte {
+func (e *PhoneAcceptCallParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutMessage(e.GB)
@@ -11485,7 +11485,7 @@ func (e *PhoneAcceptCall) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) PhoneAcceptCall(params *PhoneAcceptCallParams) {
+func (c *Client) PhoneAcceptCall(params *PhoneAcceptCallParams) (*PhonePhoneCall, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning PhoneAcceptCall")
@@ -11510,11 +11510,11 @@ func (e *PhoneConfirmCallParams) CRC() uint32 {
 	return uint32(0x2efe1722)
 }
 
-func (e *PhoneConfirmCall) Encode() []byte {
+func (e *PhoneConfirmCallParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutMessage(e.GA)
@@ -11523,7 +11523,7 @@ func (e *PhoneConfirmCall) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) PhoneConfirmCall(params *PhoneConfirmCallParams) {
+func (c *Client) PhoneConfirmCall(params *PhoneConfirmCallParams) (*PhonePhoneCall, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning PhoneConfirmCall")
@@ -11545,23 +11545,23 @@ func (e *PhoneReceivedCallParams) CRC() uint32 {
 	return uint32(0x17d54f61)
 }
 
-func (e *PhoneReceivedCall) Encode() []byte {
+func (e *PhoneReceivedCallParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	return buf.Result()
 }
 
-func (с *Client) PhoneReceivedCall(params *PhoneReceivedCallParams) {
+func (c *Client) PhoneReceivedCall(params *PhoneReceivedCallParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning PhoneReceivedCall")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -11582,7 +11582,7 @@ func (e *PhoneDiscardCallParams) CRC() uint32 {
 	return uint32(0xb2cbc1c0)
 }
 
-func (e *PhoneDiscardCall) Encode() []byte {
+func (e *PhoneDiscardCallParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -11590,7 +11590,7 @@ func (e *PhoneDiscardCall) Encode() []byte {
 	if !zero.IsZeroVal(e.Video) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Peer.Encode())
@@ -11600,7 +11600,7 @@ func (e *PhoneDiscardCall) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) PhoneDiscardCall(params *PhoneDiscardCallParams) {
+func (c *Client) PhoneDiscardCall(params *PhoneDiscardCallParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning PhoneDiscardCall")
@@ -11626,7 +11626,7 @@ func (e *PhoneSetCallRatingParams) CRC() uint32 {
 	return uint32(0x59ead627)
 }
 
-func (e *PhoneSetCallRating) Encode() []byte {
+func (e *PhoneSetCallRatingParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -11634,7 +11634,7 @@ func (e *PhoneSetCallRating) Encode() []byte {
 	if !zero.IsZeroVal(e.UserInitiative) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Peer.Encode())
@@ -11643,7 +11643,7 @@ func (e *PhoneSetCallRating) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) PhoneSetCallRating(params *PhoneSetCallRatingParams) {
+func (c *Client) PhoneSetCallRating(params *PhoneSetCallRatingParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning PhoneSetCallRating")
@@ -11666,24 +11666,24 @@ func (e *PhoneSaveCallDebugParams) CRC() uint32 {
 	return uint32(0x277add7e)
 }
 
-func (e *PhoneSaveCallDebug) Encode() []byte {
+func (e *PhoneSaveCallDebugParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutRawBytes(e.Debug.Encode())
 	return buf.Result()
 }
 
-func (с *Client) PhoneSaveCallDebug(params *PhoneSaveCallDebugParams) {
+func (c *Client) PhoneSaveCallDebug(params *PhoneSaveCallDebugParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning PhoneSaveCallDebug")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -11700,24 +11700,24 @@ func (e *PhoneSendSignalingDataParams) CRC() uint32 {
 	return uint32(0xff7a9383)
 }
 
-func (e *PhoneSendSignalingData) Encode() []byte {
+func (e *PhoneSendSignalingDataParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutRawBytes(e.Peer.Encode())
 	buf.PutMessage(e.Data)
 	return buf.Result()
 }
 
-func (с *Client) PhoneSendSignalingData(params *PhoneSendSignalingDataParams) {
+func (c *Client) PhoneSendSignalingData(params *PhoneSendSignalingDataParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning PhoneSendSignalingData")
 	}
 
-	resp, ok := data.(Bool)
+	resp, ok := data.(*serialize.Bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(data).String())
 	}
@@ -11734,18 +11734,18 @@ func (e *LangpackGetLangPackParams) CRC() uint32 {
 	return uint32(0xf2f2330a)
 }
 
-func (e *LangpackGetLangPack) Encode() []byte {
+func (e *LangpackGetLangPackParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.LangPack)
 	buf.PutString(e.LangCode)
 	return buf.Result()
 }
 
-func (с *Client) LangpackGetLangPack(params *LangpackGetLangPackParams) {
+func (c *Client) LangpackGetLangPack(params *LangpackGetLangPackParams) (*LangPackDifference, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning LangpackGetLangPack")
@@ -11769,11 +11769,11 @@ func (e *LangpackGetStringsParams) CRC() uint32 {
 	return uint32(0xefea3803)
 }
 
-func (e *LangpackGetStrings) Encode() []byte {
+func (e *LangpackGetStringsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.LangPack)
 	buf.PutString(e.LangCode)
@@ -11781,7 +11781,7 @@ func (e *LangpackGetStrings) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) LangpackGetStrings(params *LangpackGetStringsParams) {
+func (c *Client) LangpackGetStrings(params *LangpackGetStringsParams) (LangPackString, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning LangpackGetStrings")
@@ -11805,11 +11805,11 @@ func (e *LangpackGetDifferenceParams) CRC() uint32 {
 	return uint32(0xcd984aa5)
 }
 
-func (e *LangpackGetDifference) Encode() []byte {
+func (e *LangpackGetDifferenceParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.LangPack)
 	buf.PutString(e.LangCode)
@@ -11817,7 +11817,7 @@ func (e *LangpackGetDifference) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) LangpackGetDifference(params *LangpackGetDifferenceParams) {
+func (c *Client) LangpackGetDifference(params *LangpackGetDifferenceParams) (*LangPackDifference, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning LangpackGetDifference")
@@ -11839,17 +11839,17 @@ func (e *LangpackGetLanguagesParams) CRC() uint32 {
 	return uint32(0x42c6978f)
 }
 
-func (e *LangpackGetLanguages) Encode() []byte {
+func (e *LangpackGetLanguagesParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.LangPack)
 	return buf.Result()
 }
 
-func (с *Client) LangpackGetLanguages(params *LangpackGetLanguagesParams) {
+func (c *Client) LangpackGetLanguages(params *LangpackGetLanguagesParams) (*LangPackLanguage, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning LangpackGetLanguages")
@@ -11872,18 +11872,18 @@ func (e *LangpackGetLanguageParams) CRC() uint32 {
 	return uint32(0x6a596502)
 }
 
-func (e *LangpackGetLanguage) Encode() []byte {
+func (e *LangpackGetLanguageParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutString(e.LangPack)
 	buf.PutString(e.LangCode)
 	return buf.Result()
 }
 
-func (с *Client) LangpackGetLanguage(params *LangpackGetLanguageParams) {
+func (c *Client) LangpackGetLanguage(params *LangpackGetLanguageParams) (*LangPackLanguage, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning LangpackGetLanguage")
@@ -11905,17 +11905,17 @@ func (e *FoldersEditPeerFoldersParams) CRC() uint32 {
 	return uint32(0x6847d0ab)
 }
 
-func (e *FoldersEditPeerFolders) Encode() []byte {
+func (e *FoldersEditPeerFoldersParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutVector(e.FolderPeers)
 	return buf.Result()
 }
 
-func (с *Client) FoldersEditPeerFolders(params *FoldersEditPeerFoldersParams) {
+func (c *Client) FoldersEditPeerFolders(params *FoldersEditPeerFoldersParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning FoldersEditPeerFolders")
@@ -11937,17 +11937,17 @@ func (e *FoldersDeleteFolderParams) CRC() uint32 {
 	return uint32(0x1c295881)
 }
 
-func (e *FoldersDeleteFolder) Encode() []byte {
+func (e *FoldersDeleteFolderParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutInt(e.FolderId)
 	return buf.Result()
 }
 
-func (с *Client) FoldersDeleteFolder(params *FoldersDeleteFolderParams) {
+func (c *Client) FoldersDeleteFolder(params *FoldersDeleteFolderParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning FoldersDeleteFolder")
@@ -11971,7 +11971,7 @@ func (e *StatsGetBroadcastStatsParams) CRC() uint32 {
 	return uint32(0xab42441a)
 }
 
-func (e *StatsGetBroadcastStats) Encode() []byte {
+func (e *StatsGetBroadcastStatsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -11979,14 +11979,14 @@ func (e *StatsGetBroadcastStats) Encode() []byte {
 	if !zero.IsZeroVal(e.Dark) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Channel.Encode())
 	return buf.Result()
 }
 
-func (с *Client) StatsGetBroadcastStats(params *StatsGetBroadcastStatsParams) {
+func (c *Client) StatsGetBroadcastStats(params *StatsGetBroadcastStatsParams) (*StatsBroadcastStats, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning StatsGetBroadcastStats")
@@ -12010,7 +12010,7 @@ func (e *StatsLoadAsyncGraphParams) CRC() uint32 {
 	return uint32(0x621d5fa0)
 }
 
-func (e *StatsLoadAsyncGraph) Encode() []byte {
+func (e *StatsLoadAsyncGraphParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -12018,7 +12018,7 @@ func (e *StatsLoadAsyncGraph) Encode() []byte {
 	if !zero.IsZeroVal(e.X) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutString(e.Token)
@@ -12028,7 +12028,7 @@ func (e *StatsLoadAsyncGraph) Encode() []byte {
 	return buf.Result()
 }
 
-func (с *Client) StatsLoadAsyncGraph(params *StatsLoadAsyncGraphParams) {
+func (c *Client) StatsLoadAsyncGraph(params *StatsLoadAsyncGraphParams) (StatsGraph, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning StatsLoadAsyncGraph")
@@ -12052,7 +12052,7 @@ func (e *StatsGetMegagroupStatsParams) CRC() uint32 {
 	return uint32(0xdcdf8607)
 }
 
-func (e *StatsGetMegagroupStats) Encode() []byte {
+func (e *StatsGetMegagroupStatsParams) Encode() []byte {
 	err := validator.New().Struct(e)
 	dry.PanicIfErr(err)
 
@@ -12060,14 +12060,14 @@ func (e *StatsGetMegagroupStats) Encode() []byte {
 	if !zero.IsZeroVal(e.Dark) {
 		flag |= 1 << 0
 	}
-	buf := mtproto.NewEncoder()
+	buf := serialize.NewEncoder()
 	buf.PutUint(e.CRC())
 	buf.PutUint(flag)
 	buf.PutRawBytes(e.Channel.Encode())
 	return buf.Result()
 }
 
-func (с *Client) StatsGetMegagroupStats(params *StatsGetMegagroupStatsParams) {
+func (c *Client) StatsGetMegagroupStats(params *StatsGetMegagroupStatsParams) (*StatsMegagroupStats, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sedning StatsGetMegagroupStats")

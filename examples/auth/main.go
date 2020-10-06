@@ -18,7 +18,7 @@ import (
 var client *telegram.Client
 
 func main() {
-	keyfile := "~/go/src/github.com/sdidyk/mtproto/keys/keys.pem"
+	keyfile := "/home/r0ck3t/go/src/github.com/xelaj/mtproto/keys/keys.pem"
 	TelegramPublicKeys, err := keys.ReadFromFile(keyfile)
 	dry.PanicIfErr(err)
 
@@ -61,7 +61,9 @@ func main() {
 
 	phoneNumber := os.Args[1]
 
-	resp, err := client.AuthSendCode(phoneNumber, 94575, "a3406de8d171bb422bb6ddf3bbd800e2", &telegram.CodeSettings{})
+	setCode, err := client.AuthSendCode(&telegram.AuthSendCodeParams{
+		phoneNumber, 94575, "a3406de8d171bb422bb6ddf3bbd800e2", &telegram.CodeSettings{},
+	})
 	dry.PanicIfErr(err)
 	pp.Println(resp)
 
@@ -69,6 +71,8 @@ func main() {
 	code, _ := bufio.NewReader(os.Stdin).ReadString('\n')
 	code = strings.Replace(code, "\n", "", -1)
 
-	pp.Println(os.Args[2], resp.PhoneCodeHash, code)
-	pp.Println(client.AuthSignIn(phoneNumber, resp.PhoneCodeHash, code))
+	pp.Println(os.Args[2], setCode.PhoneCodeHash, code)
+	pp.Println(client.AuthSignIn(&telegram.AuthSignInParams{
+		phoneNumber, setCode.PhoneCodeHash, code,
+	}))
 }

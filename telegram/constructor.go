@@ -7,7 +7,7 @@ import (
 	serialize "github.com/xelaj/mtproto/serialize"
 )
 
-func GenerateStructByConstructor(constructorID uint32) (object serialize.TL, isEnum bool) {
+func GenerateStructByConstructor(constructorID uint32) (object serialize.TL, isEnum bool, err error) {
 	switch constructorID {
 	case uint32(0x4a8537):
 		return &SecurePasswordKdfAlgoUnknown{}, false, nil

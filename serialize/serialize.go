@@ -65,7 +65,7 @@ func RandomInt256() *Int256 {
 type Null struct {
 }
 
-func (_ *Null) CRC() uint32 {
+func (*Null) CRC() uint32 {
 	return 0x69696969
 }
 
@@ -80,21 +80,68 @@ func (t *Null) DecodeFrom(d *Decoder) {
 type ErrorSessionConfigsChanged struct {
 }
 
-func (_ *ErrorSessionConfigsChanged) CRC() uint32 {
+func (*ErrorSessionConfigsChanged) CRC() uint32 {
 	panic("not acceptable")
 }
 
-func (_ *ErrorSessionConfigsChanged) Encode() []byte {
+func (*ErrorSessionConfigsChanged) Encode() []byte {
 	panic("not acceptable")
 }
 
-func (_ *ErrorSessionConfigsChanged) DecodeFrom(d *Decoder) {
+func (*ErrorSessionConfigsChanged) DecodeFrom(d *Decoder) {
 	panic("not acceptable")
 }
 
-func (_ *ErrorSessionConfigsChanged) Error() string {
+func (*ErrorSessionConfigsChanged) Error() string {
 	return "session configuration was changed"
 }
+
+// dummy bool struct for methods generation
+type Bool struct{}
+
+func (*Bool) CRC() uint32 {
+	panic("it's a dummy constructor!")
+}
+
+func (t *Bool) Encode() []byte {
+	panic("it's a dummy constructor!")
+}
+
+func (t *Bool) DecodeFrom(d *Decoder) {
+	panic("it's a dummy constructor!")
+}
+
+// dummy bool struct for methods generation
+type Long struct{}
+
+func (*Long) CRC() uint32 {
+	panic("it's a dummy constructor!")
+}
+
+func (*Long) Encode() []byte {
+	panic("it's a dummy constructor!")
+}
+
+func (*Long) DecodeFrom(d *Decoder) {
+	panic("it's a dummy constructor!")
+}
+
+// dummy bool struct for methods generation
+type Int struct{}
+
+func (*Int) CRC() uint32 {
+	panic("it's a dummy constructor!")
+}
+
+func (*Int) Encode() []byte {
+	panic("it's a dummy constructor!")
+}
+
+func (*Int) DecodeFrom(d *Decoder) {
+	panic("it's a dummy constructor!")
+}
+
+// --------------------------------------------------------------------------------------
 
 type CustomObjectConstructor func(constructorID uint32) (obj TL, isEnum bool, err error)
 
