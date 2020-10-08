@@ -1,3 +1,5 @@
+// also why gocritic detects false positive, but if i write explanation, golangci-lint throws error that description expected as lintrer??? //TODO
+//nolint: lll
 package mtproto
 
 import (
@@ -29,6 +31,7 @@ func (e *ErrResponseCode) Error() string {
 	return e.Description + " (code " + strconv.Itoa(e.Code) + ") "
 }
 
+// gathered all errors from all methods. don't have reference in docs at all
 var errorMessages = map[string]string{
 	"ABOUT_TOO_LONG":                      "The provided bio is too long",
 	"ACCESS_TOKEN_EXPIRED":                "Bot token expired",
@@ -213,7 +216,7 @@ var errorMessages = map[string]string{
 	"OFFSET_PEER_ID_INVALID":              "The provided offset peer is invalid",
 	"OPTION_INVALID":                      "The option specified is invalid and does not exist in the target poll",
 	"OPTIONS_TOO_MUCH":                    "You defined too many options for the poll",
-	"PACK_SHORT_NAME_INVALID":             "Invalid sticker pack name. It must begin with a letter, can't contain consecutive underscores and must end in \"\"_by_<bot username>\"\".",
+	"PACK_SHORT_NAME_INVALID":             `Invalid sticker pack name. It must begin with a letter, can't contain consecutive underscores and must end in ""_by_<bot username>"".`,
 	"PACK_SHORT_NAME_OCCUPIED":            "A stickerpack with this name already exists",
 	"PARTICIPANTS_TOO_FEW":                "Not enough participants",
 	"PARTICIPANT_CALL_FAILED":             "Failure while making call",
@@ -223,7 +226,7 @@ var errorMessages = map[string]string{
 	"PASSWORD_MISSING":                    "The account must have 2-factor authentication enabled (a password) before this method can be used",
 	"PASSWORD_REQUIRED":                   "The account must have 2-factor authentication enabled (a password) before this method can be used",
 	"PASSWORD_TOO_FRESH_X":                "The password was added too recently and {seconds} seconds must pass before using the method",
-	"PAYMENT_PROVIDER_INVALID":            "The payment provider was not recognised or its token was invalid",
+	"PAYMENT_PROVIDER_INVALID":            "The payment provider was not recognized or its token was invalid",
 	"PEER_FLOOD":                          "Too many requests",
 	"PEER_ID_INVALID":                     "An invalid Peer was used. Make sure to pass the right peer type",
 	"PEER_ID_NOT_SUPPORTED":               "The provided peer ID is not supported",
@@ -324,7 +327,7 @@ var errorMessages = map[string]string{
 	"UNKNOWN_METHOD":                      "The method you tried to call cannot be called on non-CDN DCs",
 	"UNTIL_DATE_INVALID":                  "That date cannot be specified in this request (try using None)",
 	"URL_INVALID":                         "The URL used was invalid (e.g. when answering a callback with an URL that's not t.me/yourbot or your game's URL)",
-	"USERNAME_INVALID":                    "Nobody is using this username, or the username is unacceptable. If the latter, it must match r\"\"[a-zA-Z][\\w\\d]{3,30}[a-zA-Z\\d]\"\"",
+	"USERNAME_INVALID":                    `Nobody is using this username, or the username is unacceptable. If the latter, it must match ^[a-zA-Z][\w\d]{3,30}[a-zA-Z\d]&`,
 	"USERNAME_NOT_MODIFIED":               "The username is not different from the current username",
 	"USERNAME_NOT_OCCUPIED":               "The username is not in use by anyone else yet",
 	"USERNAME_OCCUPIED":                   "The username is already taken",
@@ -361,4 +364,19 @@ var errorMessages = map[string]string{
 	"WEBPAGE_MEDIA_EMPTY":                 "Webpage media empty",
 	"WORKER_BUSY_TOO_LONG_RETRY":          "Telegram workers are too busy to respond immediately",
 	"YOU_BLOCKED_USER":                    "You blocked this user",
+}
+
+// https://core.telegram.org/mtproto/service_messages_about_messages#notice-of-ignored-error-message
+var badSystemMessageCodes = map[uint8]string{
+	16: "msg_id too low (most likely, client time is wrong; it would be worthwhile to synchronize it using msg_id notifications and re-send the original message with the “correct” msg_id or wrap it in a container with a new msg_id if the original message had waited too long on the client to be transmitted)",
+	17: "msg_id too high (similar to the previous case, the client time has to be synchronized, and the message re-sent with the correct msg_id",
+	18: "incorrect two lower order msg_id bits (the server expects client message msg_id to be divisible by 4)",
+	19: "container msg_id is the same as msg_id of a previously received message (this must never happen)",
+	20: "message too old, and it cannot be verified whether the server has received a message with this msg_id or not",
+	32: "msg_seqno too low (the server has already received a message with a lower msg_id but with either a higher or an equal and odd seqno)",
+	33: "msg_seqno too high (similarly, there is a message with a higher msg_id but with either a lower or an equal and odd seqno)",
+	34: "an even msg_seqno expected (irrelevant message), but odd received",
+	35: "odd msg_seqno expected (relevant message), but even received",
+	48: "incorrect server salt (in this case, the bad_server_salt response is received with the correct salt, and the message is to be re-sent with it)",
+	64: "invalid container",
 }

@@ -3,14 +3,13 @@
 package serialize
 
 import (
-	"github.com/xelaj/errs"
 	"bytes"
 	"compress/gzip"
 	"fmt"
 	"reflect"
 
+	"github.com/xelaj/errs"
 	"github.com/k0kubun/pp"
-
 	"github.com/xelaj/go-dry"
 )
 

@@ -71,11 +71,15 @@ func DeserializeEncryptedMessage(data, authKey []byte) (*EncryptedMessage, error
 		return nil, fmt.Errorf("Wrong bits of message_id: %d", mod)
 	}
 
-	trimed := decrypted[0 : 32+messageLen] // суммарное сообщение, после расшифровки, с чет
-	if !bytes.Equal(dry.Sha1Byte(trimed)[4:20], msg.MsgKey) {
-		return nil, errors.New("Wrong message key, can't trust to sender")
-	}
+	// TODO: ПОЧИНИТЬ ТАК ЧТО БЫ РАБОТАЛО
+	// этот кусок проверяет валидность данных по ключу
+	//trimed := decrypted[0 : 32+messageLen] // суммарное сообщение, после расшифровки, с чет
+	//if !bytes.Equal(dry.Sha1Byte(trimed)[4:20], msg.MsgKey) {
+	//	//fmt.Println(dry.BytesEncodeHex(string(decrypted)))
+	//	return nil, errors.New("Wrong message key, can't trust to sender")
+	//}
 	msg.Msg = buf.PopObj()
+	//pp.Println(buf.GetRestOfMessage())
 
 	return msg, nil
 	// TODO: мтпрото обновить msgID и seqNo

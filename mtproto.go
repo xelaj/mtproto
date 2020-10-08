@@ -244,11 +244,11 @@ func (m *MTProto) processResponse(msgId, seqNo int, data serialize.TL) error {
 		err := m.SaveSession()
 		dry.PanicIfErr(err)
 
-		m.mutex.Lock() // что это?
+		m.mutex.Lock()
 		for _, v := range m.responseChannels {
 			v <- &serialize.ErrorSessionConfigsChanged{}
 		}
-		m.mutex.Unlock() // что это?
+		m.mutex.Unlock()
 
 	case *serialize.NewSessionCreated:
 		pp.Println("session created")
@@ -271,8 +271,10 @@ func (m *MTProto) processResponse(msgId, seqNo int, data serialize.TL) error {
 			m.gotAck(id)
 		}
 
+	case *serialize.BadMsgNotification:
+		
+
 	case *serialize.RpcResult:
-		pp.Println("rpc!!!")
 		obj := message.Obj
 		if v, ok := obj.(*serialize.GzipPacked); ok {
 			obj = v.Obj

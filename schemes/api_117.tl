@@ -19,12 +19,31 @@ ipPortSecret#37982646 ipv4:int port:int secret:bytes = IpPort;
 accessPointRule#4679b65f phone_prefix_rules:string dc_id:int ips:Vector<IpPort> = AccessPointRule;
 help.configSimple#5a592a6c date:int expires:int rules:Vector<AccessPointRule> = help.ConfigSimple;
 
+// @type Peer
+// @constructor An empty constructor, no user or chat is defined.
 inputPeerEmpty#7f3b18ea = InputPeer;
+// @constructor Defines the current user.
 inputPeerSelf#7da07ec9 = InputPeer;
+// @constructor Defines a chat for further interaction.
+// @param chat_id Chat idientifier
 inputPeerChat#179be863 chat_id:int = InputPeer;
+// @constructor Defines a user for further interaction.
+// @param user_id User identifier
+// @param access_hash **access_hash** value from the [user](https://core.telegram.org/constructor/user) constructor
 inputPeerUser#7b8e7de6 user_id:int access_hash:long = InputPeer;
+// @constructor Defines a channel for further interaction.
+// @param channel_id Channel identifier
+// @param access_hash **access_hash** value from the [channel](https://core.telegram.org/constructor/channel) constructor
 inputPeerChannel#20adaef8 channel_id:int access_hash:long = InputPeer;
+// @constructor Defines a [min](https://core.telegram.org/api/min) user that was seen in a certain message of a certain chat.
+// @param peer The chat where the user was seen
+// @param msg_id The message ID
+// @param user_id The identifier of the user that was seen
 inputPeerUserFromMessage#17bae2e6 peer:InputPeer msg_id:int user_id:int = InputPeer;
+// @constructor Defines a [min](https://core.telegram.org/api/min) channel that was seen in a certain message of a certain chat.
+// @param peer The chat where the channel's message was seen
+// @param msg_id The message ID
+// @param channel_id The identifier of the channel that was seen
 inputPeerChannelFromMessage#9c95f7bb peer:InputPeer msg_id:int channel_id:int = InputPeer;
 
 inputUserEmpty#b98886cf = InputUser;
@@ -427,13 +446,22 @@ sendMessageUploadRoundAction#243e1c66 progress:int = SendMessageAction;
 
 contacts.found#b3134d9d my_results:Vector<Peer> results:Vector<Peer> chats:Vector<Chat> users:Vector<User> = contacts.Found;
 
+// @type Privacy key
+// @enum Whether we can see the exact last online timestamp of the user
 inputPrivacyKeyStatusTimestamp#4f96cb18 = InputPrivacyKey;
+// @enum Whether the user can be invited to chats
 inputPrivacyKeyChatInvite#bdfb0426 = InputPrivacyKey;
+// @enum Whether the user will accept phone calls
 inputPrivacyKeyPhoneCall#fabadc5f = InputPrivacyKey;
+// @enum Whether the user allows P2P communication during VoIP calls
 inputPrivacyKeyPhoneP2P#db9e70d2 = InputPrivacyKey;
+// @enum Whether messages forwarded from this user will be [anonymous](https://telegram.org/blog/unsend-privacy-emoji#anonymous-forwarding)
 inputPrivacyKeyForwards#a4dd4c08 = InputPrivacyKey;
+// @enum Whether people will be able to see the user's profile picture
 inputPrivacyKeyProfilePhoto#5719bacc = InputPrivacyKey;
+// @enum Whether people will be able to see the user's phone number
 inputPrivacyKeyPhoneNumber#352dafa = InputPrivacyKey;
+// @enum Whether people can add you to their contact list by your phone number
 inputPrivacyKeyAddedByPhone#d1219bdd = InputPrivacyKey;
 
 privacyKeyStatusTimestamp#bc2eab30 = PrivacyKey;

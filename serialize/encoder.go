@@ -149,6 +149,12 @@ func (e *Encoder) PutRawBytes(s []byte) {
 func (e *Encoder) PutVector(v interface{}) {
 	slice := dry.SliceToInterfaceSlice(v)
 	buf := NewEncoder()
+	if v == nil {
+		buf.PutCRC(crc_vector)
+		buf.PutUint(0)
+		return
+	}
+
 	buf.PutCRC(crc_vector)
 	buf.PutUint(uint32(len(slice)))
 

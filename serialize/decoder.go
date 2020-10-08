@@ -104,6 +104,7 @@ func (d *Decoder) PopMessage() []byte {
 		d.mustRead(voidBytes) // читаем оставшиеся пустые байты. пустые, потому что длина слова 4 байта, может остаться 1,2 или 3 лишних байта
 		for _, b := range voidBytes {
 			if b != 0 {
+				pp.Println(string(buf))
 				panic("some of bytes doesn't equal zero: " + fmt.Sprintf("%#v", voidBytes))
 			}
 		}
@@ -174,7 +175,7 @@ func (d *Decoder) PopObj() TL {
 	if !isEnum {
 		d.PopToObjUsingReflection(obj, true)
 	}
-
+	pp.Println(obj)
 	return obj
 }
 
@@ -272,6 +273,7 @@ func (d *Decoder) PopToObjUsingReflection(item TL, ignoreCRCReading bool) {
 			if _, ok := value.Field(i).Interface().([]byte); ok {
 				value.Field(i).Set(reflect.ValueOf(d.PopMessage()))
 			} else {
+				pp.Println(ftyp.String())
 				value.Field(i).Set(reflect.ValueOf(d.PopVector(ftyp.Elem())).Convert(ftyp))
 			}
 		case reflect.Ptr:
@@ -350,6 +352,17 @@ func (d *Decoder) PopVector(as reflect.Type) interface{} {
 			n := reflect.New(as.Elem()).Interface().(TL)
 			d.PopToObjUsingReflection(n, false)
 			v = n
+		case reflect.Interface:
+			if !as.Implements(reflect.TypeOf((*TL)(nil)).Elem()) {
+				panic("can't parse any type, if it don't implement TL")
+			}
+			item := d.PopObj()
+
+			if !reflect.TypeOf(item).Implements(as) {
+				panic("recieved value " + reflect.TypeOf(item).String() + "; expected " + as.Elem().String())
+			}
+
+			v = item
 		default:
 			panic("как обрабатывать? " + as.String())
 		}
@@ -366,5 +379,5 @@ func (d *Decoder) mustRead(into []byte) {
 	}
 	n, err := d.buf.Read(into)
 	dry.PanicIfErr(errors.Wrap(err, fmt.Sprintf("read %v bytes", n)))
-	dry.PanicIf(n != len(into), fmt.Sprintf("expected to read equal %v bytes, got %v", len(into), n))
+	dry.PanicIf(n != len(into), fmt.Sprintf("expected to read exactly %v bytes, got %v", len(into), n))
 }

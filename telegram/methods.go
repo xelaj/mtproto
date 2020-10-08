@@ -3,12 +3,13 @@
 package telegram
 
 import (
+	"reflect"
+
 	validator "github.com/go-playground/validator"
 	errors "github.com/pkg/errors"
 	zero "github.com/vikyd/zero"
 	dry "github.com/xelaj/go-dry"
 	serialize "github.com/xelaj/mtproto/serialize"
-	"reflect"
 )
 
 type AuthSendCodeParams struct {
@@ -3069,7 +3070,7 @@ func (c *Client) ContactsGetStatuses() (*ContactStatus, error) {
 }
 
 type ContactsGetContactsParams struct {
-	Hash int32 `validate:"required"`
+	Hash int32
 }
 
 func (e *ContactsGetContactsParams) CRC() uint32 {
@@ -9788,9 +9789,9 @@ func (c *Client) ChannelsGetMessages(params *ChannelsGetMessagesParams) (Message
 type ChannelsGetParticipantsParams struct {
 	Channel InputChannel              `validate:"required"`
 	Filter  ChannelParticipantsFilter `validate:"required"`
-	Offset  int32                     `validate:"required"`
-	Limit   int32                     `validate:"required"`
-	Hash    int32                     `validate:"required"`
+	Offset  int32
+	Limit   int32
+	Hash    int32
 }
 
 func (e *ChannelsGetParticipantsParams) CRC() uint32 {
