@@ -3,12 +3,12 @@ package mtproto
 import (
 	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
 
 	"github.com/k0kubun/pp"
-	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
 	"github.com/xelaj/mtproto/serialize"
@@ -70,7 +70,7 @@ func (m *MTProto) sendPacketNew(request serialize.TL) (chan serialize.TL, error)
 	println("writing message")
 	_, err = m.conn.Write(data)
 	if err != nil {
-		return nil, errors.Wrap(err, "sending request")
+		return nil, fmt.Errorf("sending request: %w", err)
 	}
 
 	return resp, nil
@@ -120,7 +120,7 @@ func (m *MTProto) readFromConn(ctx context.Context) (data []byte, err error) {
 	n, err := reader.Read(sizeInBytes)
 	if err != nil {
 		pp.Println(sizeInBytes, err)
-		return nil, errors.Wrap(err, "reading length")
+		return nil, fmt.Errorf("reading length: %w", err)
 	}
 	if n != 4 {
 		return nil, errors.New("size is not length of int32, expected 4 bytes, got " + strconv.Itoa(n))
@@ -147,7 +147,6 @@ func (m *MTProto) sendPacket(msg serialize.TL, resp chan serialize.TL) error {
 			//m.msgsIdToAck[msgID] = packetToSend{msg, resp}
 			m.mutex.Unlock()
 			requireToAck = true
-
 		}
 
 		data = (&serialize.EncryptedMessage{
@@ -218,7 +217,7 @@ func (m *MTProto) read(stop <-chan struct{}) (serialize.TL, error) {
 	// проверим, что это не код ошибки
 	err = CatchResponseErrorCode(data)
 	if err != nil {
-		return nil, errors.Wrap(err, "Server response error")
+		return nil, fmt.Errorf("Server response error: %w", err)
 	}
 
 	if IsPacketEncrypted(data) {

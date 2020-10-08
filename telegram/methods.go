@@ -3,8 +3,8 @@
 package telegram
 
 import (
+	"fmt"
 	validator "github.com/go-playground/validator"
-	errors "github.com/pkg/errors"
 	zero "github.com/vikyd/zero"
 	dry "github.com/xelaj/go-dry"
 	serialize "github.com/xelaj/mtproto/serialize"
@@ -38,7 +38,7 @@ func (e *AuthSendCodeParams) Encode() []byte {
 func (c *Client) AuthSendCode(params *AuthSendCodeParams) (*AuthSentCode, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AuthSendCode")
+		return nil, fmt.Errorf("sedning AuthSendCode: %w", err)
 	}
 
 	resp, ok := data.(*AuthSentCode)
@@ -76,7 +76,7 @@ func (e *AuthSignUpParams) Encode() []byte {
 func (c *Client) AuthSignUp(params *AuthSignUpParams) (AuthAuthorization, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AuthSignUp")
+		return nil, fmt.Errorf("sedning AuthSignUp: %w", err)
 	}
 
 	resp, ok := data.(AuthAuthorization)
@@ -112,7 +112,7 @@ func (e *AuthSignInParams) Encode() []byte {
 func (c *Client) AuthSignIn(params *AuthSignInParams) (AuthAuthorization, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AuthSignIn")
+		return nil, fmt.Errorf("sedning AuthSignIn: %w", err)
 	}
 
 	resp, ok := data.(AuthAuthorization)
@@ -138,7 +138,7 @@ func (e *AuthLogOutParams) Encode() []byte {
 func (c *Client) AuthLogOut() (*serialize.Bool, error) {
 	data, err := c.MakeRequest(&AuthLogOutParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AuthLogOut")
+		return nil, fmt.Errorf("sedning AuthLogOut: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -164,7 +164,7 @@ func (e *AuthResetAuthorizationsParams) Encode() []byte {
 func (c *Client) AuthResetAuthorizations() (*serialize.Bool, error) {
 	data, err := c.MakeRequest(&AuthResetAuthorizationsParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AuthResetAuthorizations")
+		return nil, fmt.Errorf("sedning AuthResetAuthorizations: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -196,7 +196,7 @@ func (e *AuthExportAuthorizationParams) Encode() []byte {
 func (c *Client) AuthExportAuthorization(params *AuthExportAuthorizationParams) (*AuthExportedAuthorization, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AuthExportAuthorization")
+		return nil, fmt.Errorf("sedning AuthExportAuthorization: %w", err)
 	}
 
 	resp, ok := data.(*AuthExportedAuthorization)
@@ -230,7 +230,7 @@ func (e *AuthImportAuthorizationParams) Encode() []byte {
 func (c *Client) AuthImportAuthorization(params *AuthImportAuthorizationParams) (AuthAuthorization, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AuthImportAuthorization")
+		return nil, fmt.Errorf("sedning AuthImportAuthorization: %w", err)
 	}
 
 	resp, ok := data.(AuthAuthorization)
@@ -268,7 +268,7 @@ func (e *AuthBindTempAuthKeyParams) Encode() []byte {
 func (c *Client) AuthBindTempAuthKey(params *AuthBindTempAuthKeyParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AuthBindTempAuthKey")
+		return nil, fmt.Errorf("sedning AuthBindTempAuthKey: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -306,7 +306,7 @@ func (e *AuthImportBotAuthorizationParams) Encode() []byte {
 func (c *Client) AuthImportBotAuthorization(params *AuthImportBotAuthorizationParams) (AuthAuthorization, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AuthImportBotAuthorization")
+		return nil, fmt.Errorf("sedning AuthImportBotAuthorization: %w", err)
 	}
 
 	resp, ok := data.(AuthAuthorization)
@@ -338,7 +338,7 @@ func (e *AuthCheckPasswordParams) Encode() []byte {
 func (c *Client) AuthCheckPassword(params *AuthCheckPasswordParams) (AuthAuthorization, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AuthCheckPassword")
+		return nil, fmt.Errorf("sedning AuthCheckPassword: %w", err)
 	}
 
 	resp, ok := data.(AuthAuthorization)
@@ -364,7 +364,7 @@ func (e *AuthRequestPasswordRecoveryParams) Encode() []byte {
 func (c *Client) AuthRequestPasswordRecovery() (*AuthPasswordRecovery, error) {
 	data, err := c.MakeRequest(&AuthRequestPasswordRecoveryParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AuthRequestPasswordRecovery")
+		return nil, fmt.Errorf("sedning AuthRequestPasswordRecovery: %w", err)
 	}
 
 	resp, ok := data.(*AuthPasswordRecovery)
@@ -396,7 +396,7 @@ func (e *AuthRecoverPasswordParams) Encode() []byte {
 func (c *Client) AuthRecoverPassword(params *AuthRecoverPasswordParams) (AuthAuthorization, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AuthRecoverPassword")
+		return nil, fmt.Errorf("sedning AuthRecoverPassword: %w", err)
 	}
 
 	resp, ok := data.(AuthAuthorization)
@@ -430,7 +430,7 @@ func (e *AuthResendCodeParams) Encode() []byte {
 func (c *Client) AuthResendCode(params *AuthResendCodeParams) (*AuthSentCode, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AuthResendCode")
+		return nil, fmt.Errorf("sedning AuthResendCode: %w", err)
 	}
 
 	resp, ok := data.(*AuthSentCode)
@@ -464,7 +464,7 @@ func (e *AuthCancelCodeParams) Encode() []byte {
 func (c *Client) AuthCancelCode(params *AuthCancelCodeParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AuthCancelCode")
+		return nil, fmt.Errorf("sedning AuthCancelCode: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -496,7 +496,7 @@ func (e *AuthDropTempAuthKeysParams) Encode() []byte {
 func (c *Client) AuthDropTempAuthKeys(params *AuthDropTempAuthKeysParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AuthDropTempAuthKeys")
+		return nil, fmt.Errorf("sedning AuthDropTempAuthKeys: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -532,7 +532,7 @@ func (e *AuthExportLoginTokenParams) Encode() []byte {
 func (c *Client) AuthExportLoginToken(params *AuthExportLoginTokenParams) (AuthLoginToken, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AuthExportLoginToken")
+		return nil, fmt.Errorf("sedning AuthExportLoginToken: %w", err)
 	}
 
 	resp, ok := data.(AuthLoginToken)
@@ -564,7 +564,7 @@ func (e *AuthImportLoginTokenParams) Encode() []byte {
 func (c *Client) AuthImportLoginToken(params *AuthImportLoginTokenParams) (AuthLoginToken, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AuthImportLoginToken")
+		return nil, fmt.Errorf("sedning AuthImportLoginToken: %w", err)
 	}
 
 	resp, ok := data.(AuthLoginToken)
@@ -596,7 +596,7 @@ func (e *AuthAcceptLoginTokenParams) Encode() []byte {
 func (c *Client) AuthAcceptLoginToken(params *AuthAcceptLoginTokenParams) (*Authorization, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AuthAcceptLoginToken")
+		return nil, fmt.Errorf("sedning AuthAcceptLoginToken: %w", err)
 	}
 
 	resp, ok := data.(*Authorization)
@@ -643,7 +643,7 @@ func (e *AccountRegisterDeviceParams) Encode() []byte {
 func (c *Client) AccountRegisterDevice(params *AccountRegisterDeviceParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountRegisterDevice")
+		return nil, fmt.Errorf("sedning AccountRegisterDevice: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -679,7 +679,7 @@ func (e *AccountUnregisterDeviceParams) Encode() []byte {
 func (c *Client) AccountUnregisterDevice(params *AccountUnregisterDeviceParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountUnregisterDevice")
+		return nil, fmt.Errorf("sedning AccountUnregisterDevice: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -713,7 +713,7 @@ func (e *AccountUpdateNotifySettingsParams) Encode() []byte {
 func (c *Client) AccountUpdateNotifySettings(params *AccountUpdateNotifySettingsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountUpdateNotifySettings")
+		return nil, fmt.Errorf("sedning AccountUpdateNotifySettings: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -745,7 +745,7 @@ func (e *AccountGetNotifySettingsParams) Encode() []byte {
 func (c *Client) AccountGetNotifySettings(params *AccountGetNotifySettingsParams) (*PeerNotifySettings, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountGetNotifySettings")
+		return nil, fmt.Errorf("sedning AccountGetNotifySettings: %w", err)
 	}
 
 	resp, ok := data.(*PeerNotifySettings)
@@ -771,7 +771,7 @@ func (e *AccountResetNotifySettingsParams) Encode() []byte {
 func (c *Client) AccountResetNotifySettings() (*serialize.Bool, error) {
 	data, err := c.MakeRequest(&AccountResetNotifySettingsParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountResetNotifySettings")
+		return nil, fmt.Errorf("sedning AccountResetNotifySettings: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -825,7 +825,7 @@ func (e *AccountUpdateProfileParams) Encode() []byte {
 func (c *Client) AccountUpdateProfile(params *AccountUpdateProfileParams) (User, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountUpdateProfile")
+		return nil, fmt.Errorf("sedning AccountUpdateProfile: %w", err)
 	}
 
 	resp, ok := data.(User)
@@ -857,7 +857,7 @@ func (e *AccountUpdateStatusParams) Encode() []byte {
 func (c *Client) AccountUpdateStatus(params *AccountUpdateStatusParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountUpdateStatus")
+		return nil, fmt.Errorf("sedning AccountUpdateStatus: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -889,7 +889,7 @@ func (e *AccountGetWallPapersParams) Encode() []byte {
 func (c *Client) AccountGetWallPapers(params *AccountGetWallPapersParams) (AccountWallPapers, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountGetWallPapers")
+		return nil, fmt.Errorf("sedning AccountGetWallPapers: %w", err)
 	}
 
 	resp, ok := data.(AccountWallPapers)
@@ -923,7 +923,7 @@ func (e *AccountReportPeerParams) Encode() []byte {
 func (c *Client) AccountReportPeer(params *AccountReportPeerParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountReportPeer")
+		return nil, fmt.Errorf("sedning AccountReportPeer: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -955,7 +955,7 @@ func (e *AccountCheckUsernameParams) Encode() []byte {
 func (c *Client) AccountCheckUsername(params *AccountCheckUsernameParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountCheckUsername")
+		return nil, fmt.Errorf("sedning AccountCheckUsername: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -987,7 +987,7 @@ func (e *AccountUpdateUsernameParams) Encode() []byte {
 func (c *Client) AccountUpdateUsername(params *AccountUpdateUsernameParams) (User, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountUpdateUsername")
+		return nil, fmt.Errorf("sedning AccountUpdateUsername: %w", err)
 	}
 
 	resp, ok := data.(User)
@@ -1019,7 +1019,7 @@ func (e *AccountGetPrivacyParams) Encode() []byte {
 func (c *Client) AccountGetPrivacy(params *AccountGetPrivacyParams) (*AccountPrivacyRules, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountGetPrivacy")
+		return nil, fmt.Errorf("sedning AccountGetPrivacy: %w", err)
 	}
 
 	resp, ok := data.(*AccountPrivacyRules)
@@ -1053,7 +1053,7 @@ func (e *AccountSetPrivacyParams) Encode() []byte {
 func (c *Client) AccountSetPrivacy(params *AccountSetPrivacyParams) (*AccountPrivacyRules, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountSetPrivacy")
+		return nil, fmt.Errorf("sedning AccountSetPrivacy: %w", err)
 	}
 
 	resp, ok := data.(*AccountPrivacyRules)
@@ -1085,7 +1085,7 @@ func (e *AccountDeleteAccountParams) Encode() []byte {
 func (c *Client) AccountDeleteAccount(params *AccountDeleteAccountParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountDeleteAccount")
+		return nil, fmt.Errorf("sedning AccountDeleteAccount: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -1111,7 +1111,7 @@ func (e *AccountGetAccountTTLParams) Encode() []byte {
 func (c *Client) AccountGetAccountTTL() (*AccountDaysTTL, error) {
 	data, err := c.MakeRequest(&AccountGetAccountTTLParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountGetAccountTTL")
+		return nil, fmt.Errorf("sedning AccountGetAccountTTL: %w", err)
 	}
 
 	resp, ok := data.(*AccountDaysTTL)
@@ -1143,7 +1143,7 @@ func (e *AccountSetAccountTTLParams) Encode() []byte {
 func (c *Client) AccountSetAccountTTL(params *AccountSetAccountTTLParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountSetAccountTTL")
+		return nil, fmt.Errorf("sedning AccountSetAccountTTL: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -1177,7 +1177,7 @@ func (e *AccountSendChangePhoneCodeParams) Encode() []byte {
 func (c *Client) AccountSendChangePhoneCode(params *AccountSendChangePhoneCodeParams) (*AuthSentCode, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountSendChangePhoneCode")
+		return nil, fmt.Errorf("sedning AccountSendChangePhoneCode: %w", err)
 	}
 
 	resp, ok := data.(*AuthSentCode)
@@ -1213,7 +1213,7 @@ func (e *AccountChangePhoneParams) Encode() []byte {
 func (c *Client) AccountChangePhone(params *AccountChangePhoneParams) (User, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountChangePhone")
+		return nil, fmt.Errorf("sedning AccountChangePhone: %w", err)
 	}
 
 	resp, ok := data.(User)
@@ -1245,7 +1245,7 @@ func (e *AccountUpdateDeviceLockedParams) Encode() []byte {
 func (c *Client) AccountUpdateDeviceLocked(params *AccountUpdateDeviceLockedParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountUpdateDeviceLocked")
+		return nil, fmt.Errorf("sedning AccountUpdateDeviceLocked: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -1271,7 +1271,7 @@ func (e *AccountGetAuthorizationsParams) Encode() []byte {
 func (c *Client) AccountGetAuthorizations() (*AccountAuthorizations, error) {
 	data, err := c.MakeRequest(&AccountGetAuthorizationsParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountGetAuthorizations")
+		return nil, fmt.Errorf("sedning AccountGetAuthorizations: %w", err)
 	}
 
 	resp, ok := data.(*AccountAuthorizations)
@@ -1303,7 +1303,7 @@ func (e *AccountResetAuthorizationParams) Encode() []byte {
 func (c *Client) AccountResetAuthorization(params *AccountResetAuthorizationParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountResetAuthorization")
+		return nil, fmt.Errorf("sedning AccountResetAuthorization: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -1329,7 +1329,7 @@ func (e *AccountGetPasswordParams) Encode() []byte {
 func (c *Client) AccountGetPassword() (*AccountPassword, error) {
 	data, err := c.MakeRequest(&AccountGetPasswordParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountGetPassword")
+		return nil, fmt.Errorf("sedning AccountGetPassword: %w", err)
 	}
 
 	resp, ok := data.(*AccountPassword)
@@ -1361,7 +1361,7 @@ func (e *AccountGetPasswordSettingsParams) Encode() []byte {
 func (c *Client) AccountGetPasswordSettings(params *AccountGetPasswordSettingsParams) (*AccountPasswordSettings, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountGetPasswordSettings")
+		return nil, fmt.Errorf("sedning AccountGetPasswordSettings: %w", err)
 	}
 
 	resp, ok := data.(*AccountPasswordSettings)
@@ -1395,7 +1395,7 @@ func (e *AccountUpdatePasswordSettingsParams) Encode() []byte {
 func (c *Client) AccountUpdatePasswordSettings(params *AccountUpdatePasswordSettingsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountUpdatePasswordSettings")
+		return nil, fmt.Errorf("sedning AccountUpdatePasswordSettings: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -1429,7 +1429,7 @@ func (e *AccountSendConfirmPhoneCodeParams) Encode() []byte {
 func (c *Client) AccountSendConfirmPhoneCode(params *AccountSendConfirmPhoneCodeParams) (*AuthSentCode, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountSendConfirmPhoneCode")
+		return nil, fmt.Errorf("sedning AccountSendConfirmPhoneCode: %w", err)
 	}
 
 	resp, ok := data.(*AuthSentCode)
@@ -1463,7 +1463,7 @@ func (e *AccountConfirmPhoneParams) Encode() []byte {
 func (c *Client) AccountConfirmPhone(params *AccountConfirmPhoneParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountConfirmPhone")
+		return nil, fmt.Errorf("sedning AccountConfirmPhone: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -1497,7 +1497,7 @@ func (e *AccountGetTmpPasswordParams) Encode() []byte {
 func (c *Client) AccountGetTmpPassword(params *AccountGetTmpPasswordParams) (*AccountTmpPassword, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountGetTmpPassword")
+		return nil, fmt.Errorf("sedning AccountGetTmpPassword: %w", err)
 	}
 
 	resp, ok := data.(*AccountTmpPassword)
@@ -1523,7 +1523,7 @@ func (e *AccountGetWebAuthorizationsParams) Encode() []byte {
 func (c *Client) AccountGetWebAuthorizations() (*AccountWebAuthorizations, error) {
 	data, err := c.MakeRequest(&AccountGetWebAuthorizationsParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountGetWebAuthorizations")
+		return nil, fmt.Errorf("sedning AccountGetWebAuthorizations: %w", err)
 	}
 
 	resp, ok := data.(*AccountWebAuthorizations)
@@ -1555,7 +1555,7 @@ func (e *AccountResetWebAuthorizationParams) Encode() []byte {
 func (c *Client) AccountResetWebAuthorization(params *AccountResetWebAuthorizationParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountResetWebAuthorization")
+		return nil, fmt.Errorf("sedning AccountResetWebAuthorization: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -1581,7 +1581,7 @@ func (e *AccountResetWebAuthorizationsParams) Encode() []byte {
 func (c *Client) AccountResetWebAuthorizations() (*serialize.Bool, error) {
 	data, err := c.MakeRequest(&AccountResetWebAuthorizationsParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountResetWebAuthorizations")
+		return nil, fmt.Errorf("sedning AccountResetWebAuthorizations: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -1607,7 +1607,7 @@ func (e *AccountGetAllSecureValuesParams) Encode() []byte {
 func (c *Client) AccountGetAllSecureValues() (*SecureValue, error) {
 	data, err := c.MakeRequest(&AccountGetAllSecureValuesParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountGetAllSecureValues")
+		return nil, fmt.Errorf("sedning AccountGetAllSecureValues: %w", err)
 	}
 
 	resp, ok := data.(*SecureValue)
@@ -1639,7 +1639,7 @@ func (e *AccountGetSecureValueParams) Encode() []byte {
 func (c *Client) AccountGetSecureValue(params *AccountGetSecureValueParams) (*SecureValue, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountGetSecureValue")
+		return nil, fmt.Errorf("sedning AccountGetSecureValue: %w", err)
 	}
 
 	resp, ok := data.(*SecureValue)
@@ -1673,7 +1673,7 @@ func (e *AccountSaveSecureValueParams) Encode() []byte {
 func (c *Client) AccountSaveSecureValue(params *AccountSaveSecureValueParams) (*SecureValue, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountSaveSecureValue")
+		return nil, fmt.Errorf("sedning AccountSaveSecureValue: %w", err)
 	}
 
 	resp, ok := data.(*SecureValue)
@@ -1705,7 +1705,7 @@ func (e *AccountDeleteSecureValueParams) Encode() []byte {
 func (c *Client) AccountDeleteSecureValue(params *AccountDeleteSecureValueParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountDeleteSecureValue")
+		return nil, fmt.Errorf("sedning AccountDeleteSecureValue: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -1741,7 +1741,7 @@ func (e *AccountGetAuthorizationFormParams) Encode() []byte {
 func (c *Client) AccountGetAuthorizationForm(params *AccountGetAuthorizationFormParams) (*AccountAuthorizationForm, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountGetAuthorizationForm")
+		return nil, fmt.Errorf("sedning AccountGetAuthorizationForm: %w", err)
 	}
 
 	resp, ok := data.(*AccountAuthorizationForm)
@@ -1781,7 +1781,7 @@ func (e *AccountAcceptAuthorizationParams) Encode() []byte {
 func (c *Client) AccountAcceptAuthorization(params *AccountAcceptAuthorizationParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountAcceptAuthorization")
+		return nil, fmt.Errorf("sedning AccountAcceptAuthorization: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -1815,7 +1815,7 @@ func (e *AccountSendVerifyPhoneCodeParams) Encode() []byte {
 func (c *Client) AccountSendVerifyPhoneCode(params *AccountSendVerifyPhoneCodeParams) (*AuthSentCode, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountSendVerifyPhoneCode")
+		return nil, fmt.Errorf("sedning AccountSendVerifyPhoneCode: %w", err)
 	}
 
 	resp, ok := data.(*AuthSentCode)
@@ -1851,7 +1851,7 @@ func (e *AccountVerifyPhoneParams) Encode() []byte {
 func (c *Client) AccountVerifyPhone(params *AccountVerifyPhoneParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountVerifyPhone")
+		return nil, fmt.Errorf("sedning AccountVerifyPhone: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -1883,7 +1883,7 @@ func (e *AccountSendVerifyEmailCodeParams) Encode() []byte {
 func (c *Client) AccountSendVerifyEmailCode(params *AccountSendVerifyEmailCodeParams) (*AccountSentEmailCode, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountSendVerifyEmailCode")
+		return nil, fmt.Errorf("sedning AccountSendVerifyEmailCode: %w", err)
 	}
 
 	resp, ok := data.(*AccountSentEmailCode)
@@ -1917,7 +1917,7 @@ func (e *AccountVerifyEmailParams) Encode() []byte {
 func (c *Client) AccountVerifyEmail(params *AccountVerifyEmailParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountVerifyEmail")
+		return nil, fmt.Errorf("sedning AccountVerifyEmail: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -1978,7 +1978,7 @@ func (e *AccountInitTakeoutSessionParams) Encode() []byte {
 func (c *Client) AccountInitTakeoutSession(params *AccountInitTakeoutSessionParams) (*AccountTakeout, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountInitTakeoutSession")
+		return nil, fmt.Errorf("sedning AccountInitTakeoutSession: %w", err)
 	}
 
 	resp, ok := data.(*AccountTakeout)
@@ -2015,7 +2015,7 @@ func (e *AccountFinishTakeoutSessionParams) Encode() []byte {
 func (c *Client) AccountFinishTakeoutSession(params *AccountFinishTakeoutSessionParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountFinishTakeoutSession")
+		return nil, fmt.Errorf("sedning AccountFinishTakeoutSession: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -2047,7 +2047,7 @@ func (e *AccountConfirmPasswordEmailParams) Encode() []byte {
 func (c *Client) AccountConfirmPasswordEmail(params *AccountConfirmPasswordEmailParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountConfirmPasswordEmail")
+		return nil, fmt.Errorf("sedning AccountConfirmPasswordEmail: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -2073,7 +2073,7 @@ func (e *AccountResendPasswordEmailParams) Encode() []byte {
 func (c *Client) AccountResendPasswordEmail() (*serialize.Bool, error) {
 	data, err := c.MakeRequest(&AccountResendPasswordEmailParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountResendPasswordEmail")
+		return nil, fmt.Errorf("sedning AccountResendPasswordEmail: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -2099,7 +2099,7 @@ func (e *AccountCancelPasswordEmailParams) Encode() []byte {
 func (c *Client) AccountCancelPasswordEmail() (*serialize.Bool, error) {
 	data, err := c.MakeRequest(&AccountCancelPasswordEmailParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountCancelPasswordEmail")
+		return nil, fmt.Errorf("sedning AccountCancelPasswordEmail: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -2125,7 +2125,7 @@ func (e *AccountGetContactSignUpNotificationParams) Encode() []byte {
 func (c *Client) AccountGetContactSignUpNotification() (*serialize.Bool, error) {
 	data, err := c.MakeRequest(&AccountGetContactSignUpNotificationParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountGetContactSignUpNotification")
+		return nil, fmt.Errorf("sedning AccountGetContactSignUpNotification: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -2157,7 +2157,7 @@ func (e *AccountSetContactSignUpNotificationParams) Encode() []byte {
 func (c *Client) AccountSetContactSignUpNotification(params *AccountSetContactSignUpNotificationParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountSetContactSignUpNotification")
+		return nil, fmt.Errorf("sedning AccountSetContactSignUpNotification: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -2201,7 +2201,7 @@ func (e *AccountGetNotifyExceptionsParams) Encode() []byte {
 func (c *Client) AccountGetNotifyExceptions(params *AccountGetNotifyExceptionsParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountGetNotifyExceptions")
+		return nil, fmt.Errorf("sedning AccountGetNotifyExceptions: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -2233,7 +2233,7 @@ func (e *AccountGetWallPaperParams) Encode() []byte {
 func (c *Client) AccountGetWallPaper(params *AccountGetWallPaperParams) (WallPaper, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountGetWallPaper")
+		return nil, fmt.Errorf("sedning AccountGetWallPaper: %w", err)
 	}
 
 	resp, ok := data.(WallPaper)
@@ -2269,7 +2269,7 @@ func (e *AccountUploadWallPaperParams) Encode() []byte {
 func (c *Client) AccountUploadWallPaper(params *AccountUploadWallPaperParams) (WallPaper, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountUploadWallPaper")
+		return nil, fmt.Errorf("sedning AccountUploadWallPaper: %w", err)
 	}
 
 	resp, ok := data.(WallPaper)
@@ -2305,7 +2305,7 @@ func (e *AccountSaveWallPaperParams) Encode() []byte {
 func (c *Client) AccountSaveWallPaper(params *AccountSaveWallPaperParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountSaveWallPaper")
+		return nil, fmt.Errorf("sedning AccountSaveWallPaper: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -2339,7 +2339,7 @@ func (e *AccountInstallWallPaperParams) Encode() []byte {
 func (c *Client) AccountInstallWallPaper(params *AccountInstallWallPaperParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountInstallWallPaper")
+		return nil, fmt.Errorf("sedning AccountInstallWallPaper: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -2365,7 +2365,7 @@ func (e *AccountResetWallPapersParams) Encode() []byte {
 func (c *Client) AccountResetWallPapers() (*serialize.Bool, error) {
 	data, err := c.MakeRequest(&AccountResetWallPapersParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountResetWallPapers")
+		return nil, fmt.Errorf("sedning AccountResetWallPapers: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -2391,7 +2391,7 @@ func (e *AccountGetAutoDownloadSettingsParams) Encode() []byte {
 func (c *Client) AccountGetAutoDownloadSettings() (*AccountAutoDownloadSettings, error) {
 	data, err := c.MakeRequest(&AccountGetAutoDownloadSettingsParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountGetAutoDownloadSettings")
+		return nil, fmt.Errorf("sedning AccountGetAutoDownloadSettings: %w", err)
 	}
 
 	resp, ok := data.(*AccountAutoDownloadSettings)
@@ -2434,7 +2434,7 @@ func (e *AccountSaveAutoDownloadSettingsParams) Encode() []byte {
 func (c *Client) AccountSaveAutoDownloadSettings(params *AccountSaveAutoDownloadSettingsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountSaveAutoDownloadSettings")
+		return nil, fmt.Errorf("sedning AccountSaveAutoDownloadSettings: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -2480,7 +2480,7 @@ func (e *AccountUploadThemeParams) Encode() []byte {
 func (c *Client) AccountUploadTheme(params *AccountUploadThemeParams) (Document, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountUploadTheme")
+		return nil, fmt.Errorf("sedning AccountUploadTheme: %w", err)
 	}
 
 	resp, ok := data.(Document)
@@ -2531,7 +2531,7 @@ func (e *AccountCreateThemeParams) Encode() []byte {
 func (c *Client) AccountCreateTheme(params *AccountCreateThemeParams) (*Theme, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountCreateTheme")
+		return nil, fmt.Errorf("sedning AccountCreateTheme: %w", err)
 	}
 
 	resp, ok := data.(*Theme)
@@ -2596,7 +2596,7 @@ func (e *AccountUpdateThemeParams) Encode() []byte {
 func (c *Client) AccountUpdateTheme(params *AccountUpdateThemeParams) (*Theme, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountUpdateTheme")
+		return nil, fmt.Errorf("sedning AccountUpdateTheme: %w", err)
 	}
 
 	resp, ok := data.(*Theme)
@@ -2630,7 +2630,7 @@ func (e *AccountSaveThemeParams) Encode() []byte {
 func (c *Client) AccountSaveTheme(params *AccountSaveThemeParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountSaveTheme")
+		return nil, fmt.Errorf("sedning AccountSaveTheme: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -2678,7 +2678,7 @@ func (e *AccountInstallThemeParams) Encode() []byte {
 func (c *Client) AccountInstallTheme(params *AccountInstallThemeParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountInstallTheme")
+		return nil, fmt.Errorf("sedning AccountInstallTheme: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -2714,7 +2714,7 @@ func (e *AccountGetThemeParams) Encode() []byte {
 func (c *Client) AccountGetTheme(params *AccountGetThemeParams) (*Theme, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountGetTheme")
+		return nil, fmt.Errorf("sedning AccountGetTheme: %w", err)
 	}
 
 	resp, ok := data.(*Theme)
@@ -2748,7 +2748,7 @@ func (e *AccountGetThemesParams) Encode() []byte {
 func (c *Client) AccountGetThemes(params *AccountGetThemesParams) (AccountThemes, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountGetThemes")
+		return nil, fmt.Errorf("sedning AccountGetThemes: %w", err)
 	}
 
 	resp, ok := data.(AccountThemes)
@@ -2785,7 +2785,7 @@ func (e *AccountSetContentSettingsParams) Encode() []byte {
 func (c *Client) AccountSetContentSettings(params *AccountSetContentSettingsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountSetContentSettings")
+		return nil, fmt.Errorf("sedning AccountSetContentSettings: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -2811,7 +2811,7 @@ func (e *AccountGetContentSettingsParams) Encode() []byte {
 func (c *Client) AccountGetContentSettings() (*AccountContentSettings, error) {
 	data, err := c.MakeRequest(&AccountGetContentSettingsParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountGetContentSettings")
+		return nil, fmt.Errorf("sedning AccountGetContentSettings: %w", err)
 	}
 
 	resp, ok := data.(*AccountContentSettings)
@@ -2843,7 +2843,7 @@ func (e *AccountGetMultiWallPapersParams) Encode() []byte {
 func (c *Client) AccountGetMultiWallPapers(params *AccountGetMultiWallPapersParams) (WallPaper, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountGetMultiWallPapers")
+		return nil, fmt.Errorf("sedning AccountGetMultiWallPapers: %w", err)
 	}
 
 	resp, ok := data.(WallPaper)
@@ -2869,7 +2869,7 @@ func (e *AccountGetGlobalPrivacySettingsParams) Encode() []byte {
 func (c *Client) AccountGetGlobalPrivacySettings() (*GlobalPrivacySettings, error) {
 	data, err := c.MakeRequest(&AccountGetGlobalPrivacySettingsParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountGetGlobalPrivacySettings")
+		return nil, fmt.Errorf("sedning AccountGetGlobalPrivacySettings: %w", err)
 	}
 
 	resp, ok := data.(*GlobalPrivacySettings)
@@ -2901,7 +2901,7 @@ func (e *AccountSetGlobalPrivacySettingsParams) Encode() []byte {
 func (c *Client) AccountSetGlobalPrivacySettings(params *AccountSetGlobalPrivacySettingsParams) (*GlobalPrivacySettings, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning AccountSetGlobalPrivacySettings")
+		return nil, fmt.Errorf("sedning AccountSetGlobalPrivacySettings: %w", err)
 	}
 
 	resp, ok := data.(*GlobalPrivacySettings)
@@ -2933,7 +2933,7 @@ func (e *UsersGetUsersParams) Encode() []byte {
 func (c *Client) UsersGetUsers(params *UsersGetUsersParams) (User, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning UsersGetUsers")
+		return nil, fmt.Errorf("sedning UsersGetUsers: %w", err)
 	}
 
 	resp, ok := data.(User)
@@ -2965,7 +2965,7 @@ func (e *UsersGetFullUserParams) Encode() []byte {
 func (c *Client) UsersGetFullUser(params *UsersGetFullUserParams) (*UserFull, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning UsersGetFullUser")
+		return nil, fmt.Errorf("sedning UsersGetFullUser: %w", err)
 	}
 
 	resp, ok := data.(*UserFull)
@@ -2999,7 +2999,7 @@ func (e *UsersSetSecureValueErrorsParams) Encode() []byte {
 func (c *Client) UsersSetSecureValueErrors(params *UsersSetSecureValueErrorsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning UsersSetSecureValueErrors")
+		return nil, fmt.Errorf("sedning UsersSetSecureValueErrors: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -3031,7 +3031,7 @@ func (e *ContactsGetContactIDsParams) Encode() []byte {
 func (c *Client) ContactsGetContactIDs(params *ContactsGetContactIDsParams) (*serialize.Int, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ContactsGetContactIDs")
+		return nil, fmt.Errorf("sedning ContactsGetContactIDs: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Int)
@@ -3057,7 +3057,7 @@ func (e *ContactsGetStatusesParams) Encode() []byte {
 func (c *Client) ContactsGetStatuses() (*ContactStatus, error) {
 	data, err := c.MakeRequest(&ContactsGetStatusesParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ContactsGetStatuses")
+		return nil, fmt.Errorf("sedning ContactsGetStatuses: %w", err)
 	}
 
 	resp, ok := data.(*ContactStatus)
@@ -3089,7 +3089,7 @@ func (e *ContactsGetContactsParams) Encode() []byte {
 func (c *Client) ContactsGetContacts(params *ContactsGetContactsParams) (ContactsContacts, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ContactsGetContacts")
+		return nil, fmt.Errorf("sedning ContactsGetContacts: %w", err)
 	}
 
 	resp, ok := data.(ContactsContacts)
@@ -3121,7 +3121,7 @@ func (e *ContactsImportContactsParams) Encode() []byte {
 func (c *Client) ContactsImportContacts(params *ContactsImportContactsParams) (*ContactsImportedContacts, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ContactsImportContacts")
+		return nil, fmt.Errorf("sedning ContactsImportContacts: %w", err)
 	}
 
 	resp, ok := data.(*ContactsImportedContacts)
@@ -3153,7 +3153,7 @@ func (e *ContactsDeleteContactsParams) Encode() []byte {
 func (c *Client) ContactsDeleteContacts(params *ContactsDeleteContactsParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ContactsDeleteContacts")
+		return nil, fmt.Errorf("sedning ContactsDeleteContacts: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -3185,7 +3185,7 @@ func (e *ContactsDeleteByPhonesParams) Encode() []byte {
 func (c *Client) ContactsDeleteByPhones(params *ContactsDeleteByPhonesParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ContactsDeleteByPhones")
+		return nil, fmt.Errorf("sedning ContactsDeleteByPhones: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -3217,7 +3217,7 @@ func (e *ContactsBlockParams) Encode() []byte {
 func (c *Client) ContactsBlock(params *ContactsBlockParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ContactsBlock")
+		return nil, fmt.Errorf("sedning ContactsBlock: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -3249,7 +3249,7 @@ func (e *ContactsUnblockParams) Encode() []byte {
 func (c *Client) ContactsUnblock(params *ContactsUnblockParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ContactsUnblock")
+		return nil, fmt.Errorf("sedning ContactsUnblock: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -3283,7 +3283,7 @@ func (e *ContactsGetBlockedParams) Encode() []byte {
 func (c *Client) ContactsGetBlocked(params *ContactsGetBlockedParams) (ContactsBlocked, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ContactsGetBlocked")
+		return nil, fmt.Errorf("sedning ContactsGetBlocked: %w", err)
 	}
 
 	resp, ok := data.(ContactsBlocked)
@@ -3317,7 +3317,7 @@ func (e *ContactsSearchParams) Encode() []byte {
 func (c *Client) ContactsSearch(params *ContactsSearchParams) (*ContactsFound, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ContactsSearch")
+		return nil, fmt.Errorf("sedning ContactsSearch: %w", err)
 	}
 
 	resp, ok := data.(*ContactsFound)
@@ -3349,7 +3349,7 @@ func (e *ContactsResolveUsernameParams) Encode() []byte {
 func (c *Client) ContactsResolveUsername(params *ContactsResolveUsernameParams) (*ContactsResolvedPeer, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ContactsResolveUsername")
+		return nil, fmt.Errorf("sedning ContactsResolveUsername: %w", err)
 	}
 
 	resp, ok := data.(*ContactsResolvedPeer)
@@ -3420,7 +3420,7 @@ func (e *ContactsGetTopPeersParams) Encode() []byte {
 func (c *Client) ContactsGetTopPeers(params *ContactsGetTopPeersParams) (ContactsTopPeers, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ContactsGetTopPeers")
+		return nil, fmt.Errorf("sedning ContactsGetTopPeers: %w", err)
 	}
 
 	resp, ok := data.(ContactsTopPeers)
@@ -3454,7 +3454,7 @@ func (e *ContactsResetTopPeerRatingParams) Encode() []byte {
 func (c *Client) ContactsResetTopPeerRating(params *ContactsResetTopPeerRatingParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ContactsResetTopPeerRating")
+		return nil, fmt.Errorf("sedning ContactsResetTopPeerRating: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -3480,7 +3480,7 @@ func (e *ContactsResetSavedParams) Encode() []byte {
 func (c *Client) ContactsResetSaved() (*serialize.Bool, error) {
 	data, err := c.MakeRequest(&ContactsResetSavedParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ContactsResetSaved")
+		return nil, fmt.Errorf("sedning ContactsResetSaved: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -3506,7 +3506,7 @@ func (e *ContactsGetSavedParams) Encode() []byte {
 func (c *Client) ContactsGetSaved() (*SavedContact, error) {
 	data, err := c.MakeRequest(&ContactsGetSavedParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ContactsGetSaved")
+		return nil, fmt.Errorf("sedning ContactsGetSaved: %w", err)
 	}
 
 	resp, ok := data.(*SavedContact)
@@ -3538,7 +3538,7 @@ func (e *ContactsToggleTopPeersParams) Encode() []byte {
 func (c *Client) ContactsToggleTopPeers(params *ContactsToggleTopPeersParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ContactsToggleTopPeers")
+		return nil, fmt.Errorf("sedning ContactsToggleTopPeers: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -3583,7 +3583,7 @@ func (e *ContactsAddContactParams) Encode() []byte {
 func (c *Client) ContactsAddContact(params *ContactsAddContactParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ContactsAddContact")
+		return nil, fmt.Errorf("sedning ContactsAddContact: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -3615,7 +3615,7 @@ func (e *ContactsAcceptContactParams) Encode() []byte {
 func (c *Client) ContactsAcceptContact(params *ContactsAcceptContactParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ContactsAcceptContact")
+		return nil, fmt.Errorf("sedning ContactsAcceptContact: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -3661,7 +3661,7 @@ func (e *ContactsGetLocatedParams) Encode() []byte {
 func (c *Client) ContactsGetLocated(params *ContactsGetLocatedParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ContactsGetLocated")
+		return nil, fmt.Errorf("sedning ContactsGetLocated: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -3693,7 +3693,7 @@ func (e *MessagesGetMessagesParams) Encode() []byte {
 func (c *Client) MessagesGetMessages(params *MessagesGetMessagesParams) (MessagesMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetMessages")
+		return nil, fmt.Errorf("sedning MessagesGetMessages: %w", err)
 	}
 
 	resp, ok := data.(MessagesMessages)
@@ -3747,7 +3747,7 @@ func (e *MessagesGetDialogsParams) Encode() []byte {
 func (c *Client) MessagesGetDialogs(params *MessagesGetDialogsParams) (MessagesDialogs, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetDialogs")
+		return nil, fmt.Errorf("sedning MessagesGetDialogs: %w", err)
 	}
 
 	resp, ok := data.(MessagesDialogs)
@@ -3793,7 +3793,7 @@ func (e *MessagesGetHistoryParams) Encode() []byte {
 func (c *Client) MessagesGetHistory(params *MessagesGetHistoryParams) (MessagesMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetHistory")
+		return nil, fmt.Errorf("sedning MessagesGetHistory: %w", err)
 	}
 
 	resp, ok := data.(MessagesMessages)
@@ -3855,7 +3855,7 @@ func (e *MessagesSearchParams) Encode() []byte {
 func (c *Client) MessagesSearch(params *MessagesSearchParams) (MessagesMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSearch")
+		return nil, fmt.Errorf("sedning MessagesSearch: %w", err)
 	}
 
 	resp, ok := data.(MessagesMessages)
@@ -3889,7 +3889,7 @@ func (e *MessagesReadHistoryParams) Encode() []byte {
 func (c *Client) MessagesReadHistory(params *MessagesReadHistoryParams) (*MessagesAffectedMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesReadHistory")
+		return nil, fmt.Errorf("sedning MessagesReadHistory: %w", err)
 	}
 
 	resp, ok := data.(*MessagesAffectedMessages)
@@ -3934,7 +3934,7 @@ func (e *MessagesDeleteHistoryParams) Encode() []byte {
 func (c *Client) MessagesDeleteHistory(params *MessagesDeleteHistoryParams) (*MessagesAffectedHistory, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesDeleteHistory")
+		return nil, fmt.Errorf("sedning MessagesDeleteHistory: %w", err)
 	}
 
 	resp, ok := data.(*MessagesAffectedHistory)
@@ -3973,7 +3973,7 @@ func (e *MessagesDeleteMessagesParams) Encode() []byte {
 func (c *Client) MessagesDeleteMessages(params *MessagesDeleteMessagesParams) (*MessagesAffectedMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesDeleteMessages")
+		return nil, fmt.Errorf("sedning MessagesDeleteMessages: %w", err)
 	}
 
 	resp, ok := data.(*MessagesAffectedMessages)
@@ -4005,7 +4005,7 @@ func (e *MessagesReceivedMessagesParams) Encode() []byte {
 func (c *Client) MessagesReceivedMessages(params *MessagesReceivedMessagesParams) (*ReceivedNotifyMessage, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesReceivedMessages")
+		return nil, fmt.Errorf("sedning MessagesReceivedMessages: %w", err)
 	}
 
 	resp, ok := data.(*ReceivedNotifyMessage)
@@ -4039,7 +4039,7 @@ func (e *MessagesSetTypingParams) Encode() []byte {
 func (c *Client) MessagesSetTyping(params *MessagesSetTypingParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSetTyping")
+		return nil, fmt.Errorf("sedning MessagesSetTyping: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -4122,7 +4122,7 @@ func (e *MessagesSendMessageParams) Encode() []byte {
 func (c *Client) MessagesSendMessage(params *MessagesSendMessageParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSendMessage")
+		return nil, fmt.Errorf("sedning MessagesSendMessage: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -4203,7 +4203,7 @@ func (e *MessagesSendMediaParams) Encode() []byte {
 func (c *Client) MessagesSendMedia(params *MessagesSendMediaParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSendMedia")
+		return nil, fmt.Errorf("sedning MessagesSendMedia: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -4267,7 +4267,7 @@ func (e *MessagesForwardMessagesParams) Encode() []byte {
 func (c *Client) MessagesForwardMessages(params *MessagesForwardMessagesParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesForwardMessages")
+		return nil, fmt.Errorf("sedning MessagesForwardMessages: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -4299,7 +4299,7 @@ func (e *MessagesReportSpamParams) Encode() []byte {
 func (c *Client) MessagesReportSpam(params *MessagesReportSpamParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesReportSpam")
+		return nil, fmt.Errorf("sedning MessagesReportSpam: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -4331,7 +4331,7 @@ func (e *MessagesGetPeerSettingsParams) Encode() []byte {
 func (c *Client) MessagesGetPeerSettings(params *MessagesGetPeerSettingsParams) (*PeerSettings, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetPeerSettings")
+		return nil, fmt.Errorf("sedning MessagesGetPeerSettings: %w", err)
 	}
 
 	resp, ok := data.(*PeerSettings)
@@ -4367,7 +4367,7 @@ func (e *MessagesReportParams) Encode() []byte {
 func (c *Client) MessagesReport(params *MessagesReportParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesReport")
+		return nil, fmt.Errorf("sedning MessagesReport: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -4399,7 +4399,7 @@ func (e *MessagesGetChatsParams) Encode() []byte {
 func (c *Client) MessagesGetChats(params *MessagesGetChatsParams) (MessagesChats, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetChats")
+		return nil, fmt.Errorf("sedning MessagesGetChats: %w", err)
 	}
 
 	resp, ok := data.(MessagesChats)
@@ -4431,7 +4431,7 @@ func (e *MessagesGetFullChatParams) Encode() []byte {
 func (c *Client) MessagesGetFullChat(params *MessagesGetFullChatParams) (*MessagesChatFull, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetFullChat")
+		return nil, fmt.Errorf("sedning MessagesGetFullChat: %w", err)
 	}
 
 	resp, ok := data.(*MessagesChatFull)
@@ -4465,7 +4465,7 @@ func (e *MessagesEditChatTitleParams) Encode() []byte {
 func (c *Client) MessagesEditChatTitle(params *MessagesEditChatTitleParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesEditChatTitle")
+		return nil, fmt.Errorf("sedning MessagesEditChatTitle: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -4499,7 +4499,7 @@ func (e *MessagesEditChatPhotoParams) Encode() []byte {
 func (c *Client) MessagesEditChatPhoto(params *MessagesEditChatPhotoParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesEditChatPhoto")
+		return nil, fmt.Errorf("sedning MessagesEditChatPhoto: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -4535,7 +4535,7 @@ func (e *MessagesAddChatUserParams) Encode() []byte {
 func (c *Client) MessagesAddChatUser(params *MessagesAddChatUserParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesAddChatUser")
+		return nil, fmt.Errorf("sedning MessagesAddChatUser: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -4569,7 +4569,7 @@ func (e *MessagesDeleteChatUserParams) Encode() []byte {
 func (c *Client) MessagesDeleteChatUser(params *MessagesDeleteChatUserParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesDeleteChatUser")
+		return nil, fmt.Errorf("sedning MessagesDeleteChatUser: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -4603,7 +4603,7 @@ func (e *MessagesCreateChatParams) Encode() []byte {
 func (c *Client) MessagesCreateChat(params *MessagesCreateChatParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesCreateChat")
+		return nil, fmt.Errorf("sedning MessagesCreateChat: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -4637,7 +4637,7 @@ func (e *MessagesGetDhConfigParams) Encode() []byte {
 func (c *Client) MessagesGetDhConfig(params *MessagesGetDhConfigParams) (MessagesDhConfig, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetDhConfig")
+		return nil, fmt.Errorf("sedning MessagesGetDhConfig: %w", err)
 	}
 
 	resp, ok := data.(MessagesDhConfig)
@@ -4673,7 +4673,7 @@ func (e *MessagesRequestEncryptionParams) Encode() []byte {
 func (c *Client) MessagesRequestEncryption(params *MessagesRequestEncryptionParams) (EncryptedChat, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesRequestEncryption")
+		return nil, fmt.Errorf("sedning MessagesRequestEncryption: %w", err)
 	}
 
 	resp, ok := data.(EncryptedChat)
@@ -4709,7 +4709,7 @@ func (e *MessagesAcceptEncryptionParams) Encode() []byte {
 func (c *Client) MessagesAcceptEncryption(params *MessagesAcceptEncryptionParams) (EncryptedChat, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesAcceptEncryption")
+		return nil, fmt.Errorf("sedning MessagesAcceptEncryption: %w", err)
 	}
 
 	resp, ok := data.(EncryptedChat)
@@ -4741,7 +4741,7 @@ func (e *MessagesDiscardEncryptionParams) Encode() []byte {
 func (c *Client) MessagesDiscardEncryption(params *MessagesDiscardEncryptionParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesDiscardEncryption")
+		return nil, fmt.Errorf("sedning MessagesDiscardEncryption: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -4775,7 +4775,7 @@ func (e *MessagesSetEncryptedTypingParams) Encode() []byte {
 func (c *Client) MessagesSetEncryptedTyping(params *MessagesSetEncryptedTypingParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSetEncryptedTyping")
+		return nil, fmt.Errorf("sedning MessagesSetEncryptedTyping: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -4809,7 +4809,7 @@ func (e *MessagesReadEncryptedHistoryParams) Encode() []byte {
 func (c *Client) MessagesReadEncryptedHistory(params *MessagesReadEncryptedHistoryParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesReadEncryptedHistory")
+		return nil, fmt.Errorf("sedning MessagesReadEncryptedHistory: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -4845,7 +4845,7 @@ func (e *MessagesSendEncryptedParams) Encode() []byte {
 func (c *Client) MessagesSendEncrypted(params *MessagesSendEncryptedParams) (MessagesSentEncryptedMessage, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSendEncrypted")
+		return nil, fmt.Errorf("sedning MessagesSendEncrypted: %w", err)
 	}
 
 	resp, ok := data.(MessagesSentEncryptedMessage)
@@ -4883,7 +4883,7 @@ func (e *MessagesSendEncryptedFileParams) Encode() []byte {
 func (c *Client) MessagesSendEncryptedFile(params *MessagesSendEncryptedFileParams) (MessagesSentEncryptedMessage, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSendEncryptedFile")
+		return nil, fmt.Errorf("sedning MessagesSendEncryptedFile: %w", err)
 	}
 
 	resp, ok := data.(MessagesSentEncryptedMessage)
@@ -4919,7 +4919,7 @@ func (e *MessagesSendEncryptedServiceParams) Encode() []byte {
 func (c *Client) MessagesSendEncryptedService(params *MessagesSendEncryptedServiceParams) (MessagesSentEncryptedMessage, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSendEncryptedService")
+		return nil, fmt.Errorf("sedning MessagesSendEncryptedService: %w", err)
 	}
 
 	resp, ok := data.(MessagesSentEncryptedMessage)
@@ -4951,7 +4951,7 @@ func (e *MessagesReceivedQueueParams) Encode() []byte {
 func (c *Client) MessagesReceivedQueue(params *MessagesReceivedQueueParams) (*serialize.Long, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesReceivedQueue")
+		return nil, fmt.Errorf("sedning MessagesReceivedQueue: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Long)
@@ -4983,7 +4983,7 @@ func (e *MessagesReportEncryptedSpamParams) Encode() []byte {
 func (c *Client) MessagesReportEncryptedSpam(params *MessagesReportEncryptedSpamParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesReportEncryptedSpam")
+		return nil, fmt.Errorf("sedning MessagesReportEncryptedSpam: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -5015,7 +5015,7 @@ func (e *MessagesReadMessageContentsParams) Encode() []byte {
 func (c *Client) MessagesReadMessageContents(params *MessagesReadMessageContentsParams) (*MessagesAffectedMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesReadMessageContents")
+		return nil, fmt.Errorf("sedning MessagesReadMessageContents: %w", err)
 	}
 
 	resp, ok := data.(*MessagesAffectedMessages)
@@ -5049,7 +5049,7 @@ func (e *MessagesGetStickersParams) Encode() []byte {
 func (c *Client) MessagesGetStickers(params *MessagesGetStickersParams) (MessagesStickers, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetStickers")
+		return nil, fmt.Errorf("sedning MessagesGetStickers: %w", err)
 	}
 
 	resp, ok := data.(MessagesStickers)
@@ -5081,7 +5081,7 @@ func (e *MessagesGetAllStickersParams) Encode() []byte {
 func (c *Client) MessagesGetAllStickers(params *MessagesGetAllStickersParams) (MessagesAllStickers, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetAllStickers")
+		return nil, fmt.Errorf("sedning MessagesGetAllStickers: %w", err)
 	}
 
 	resp, ok := data.(MessagesAllStickers)
@@ -5123,7 +5123,7 @@ func (e *MessagesGetWebPagePreviewParams) Encode() []byte {
 func (c *Client) MessagesGetWebPagePreview(params *MessagesGetWebPagePreviewParams) (MessageMedia, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetWebPagePreview")
+		return nil, fmt.Errorf("sedning MessagesGetWebPagePreview: %w", err)
 	}
 
 	resp, ok := data.(MessageMedia)
@@ -5155,7 +5155,7 @@ func (e *MessagesExportChatInviteParams) Encode() []byte {
 func (c *Client) MessagesExportChatInvite(params *MessagesExportChatInviteParams) (ExportedChatInvite, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesExportChatInvite")
+		return nil, fmt.Errorf("sedning MessagesExportChatInvite: %w", err)
 	}
 
 	resp, ok := data.(ExportedChatInvite)
@@ -5187,7 +5187,7 @@ func (e *MessagesCheckChatInviteParams) Encode() []byte {
 func (c *Client) MessagesCheckChatInvite(params *MessagesCheckChatInviteParams) (ChatInvite, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesCheckChatInvite")
+		return nil, fmt.Errorf("sedning MessagesCheckChatInvite: %w", err)
 	}
 
 	resp, ok := data.(ChatInvite)
@@ -5219,7 +5219,7 @@ func (e *MessagesImportChatInviteParams) Encode() []byte {
 func (c *Client) MessagesImportChatInvite(params *MessagesImportChatInviteParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesImportChatInvite")
+		return nil, fmt.Errorf("sedning MessagesImportChatInvite: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -5251,7 +5251,7 @@ func (e *MessagesGetStickerSetParams) Encode() []byte {
 func (c *Client) MessagesGetStickerSet(params *MessagesGetStickerSetParams) (*MessagesStickerSet, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetStickerSet")
+		return nil, fmt.Errorf("sedning MessagesGetStickerSet: %w", err)
 	}
 
 	resp, ok := data.(*MessagesStickerSet)
@@ -5285,7 +5285,7 @@ func (e *MessagesInstallStickerSetParams) Encode() []byte {
 func (c *Client) MessagesInstallStickerSet(params *MessagesInstallStickerSetParams) (MessagesStickerSetInstallResult, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesInstallStickerSet")
+		return nil, fmt.Errorf("sedning MessagesInstallStickerSet: %w", err)
 	}
 
 	resp, ok := data.(MessagesStickerSetInstallResult)
@@ -5317,7 +5317,7 @@ func (e *MessagesUninstallStickerSetParams) Encode() []byte {
 func (c *Client) MessagesUninstallStickerSet(params *MessagesUninstallStickerSetParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesUninstallStickerSet")
+		return nil, fmt.Errorf("sedning MessagesUninstallStickerSet: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -5355,7 +5355,7 @@ func (e *MessagesStartBotParams) Encode() []byte {
 func (c *Client) MessagesStartBot(params *MessagesStartBotParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesStartBot")
+		return nil, fmt.Errorf("sedning MessagesStartBot: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -5391,7 +5391,7 @@ func (e *MessagesGetMessagesViewsParams) Encode() []byte {
 func (c *Client) MessagesGetMessagesViews(params *MessagesGetMessagesViewsParams) (*serialize.Int, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetMessagesViews")
+		return nil, fmt.Errorf("sedning MessagesGetMessagesViews: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Int)
@@ -5427,7 +5427,7 @@ func (e *MessagesEditChatAdminParams) Encode() []byte {
 func (c *Client) MessagesEditChatAdmin(params *MessagesEditChatAdminParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesEditChatAdmin")
+		return nil, fmt.Errorf("sedning MessagesEditChatAdmin: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -5459,7 +5459,7 @@ func (e *MessagesMigrateChatParams) Encode() []byte {
 func (c *Client) MessagesMigrateChat(params *MessagesMigrateChatParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesMigrateChat")
+		return nil, fmt.Errorf("sedning MessagesMigrateChat: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -5509,7 +5509,7 @@ func (e *MessagesSearchGlobalParams) Encode() []byte {
 func (c *Client) MessagesSearchGlobal(params *MessagesSearchGlobalParams) (MessagesMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSearchGlobal")
+		return nil, fmt.Errorf("sedning MessagesSearchGlobal: %w", err)
 	}
 
 	resp, ok := data.(MessagesMessages)
@@ -5548,7 +5548,7 @@ func (e *MessagesReorderStickerSetsParams) Encode() []byte {
 func (c *Client) MessagesReorderStickerSets(params *MessagesReorderStickerSetsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesReorderStickerSets")
+		return nil, fmt.Errorf("sedning MessagesReorderStickerSets: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -5584,7 +5584,7 @@ func (e *MessagesGetDocumentByHashParams) Encode() []byte {
 func (c *Client) MessagesGetDocumentByHash(params *MessagesGetDocumentByHashParams) (Document, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetDocumentByHash")
+		return nil, fmt.Errorf("sedning MessagesGetDocumentByHash: %w", err)
 	}
 
 	resp, ok := data.(Document)
@@ -5616,7 +5616,7 @@ func (e *MessagesGetSavedGifsParams) Encode() []byte {
 func (c *Client) MessagesGetSavedGifs(params *MessagesGetSavedGifsParams) (MessagesSavedGifs, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetSavedGifs")
+		return nil, fmt.Errorf("sedning MessagesGetSavedGifs: %w", err)
 	}
 
 	resp, ok := data.(MessagesSavedGifs)
@@ -5650,7 +5650,7 @@ func (e *MessagesSaveGifParams) Encode() []byte {
 func (c *Client) MessagesSaveGif(params *MessagesSaveGifParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSaveGif")
+		return nil, fmt.Errorf("sedning MessagesSaveGif: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -5698,7 +5698,7 @@ func (e *MessagesGetInlineBotResultsParams) Encode() []byte {
 func (c *Client) MessagesGetInlineBotResults(params *MessagesGetInlineBotResultsParams) (*MessagesBotResults, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetInlineBotResults")
+		return nil, fmt.Errorf("sedning MessagesGetInlineBotResults: %w", err)
 	}
 
 	resp, ok := data.(*MessagesBotResults)
@@ -5759,7 +5759,7 @@ func (e *MessagesSetInlineBotResultsParams) Encode() []byte {
 func (c *Client) MessagesSetInlineBotResults(params *MessagesSetInlineBotResultsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSetInlineBotResults")
+		return nil, fmt.Errorf("sedning MessagesSetInlineBotResults: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -5830,7 +5830,7 @@ func (e *MessagesSendInlineBotResultParams) Encode() []byte {
 func (c *Client) MessagesSendInlineBotResult(params *MessagesSendInlineBotResultParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSendInlineBotResult")
+		return nil, fmt.Errorf("sedning MessagesSendInlineBotResult: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -5864,7 +5864,7 @@ func (e *MessagesGetMessageEditDataParams) Encode() []byte {
 func (c *Client) MessagesGetMessageEditData(params *MessagesGetMessageEditDataParams) (*MessagesMessageEditData, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetMessageEditData")
+		return nil, fmt.Errorf("sedning MessagesGetMessageEditData: %w", err)
 	}
 
 	resp, ok := data.(*MessagesMessageEditData)
@@ -5940,7 +5940,7 @@ func (e *MessagesEditMessageParams) Encode() []byte {
 func (c *Client) MessagesEditMessage(params *MessagesEditMessageParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesEditMessage")
+		return nil, fmt.Errorf("sedning MessagesEditMessage: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -6007,7 +6007,7 @@ func (e *MessagesEditInlineBotMessageParams) Encode() []byte {
 func (c *Client) MessagesEditInlineBotMessage(params *MessagesEditInlineBotMessageParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesEditInlineBotMessage")
+		return nil, fmt.Errorf("sedning MessagesEditInlineBotMessage: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -6055,7 +6055,7 @@ func (e *MessagesGetBotCallbackAnswerParams) Encode() []byte {
 func (c *Client) MessagesGetBotCallbackAnswer(params *MessagesGetBotCallbackAnswerParams) (*MessagesBotCallbackAnswer, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetBotCallbackAnswer")
+		return nil, fmt.Errorf("sedning MessagesGetBotCallbackAnswer: %w", err)
 	}
 
 	resp, ok := data.(*MessagesBotCallbackAnswer)
@@ -6110,7 +6110,7 @@ func (e *MessagesSetBotCallbackAnswerParams) Encode() []byte {
 func (c *Client) MessagesSetBotCallbackAnswer(params *MessagesSetBotCallbackAnswerParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSetBotCallbackAnswer")
+		return nil, fmt.Errorf("sedning MessagesSetBotCallbackAnswer: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -6142,7 +6142,7 @@ func (e *MessagesGetPeerDialogsParams) Encode() []byte {
 func (c *Client) MessagesGetPeerDialogs(params *MessagesGetPeerDialogsParams) (*MessagesPeerDialogs, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetPeerDialogs")
+		return nil, fmt.Errorf("sedning MessagesGetPeerDialogs: %w", err)
 	}
 
 	resp, ok := data.(*MessagesPeerDialogs)
@@ -6197,7 +6197,7 @@ func (e *MessagesSaveDraftParams) Encode() []byte {
 func (c *Client) MessagesSaveDraft(params *MessagesSaveDraftParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSaveDraft")
+		return nil, fmt.Errorf("sedning MessagesSaveDraft: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -6223,7 +6223,7 @@ func (e *MessagesGetAllDraftsParams) Encode() []byte {
 func (c *Client) MessagesGetAllDrafts() (Updates, error) {
 	data, err := c.MakeRequest(&MessagesGetAllDraftsParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetAllDrafts")
+		return nil, fmt.Errorf("sedning MessagesGetAllDrafts: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -6255,7 +6255,7 @@ func (e *MessagesGetFeaturedStickersParams) Encode() []byte {
 func (c *Client) MessagesGetFeaturedStickers(params *MessagesGetFeaturedStickersParams) (MessagesFeaturedStickers, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetFeaturedStickers")
+		return nil, fmt.Errorf("sedning MessagesGetFeaturedStickers: %w", err)
 	}
 
 	resp, ok := data.(MessagesFeaturedStickers)
@@ -6287,7 +6287,7 @@ func (e *MessagesReadFeaturedStickersParams) Encode() []byte {
 func (c *Client) MessagesReadFeaturedStickers(params *MessagesReadFeaturedStickersParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesReadFeaturedStickers")
+		return nil, fmt.Errorf("sedning MessagesReadFeaturedStickers: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -6326,7 +6326,7 @@ func (e *MessagesGetRecentStickersParams) Encode() []byte {
 func (c *Client) MessagesGetRecentStickers(params *MessagesGetRecentStickersParams) (MessagesRecentStickers, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetRecentStickers")
+		return nil, fmt.Errorf("sedning MessagesGetRecentStickers: %w", err)
 	}
 
 	resp, ok := data.(MessagesRecentStickers)
@@ -6367,7 +6367,7 @@ func (e *MessagesSaveRecentStickerParams) Encode() []byte {
 func (c *Client) MessagesSaveRecentSticker(params *MessagesSaveRecentStickerParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSaveRecentSticker")
+		return nil, fmt.Errorf("sedning MessagesSaveRecentSticker: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -6404,7 +6404,7 @@ func (e *MessagesClearRecentStickersParams) Encode() []byte {
 func (c *Client) MessagesClearRecentStickers(params *MessagesClearRecentStickersParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesClearRecentStickers")
+		return nil, fmt.Errorf("sedning MessagesClearRecentStickers: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -6445,7 +6445,7 @@ func (e *MessagesGetArchivedStickersParams) Encode() []byte {
 func (c *Client) MessagesGetArchivedStickers(params *MessagesGetArchivedStickersParams) (*MessagesArchivedStickers, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetArchivedStickers")
+		return nil, fmt.Errorf("sedning MessagesGetArchivedStickers: %w", err)
 	}
 
 	resp, ok := data.(*MessagesArchivedStickers)
@@ -6477,7 +6477,7 @@ func (e *MessagesGetMaskStickersParams) Encode() []byte {
 func (c *Client) MessagesGetMaskStickers(params *MessagesGetMaskStickersParams) (MessagesAllStickers, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetMaskStickers")
+		return nil, fmt.Errorf("sedning MessagesGetMaskStickers: %w", err)
 	}
 
 	resp, ok := data.(MessagesAllStickers)
@@ -6509,7 +6509,7 @@ func (e *MessagesGetAttachedStickersParams) Encode() []byte {
 func (c *Client) MessagesGetAttachedStickers(params *MessagesGetAttachedStickersParams) (StickerSetCovered, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetAttachedStickers")
+		return nil, fmt.Errorf("sedning MessagesGetAttachedStickers: %w", err)
 	}
 
 	resp, ok := data.(StickerSetCovered)
@@ -6558,7 +6558,7 @@ func (e *MessagesSetGameScoreParams) Encode() []byte {
 func (c *Client) MessagesSetGameScore(params *MessagesSetGameScoreParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSetGameScore")
+		return nil, fmt.Errorf("sedning MessagesSetGameScore: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -6605,7 +6605,7 @@ func (e *MessagesSetInlineGameScoreParams) Encode() []byte {
 func (c *Client) MessagesSetInlineGameScore(params *MessagesSetInlineGameScoreParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSetInlineGameScore")
+		return nil, fmt.Errorf("sedning MessagesSetInlineGameScore: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -6641,7 +6641,7 @@ func (e *MessagesGetGameHighScoresParams) Encode() []byte {
 func (c *Client) MessagesGetGameHighScores(params *MessagesGetGameHighScoresParams) (*MessagesHighScores, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetGameHighScores")
+		return nil, fmt.Errorf("sedning MessagesGetGameHighScores: %w", err)
 	}
 
 	resp, ok := data.(*MessagesHighScores)
@@ -6675,7 +6675,7 @@ func (e *MessagesGetInlineGameHighScoresParams) Encode() []byte {
 func (c *Client) MessagesGetInlineGameHighScores(params *MessagesGetInlineGameHighScoresParams) (*MessagesHighScores, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetInlineGameHighScores")
+		return nil, fmt.Errorf("sedning MessagesGetInlineGameHighScores: %w", err)
 	}
 
 	resp, ok := data.(*MessagesHighScores)
@@ -6711,7 +6711,7 @@ func (e *MessagesGetCommonChatsParams) Encode() []byte {
 func (c *Client) MessagesGetCommonChats(params *MessagesGetCommonChatsParams) (MessagesChats, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetCommonChats")
+		return nil, fmt.Errorf("sedning MessagesGetCommonChats: %w", err)
 	}
 
 	resp, ok := data.(MessagesChats)
@@ -6743,7 +6743,7 @@ func (e *MessagesGetAllChatsParams) Encode() []byte {
 func (c *Client) MessagesGetAllChats(params *MessagesGetAllChatsParams) (MessagesChats, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetAllChats")
+		return nil, fmt.Errorf("sedning MessagesGetAllChats: %w", err)
 	}
 
 	resp, ok := data.(MessagesChats)
@@ -6777,7 +6777,7 @@ func (e *MessagesGetWebPageParams) Encode() []byte {
 func (c *Client) MessagesGetWebPage(params *MessagesGetWebPageParams) (WebPage, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetWebPage")
+		return nil, fmt.Errorf("sedning MessagesGetWebPage: %w", err)
 	}
 
 	resp, ok := data.(WebPage)
@@ -6816,7 +6816,7 @@ func (e *MessagesToggleDialogPinParams) Encode() []byte {
 func (c *Client) MessagesToggleDialogPin(params *MessagesToggleDialogPinParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesToggleDialogPin")
+		return nil, fmt.Errorf("sedning MessagesToggleDialogPin: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -6857,7 +6857,7 @@ func (e *MessagesReorderPinnedDialogsParams) Encode() []byte {
 func (c *Client) MessagesReorderPinnedDialogs(params *MessagesReorderPinnedDialogsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesReorderPinnedDialogs")
+		return nil, fmt.Errorf("sedning MessagesReorderPinnedDialogs: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -6889,7 +6889,7 @@ func (e *MessagesGetPinnedDialogsParams) Encode() []byte {
 func (c *Client) MessagesGetPinnedDialogs(params *MessagesGetPinnedDialogsParams) (*MessagesPeerDialogs, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetPinnedDialogs")
+		return nil, fmt.Errorf("sedning MessagesGetPinnedDialogs: %w", err)
 	}
 
 	resp, ok := data.(*MessagesPeerDialogs)
@@ -6938,7 +6938,7 @@ func (e *MessagesSetBotShippingResultsParams) Encode() []byte {
 func (c *Client) MessagesSetBotShippingResults(params *MessagesSetBotShippingResultsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSetBotShippingResults")
+		return nil, fmt.Errorf("sedning MessagesSetBotShippingResults: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -6984,7 +6984,7 @@ func (e *MessagesSetBotPrecheckoutResultsParams) Encode() []byte {
 func (c *Client) MessagesSetBotPrecheckoutResults(params *MessagesSetBotPrecheckoutResultsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSetBotPrecheckoutResults")
+		return nil, fmt.Errorf("sedning MessagesSetBotPrecheckoutResults: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -7018,7 +7018,7 @@ func (e *MessagesUploadMediaParams) Encode() []byte {
 func (c *Client) MessagesUploadMedia(params *MessagesUploadMediaParams) (MessageMedia, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesUploadMedia")
+		return nil, fmt.Errorf("sedning MessagesUploadMedia: %w", err)
 	}
 
 	resp, ok := data.(MessageMedia)
@@ -7054,7 +7054,7 @@ func (e *MessagesSendScreenshotNotificationParams) Encode() []byte {
 func (c *Client) MessagesSendScreenshotNotification(params *MessagesSendScreenshotNotificationParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSendScreenshotNotification")
+		return nil, fmt.Errorf("sedning MessagesSendScreenshotNotification: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -7086,7 +7086,7 @@ func (e *MessagesGetFavedStickersParams) Encode() []byte {
 func (c *Client) MessagesGetFavedStickers(params *MessagesGetFavedStickersParams) (MessagesFavedStickers, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetFavedStickers")
+		return nil, fmt.Errorf("sedning MessagesGetFavedStickers: %w", err)
 	}
 
 	resp, ok := data.(MessagesFavedStickers)
@@ -7120,7 +7120,7 @@ func (e *MessagesFaveStickerParams) Encode() []byte {
 func (c *Client) MessagesFaveSticker(params *MessagesFaveStickerParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesFaveSticker")
+		return nil, fmt.Errorf("sedning MessagesFaveSticker: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -7162,7 +7162,7 @@ func (e *MessagesGetUnreadMentionsParams) Encode() []byte {
 func (c *Client) MessagesGetUnreadMentions(params *MessagesGetUnreadMentionsParams) (MessagesMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetUnreadMentions")
+		return nil, fmt.Errorf("sedning MessagesGetUnreadMentions: %w", err)
 	}
 
 	resp, ok := data.(MessagesMessages)
@@ -7194,7 +7194,7 @@ func (e *MessagesReadMentionsParams) Encode() []byte {
 func (c *Client) MessagesReadMentions(params *MessagesReadMentionsParams) (*MessagesAffectedHistory, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesReadMentions")
+		return nil, fmt.Errorf("sedning MessagesReadMentions: %w", err)
 	}
 
 	resp, ok := data.(*MessagesAffectedHistory)
@@ -7230,7 +7230,7 @@ func (e *MessagesGetRecentLocationsParams) Encode() []byte {
 func (c *Client) MessagesGetRecentLocations(params *MessagesGetRecentLocationsParams) (MessagesMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetRecentLocations")
+		return nil, fmt.Errorf("sedning MessagesGetRecentLocations: %w", err)
 	}
 
 	resp, ok := data.(MessagesMessages)
@@ -7293,7 +7293,7 @@ func (e *MessagesSendMultiMediaParams) Encode() []byte {
 func (c *Client) MessagesSendMultiMedia(params *MessagesSendMultiMediaParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSendMultiMedia")
+		return nil, fmt.Errorf("sedning MessagesSendMultiMedia: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -7327,7 +7327,7 @@ func (e *MessagesUploadEncryptedFileParams) Encode() []byte {
 func (c *Client) MessagesUploadEncryptedFile(params *MessagesUploadEncryptedFileParams) (EncryptedFile, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesUploadEncryptedFile")
+		return nil, fmt.Errorf("sedning MessagesUploadEncryptedFile: %w", err)
 	}
 
 	resp, ok := data.(EncryptedFile)
@@ -7368,7 +7368,7 @@ func (e *MessagesSearchStickerSetsParams) Encode() []byte {
 func (c *Client) MessagesSearchStickerSets(params *MessagesSearchStickerSetsParams) (MessagesFoundStickerSets, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSearchStickerSets")
+		return nil, fmt.Errorf("sedning MessagesSearchStickerSets: %w", err)
 	}
 
 	resp, ok := data.(MessagesFoundStickerSets)
@@ -7394,7 +7394,7 @@ func (e *MessagesGetSplitRangesParams) Encode() []byte {
 func (c *Client) MessagesGetSplitRanges() (*MessageRange, error) {
 	data, err := c.MakeRequest(&MessagesGetSplitRangesParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetSplitRanges")
+		return nil, fmt.Errorf("sedning MessagesGetSplitRanges: %w", err)
 	}
 
 	resp, ok := data.(*MessageRange)
@@ -7433,7 +7433,7 @@ func (e *MessagesMarkDialogUnreadParams) Encode() []byte {
 func (c *Client) MessagesMarkDialogUnread(params *MessagesMarkDialogUnreadParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesMarkDialogUnread")
+		return nil, fmt.Errorf("sedning MessagesMarkDialogUnread: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -7459,7 +7459,7 @@ func (e *MessagesGetDialogUnreadMarksParams) Encode() []byte {
 func (c *Client) MessagesGetDialogUnreadMarks() (DialogPeer, error) {
 	data, err := c.MakeRequest(&MessagesGetDialogUnreadMarksParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetDialogUnreadMarks")
+		return nil, fmt.Errorf("sedning MessagesGetDialogUnreadMarks: %w", err)
 	}
 
 	resp, ok := data.(DialogPeer)
@@ -7485,7 +7485,7 @@ func (e *MessagesClearAllDraftsParams) Encode() []byte {
 func (c *Client) MessagesClearAllDrafts() (*serialize.Bool, error) {
 	data, err := c.MakeRequest(&MessagesClearAllDraftsParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesClearAllDrafts")
+		return nil, fmt.Errorf("sedning MessagesClearAllDrafts: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -7526,7 +7526,7 @@ func (e *MessagesUpdatePinnedMessageParams) Encode() []byte {
 func (c *Client) MessagesUpdatePinnedMessage(params *MessagesUpdatePinnedMessageParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesUpdatePinnedMessage")
+		return nil, fmt.Errorf("sedning MessagesUpdatePinnedMessage: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -7562,7 +7562,7 @@ func (e *MessagesSendVoteParams) Encode() []byte {
 func (c *Client) MessagesSendVote(params *MessagesSendVoteParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSendVote")
+		return nil, fmt.Errorf("sedning MessagesSendVote: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -7596,7 +7596,7 @@ func (e *MessagesGetPollResultsParams) Encode() []byte {
 func (c *Client) MessagesGetPollResults(params *MessagesGetPollResultsParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetPollResults")
+		return nil, fmt.Errorf("sedning MessagesGetPollResults: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -7628,7 +7628,7 @@ func (e *MessagesGetOnlinesParams) Encode() []byte {
 func (c *Client) MessagesGetOnlines(params *MessagesGetOnlinesParams) (*ChatOnlines, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetOnlines")
+		return nil, fmt.Errorf("sedning MessagesGetOnlines: %w", err)
 	}
 
 	resp, ok := data.(*ChatOnlines)
@@ -7669,7 +7669,7 @@ func (e *MessagesGetStatsURLParams) Encode() []byte {
 func (c *Client) MessagesGetStatsURL(params *MessagesGetStatsURLParams) (*StatsURL, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetStatsURL")
+		return nil, fmt.Errorf("sedning MessagesGetStatsURL: %w", err)
 	}
 
 	resp, ok := data.(*StatsURL)
@@ -7703,7 +7703,7 @@ func (e *MessagesEditChatAboutParams) Encode() []byte {
 func (c *Client) MessagesEditChatAbout(params *MessagesEditChatAboutParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesEditChatAbout")
+		return nil, fmt.Errorf("sedning MessagesEditChatAbout: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -7737,7 +7737,7 @@ func (e *MessagesEditChatDefaultBannedRightsParams) Encode() []byte {
 func (c *Client) MessagesEditChatDefaultBannedRights(params *MessagesEditChatDefaultBannedRightsParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesEditChatDefaultBannedRights")
+		return nil, fmt.Errorf("sedning MessagesEditChatDefaultBannedRights: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -7769,7 +7769,7 @@ func (e *MessagesGetEmojiKeywordsParams) Encode() []byte {
 func (c *Client) MessagesGetEmojiKeywords(params *MessagesGetEmojiKeywordsParams) (*EmojiKeywordsDifference, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetEmojiKeywords")
+		return nil, fmt.Errorf("sedning MessagesGetEmojiKeywords: %w", err)
 	}
 
 	resp, ok := data.(*EmojiKeywordsDifference)
@@ -7803,7 +7803,7 @@ func (e *MessagesGetEmojiKeywordsDifferenceParams) Encode() []byte {
 func (c *Client) MessagesGetEmojiKeywordsDifference(params *MessagesGetEmojiKeywordsDifferenceParams) (*EmojiKeywordsDifference, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetEmojiKeywordsDifference")
+		return nil, fmt.Errorf("sedning MessagesGetEmojiKeywordsDifference: %w", err)
 	}
 
 	resp, ok := data.(*EmojiKeywordsDifference)
@@ -7835,7 +7835,7 @@ func (e *MessagesGetEmojiKeywordsLanguagesParams) Encode() []byte {
 func (c *Client) MessagesGetEmojiKeywordsLanguages(params *MessagesGetEmojiKeywordsLanguagesParams) (*EmojiLanguage, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetEmojiKeywordsLanguages")
+		return nil, fmt.Errorf("sedning MessagesGetEmojiKeywordsLanguages: %w", err)
 	}
 
 	resp, ok := data.(*EmojiLanguage)
@@ -7867,7 +7867,7 @@ func (e *MessagesGetEmojiURLParams) Encode() []byte {
 func (c *Client) MessagesGetEmojiURL(params *MessagesGetEmojiURLParams) (*EmojiURL, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetEmojiURL")
+		return nil, fmt.Errorf("sedning MessagesGetEmojiURL: %w", err)
 	}
 
 	resp, ok := data.(*EmojiURL)
@@ -7901,7 +7901,7 @@ func (e *MessagesGetSearchCountersParams) Encode() []byte {
 func (c *Client) MessagesGetSearchCounters(params *MessagesGetSearchCountersParams) (*MessagesSearchCounter, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetSearchCounters")
+		return nil, fmt.Errorf("sedning MessagesGetSearchCounters: %w", err)
 	}
 
 	resp, ok := data.(*MessagesSearchCounter)
@@ -7937,7 +7937,7 @@ func (e *MessagesRequestUrlAuthParams) Encode() []byte {
 func (c *Client) MessagesRequestUrlAuth(params *MessagesRequestUrlAuthParams) (UrlAuthResult, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesRequestUrlAuth")
+		return nil, fmt.Errorf("sedning MessagesRequestUrlAuth: %w", err)
 	}
 
 	resp, ok := data.(UrlAuthResult)
@@ -7980,7 +7980,7 @@ func (e *MessagesAcceptUrlAuthParams) Encode() []byte {
 func (c *Client) MessagesAcceptUrlAuth(params *MessagesAcceptUrlAuthParams) (UrlAuthResult, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesAcceptUrlAuth")
+		return nil, fmt.Errorf("sedning MessagesAcceptUrlAuth: %w", err)
 	}
 
 	resp, ok := data.(UrlAuthResult)
@@ -8012,7 +8012,7 @@ func (e *MessagesHidePeerSettingsBarParams) Encode() []byte {
 func (c *Client) MessagesHidePeerSettingsBar(params *MessagesHidePeerSettingsBarParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesHidePeerSettingsBar")
+		return nil, fmt.Errorf("sedning MessagesHidePeerSettingsBar: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -8046,7 +8046,7 @@ func (e *MessagesGetScheduledHistoryParams) Encode() []byte {
 func (c *Client) MessagesGetScheduledHistory(params *MessagesGetScheduledHistoryParams) (MessagesMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetScheduledHistory")
+		return nil, fmt.Errorf("sedning MessagesGetScheduledHistory: %w", err)
 	}
 
 	resp, ok := data.(MessagesMessages)
@@ -8080,7 +8080,7 @@ func (e *MessagesGetScheduledMessagesParams) Encode() []byte {
 func (c *Client) MessagesGetScheduledMessages(params *MessagesGetScheduledMessagesParams) (MessagesMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetScheduledMessages")
+		return nil, fmt.Errorf("sedning MessagesGetScheduledMessages: %w", err)
 	}
 
 	resp, ok := data.(MessagesMessages)
@@ -8114,7 +8114,7 @@ func (e *MessagesSendScheduledMessagesParams) Encode() []byte {
 func (c *Client) MessagesSendScheduledMessages(params *MessagesSendScheduledMessagesParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesSendScheduledMessages")
+		return nil, fmt.Errorf("sedning MessagesSendScheduledMessages: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -8148,7 +8148,7 @@ func (e *MessagesDeleteScheduledMessagesParams) Encode() []byte {
 func (c *Client) MessagesDeleteScheduledMessages(params *MessagesDeleteScheduledMessagesParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesDeleteScheduledMessages")
+		return nil, fmt.Errorf("sedning MessagesDeleteScheduledMessages: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -8201,7 +8201,7 @@ func (e *MessagesGetPollVotesParams) Encode() []byte {
 func (c *Client) MessagesGetPollVotes(params *MessagesGetPollVotesParams) (*MessagesVotesList, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetPollVotes")
+		return nil, fmt.Errorf("sedning MessagesGetPollVotes: %w", err)
 	}
 
 	resp, ok := data.(*MessagesVotesList)
@@ -8248,7 +8248,7 @@ func (e *MessagesToggleStickerSetsParams) Encode() []byte {
 func (c *Client) MessagesToggleStickerSets(params *MessagesToggleStickerSetsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesToggleStickerSets")
+		return nil, fmt.Errorf("sedning MessagesToggleStickerSets: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -8274,7 +8274,7 @@ func (e *MessagesGetDialogFiltersParams) Encode() []byte {
 func (c *Client) MessagesGetDialogFilters() (*DialogFilter, error) {
 	data, err := c.MakeRequest(&MessagesGetDialogFiltersParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetDialogFilters")
+		return nil, fmt.Errorf("sedning MessagesGetDialogFilters: %w", err)
 	}
 
 	resp, ok := data.(*DialogFilter)
@@ -8300,7 +8300,7 @@ func (e *MessagesGetSuggestedDialogFiltersParams) Encode() []byte {
 func (c *Client) MessagesGetSuggestedDialogFilters() (*DialogFilterSuggested, error) {
 	data, err := c.MakeRequest(&MessagesGetSuggestedDialogFiltersParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetSuggestedDialogFilters")
+		return nil, fmt.Errorf("sedning MessagesGetSuggestedDialogFilters: %w", err)
 	}
 
 	resp, ok := data.(*DialogFilterSuggested)
@@ -8342,7 +8342,7 @@ func (e *MessagesUpdateDialogFilterParams) Encode() []byte {
 func (c *Client) MessagesUpdateDialogFilter(params *MessagesUpdateDialogFilterParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesUpdateDialogFilter")
+		return nil, fmt.Errorf("sedning MessagesUpdateDialogFilter: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -8374,7 +8374,7 @@ func (e *MessagesUpdateDialogFiltersOrderParams) Encode() []byte {
 func (c *Client) MessagesUpdateDialogFiltersOrder(params *MessagesUpdateDialogFiltersOrderParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesUpdateDialogFiltersOrder")
+		return nil, fmt.Errorf("sedning MessagesUpdateDialogFiltersOrder: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -8410,7 +8410,7 @@ func (e *MessagesGetOldFeaturedStickersParams) Encode() []byte {
 func (c *Client) MessagesGetOldFeaturedStickers(params *MessagesGetOldFeaturedStickersParams) (MessagesFeaturedStickers, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning MessagesGetOldFeaturedStickers")
+		return nil, fmt.Errorf("sedning MessagesGetOldFeaturedStickers: %w", err)
 	}
 
 	resp, ok := data.(MessagesFeaturedStickers)
@@ -8436,7 +8436,7 @@ func (e *UpdatesGetStateParams) Encode() []byte {
 func (c *Client) UpdatesGetState() (*UpdatesState, error) {
 	data, err := c.MakeRequest(&UpdatesGetStateParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning UpdatesGetState")
+		return nil, fmt.Errorf("sedning UpdatesGetState: %w", err)
 	}
 
 	resp, ok := data.(*UpdatesState)
@@ -8482,7 +8482,7 @@ func (e *UpdatesGetDifferenceParams) Encode() []byte {
 func (c *Client) UpdatesGetDifference(params *UpdatesGetDifferenceParams) (UpdatesDifference, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning UpdatesGetDifference")
+		return nil, fmt.Errorf("sedning UpdatesGetDifference: %w", err)
 	}
 
 	resp, ok := data.(UpdatesDifference)
@@ -8527,7 +8527,7 @@ func (e *UpdatesGetChannelDifferenceParams) Encode() []byte {
 func (c *Client) UpdatesGetChannelDifference(params *UpdatesGetChannelDifferenceParams) (UpdatesChannelDifference, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning UpdatesGetChannelDifference")
+		return nil, fmt.Errorf("sedning UpdatesGetChannelDifference: %w", err)
 	}
 
 	resp, ok := data.(UpdatesChannelDifference)
@@ -8559,7 +8559,7 @@ func (e *PhotosUpdateProfilePhotoParams) Encode() []byte {
 func (c *Client) PhotosUpdateProfilePhoto(params *PhotosUpdateProfilePhotoParams) (*PhotosPhoto, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning PhotosUpdateProfilePhoto")
+		return nil, fmt.Errorf("sedning PhotosUpdateProfilePhoto: %w", err)
 	}
 
 	resp, ok := data.(*PhotosPhoto)
@@ -8613,7 +8613,7 @@ func (e *PhotosUploadProfilePhotoParams) Encode() []byte {
 func (c *Client) PhotosUploadProfilePhoto(params *PhotosUploadProfilePhotoParams) (*PhotosPhoto, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning PhotosUploadProfilePhoto")
+		return nil, fmt.Errorf("sedning PhotosUploadProfilePhoto: %w", err)
 	}
 
 	resp, ok := data.(*PhotosPhoto)
@@ -8645,7 +8645,7 @@ func (e *PhotosDeletePhotosParams) Encode() []byte {
 func (c *Client) PhotosDeletePhotos(params *PhotosDeletePhotosParams) (*serialize.Long, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning PhotosDeletePhotos")
+		return nil, fmt.Errorf("sedning PhotosDeletePhotos: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Long)
@@ -8683,7 +8683,7 @@ func (e *PhotosGetUserPhotosParams) Encode() []byte {
 func (c *Client) PhotosGetUserPhotos(params *PhotosGetUserPhotosParams) (PhotosPhotos, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning PhotosGetUserPhotos")
+		return nil, fmt.Errorf("sedning PhotosGetUserPhotos: %w", err)
 	}
 
 	resp, ok := data.(PhotosPhotos)
@@ -8719,7 +8719,7 @@ func (e *UploadSaveFilePartParams) Encode() []byte {
 func (c *Client) UploadSaveFilePart(params *UploadSaveFilePartParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning UploadSaveFilePart")
+		return nil, fmt.Errorf("sedning UploadSaveFilePart: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -8766,7 +8766,7 @@ func (e *UploadGetFileParams) Encode() []byte {
 func (c *Client) UploadGetFile(params *UploadGetFileParams) (UploadFile, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning UploadGetFile")
+		return nil, fmt.Errorf("sedning UploadGetFile: %w", err)
 	}
 
 	resp, ok := data.(UploadFile)
@@ -8804,7 +8804,7 @@ func (e *UploadSaveBigFilePartParams) Encode() []byte {
 func (c *Client) UploadSaveBigFilePart(params *UploadSaveBigFilePartParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning UploadSaveBigFilePart")
+		return nil, fmt.Errorf("sedning UploadSaveBigFilePart: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -8840,7 +8840,7 @@ func (e *UploadGetWebFileParams) Encode() []byte {
 func (c *Client) UploadGetWebFile(params *UploadGetWebFileParams) (*UploadWebFile, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning UploadGetWebFile")
+		return nil, fmt.Errorf("sedning UploadGetWebFile: %w", err)
 	}
 
 	resp, ok := data.(*UploadWebFile)
@@ -8876,7 +8876,7 @@ func (e *UploadGetCdnFileParams) Encode() []byte {
 func (c *Client) UploadGetCdnFile(params *UploadGetCdnFileParams) (UploadCdnFile, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning UploadGetCdnFile")
+		return nil, fmt.Errorf("sedning UploadGetCdnFile: %w", err)
 	}
 
 	resp, ok := data.(UploadCdnFile)
@@ -8910,7 +8910,7 @@ func (e *UploadReuploadCdnFileParams) Encode() []byte {
 func (c *Client) UploadReuploadCdnFile(params *UploadReuploadCdnFileParams) (*FileHash, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning UploadReuploadCdnFile")
+		return nil, fmt.Errorf("sedning UploadReuploadCdnFile: %w", err)
 	}
 
 	resp, ok := data.(*FileHash)
@@ -8944,7 +8944,7 @@ func (e *UploadGetCdnFileHashesParams) Encode() []byte {
 func (c *Client) UploadGetCdnFileHashes(params *UploadGetCdnFileHashesParams) (*FileHash, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning UploadGetCdnFileHashes")
+		return nil, fmt.Errorf("sedning UploadGetCdnFileHashes: %w", err)
 	}
 
 	resp, ok := data.(*FileHash)
@@ -8978,7 +8978,7 @@ func (e *UploadGetFileHashesParams) Encode() []byte {
 func (c *Client) UploadGetFileHashes(params *UploadGetFileHashesParams) (*FileHash, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning UploadGetFileHashes")
+		return nil, fmt.Errorf("sedning UploadGetFileHashes: %w", err)
 	}
 
 	resp, ok := data.(*FileHash)
@@ -9004,7 +9004,7 @@ func (e *HelpGetConfigParams) Encode() []byte {
 func (c *Client) HelpGetConfig() (*Config, error) {
 	data, err := c.MakeRequest(&HelpGetConfigParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning HelpGetConfig")
+		return nil, fmt.Errorf("sedning HelpGetConfig: %w", err)
 	}
 
 	resp, ok := data.(*Config)
@@ -9030,7 +9030,7 @@ func (e *HelpGetNearestDcParams) Encode() []byte {
 func (c *Client) HelpGetNearestDc() (*NearestDc, error) {
 	data, err := c.MakeRequest(&HelpGetNearestDcParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning HelpGetNearestDc")
+		return nil, fmt.Errorf("sedning HelpGetNearestDc: %w", err)
 	}
 
 	resp, ok := data.(*NearestDc)
@@ -9062,7 +9062,7 @@ func (e *HelpGetAppUpdateParams) Encode() []byte {
 func (c *Client) HelpGetAppUpdate(params *HelpGetAppUpdateParams) (HelpAppUpdate, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning HelpGetAppUpdate")
+		return nil, fmt.Errorf("sedning HelpGetAppUpdate: %w", err)
 	}
 
 	resp, ok := data.(HelpAppUpdate)
@@ -9088,7 +9088,7 @@ func (e *HelpGetInviteTextParams) Encode() []byte {
 func (c *Client) HelpGetInviteText() (*HelpInviteText, error) {
 	data, err := c.MakeRequest(&HelpGetInviteTextParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning HelpGetInviteText")
+		return nil, fmt.Errorf("sedning HelpGetInviteText: %w", err)
 	}
 
 	resp, ok := data.(*HelpInviteText)
@@ -9114,7 +9114,7 @@ func (e *HelpGetSupportParams) Encode() []byte {
 func (c *Client) HelpGetSupport() (*HelpSupport, error) {
 	data, err := c.MakeRequest(&HelpGetSupportParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning HelpGetSupport")
+		return nil, fmt.Errorf("sedning HelpGetSupport: %w", err)
 	}
 
 	resp, ok := data.(*HelpSupport)
@@ -9146,7 +9146,7 @@ func (e *HelpGetAppChangelogParams) Encode() []byte {
 func (c *Client) HelpGetAppChangelog(params *HelpGetAppChangelogParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning HelpGetAppChangelog")
+		return nil, fmt.Errorf("sedning HelpGetAppChangelog: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -9180,7 +9180,7 @@ func (e *HelpSetBotUpdatesStatusParams) Encode() []byte {
 func (c *Client) HelpSetBotUpdatesStatus(params *HelpSetBotUpdatesStatusParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning HelpSetBotUpdatesStatus")
+		return nil, fmt.Errorf("sedning HelpSetBotUpdatesStatus: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -9206,7 +9206,7 @@ func (e *HelpGetCdnConfigParams) Encode() []byte {
 func (c *Client) HelpGetCdnConfig() (*CdnConfig, error) {
 	data, err := c.MakeRequest(&HelpGetCdnConfigParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning HelpGetCdnConfig")
+		return nil, fmt.Errorf("sedning HelpGetCdnConfig: %w", err)
 	}
 
 	resp, ok := data.(*CdnConfig)
@@ -9238,7 +9238,7 @@ func (e *HelpGetRecentMeUrlsParams) Encode() []byte {
 func (c *Client) HelpGetRecentMeUrls(params *HelpGetRecentMeUrlsParams) (*HelpRecentMeUrls, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning HelpGetRecentMeUrls")
+		return nil, fmt.Errorf("sedning HelpGetRecentMeUrls: %w", err)
 	}
 
 	resp, ok := data.(*HelpRecentMeUrls)
@@ -9264,7 +9264,7 @@ func (e *HelpGetTermsOfServiceUpdateParams) Encode() []byte {
 func (c *Client) HelpGetTermsOfServiceUpdate() (HelpTermsOfServiceUpdate, error) {
 	data, err := c.MakeRequest(&HelpGetTermsOfServiceUpdateParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning HelpGetTermsOfServiceUpdate")
+		return nil, fmt.Errorf("sedning HelpGetTermsOfServiceUpdate: %w", err)
 	}
 
 	resp, ok := data.(HelpTermsOfServiceUpdate)
@@ -9296,7 +9296,7 @@ func (e *HelpAcceptTermsOfServiceParams) Encode() []byte {
 func (c *Client) HelpAcceptTermsOfService(params *HelpAcceptTermsOfServiceParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning HelpAcceptTermsOfService")
+		return nil, fmt.Errorf("sedning HelpAcceptTermsOfService: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -9328,7 +9328,7 @@ func (e *HelpGetDeepLinkInfoParams) Encode() []byte {
 func (c *Client) HelpGetDeepLinkInfo(params *HelpGetDeepLinkInfoParams) (HelpDeepLinkInfo, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning HelpGetDeepLinkInfo")
+		return nil, fmt.Errorf("sedning HelpGetDeepLinkInfo: %w", err)
 	}
 
 	resp, ok := data.(HelpDeepLinkInfo)
@@ -9354,7 +9354,7 @@ func (e *HelpGetAppConfigParams) Encode() []byte {
 func (c *Client) HelpGetAppConfig() (JSONValue, error) {
 	data, err := c.MakeRequest(&HelpGetAppConfigParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning HelpGetAppConfig")
+		return nil, fmt.Errorf("sedning HelpGetAppConfig: %w", err)
 	}
 
 	resp, ok := data.(JSONValue)
@@ -9386,7 +9386,7 @@ func (e *HelpSaveAppLogParams) Encode() []byte {
 func (c *Client) HelpSaveAppLog(params *HelpSaveAppLogParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning HelpSaveAppLog")
+		return nil, fmt.Errorf("sedning HelpSaveAppLog: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -9418,7 +9418,7 @@ func (e *HelpGetPassportConfigParams) Encode() []byte {
 func (c *Client) HelpGetPassportConfig(params *HelpGetPassportConfigParams) (HelpPassportConfig, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning HelpGetPassportConfig")
+		return nil, fmt.Errorf("sedning HelpGetPassportConfig: %w", err)
 	}
 
 	resp, ok := data.(HelpPassportConfig)
@@ -9444,7 +9444,7 @@ func (e *HelpGetSupportNameParams) Encode() []byte {
 func (c *Client) HelpGetSupportName() (*HelpSupportName, error) {
 	data, err := c.MakeRequest(&HelpGetSupportNameParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning HelpGetSupportName")
+		return nil, fmt.Errorf("sedning HelpGetSupportName: %w", err)
 	}
 
 	resp, ok := data.(*HelpSupportName)
@@ -9476,7 +9476,7 @@ func (e *HelpGetUserInfoParams) Encode() []byte {
 func (c *Client) HelpGetUserInfo(params *HelpGetUserInfoParams) (HelpUserInfo, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning HelpGetUserInfo")
+		return nil, fmt.Errorf("sedning HelpGetUserInfo: %w", err)
 	}
 
 	resp, ok := data.(HelpUserInfo)
@@ -9512,7 +9512,7 @@ func (e *HelpEditUserInfoParams) Encode() []byte {
 func (c *Client) HelpEditUserInfo(params *HelpEditUserInfoParams) (HelpUserInfo, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning HelpEditUserInfo")
+		return nil, fmt.Errorf("sedning HelpEditUserInfo: %w", err)
 	}
 
 	resp, ok := data.(HelpUserInfo)
@@ -9538,7 +9538,7 @@ func (e *HelpGetPromoDataParams) Encode() []byte {
 func (c *Client) HelpGetPromoData() (HelpPromoData, error) {
 	data, err := c.MakeRequest(&HelpGetPromoDataParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning HelpGetPromoData")
+		return nil, fmt.Errorf("sedning HelpGetPromoData: %w", err)
 	}
 
 	resp, ok := data.(HelpPromoData)
@@ -9570,7 +9570,7 @@ func (e *HelpHidePromoDataParams) Encode() []byte {
 func (c *Client) HelpHidePromoData(params *HelpHidePromoDataParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning HelpHidePromoData")
+		return nil, fmt.Errorf("sedning HelpHidePromoData: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -9602,7 +9602,7 @@ func (e *HelpDismissSuggestionParams) Encode() []byte {
 func (c *Client) HelpDismissSuggestion(params *HelpDismissSuggestionParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning HelpDismissSuggestion")
+		return nil, fmt.Errorf("sedning HelpDismissSuggestion: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -9636,7 +9636,7 @@ func (e *ChannelsReadHistoryParams) Encode() []byte {
 func (c *Client) ChannelsReadHistory(params *ChannelsReadHistoryParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsReadHistory")
+		return nil, fmt.Errorf("sedning ChannelsReadHistory: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -9670,7 +9670,7 @@ func (e *ChannelsDeleteMessagesParams) Encode() []byte {
 func (c *Client) ChannelsDeleteMessages(params *ChannelsDeleteMessagesParams) (*MessagesAffectedMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsDeleteMessages")
+		return nil, fmt.Errorf("sedning ChannelsDeleteMessages: %w", err)
 	}
 
 	resp, ok := data.(*MessagesAffectedMessages)
@@ -9704,7 +9704,7 @@ func (e *ChannelsDeleteUserHistoryParams) Encode() []byte {
 func (c *Client) ChannelsDeleteUserHistory(params *ChannelsDeleteUserHistoryParams) (*MessagesAffectedHistory, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsDeleteUserHistory")
+		return nil, fmt.Errorf("sedning ChannelsDeleteUserHistory: %w", err)
 	}
 
 	resp, ok := data.(*MessagesAffectedHistory)
@@ -9740,7 +9740,7 @@ func (e *ChannelsReportSpamParams) Encode() []byte {
 func (c *Client) ChannelsReportSpam(params *ChannelsReportSpamParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsReportSpam")
+		return nil, fmt.Errorf("sedning ChannelsReportSpam: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -9774,7 +9774,7 @@ func (e *ChannelsGetMessagesParams) Encode() []byte {
 func (c *Client) ChannelsGetMessages(params *ChannelsGetMessagesParams) (MessagesMessages, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsGetMessages")
+		return nil, fmt.Errorf("sedning ChannelsGetMessages: %w", err)
 	}
 
 	resp, ok := data.(MessagesMessages)
@@ -9814,7 +9814,7 @@ func (e *ChannelsGetParticipantsParams) Encode() []byte {
 func (c *Client) ChannelsGetParticipants(params *ChannelsGetParticipantsParams) (ChannelsChannelParticipants, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsGetParticipants")
+		return nil, fmt.Errorf("sedning ChannelsGetParticipants: %w", err)
 	}
 
 	resp, ok := data.(ChannelsChannelParticipants)
@@ -9848,7 +9848,7 @@ func (e *ChannelsGetParticipantParams) Encode() []byte {
 func (c *Client) ChannelsGetParticipant(params *ChannelsGetParticipantParams) (*ChannelsChannelParticipant, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsGetParticipant")
+		return nil, fmt.Errorf("sedning ChannelsGetParticipant: %w", err)
 	}
 
 	resp, ok := data.(*ChannelsChannelParticipant)
@@ -9880,7 +9880,7 @@ func (e *ChannelsGetChannelsParams) Encode() []byte {
 func (c *Client) ChannelsGetChannels(params *ChannelsGetChannelsParams) (MessagesChats, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsGetChannels")
+		return nil, fmt.Errorf("sedning ChannelsGetChannels: %w", err)
 	}
 
 	resp, ok := data.(MessagesChats)
@@ -9912,7 +9912,7 @@ func (e *ChannelsGetFullChannelParams) Encode() []byte {
 func (c *Client) ChannelsGetFullChannel(params *ChannelsGetFullChannelParams) (*MessagesChatFull, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsGetFullChannel")
+		return nil, fmt.Errorf("sedning ChannelsGetFullChannel: %w", err)
 	}
 
 	resp, ok := data.(*MessagesChatFull)
@@ -9968,7 +9968,7 @@ func (e *ChannelsCreateChannelParams) Encode() []byte {
 func (c *Client) ChannelsCreateChannel(params *ChannelsCreateChannelParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsCreateChannel")
+		return nil, fmt.Errorf("sedning ChannelsCreateChannel: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -10006,7 +10006,7 @@ func (e *ChannelsEditAdminParams) Encode() []byte {
 func (c *Client) ChannelsEditAdmin(params *ChannelsEditAdminParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsEditAdmin")
+		return nil, fmt.Errorf("sedning ChannelsEditAdmin: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -10040,7 +10040,7 @@ func (e *ChannelsEditTitleParams) Encode() []byte {
 func (c *Client) ChannelsEditTitle(params *ChannelsEditTitleParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsEditTitle")
+		return nil, fmt.Errorf("sedning ChannelsEditTitle: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -10074,7 +10074,7 @@ func (e *ChannelsEditPhotoParams) Encode() []byte {
 func (c *Client) ChannelsEditPhoto(params *ChannelsEditPhotoParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsEditPhoto")
+		return nil, fmt.Errorf("sedning ChannelsEditPhoto: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -10108,7 +10108,7 @@ func (e *ChannelsCheckUsernameParams) Encode() []byte {
 func (c *Client) ChannelsCheckUsername(params *ChannelsCheckUsernameParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsCheckUsername")
+		return nil, fmt.Errorf("sedning ChannelsCheckUsername: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -10142,7 +10142,7 @@ func (e *ChannelsUpdateUsernameParams) Encode() []byte {
 func (c *Client) ChannelsUpdateUsername(params *ChannelsUpdateUsernameParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsUpdateUsername")
+		return nil, fmt.Errorf("sedning ChannelsUpdateUsername: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -10174,7 +10174,7 @@ func (e *ChannelsJoinChannelParams) Encode() []byte {
 func (c *Client) ChannelsJoinChannel(params *ChannelsJoinChannelParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsJoinChannel")
+		return nil, fmt.Errorf("sedning ChannelsJoinChannel: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -10206,7 +10206,7 @@ func (e *ChannelsLeaveChannelParams) Encode() []byte {
 func (c *Client) ChannelsLeaveChannel(params *ChannelsLeaveChannelParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsLeaveChannel")
+		return nil, fmt.Errorf("sedning ChannelsLeaveChannel: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -10240,7 +10240,7 @@ func (e *ChannelsInviteToChannelParams) Encode() []byte {
 func (c *Client) ChannelsInviteToChannel(params *ChannelsInviteToChannelParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsInviteToChannel")
+		return nil, fmt.Errorf("sedning ChannelsInviteToChannel: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -10272,7 +10272,7 @@ func (e *ChannelsDeleteChannelParams) Encode() []byte {
 func (c *Client) ChannelsDeleteChannel(params *ChannelsDeleteChannelParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsDeleteChannel")
+		return nil, fmt.Errorf("sedning ChannelsDeleteChannel: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -10308,7 +10308,7 @@ func (e *ChannelsExportMessageLinkParams) Encode() []byte {
 func (c *Client) ChannelsExportMessageLink(params *ChannelsExportMessageLinkParams) (*ExportedMessageLink, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsExportMessageLink")
+		return nil, fmt.Errorf("sedning ChannelsExportMessageLink: %w", err)
 	}
 
 	resp, ok := data.(*ExportedMessageLink)
@@ -10342,7 +10342,7 @@ func (e *ChannelsToggleSignaturesParams) Encode() []byte {
 func (c *Client) ChannelsToggleSignatures(params *ChannelsToggleSignaturesParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsToggleSignatures")
+		return nil, fmt.Errorf("sedning ChannelsToggleSignatures: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -10383,7 +10383,7 @@ func (e *ChannelsGetAdminedPublicChannelsParams) Encode() []byte {
 func (c *Client) ChannelsGetAdminedPublicChannels(params *ChannelsGetAdminedPublicChannelsParams) (MessagesChats, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsGetAdminedPublicChannels")
+		return nil, fmt.Errorf("sedning ChannelsGetAdminedPublicChannels: %w", err)
 	}
 
 	resp, ok := data.(MessagesChats)
@@ -10419,7 +10419,7 @@ func (e *ChannelsEditBannedParams) Encode() []byte {
 func (c *Client) ChannelsEditBanned(params *ChannelsEditBannedParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsEditBanned")
+		return nil, fmt.Errorf("sedning ChannelsEditBanned: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -10476,7 +10476,7 @@ func (e *ChannelsGetAdminLogParams) Encode() []byte {
 func (c *Client) ChannelsGetAdminLog(params *ChannelsGetAdminLogParams) (*ChannelsAdminLogResults, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsGetAdminLog")
+		return nil, fmt.Errorf("sedning ChannelsGetAdminLog: %w", err)
 	}
 
 	resp, ok := data.(*ChannelsAdminLogResults)
@@ -10510,7 +10510,7 @@ func (e *ChannelsSetStickersParams) Encode() []byte {
 func (c *Client) ChannelsSetStickers(params *ChannelsSetStickersParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsSetStickers")
+		return nil, fmt.Errorf("sedning ChannelsSetStickers: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -10544,7 +10544,7 @@ func (e *ChannelsReadMessageContentsParams) Encode() []byte {
 func (c *Client) ChannelsReadMessageContents(params *ChannelsReadMessageContentsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsReadMessageContents")
+		return nil, fmt.Errorf("sedning ChannelsReadMessageContents: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -10578,7 +10578,7 @@ func (e *ChannelsDeleteHistoryParams) Encode() []byte {
 func (c *Client) ChannelsDeleteHistory(params *ChannelsDeleteHistoryParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsDeleteHistory")
+		return nil, fmt.Errorf("sedning ChannelsDeleteHistory: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -10612,7 +10612,7 @@ func (e *ChannelsTogglePreHistoryHiddenParams) Encode() []byte {
 func (c *Client) ChannelsTogglePreHistoryHidden(params *ChannelsTogglePreHistoryHiddenParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsTogglePreHistoryHidden")
+		return nil, fmt.Errorf("sedning ChannelsTogglePreHistoryHidden: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -10644,7 +10644,7 @@ func (e *ChannelsGetLeftChannelsParams) Encode() []byte {
 func (c *Client) ChannelsGetLeftChannels(params *ChannelsGetLeftChannelsParams) (MessagesChats, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsGetLeftChannels")
+		return nil, fmt.Errorf("sedning ChannelsGetLeftChannels: %w", err)
 	}
 
 	resp, ok := data.(MessagesChats)
@@ -10670,7 +10670,7 @@ func (e *ChannelsGetGroupsForDiscussionParams) Encode() []byte {
 func (c *Client) ChannelsGetGroupsForDiscussion() (MessagesChats, error) {
 	data, err := c.MakeRequest(&ChannelsGetGroupsForDiscussionParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsGetGroupsForDiscussion")
+		return nil, fmt.Errorf("sedning ChannelsGetGroupsForDiscussion: %w", err)
 	}
 
 	resp, ok := data.(MessagesChats)
@@ -10704,7 +10704,7 @@ func (e *ChannelsSetDiscussionGroupParams) Encode() []byte {
 func (c *Client) ChannelsSetDiscussionGroup(params *ChannelsSetDiscussionGroupParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsSetDiscussionGroup")
+		return nil, fmt.Errorf("sedning ChannelsSetDiscussionGroup: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -10740,7 +10740,7 @@ func (e *ChannelsEditCreatorParams) Encode() []byte {
 func (c *Client) ChannelsEditCreator(params *ChannelsEditCreatorParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsEditCreator")
+		return nil, fmt.Errorf("sedning ChannelsEditCreator: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -10776,7 +10776,7 @@ func (e *ChannelsEditLocationParams) Encode() []byte {
 func (c *Client) ChannelsEditLocation(params *ChannelsEditLocationParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsEditLocation")
+		return nil, fmt.Errorf("sedning ChannelsEditLocation: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -10810,7 +10810,7 @@ func (e *ChannelsToggleSlowModeParams) Encode() []byte {
 func (c *Client) ChannelsToggleSlowMode(params *ChannelsToggleSlowModeParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsToggleSlowMode")
+		return nil, fmt.Errorf("sedning ChannelsToggleSlowMode: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -10836,7 +10836,7 @@ func (e *ChannelsGetInactiveChannelsParams) Encode() []byte {
 func (c *Client) ChannelsGetInactiveChannels() (*MessagesInactiveChats, error) {
 	data, err := c.MakeRequest(&ChannelsGetInactiveChannelsParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning ChannelsGetInactiveChannels")
+		return nil, fmt.Errorf("sedning ChannelsGetInactiveChannels: %w", err)
 	}
 
 	resp, ok := data.(*MessagesInactiveChats)
@@ -10870,7 +10870,7 @@ func (e *BotsSendCustomRequestParams) Encode() []byte {
 func (c *Client) BotsSendCustomRequest(params *BotsSendCustomRequestParams) (*DataJSON, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning BotsSendCustomRequest")
+		return nil, fmt.Errorf("sedning BotsSendCustomRequest: %w", err)
 	}
 
 	resp, ok := data.(*DataJSON)
@@ -10904,7 +10904,7 @@ func (e *BotsAnswerWebhookJSONQueryParams) Encode() []byte {
 func (c *Client) BotsAnswerWebhookJSONQuery(params *BotsAnswerWebhookJSONQueryParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning BotsAnswerWebhookJSONQuery")
+		return nil, fmt.Errorf("sedning BotsAnswerWebhookJSONQuery: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -10936,7 +10936,7 @@ func (e *BotsSetBotCommandsParams) Encode() []byte {
 func (c *Client) BotsSetBotCommands(params *BotsSetBotCommandsParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning BotsSetBotCommands")
+		return nil, fmt.Errorf("sedning BotsSetBotCommands: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -10968,7 +10968,7 @@ func (e *PaymentsGetPaymentFormParams) Encode() []byte {
 func (c *Client) PaymentsGetPaymentForm(params *PaymentsGetPaymentFormParams) (*PaymentsPaymentForm, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning PaymentsGetPaymentForm")
+		return nil, fmt.Errorf("sedning PaymentsGetPaymentForm: %w", err)
 	}
 
 	resp, ok := data.(*PaymentsPaymentForm)
@@ -11000,7 +11000,7 @@ func (e *PaymentsGetPaymentReceiptParams) Encode() []byte {
 func (c *Client) PaymentsGetPaymentReceipt(params *PaymentsGetPaymentReceiptParams) (*PaymentsPaymentReceipt, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning PaymentsGetPaymentReceipt")
+		return nil, fmt.Errorf("sedning PaymentsGetPaymentReceipt: %w", err)
 	}
 
 	resp, ok := data.(*PaymentsPaymentReceipt)
@@ -11041,7 +11041,7 @@ func (e *PaymentsValidateRequestedInfoParams) Encode() []byte {
 func (c *Client) PaymentsValidateRequestedInfo(params *PaymentsValidateRequestedInfoParams) (*PaymentsValidatedRequestedInfo, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning PaymentsValidateRequestedInfo")
+		return nil, fmt.Errorf("sedning PaymentsValidateRequestedInfo: %w", err)
 	}
 
 	resp, ok := data.(*PaymentsValidatedRequestedInfo)
@@ -11092,7 +11092,7 @@ func (e *PaymentsSendPaymentFormParams) Encode() []byte {
 func (c *Client) PaymentsSendPaymentForm(params *PaymentsSendPaymentFormParams) (PaymentsPaymentResult, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning PaymentsSendPaymentForm")
+		return nil, fmt.Errorf("sedning PaymentsSendPaymentForm: %w", err)
 	}
 
 	resp, ok := data.(PaymentsPaymentResult)
@@ -11118,7 +11118,7 @@ func (e *PaymentsGetSavedInfoParams) Encode() []byte {
 func (c *Client) PaymentsGetSavedInfo() (*PaymentsSavedInfo, error) {
 	data, err := c.MakeRequest(&PaymentsGetSavedInfoParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning PaymentsGetSavedInfo")
+		return nil, fmt.Errorf("sedning PaymentsGetSavedInfo: %w", err)
 	}
 
 	resp, ok := data.(*PaymentsSavedInfo)
@@ -11159,7 +11159,7 @@ func (e *PaymentsClearSavedInfoParams) Encode() []byte {
 func (c *Client) PaymentsClearSavedInfo(params *PaymentsClearSavedInfoParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning PaymentsClearSavedInfo")
+		return nil, fmt.Errorf("sedning PaymentsClearSavedInfo: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -11191,7 +11191,7 @@ func (e *PaymentsGetBankCardDataParams) Encode() []byte {
 func (c *Client) PaymentsGetBankCardData(params *PaymentsGetBankCardDataParams) (*PaymentsBankCardData, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning PaymentsGetBankCardData")
+		return nil, fmt.Errorf("sedning PaymentsGetBankCardData: %w", err)
 	}
 
 	resp, ok := data.(*PaymentsBankCardData)
@@ -11247,7 +11247,7 @@ func (e *StickersCreateStickerSetParams) Encode() []byte {
 func (c *Client) StickersCreateStickerSet(params *StickersCreateStickerSetParams) (*MessagesStickerSet, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning StickersCreateStickerSet")
+		return nil, fmt.Errorf("sedning StickersCreateStickerSet: %w", err)
 	}
 
 	resp, ok := data.(*MessagesStickerSet)
@@ -11279,7 +11279,7 @@ func (e *StickersRemoveStickerFromSetParams) Encode() []byte {
 func (c *Client) StickersRemoveStickerFromSet(params *StickersRemoveStickerFromSetParams) (*MessagesStickerSet, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning StickersRemoveStickerFromSet")
+		return nil, fmt.Errorf("sedning StickersRemoveStickerFromSet: %w", err)
 	}
 
 	resp, ok := data.(*MessagesStickerSet)
@@ -11313,7 +11313,7 @@ func (e *StickersChangeStickerPositionParams) Encode() []byte {
 func (c *Client) StickersChangeStickerPosition(params *StickersChangeStickerPositionParams) (*MessagesStickerSet, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning StickersChangeStickerPosition")
+		return nil, fmt.Errorf("sedning StickersChangeStickerPosition: %w", err)
 	}
 
 	resp, ok := data.(*MessagesStickerSet)
@@ -11347,7 +11347,7 @@ func (e *StickersAddStickerToSetParams) Encode() []byte {
 func (c *Client) StickersAddStickerToSet(params *StickersAddStickerToSetParams) (*MessagesStickerSet, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning StickersAddStickerToSet")
+		return nil, fmt.Errorf("sedning StickersAddStickerToSet: %w", err)
 	}
 
 	resp, ok := data.(*MessagesStickerSet)
@@ -11381,7 +11381,7 @@ func (e *StickersSetStickerSetThumbParams) Encode() []byte {
 func (c *Client) StickersSetStickerSetThumb(params *StickersSetStickerSetThumbParams) (*MessagesStickerSet, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning StickersSetStickerSetThumb")
+		return nil, fmt.Errorf("sedning StickersSetStickerSetThumb: %w", err)
 	}
 
 	resp, ok := data.(*MessagesStickerSet)
@@ -11407,7 +11407,7 @@ func (e *PhoneGetCallConfigParams) Encode() []byte {
 func (c *Client) PhoneGetCallConfig() (*DataJSON, error) {
 	data, err := c.MakeRequest(&PhoneGetCallConfigParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning PhoneGetCallConfig")
+		return nil, fmt.Errorf("sedning PhoneGetCallConfig: %w", err)
 	}
 
 	resp, ok := data.(*DataJSON)
@@ -11452,7 +11452,7 @@ func (e *PhoneRequestCallParams) Encode() []byte {
 func (c *Client) PhoneRequestCall(params *PhoneRequestCallParams) (*PhonePhoneCall, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning PhoneRequestCall")
+		return nil, fmt.Errorf("sedning PhoneRequestCall: %w", err)
 	}
 
 	resp, ok := data.(*PhonePhoneCall)
@@ -11488,7 +11488,7 @@ func (e *PhoneAcceptCallParams) Encode() []byte {
 func (c *Client) PhoneAcceptCall(params *PhoneAcceptCallParams) (*PhonePhoneCall, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning PhoneAcceptCall")
+		return nil, fmt.Errorf("sedning PhoneAcceptCall: %w", err)
 	}
 
 	resp, ok := data.(*PhonePhoneCall)
@@ -11526,7 +11526,7 @@ func (e *PhoneConfirmCallParams) Encode() []byte {
 func (c *Client) PhoneConfirmCall(params *PhoneConfirmCallParams) (*PhonePhoneCall, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning PhoneConfirmCall")
+		return nil, fmt.Errorf("sedning PhoneConfirmCall: %w", err)
 	}
 
 	resp, ok := data.(*PhonePhoneCall)
@@ -11558,7 +11558,7 @@ func (e *PhoneReceivedCallParams) Encode() []byte {
 func (c *Client) PhoneReceivedCall(params *PhoneReceivedCallParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning PhoneReceivedCall")
+		return nil, fmt.Errorf("sedning PhoneReceivedCall: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -11603,7 +11603,7 @@ func (e *PhoneDiscardCallParams) Encode() []byte {
 func (c *Client) PhoneDiscardCall(params *PhoneDiscardCallParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning PhoneDiscardCall")
+		return nil, fmt.Errorf("sedning PhoneDiscardCall: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -11646,7 +11646,7 @@ func (e *PhoneSetCallRatingParams) Encode() []byte {
 func (c *Client) PhoneSetCallRating(params *PhoneSetCallRatingParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning PhoneSetCallRating")
+		return nil, fmt.Errorf("sedning PhoneSetCallRating: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -11680,7 +11680,7 @@ func (e *PhoneSaveCallDebugParams) Encode() []byte {
 func (c *Client) PhoneSaveCallDebug(params *PhoneSaveCallDebugParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning PhoneSaveCallDebug")
+		return nil, fmt.Errorf("sedning PhoneSaveCallDebug: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -11714,7 +11714,7 @@ func (e *PhoneSendSignalingDataParams) Encode() []byte {
 func (c *Client) PhoneSendSignalingData(params *PhoneSendSignalingDataParams) (*serialize.Bool, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning PhoneSendSignalingData")
+		return nil, fmt.Errorf("sedning PhoneSendSignalingData: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Bool)
@@ -11748,7 +11748,7 @@ func (e *LangpackGetLangPackParams) Encode() []byte {
 func (c *Client) LangpackGetLangPack(params *LangpackGetLangPackParams) (*LangPackDifference, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning LangpackGetLangPack")
+		return nil, fmt.Errorf("sedning LangpackGetLangPack: %w", err)
 	}
 
 	resp, ok := data.(*LangPackDifference)
@@ -11784,7 +11784,7 @@ func (e *LangpackGetStringsParams) Encode() []byte {
 func (c *Client) LangpackGetStrings(params *LangpackGetStringsParams) (LangPackString, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning LangpackGetStrings")
+		return nil, fmt.Errorf("sedning LangpackGetStrings: %w", err)
 	}
 
 	resp, ok := data.(LangPackString)
@@ -11820,7 +11820,7 @@ func (e *LangpackGetDifferenceParams) Encode() []byte {
 func (c *Client) LangpackGetDifference(params *LangpackGetDifferenceParams) (*LangPackDifference, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning LangpackGetDifference")
+		return nil, fmt.Errorf("sedning LangpackGetDifference: %w", err)
 	}
 
 	resp, ok := data.(*LangPackDifference)
@@ -11852,7 +11852,7 @@ func (e *LangpackGetLanguagesParams) Encode() []byte {
 func (c *Client) LangpackGetLanguages(params *LangpackGetLanguagesParams) (*LangPackLanguage, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning LangpackGetLanguages")
+		return nil, fmt.Errorf("sedning LangpackGetLanguages: %w", err)
 	}
 
 	resp, ok := data.(*LangPackLanguage)
@@ -11886,7 +11886,7 @@ func (e *LangpackGetLanguageParams) Encode() []byte {
 func (c *Client) LangpackGetLanguage(params *LangpackGetLanguageParams) (*LangPackLanguage, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning LangpackGetLanguage")
+		return nil, fmt.Errorf("sedning LangpackGetLanguage: %w", err)
 	}
 
 	resp, ok := data.(*LangPackLanguage)
@@ -11918,7 +11918,7 @@ func (e *FoldersEditPeerFoldersParams) Encode() []byte {
 func (c *Client) FoldersEditPeerFolders(params *FoldersEditPeerFoldersParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning FoldersEditPeerFolders")
+		return nil, fmt.Errorf("sedning FoldersEditPeerFolders: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -11950,7 +11950,7 @@ func (e *FoldersDeleteFolderParams) Encode() []byte {
 func (c *Client) FoldersDeleteFolder(params *FoldersDeleteFolderParams) (Updates, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning FoldersDeleteFolder")
+		return nil, fmt.Errorf("sedning FoldersDeleteFolder: %w", err)
 	}
 
 	resp, ok := data.(Updates)
@@ -11989,7 +11989,7 @@ func (e *StatsGetBroadcastStatsParams) Encode() []byte {
 func (c *Client) StatsGetBroadcastStats(params *StatsGetBroadcastStatsParams) (*StatsBroadcastStats, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning StatsGetBroadcastStats")
+		return nil, fmt.Errorf("sedning StatsGetBroadcastStats: %w", err)
 	}
 
 	resp, ok := data.(*StatsBroadcastStats)
@@ -12031,7 +12031,7 @@ func (e *StatsLoadAsyncGraphParams) Encode() []byte {
 func (c *Client) StatsLoadAsyncGraph(params *StatsLoadAsyncGraphParams) (StatsGraph, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning StatsLoadAsyncGraph")
+		return nil, fmt.Errorf("sedning StatsLoadAsyncGraph: %w", err)
 	}
 
 	resp, ok := data.(StatsGraph)
@@ -12070,7 +12070,7 @@ func (e *StatsGetMegagroupStatsParams) Encode() []byte {
 func (c *Client) StatsGetMegagroupStats(params *StatsGetMegagroupStatsParams) (*StatsMegagroupStats, error) {
 	data, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sedning StatsGetMegagroupStats")
+		return nil, fmt.Errorf("sedning StatsGetMegagroupStats: %w", err)
 	}
 
 	resp, ok := data.(*StatsMegagroupStats)

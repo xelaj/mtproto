@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/willf/pad"
 	"github.com/xelaj/go-dry"
 )
@@ -39,7 +40,6 @@ type DefinitionMethod struct {
 	Parameters []*Param
 }
 
-
 func GetCRCCode(constructorTrimmedLine string) (string, uint32, error) {
 	var crcCode uint32
 	crcCodeStr := regexp.MustCompilePOSIX("#[0-9a-f]{1,8}").FindString(constructorTrimmedLine)
@@ -52,7 +52,7 @@ func GetCRCCode(constructorTrimmedLine string) (string, uint32, error) {
 
 	b, err := hex.DecodeString(crcCodeStr)
 	if err != nil {
-		return "", 0, errors.Wrap(err, "parsing CRC code")
+		return "", 0, fmt.Errorf("parsing CRC code: %w", err)
 	}
 	crcCode = binary.BigEndian.Uint32(b)
 
@@ -209,7 +209,7 @@ func ParseType(line string) (*DefinitionObject, error) {
 
 		b, err := hex.DecodeString(crcCodeStr)
 		if err != nil {
-			return nil, errors.Wrap(err, "decoding CRC")
+			return nil, fmt.Errorf("decoding CRC: %w", err)
 		}
 		crcCode = binary.BigEndian.Uint32(b)
 	}
@@ -322,7 +322,7 @@ func ParseTL(data string) (*TLSchema, error) {
 		}
 
 		if err != nil {
-			return nil, errors.Wrap(err, "line "+strconv.Itoa(lineNumber))
+			return nil, fmt.Errorf("line %d: %w", lineNumber, err)
 		}
 	}
 	return &TLSchema{

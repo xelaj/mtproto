@@ -11,7 +11,6 @@ require (
 	github.com/iancoleman/strcase v0.1.2
 	github.com/k0kubun/pp v3.0.1+incompatible
 	github.com/leodido/go-urn v1.2.0 // indirect
-	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.6.1
 	github.com/vikyd/zero v0.0.0-20190921142904-0f738d0bc858
 	github.com/willf/pad v0.0.0-20200313202418-172aa767f2a4

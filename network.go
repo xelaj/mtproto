@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/xelaj/go-dry"
 
 	"github.com/xelaj/mtproto/serialize"
@@ -47,7 +46,7 @@ func (m *MTProto) decodeRecievedData(data []byte) (serialize.TL, error) {
 	// проверим, что это не код ошибки
 	err := CatchResponseErrorCode(data)
 	if err != nil {
-		return nil, errors.Wrap(err, "Server response error")
+		return nil, fmt.Errorf("server response error: %w", err)
 	}
 
 	var obj serialize.TL
@@ -68,7 +67,7 @@ func (m *MTProto) decodeRecievedData(data []byte) (serialize.TL, error) {
 
 	mod := m.msgId & 3
 	if mod != 1 && mod != 3 {
-		return nil, fmt.Errorf("Wrong bits of message_id: %d", mod)
+		return nil, fmt.Errorf("wrong bits of message_id: %d", mod)
 	}
 
 	return obj, nil

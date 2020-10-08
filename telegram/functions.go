@@ -1,9 +1,9 @@
 package telegram
 
 // import (
+// 	"fmt"
 // 	"reflect"
 //
-// 	"github.com/pkg/errors"
 // 	"github.com/xelaj/mtproto/serialize"
 // )
 //
@@ -18,8 +18,7 @@ package telegram
 // 	buf.PutUint(t.CRC())
 // 	return buf.Result()
 // }
-
-
+//
 // type AuthSignInParams struct {
 // 	PhoneNumber   string
 // 	PhoneCodeHash string
@@ -46,12 +45,12 @@ package telegram
 // 		PhoneCode:     PhoneCode,
 // 	})
 // 	if err != nil {
-// 		return nil, errors.Wrap(err, "sending AuthSignIn")
+// 		return nil, fmt.Errorf("sending AuthSignIn: %w", err)
 // 	}
 //
 // 	resp, ok := data.(AuthAuthorization)
 // 	if !ok {
-// 		panic(errors.New("got invalid response type: " + reflect.TypeOf(data).String()))
+// 		panic(fmt.Errorf("got invalid response type: %s", reflect.TypeOf(data).String()))
 // 	}
 //
 // 	return resp, nil

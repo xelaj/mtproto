@@ -2,8 +2,8 @@ package telegram
 
 import (
 	"crypto/rsa"
+	"fmt"
 
-	"github.com/pkg/errors"
 	dry "github.com/xelaj/go-dry"
 
 	"github.com/xelaj/mtproto"
@@ -53,7 +53,7 @@ func (m *Client) InvokeWithLayer(layer int, query serialize.TLEncoder) (serializ
 		Query: query,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending InvokeWithLayer")
+		return nil, fmt.Errorf("sending InvokeWithLayer: %w", err)
 	}
 
 	return data, nil
@@ -113,7 +113,7 @@ func (t *InitConnectionParams) DecodeFrom(d *serialize.Decoder) {
 func (m *Client) InitConnection(params InitConnectionParams) (serialize.TL, error) {
 	data, err := m.MakeRequest(&params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sending InitConnection")
+		return nil, fmt.Errorf("sending InitConnection: %w", err)
 	}
 
 	return data, nil

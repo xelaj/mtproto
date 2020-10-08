@@ -11,7 +11,6 @@ import (
 
 	"github.com/fatih/structtag"
 	"github.com/k0kubun/pp"
-	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
 )
@@ -354,6 +353,8 @@ func (d *Decoder) mustRead(into []byte) {
 		return
 	}
 	n, err := d.buf.Read(into)
-	dry.PanicIfErr(errors.Wrap(err, fmt.Sprintf("read %v bytes", n)))
+	if err != nil {
+		panic(fmt.Errorf("read %d bytes: %w", n, err))
+	}
 	dry.PanicIf(n != len(into), fmt.Sprintf("expected to read equal %v bytes, got %v", len(into), n))
 }

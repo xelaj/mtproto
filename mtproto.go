@@ -3,6 +3,7 @@ package mtproto
 import (
 	"context"
 	"crypto/rsa"
+	"fmt"
 	"net"
 	"reflect"
 	"sync"
@@ -10,7 +11,6 @@ import (
 
 	bus "github.com/asaskevich/EventBus"
 	"github.com/k0kubun/pp"
-	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
 
@@ -94,7 +94,7 @@ func NewMTProto(c Config) (*MTProto, error) {
 		m.addr = "149.154.167.50:443"
 		m.encrypted = false
 	} else {
-		return nil, errors.Wrap(err, "loading session")
+		return nil, fmt.Errorf("loading session: %w", err)
 	}
 
 	m.sessionId = utils.GenerateSessionID()
@@ -110,17 +110,17 @@ func (m *MTProto) CreateConnection() error {
 	// connect
 	tcpAddr, err := net.ResolveTCPAddr("tcp", m.addr)
 	if err != nil {
-		return errors.Wrap(err, "resolving tcp")
+		return fmt.Errorf("resolving tcp: %w", err)
 	}
 	m.conn, err = net.DialTCP("tcp", nil, tcpAddr)
 	if err != nil {
-		return errors.Wrap(err, "dialing tcp")
+		return fmt.Errorf("dialing tcp: %w", err)
 	}
 
 	// https://core.telegram.org/mtproto/mtproto-transports#intermediate
 	_, err = m.conn.Write([]byte{0xee, 0xee, 0xee, 0xee})
 	if err != nil {
-		return errors.Wrap(err, "writing first byte")
+		return fmt.Errorf("writing first byte: %w", err)
 	}
 
 	ctx, cancelfunc := context.WithCancel(context.Background())
@@ -134,7 +134,7 @@ func (m *MTProto) CreateConnection() error {
 		println("not encrypted, creating auth key")
 		err = m.makeAuthKey()
 		if err != nil {
-			return errors.Wrap(err, "making auth key")
+			return fmt.Errorf("making auth key: %w", err)
 		}
 	}
 
@@ -154,7 +154,7 @@ func (m *MTProto) makeRequest(data serialize.TL) (serialize.TL, error) {
 
 	resp, err := m.sendPacketNew(data)
 	if err != nil {
-		return nil, errors.Wrap(err, "sending message")
+		return nil, fmt.Errorf("sending message: %w", err)
 	}
 	response := <-resp
 
@@ -175,7 +175,7 @@ func (m *MTProto) Disconnect() error {
 
 	err := m.conn.Close()
 	if err != nil {
-		return errors.Wrap(err, "closing TCP connection")
+		return fmt.Errorf("closing TCP connection: %w", err)
 	}
 
 	// TODO: закрыть каналы
@@ -237,7 +237,7 @@ func (m *MTProto) processResponse(msgId, seqNo int, data serialize.TL) error {
 		for _, v := range *message {
 			err := m.processResponse(int(v.MsgID), int(v.SeqNo), v.Msg)
 			if err != nil {
-				return errors.Wrap(err, "processing item in container")
+				return fmt.Errorf("processing item in container: %w", err)
 			}
 		}
 
@@ -262,7 +262,7 @@ func (m *MTProto) processResponse(msgId, seqNo int, data serialize.TL) error {
 	//	resp, err := m.makeRequest(&TL_Pong{MsgID: int64(msgId), PingID: message.PingID})
 	//	pp.Println(resp)
 	//	if err != nil {
-	//		return errors.Wrap(err, "processing ping")
+	//		return fmt.Errorf("processing ping: %w", err)
 	//	}
 
 	case *serialize.Pong:
@@ -282,7 +282,7 @@ func (m *MTProto) processResponse(msgId, seqNo int, data serialize.TL) error {
 
 		err := m.writeRPCResponse(int(message.ReqMsgID), obj)
 		if err != nil {
-			return errors.Wrap(err, "writing RPC response")
+			return fmt.Errorf("writing RPC response: %w", err)
 		}
 
 	default:
@@ -293,7 +293,7 @@ func (m *MTProto) processResponse(msgId, seqNo int, data serialize.TL) error {
 		resp, err := m.makeRequest(&serialize.MsgsAck{[]int64{int64(msgId)}})
 		pp.Println(resp)
 		if err != nil {
-			return errors.Wrap(err, "sending ack")
+			return fmt.Errorf("sending ack: %w", err)
 		}
 	}
 

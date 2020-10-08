@@ -5,11 +5,10 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"fmt"
 	"io/ioutil"
 	"math/big"
-	"strconv"
 
-	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
 	"github.com/xelaj/mtproto/serialize"
@@ -36,7 +35,7 @@ func ReadFromFile(path string) ([]*rsa.PublicKey, error) {
 	}
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		return nil, errors.Wrap(err, "reading file  keys")
+		return nil, fmt.Errorf("reading file keys: %w", err)
 	}
 	keys := make([]*rsa.PublicKey, 0)
 	for {
@@ -48,7 +47,7 @@ func ReadFromFile(path string) ([]*rsa.PublicKey, error) {
 		key, err := pemBytesToRsa(block.Bytes)
 		if err != nil {
 			const offset = 1 // +1 потому что считаем с 0
-			return nil, errors.Wrap(err, "deconding key №"+strconv.Itoa(len(keys)+offset))
+			return nil, fmt.Errorf("deconding key №%d", len(keys)+offset)
 		}
 
 		keys = append(keys, key)

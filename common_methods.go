@@ -1,9 +1,9 @@
 package mtproto
 
 import (
+	"errors"
+	"fmt"
 	"reflect"
-
-	"github.com/pkg/errors"
 
 	"github.com/xelaj/mtproto/serialize"
 )
@@ -31,7 +31,7 @@ func (m *MTProto) ReqPQ(nonce *serialize.Int128) (*serialize.ResPQ, error) {
 	println("sending ReqPQ")
 	data, err := m.makeRequest(&ReqPQParams{Nonce: nonce})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending ReqPQ")
+		return nil, fmt.Errorf("sending ReqPQ: %w", err)
 	}
 
 	resp, ok := data.(*serialize.ResPQ)
@@ -86,7 +86,7 @@ func (m *MTProto) ReqDHParams(nonce, serverNonce *serialize.Int128, p, q []byte,
 		EncryptedData:        encryptedData,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending ReqDHParams")
+		return nil, fmt.Errorf("sending ReqDHParams: %w", err)
 	}
 
 	resp, ok := data.(serialize.ServerDHParams)
@@ -129,7 +129,7 @@ func (m *MTProto) SetClientDHParams(nonce, serverNonce *serialize.Int128, encryp
 		EncryptedData: encryptedData,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending Ping")
+		return nil, fmt.Errorf("sending Ping: %w", err)
 	}
 
 	resp, ok := data.(serialize.SetClientDHParamsAnswer)
@@ -167,7 +167,7 @@ func (m *MTProto) Ping(pingID int64) (*serialize.Pong, error) {
 		PingID: pingID,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending Ping")
+		return nil, fmt.Errorf("sending Ping: %w", err)
 	}
 
 	resp, ok := data.(*serialize.Pong)
