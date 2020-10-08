@@ -19,43 +19,35 @@ gitlab pipelines
 
 **english** [русский](https://github.com/xelaj/mtproto/blob/master/docs/ru_RU/README.md)
 
-<p align="center">
-<img src="docs/assets/MuffinMan-AgADRAADO2AkFA.gif"/>
-</p>
 
 ## <p align="center">Features</p>
 
 <div align="right">
 <h3>Full native implementation</h3>
-<img src="docs/assets/ezgif-3-a6bd45965060.gif" align="right"/>
 All code, from sending requests to encryption serialization is written on pure golang. You don't need to fetch any additional dependencies.
 </br></br></br></br></br></br>
 </div>
 
 <div align="left">
 <h3>Latest API version (117+)</h3>
-<img src="docs/assets/ezgif-3-19ced73bc71f.gif" align="left"/>
 Lib is supports all the API and MTProto features, including video calls and post comments. You can create additional pull request to push api updates! 
 </br></br></br></br></br></br></br>
 </div>
 
 <div align="right">
 <h3>Reactive API updates (generated from TL schema)</h3>
-<img src="docs/assets/ezgif-3-5b6a808d2774.gif" align="right"/>
 All changes in TDLib and Android client are monitoring to get the latest features and changes in TL schemas. New methods are creates by adding new lines into TL schema and updating generated code!
 </br></br></br></br></br>
 </div>
 
 <div align="left">
 <h3>Implements ONLY network tools</h3>
-<img src="docs/assets/ezgif-3-3ac8a3ea5713.gif" align="left"/>
 No more SQLite databases and caching unnecessary files, that **you** don't need. Also you can control how sessions are stored, auth process and literally everything that you need!
 </br></br></br></br></br>
 </div>
 
 <div align="right">
 <h3>Multiaccounting, Gateway mode</h3>
-<img src="docs/assets/ezgif-3-7bcf6dc78388.gif" align="right"/>
 You can use more than 10 accounts at same time! <i>xelaj/MTProto</i> doesn't create huge overhead in memory or cpu consumption as TDLib. Thanks for that, you can create huge number of connection instances and don't worry about memory overload! 
 </br></br></br></br></br>
 </div>
