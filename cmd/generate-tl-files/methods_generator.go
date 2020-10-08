@@ -264,7 +264,7 @@ func GenerateMethods(file *jen.File, data *FileStructure) error {
 		calls = append(calls,
 			jen.List(jen.Id("data"), jen.Err()).Op(":=").Id("c.MakeRequest").Call(requestStruct),
 			jen.If(jen.Err().Op("!=").Nil()).Block(
-				jen.Return(firstErrorReturn, jen.Qual("github.com/pkg/errors", "Wrap").Call(jen.Err(), jen.Lit("sedning "+methodName))),
+				jen.Return(firstErrorReturn, jen.Qual("fmt", "Errorf").Call(jen.Lit("sedning "+methodName+": %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.List(jen.Id("resp"), jen.Id("ok")).Op(":=").Id("data").Assert(jen.Id(assertedType)),

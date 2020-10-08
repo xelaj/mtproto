@@ -1,6 +1,6 @@
 package ige
 
-import "github.com/pkg/errors"
+import "errors"
 
 var (
 	ErrDataTooSmall     = errors.New("AES256IGE: data too small")

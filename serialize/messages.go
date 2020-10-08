@@ -5,10 +5,10 @@ package serialize
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 
 	"github.com/k0kubun/pp"
-	"github.com/pkg/errors"
 	"github.com/xelaj/go-dry"
 
 	ige "github.com/xelaj/mtproto/aes_ige"
@@ -52,7 +52,7 @@ func DeserializeEncryptedMessage(data, authKey []byte) (*EncryptedMessage, error
 
 	decrypted, err := ige.Decrypt(encryptedData, authKey, msg.MsgKey)
 	if err != nil {
-		return nil, errors.Wrap(err, "decrypting message")
+		return nil, fmt.Errorf("decrypting message: %w", err)
 	}
 	pp.Println("decoded", decrypted)
 	buf = NewDecoder(decrypted)

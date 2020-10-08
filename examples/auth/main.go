@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/k0kubun/pp"
-	"github.com/pkg/errors"
 	"github.com/xelaj/go-dry"
 
 	"github.com/xelaj/mtproto"
@@ -30,13 +29,13 @@ func main() {
 		AppHash:     "a3406de8d171bb422bb6ddf3bbd800e2",
 	})
 	if err != nil {
-		panic(errors.Wrap(err, "Create failed"))
+		panic(fmt.Errorf("create failed: %w", err))
 	}
 	client = &telegram.Client{m}
 
 	err = client.CreateConnection()
 	if err != nil {
-		panic(errors.Wrap(err, "Connect failed"))
+		panic(fmt.Errorf("connect failed: %w", err))
 	}
 
 	resp, err := client.InvokeWithLayer(117, &telegram.InitConnectionParams{

@@ -3,8 +3,8 @@ package ige
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"fmt"
 
-	"github.com/pkg/errors"
 	"github.com/xelaj/go-dry"
 )
 
@@ -27,7 +27,7 @@ func NewCipher(key, iv []byte) (*Cipher, error) {
 	c := new(Cipher)
 	c.block, err = aes.NewCipher(key)
 	if err != nil {
-		return nil, errors.Wrap(err, "creating new cipher")
+		return nil, fmt.Errorf("creating new cipher: %w", err)
 	}
 
 	c.t = c.v[firstBlock][:]

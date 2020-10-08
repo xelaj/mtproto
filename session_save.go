@@ -4,12 +4,12 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 
-	"github.com/pkg/errors"
-	"github.com/xelaj/mtproto/serialize"
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
+	"github.com/xelaj/mtproto/serialize"
 )
 
 func (m *MTProto) SaveSession() (err error) {
@@ -63,28 +63,28 @@ func LoadSession(path string) (*Session, error) {
 
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		return nil, errors.Wrap(err, "reading file")
+		return nil, fmt.Errorf("reading file: %w", err)
 	}
 
 	file := new(tokenStorageFormat)
 	err = json.Unmarshal(data, file)
 	if err != nil {
-		return nil, errors.Wrap(err, "parsing file")
+		return nil, fmt.Errorf("parsing file: %w", err)
 	}
 
 	res := new(Session)
 
 	res.Key, err = base64.StdEncoding.DecodeString(file.Key)
 	if err != nil {
-		return nil, errors.Wrap(err, "invalid binary data of 'key'")
+		return nil, fmt.Errorf("invalid binary data of 'key': %w", err)
 	}
 	res.Hash, err = base64.StdEncoding.DecodeString(file.Hash)
 	if err != nil {
-		return nil, errors.Wrap(err, "invalid binary data of 'hash'")
+		return nil, fmt.Errorf("invalid binary data of 'hash': %w", err)
 	}
 	res.Salt, err = base64.StdEncoding.DecodeString(file.Salt)
 	if err != nil {
-		return nil, errors.Wrap(err, "invalid binary data of 'salt'")
+		return nil, fmt.Errorf("invalid binary data of 'salt': %w", err)
 	}
 	res.Hostname = file.Hostname
 

@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/pkg/errors"
 	"github.com/xelaj/go-dry"
 
 	ige "github.com/xelaj/mtproto/aes_ige"
@@ -24,11 +23,11 @@ func (m *MTProto) makeAuthKey() error {
 	nonceFirst := serialize.RandomInt128()
 	res, err := m.ReqPQ(nonceFirst)
 	if err != nil {
-		return errors.Wrap(err, "requesting first pq")
+		return fmt.Errorf("requesting first pq: %w", err)
 	}
 
 	if nonceFirst.Cmp(res.Nonce.Int) != 0 {
-		return errors.New("Handshake: Wrong nonce")
+		return fmt.Errorf("handshake: wrong nonce")
 	}
 	found := false
 	for _, b := range res.Fingerprints {
@@ -38,7 +37,7 @@ func (m *MTProto) makeAuthKey() error {
 		}
 	}
 	if !found {
-		return errors.New("Handshake: Can't find fingerprint")
+		return fmt.Errorf("handshake: Can't find fingerprint")
 	}
 
 	// (encoding) p_q_inner_data
@@ -63,7 +62,9 @@ func (m *MTProto) makeAuthKey() error {
 
 	keyFingerprint := int64(binary.LittleEndian.Uint64(keys.RSAFingerprint(m.publicKey)))
 	dhResponse, err := m.ReqDHParams(nonceFirst, nonceServer, p.Bytes(), q.Bytes(), keyFingerprint, encryptedMessage)
-	dry.PanicIfErr(errors.Wrap(err, "sending ReqDHParams"))
+	if err != nil {
+		panic(fmt.Errorf("sending ReqDHParams: %w", err))
+	}
 	dhParams, ok := dhResponse.(*serialize.ServerDHParamsOk)
 	if !ok {
 		panic("Handshake: Need ServerDHParamsOk")
@@ -83,13 +84,13 @@ func (m *MTProto) makeAuthKey() error {
 
 	dhi, ok := data.(*serialize.ServerDHInnerData)
 	if !ok {
-		return errors.New("Handshake: Need server_DH_inner_data")
+		return fmt.Errorf("handshake: Need server_DH_inner_data")
 	}
 	if nonceFirst.Cmp(dhi.Nonce.Int) != 0 {
-		return errors.New("Handshake: Wrong nonce")
+		return fmt.Errorf("handshake: Wrong nonce")
 	}
 	if nonceServer.Cmp(dhi.ServerNonce.Int) != 0 {
-		return errors.New("Handshake: Wrong server_nonce")
+		return fmt.Errorf("handshake: Wrong server_nonce")
 	}
 
 	// вот это видимо как раз и есть часть диффи хеллмана, поэтому просто оставим как есть надеюсь сработает
@@ -123,7 +124,7 @@ func (m *MTProto) makeAuthKey() error {
 
 	dhg, ok := dhGenStatus.(*serialize.DHGenOk)
 	if !ok {
-		return errors.New("Handshake: Need DHGenOk")
+		return fmt.Errorf("handshake: Need DHGenOk")
 	}
 	if nonceFirst.Cmp(dhg.Nonce.Int) != 0 {
 		panic(fmt.Sprintf("Handshake: Wrong nonce: %v, %v", nonceFirst, dhg.Nonce))
