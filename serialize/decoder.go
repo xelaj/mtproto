@@ -200,7 +200,7 @@ func (d *Decoder) PopToObjUsingReflection(item TL, ignoreCRCReading bool) {
 	}
 	value = reflect.Indirect(value)
 	if value.Kind() != reflect.Struct {
-		panic("not recieving on struct: " + value.Type().String() + " -> " + value.Kind().String())
+		panic("not receiving on struct: " + value.Type().String() + " -> " + value.Kind().String())
 	}
 
 	vtyp := value.Type()

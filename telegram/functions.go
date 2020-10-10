@@ -19,7 +19,6 @@ package telegram
 // 	return buf.Result()
 // }
 
-
 // type AuthSignInParams struct {
 // 	PhoneNumber   string
 // 	PhoneCodeHash string
