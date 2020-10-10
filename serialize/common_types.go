@@ -6,11 +6,10 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
-	"github.com/xelaj/errs"
 	"reflect"
 
 	"github.com/k0kubun/pp"
-
+	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
 )
 
