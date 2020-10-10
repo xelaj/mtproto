@@ -1,10 +1,7 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
-	"os"
-	"strings"
+	"encoding/json"
 
 	"github.com/k0kubun/pp"
 	"github.com/xelaj/go-dry"
@@ -12,17 +9,12 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("second argument must be phone number!")
-		os.Exit(1)
-	}
-	phoneNumber := os.Args[1]
-
+	println("firstly, you need to authorize. after exapmle 'auth', uo will signin")
 	// edit these params for you!
 	client, err := telegram.NewClient(telegram.ClientConfig{
 		// where to store session configuration. must be set
 		SessionFile: "/home/me/.local/var/lib/mtproto/session1.json",
-		// host address of mtproto server. actualy, it can'be mtproxy, not only official
+		// host address of mtproto server. actually, it can'be mtproxy, not only official
 		ServerHost: "149.154.167.50:443",
 		// public keys file is patrh to file with public keys, which you must get from https://my.telelgram.org
 		PublicKeysFile: "/home/me/go/src/github.com/xelaj/mtproto/keys/keys.pem",
@@ -31,17 +23,12 @@ func main() {
 	})
 	dry.PanicIfErr(err)
 
-	setCode, err := client.AuthSendCode(&telegram.AuthSendCodeParams{
-		phoneNumber, 94575, "a3406de8d171bb422bb6ddf3bbd800e2", &telegram.CodeSettings{},
-	})
+	jsonString, err := client.PhoneGetCallConfig()
 	dry.PanicIfErr(err)
-	pp.Println(setCode)
 
-	fmt.Print("Код авторизации:")
-	code, _ := bufio.NewReader(os.Stdin).ReadString('\n')
-	code = strings.Replace(code, "\n", "", -1)
+	var data interface{}
+	dry.PanicIfErr(json.Unmarshal([]byte(jsonString.Data), &data))
+	pp.Println(data)
 
-	pp.Println(client.AuthSignIn(&telegram.AuthSignInParams{
-		phoneNumber, setCode.PhoneCodeHash, code,
-	}))
+	// Actually, i don't know what does these config means, but docs says, that you need to use libtgvoip.
 }

@@ -5,10 +5,8 @@ import (
 	"runtime"
 
 	"github.com/k0kubun/pp"
-
-	"github.com/xelaj/errs"
-
 	"github.com/pkg/errors"
+	"github.com/xelaj/errs"
 	dry "github.com/xelaj/go-dry"
 
 	"github.com/xelaj/mtproto"
@@ -128,6 +126,39 @@ func (m *Client) InvokeWithLayer(layer int, query serialize.TLEncoder) (serializ
 	data, err := m.MakeRequest(&InvokeWithLayerParams{
 		Layer: int32(layer),
 		Query: query,
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "sending InvokeWithLayer")
+	}
+
+	return data, nil
+}
+
+type InvokeWithTakeoutParams struct {
+	TakeoutID int64
+	Query     serialize.TLEncoder
+}
+
+func (*InvokeWithTakeoutParams) CRC() uint32 {
+	return 0xaca9fd2e
+}
+
+func (t *InvokeWithTakeoutParams) Encode() []byte {
+	buf := serialize.NewEncoder()
+	buf.PutUint(t.CRC())
+	buf.PutLong(t.TakeoutID)
+	buf.PutRawBytes(t.Query.Encode())
+	return buf.Result()
+}
+
+func (t *InvokeWithTakeoutParams) DecodeFrom(d *serialize.Decoder) {
+	panic("makes no sense")
+}
+
+func (m *Client) InvokeWithTakeout(takeoutID int, query serialize.TLEncoder) (serialize.TL, error) {
+	data, err := m.MakeRequest(&InvokeWithTakeoutParams{
+		TakeoutID: int64(takeoutID),
+		Query:     query,
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending InvokeWithLayer")

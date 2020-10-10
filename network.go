@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/xelaj/go-dry"
 
 	"github.com/xelaj/mtproto/serialize"
 )
@@ -43,33 +42,30 @@ func IsPacketEncrypted(data []byte) bool {
 	return binary.LittleEndian.Uint64(authKeyHash) != 0
 }
 
-func (m *MTProto) decodeRecievedData(data []byte) (serialize.TL, error) {
+func (m *MTProto) decodeRecievedData(data []byte) (serialize.CommonMessage, error) {
 	// проверим, что это не код ошибки
 	err := CatchResponseErrorCode(data)
 	if err != nil {
 		return nil, errors.Wrap(err, "Server response error")
 	}
 
-	var obj serialize.TL
+	var msg serialize.CommonMessage
 
 	if IsPacketEncrypted(data) {
-		msg, err := serialize.DeserializeEncryptedMessage(data, m.GetAuthKey())
-		dry.PanicIfErr(err)
-		obj = msg.Msg
-		m.seqNo = msg.SeqNo
-		m.msgId = msg.MsgID
+		msg, err = serialize.DeserializeEncryptedMessage(data, m.GetAuthKey())
 	} else {
-		msg, err := serialize.DeserializeUnencryptedMessage(data)
-		dry.PanicIfErr(err)
-		obj = msg.Msg
-		m.seqNo = 0
-		m.msgId = msg.MsgID
+		msg, err = serialize.DeserializeUnencryptedMessage(data)
+	}
+	if err != nil {
+		return nil, errors.Wrap(err, "parsing message")
 	}
 
+	m.msgId = int64(msg.GetMsgID())
+	m.seqNo = int32(msg.GetSeqNo())
 	mod := m.msgId & 3
 	if mod != 1 && mod != 3 {
 		return nil, fmt.Errorf("Wrong bits of message_id: %d", mod)
 	}
 
-	return obj, nil
+	return msg, nil
 }

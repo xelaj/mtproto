@@ -11,7 +11,7 @@ func main() {
 	// edit these params for you!
 	client, err := telegram.NewClient(telegram.ClientConfig{
 		// where to store session configuration. must be set
-		SessionFile: "/home/me/.local/var/lib/mtproto/session1.json",
+		SessionFile: "/home/me/.local/var/lib/mtproto/session2.json",
 		// host address of mtproto server. actualy, it can'be mtproxy, not only official
 		ServerHost: "149.154.167.50:443",
 		// public keys file is patrh to file with public keys, which you must get from https://my.telelgram.org

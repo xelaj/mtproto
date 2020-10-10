@@ -29,7 +29,7 @@ func (t *ReqPQParams) DecodeFrom(d *serialize.Decoder) {
 
 func (m *MTProto) ReqPQ(nonce *serialize.Int128) (*serialize.ResPQ, error) {
 	println("sending ReqPQ")
-	data, err := m.makeRequest(&ReqPQParams{Nonce: nonce})
+	data, err := m.MakeRequest(&ReqPQParams{Nonce: nonce})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending ReqPQ")
 	}
@@ -77,7 +77,7 @@ func (t *ReqDHParamsParams) DecodeFrom(d *serialize.Decoder) {
 }
 
 func (m *MTProto) ReqDHParams(nonce, serverNonce *serialize.Int128, p, q []byte, publicKeyFingerprint int64, encryptedData []byte) (serialize.ServerDHParams, error) {
-	data, err := m.makeRequest(&ReqDHParamsParams{
+	data, err := m.MakeRequest(&ReqDHParamsParams{
 		Nonce:                nonce,
 		ServerNonce:          serverNonce,
 		P:                    p,
@@ -123,7 +123,7 @@ func (t *SetClientDHParamsParams) DecodeFrom(d *serialize.Decoder) {
 }
 
 func (m *MTProto) SetClientDHParams(nonce, serverNonce *serialize.Int128, encryptedData []byte) (serialize.SetClientDHParamsAnswer, error) {
-	data, err := m.makeRequest(&SetClientDHParamsParams{
+	data, err := m.MakeRequest(&SetClientDHParamsParams{
 		Nonce:         nonce,
 		ServerNonce:   serverNonce,
 		EncryptedData: encryptedData,
@@ -163,7 +163,7 @@ func (t *PingParams) DecodeFrom(d *serialize.Decoder) {
 }
 
 func (m *MTProto) Ping(pingID int64) (*serialize.Pong, error) {
-	data, err := m.makeRequest(&PingParams{
+	data, err := m.MakeRequest(&PingParams{
 		PingID: pingID,
 	})
 	if err != nil {

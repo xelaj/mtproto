@@ -7,7 +7,6 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
 	"github.com/xelaj/go-dry"
 
@@ -15,8 +14,15 @@ import (
 	"github.com/xelaj/mtproto/utils"
 )
 
+// CommonMessage это сообщение (зашифрованое либо открытое) которыми общаются между собой клиент и сервер
+type CommonMessage interface {
+	GetMsg() []byte
+	GetMsgID() int
+	GetSeqNo() int
+}
+
 type EncryptedMessage struct {
-	Msg         TL
+	Msg         []byte
 	MsgID       int64
 	AuthKeyHash []byte
 
@@ -54,7 +60,6 @@ func DeserializeEncryptedMessage(data, authKey []byte) (*EncryptedMessage, error
 	if err != nil {
 		return nil, errors.Wrap(err, "decrypting message")
 	}
-	pp.Println("decoded", decrypted)
 	buf = NewDecoder(decrypted)
 	msg.Salt = buf.PopLong()
 	msg.SessionID = buf.PopLong()
@@ -68,37 +73,44 @@ func DeserializeEncryptedMessage(data, authKey []byte) (*EncryptedMessage, error
 
 	mod := msg.MsgID & 3
 	if mod != 1 && mod != 3 {
-		return nil, fmt.Errorf("Wrong bits of message_id: %d", mod)
+		return nil, fmt.Errorf("wrong bits of message_id: %d", mod)
 	}
 
-	// TODO: ПОЧИНИТЬ ТАК ЧТО БЫ РАБОТАЛО
 	// этот кусок проверяет валидность данных по ключу
-	//trimed := decrypted[0 : 32+messageLen] // суммарное сообщение, после расшифровки, с чет
-	//if !bytes.Equal(dry.Sha1Byte(trimed)[4:20], msg.MsgKey) {
-	//	//fmt.Println(dry.BytesEncodeHex(string(decrypted)))
-	//	return nil, errors.New("Wrong message key, can't trust to sender")
-	//}
-	msg.Msg = buf.PopObj()
-	//pp.Println(buf.GetRestOfMessage())
+	trimed := decrypted[0 : 32+messageLen] // суммарное сообщение, после расшифровки
+	if !bytes.Equal(dry.Sha1Byte(trimed)[4:20], msg.MsgKey) {
+		return nil, errors.New("wrong message key, can't trust to sender")
+	}
+	msg.Msg = buf.PopRawBytes(int(messageLen))
 
 	return msg, nil
-	// TODO: мтпрото обновить msgID и seqNo
+}
+
+func (msg *EncryptedMessage) GetMsg() []byte {
+	return msg.Msg
+}
+
+func (msg *EncryptedMessage) GetMsgID() int {
+	return int(msg.MsgID)
+}
+
+func (msg *EncryptedMessage) GetSeqNo() int {
+	return int(msg.SeqNo)
 }
 
 type UnencryptedMessage struct {
-	Msg   TL
+	Msg   []byte
 	MsgID int64
 }
 
 func (msg *UnencryptedMessage) Serialize(client MessageInformator) []byte {
-	encodedMessage := msg.Msg.Encode()
 
 	buf := NewEncoder()
 	// authKeyHash, always 0 if unencrypted
 	buf.PutLong(0)
 	buf.PutLong(msg.MsgID)
-	buf.PutInt(int32(len(encodedMessage)))
-	buf.PutRawBytes(encodedMessage)
+	buf.PutInt(int32(len(msg.Msg)))
+	buf.PutRawBytes(msg.Msg)
 	return buf.Result()
 }
 
@@ -116,16 +128,26 @@ func DeserializeUnencryptedMessage(data []byte) (*UnencryptedMessage, error) {
 
 	messageLen := buf.PopUint()
 	if len(data)-(LongLen+LongLen+WordLen) != int(messageLen) {
-		pp.Println(len(data), int(messageLen), int(messageLen+(LongLen+LongLen+WordLen)))
+		fmt.Println(len(data), int(messageLen), int(messageLen+(LongLen+LongLen+WordLen)))
 		return nil, fmt.Errorf("message not equal defined size: have %v, want %v", len(data), messageLen)
 	}
 
-	obj := buf.PopObj()
-
-	msg.Msg = obj
+	msg.Msg = buf.GetRestOfMessage()
 
 	// TODO: в мтпрото объекте изменить msgID и задать seqNo 0
 	return msg, nil
+}
+
+func (msg *UnencryptedMessage) GetMsg() []byte {
+	return msg.Msg
+}
+
+func (msg *UnencryptedMessage) GetMsgID() int {
+	return int(msg.MsgID)
+}
+
+func (msg *UnencryptedMessage) GetSeqNo() int {
+	return 0
 }
 
 //------------------------------------------------------------------------------------------
@@ -140,15 +162,12 @@ type MessageInformator interface {
 	MakeRequest(msg TL) (TL, error)
 }
 
-func serializePacket(client MessageInformator, msg TL, messageID int64, requireToAck bool) []byte {
-	serializedMessage := msg.Encode()
-
+func serializePacket(client MessageInformator, msg []byte, messageID int64, requireToAck bool) []byte {
 	buf := NewEncoder()
 
 	saltBytes := make([]byte, LongLen)
 	binary.LittleEndian.PutUint64(saltBytes, uint64(client.GetServerSalt()))
 	buf.PutRawBytes(saltBytes)
-	pp.Println(saltBytes, fmt.Sprintf("%#v", uint64(client.GetServerSalt())))
 	buf.PutLong(client.GetSessionID())
 	buf.PutLong(messageID)
 	if requireToAck { // не спрашивай, как это работает
@@ -156,7 +175,7 @@ func serializePacket(client MessageInformator, msg TL, messageID int64, requireT
 	} else {
 		buf.PutInt(client.GetLastSeqNo())
 	}
-	buf.PutInt(int32(len(serializedMessage)))
-	buf.PutRawBytes(serializedMessage)
+	buf.PutInt(int32(len(msg)))
+	buf.PutRawBytes(msg)
 	return buf.buf
 }
