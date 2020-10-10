@@ -321,7 +321,7 @@ func ParseTL(data string) (*TLSchema, error) {
 		}
 
 		if err != nil {
-			return nil, errors.Wrap(err, "line "+strconv.Itoa(lineNumber))
+			return nil, errors.Wrapf(err, "line %d", lineNumber)
 		}
 	}
 	return &TLSchema{

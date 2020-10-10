@@ -2,7 +2,6 @@ package serialize
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -41,7 +40,7 @@ func TestPoppingInts(t *testing.T) {
 			true,
 		},
 	} {
-		t.Run("case "+strconv.Itoa(i), func(t *testing.T) {
+		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
 			defer func() {
 				r := recover()
 				if tcase.expectPanic && r == nil {
@@ -112,7 +111,7 @@ func TestPoppingBools(t *testing.T) {
 			true,
 		},
 	} {
-		t.Run("case "+strconv.Itoa(i), func(t *testing.T) {
+		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
 			defer func() {
 				r := recover()
 				if tcase.expectPanic && r == nil {
@@ -198,7 +197,7 @@ func TestPoppingMessages(t *testing.T) {
 			false,
 		},
 	} {
-		t.Run("case "+strconv.Itoa(i), func(t *testing.T) {
+		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
 			defer func() {
 				r := recover()
 				if tcase.expectPanic && r == nil {
@@ -309,7 +308,7 @@ func TestPoppingBasicObjects(t *testing.T) {
 			false,
 		},
 	} {
-		t.Run("case "+strconv.Itoa(i), func(t *testing.T) {
+		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
 			defer func() {
 				r := recover()
 				if tcase.expectPanic && r == nil {

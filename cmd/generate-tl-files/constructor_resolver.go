@@ -1,8 +1,8 @@
 package main
 
 import (
+	"fmt"
 	"sort"
-	"strconv"
 
 	"github.com/dave/jennifer/jen"
 )
@@ -30,7 +30,7 @@ func GenerateConstructorRouter(file *jen.File, data *FileStructure) error {
 			obj = jen.Id(id)
 			isEnum = jen.True()
 		} else {
-			panic("where did you find that crc?? " + strconv.Itoa(crc))
+			panic(fmt.Sprintf("where did you find that crc?? %d", crc))
 		}
 
 		cases = append(cases, jen.Case(jen.Lit(uint32(crc))).Block(jen.Return(obj, isEnum, jen.Nil())))
