@@ -15,8 +15,6 @@ import (
 	"github.com/xelaj/mtproto/serialize"
 )
 
-// TODO: сюда обмен ключами запихать
-
 // https://tlgrm.ru/docs/mtproto/auth_key
 // https://core.telegram.org/mtproto/auth_key
 func (m *MTProto) makeAuthKey() error {

@@ -3,6 +3,7 @@ package mtproto
 import (
 	"context"
 	"crypto/rsa"
+	"encoding/binary"
 	"net"
 	"reflect"
 	"sync"
@@ -16,11 +17,6 @@ import (
 
 	"github.com/xelaj/mtproto/serialize"
 	"github.com/xelaj/mtproto/utils"
-)
-
-const (
-	appId   = 124100
-	appHash = "3ecccc5a1ec554722c3c5bbd35eb14ec"
 )
 
 type MTProto struct {
@@ -42,9 +38,14 @@ type MTProto struct {
 	// общий мьютекс
 	mutex *sync.Mutex
 
-	msgsIdToResp  map[int64]chan serialize.TL
-	idsToAck      map[int64]struct{}
-	idsToAckMutex sync.Mutex
+	// msgsIdDecodeAsVector показывает, что определенный ответ сервера нужно декодировать как
+	// слайс. Это костыль, т.к. MTProto ЧЕТКО указывает, что ответы это всегда объекты, но
+	// вектор (слайс) это как бы тоже объект. Из-за этого приходится четко указывать, что
+	// сообщения с определенным msgID нужно декодировать как слайс, а не объект
+	msgsIdDecodeAsVector map[int64]reflect.Type
+	msgsIdToResp         map[int64]chan serialize.TL
+	idsToAck             map[int64]struct{}
+	idsToAckMutex        sync.Mutex
 
 	// каналы, которые ожидают ответа rpc. ответ записывается в канал и удаляется
 	responseChannels map[int64]chan serialize.TL
@@ -79,8 +80,6 @@ type Config struct {
 	AuthKeyFile string
 	ServerHost  string
 	PublicKey   *rsa.PublicKey
-	AppID       int
-	AppHash     string
 }
 
 func NewMTProto(c Config) (*MTProto, error) {
@@ -91,7 +90,7 @@ func NewMTProto(c Config) (*MTProto, error) {
 	if err == nil {
 		m.encrypted = true
 	} else if errs.IsNotFound(err) {
-		m.addr = "149.154.167.50:443"
+		m.addr = c.ServerHost
 		m.encrypted = false
 	} else {
 		return nil, errors.Wrap(err, "loading session")
@@ -101,6 +100,7 @@ func NewMTProto(c Config) (*MTProto, error) {
 	m.serviceChannel = make(chan serialize.TL)
 	m.publicKey = c.PublicKey
 	m.responseChannels = make(map[int64]chan serialize.TL)
+	m.msgsIdDecodeAsVector = make(map[int64]reflect.Type)
 	m.resetAck()
 
 	return m, nil
@@ -149,10 +149,10 @@ func (m *MTProto) CreateConnection() error {
 }
 
 // отправить запрос
-func (m *MTProto) makeRequest(data serialize.TL) (serialize.TL, error) {
+func (m *MTProto) makeRequest(data serialize.TL, as reflect.Type) (serialize.TL, error) {
 	println("sending packet " + reflect.TypeOf(data).String())
 
-	resp, err := m.sendPacketNew(data)
+	resp, err := m.sendPacketNew(data, as)
 	if err != nil {
 		return nil, errors.Wrap(err, "sending message")
 	}
@@ -160,7 +160,7 @@ func (m *MTProto) makeRequest(data serialize.TL) (serialize.TL, error) {
 
 	if _, ok := response.(*serialize.ErrorSessionConfigsChanged); ok {
 		// если пришел ответ типа badServerSalt, то отправляем данные заново
-		return m.makeRequest(data)
+		return m.makeRequest(data, as)
 	}
 	if e, ok := response.(*serialize.RpcError); ok {
 		return nil, RpcErrorToNative(e)
@@ -217,10 +217,11 @@ func (m *MTProto) startReadingResponses(ctx context.Context) {
 				response, err := m.decodeRecievedData(data)
 				dry.PanicIfErr(err)
 
-				pp.Println("got", response)
-
 				if m.serviceModeActivated {
-					m.serviceChannel <- response
+					// сервисные сообщения ГАРАНТИРОВАННО в теле содержат TL.
+					decoder := serialize.NewDecoder(response.GetMsg())
+					obj := decoder.PopObj()
+					m.serviceChannel <- obj
 				} else {
 					err = m.processResponse(int(m.msgId), int(m.seqNo), response)
 					dry.PanicIfErr(err)
@@ -230,12 +231,34 @@ func (m *MTProto) startReadingResponses(ctx context.Context) {
 	}()
 }
 
-func (m *MTProto) processResponse(msgId, seqNo int, data serialize.TL) error {
+func (m *MTProto) processResponse(msgId, seqNo int, msg serialize.CommonMessage) error {
+	// сначала декодируем исключения
+
+	// TODO: может как-то поопрятней сделать? а то очень кринжово, функция занимается не тем, чем должна
+	decoder := serialize.NewDecoder(msg.GetMsg())
+	var data serialize.TL
+	// если это ответ Rpc, то там может быть слайс вместо объекта, надо проверить указывали ли мы,
+	// что ответ с этим MsgId нужно декодировать как слайс, а не объект
+	if binary.LittleEndian.Uint32(msg.GetMsg()[:serialize.WordLen]) == serialize.CrcRpcResult {
+		_ = decoder.PopCRC() // уже прочитали
+		rpc := &serialize.RpcResult{}
+		msgID := binary.LittleEndian.Uint64(msg.GetMsg()[serialize.WordLen : serialize.WordLen+serialize.LongLen])
+		if typ, ok := m.msgsIdDecodeAsVector[int64(msgID)]; ok {
+			rpc.DecodeFromButItsVector(decoder, typ)
+			delete(m.msgsIdDecodeAsVector, int64(msgID))
+		} else {
+			rpc.DecodeFrom(decoder)
+		}
+		data = rpc
+	} else {
+		data = decoder.PopObj()
+	}
+
 	switch message := data.(type) {
 	case *serialize.MessageContainer:
-		pp.Println("MessageContainer")
+		println("MessageContainer")
 		for _, v := range *message {
-			err := m.processResponse(int(v.MsgID), int(v.SeqNo), v.Msg)
+			err := m.processResponse(int(v.MsgID), int(v.SeqNo), v)
 			if err != nil {
 				return errors.Wrap(err, "processing item in container")
 			}
@@ -246,14 +269,14 @@ func (m *MTProto) processResponse(msgId, seqNo int, data serialize.TL) error {
 		err := m.SaveSession()
 		dry.PanicIfErr(err)
 
-		m.mutex.Lock() // что это?
+		m.mutex.Lock()
 		for _, v := range m.responseChannels {
 			v <- &serialize.ErrorSessionConfigsChanged{}
 		}
-		m.mutex.Unlock() // что это?
+		m.mutex.Unlock()
 
 	case *serialize.NewSessionCreated:
-		pp.Println("session created")
+		println("session created")
 		m.serverSalt = message.ServerSalt
 		err := m.SaveSession()
 		dry.PanicIfErr(err)
@@ -273,8 +296,11 @@ func (m *MTProto) processResponse(msgId, seqNo int, data serialize.TL) error {
 			m.gotAck(id)
 		}
 
+	case *serialize.BadMsgNotification:
+		pp.Println(message)
+		panic("bad msg notification")
+
 	case *serialize.RpcResult:
-		pp.Println("rpc!!!")
 		obj := message.Obj
 		if v, ok := obj.(*serialize.GzipPacked); ok {
 			obj = v.Obj
@@ -290,8 +316,7 @@ func (m *MTProto) processResponse(msgId, seqNo int, data serialize.TL) error {
 	}
 
 	if (seqNo & 1) != 0 {
-		resp, err := m.makeRequest(&serialize.MsgsAck{[]int64{int64(msgId)}})
-		pp.Println(resp)
+		_, err := m.makeRequest(&serialize.MsgsAck{[]int64{int64(msgId)}}, nil)
 		if err != nil {
 			return errors.Wrap(err, "sending ack")
 		}
@@ -299,173 +324,3 @@ func (m *MTProto) processResponse(msgId, seqNo int, data serialize.TL) error {
 
 	return nil
 }
-
-/*
-//! DEPRECATED
-func (m *MTProto) process(msgId int64, seqNo int32, data interface{}) interface{} {
-	pp.Println("process:", data)
-	switch converted := data.(type) {
-	case TL_msg_container:
-		data := data.(TL_msg_container).items
-		for _, v := range data {
-			m.process(v.msg_id, v.seq_no, v.data)
-		}
-		os.Exit(1)
-
-	case TL_bad_server_salt:
-		m.serverSalt = int64(binary.LittleEndian.Uint64(converted.new_server_salt))
-		err := m.SaveSession()
-		dry.PanicIfErr(err)
-		m.mutex.Lock() // что это?
-		for k, v := range m.msgsIdToAck {
-			delete(m.msgsIdToAck, k)
-			m.queueSend <- v
-		}
-		m.mutex.Unlock() // что это?
-
-	case *TL_BadServerSalt:
-		m.serverSalt = converted.NewSalt // СОЛЬ ЭТО LONG
-		err := m.SaveSession()
-		dry.PanicIfErr(err)
-		m.mutex.Lock() // что это?
-		for k, v := range m.msgsIdToAck {
-			delete(m.msgsIdToAck, k)
-			m.queueSend <- v
-		}
-		m.mutex.Unlock() // что это?
-
-	case TL_new_session_created:
-		m.serverSalt = int64(binary.LittleEndian.Uint64(converted.server_salt))
-		err := m.SaveSession()
-		dry.PanicIfErr(err)
-		os.Exit(1)
-
-	case TL_ping:
-		data := data.(TL_ping)
-		m.queueSend <- packetToSend{TL_pong{msgId, data.ping_id}, nil}
-		os.Exit(1)
-
-	case TL_pong:
-		// (ignore)
-
-	case TL_msgs_ack:
-		data := data.(TL_msgs_ack)
-		m.mutex.Lock() // что это?
-		for _, v := range data.msgIds {
-			delete(m.msgsIdToAck, v)
-		}
-		m.mutex.Unlock() // что это?
-		os.Exit(1)
-
-	case TL_rpc_result:
-		x := m.process(msgId, seqNo, converted.obj)
-		m.mutex.Lock() // что это?
-		v, ok := m.msgsIdToResp[converted.req_msg_id]
-		if ok {
-			v <- x.(TL)
-			close(v)
-			delete(m.msgsIdToResp, converted.req_msg_id)
-		}
-		delete(m.msgsIdToAck, converted.req_msg_id)
-		m.mutex.Unlock() // что это?
-		os.Exit(1)
-
-	case *TL_RpcResult:
-		pp.Println("RPC result!")
-		x := m.process(msgId, seqNo, converted.Obj)
-		m.mutex.Lock() // что это?
-		v, ok := m.msgsIdToResp[converted.ReqMsgID]
-		if ok {
-			v <- x.(TL)
-			close(v)
-			delete(m.msgsIdToResp, converted.ReqMsgID)
-		} else {
-			pp.Println(converted.ReqMsgID, m.msgsIdToResp)
-			panic("msgID not found")
-		}
-
-		delete(m.msgsIdToAck, converted.ReqMsgID)
-		m.mutex.Unlock() // что это?
-		os.Exit(1)
-
-	default:
-		fmt.Println(FullStack())
-		return data
-
-	}
-	pp.Println("processed")
-
-	if (seqNo & 1) == 1 {
-		m.queueSend <- packetToSend{TL_msgs_ack{[]int64{msgId}}, nil}
-	}
-
-	return nil
-}
-*/
-
-/*
-
-
-//! DEPRECATED
-func (m *MTProto) GetContacts() error {
-	resp := make(chan TL, 1)
-	m.queueSend <- packetToSend{TL_contacts_getContacts{""}, resp}
-	x := <-resp
-	list, ok := x.(TL_contacts_contacts)
-	if !ok {
-		return fmt.Errorf("RPC: %#v", x)
-	}
-
-	contacts := make(map[int32]TL_userContact)
-	for _, v := range list.users {
-		if v, ok := v.(TL_userContact); ok {
-			contacts[v.id] = v
-		}
-	}
-	fmt.Printf(
-		"\033[33m\033[1m%10s    %10s    %-30s    %-20s\033[0m\n",
-		"id", "mutual", "name", "username",
-	)
-	for _, v := range list.contacts {
-		v := v.(TL_contact)
-		fmt.Printf(
-			"%10d    %10t    %-30s    %-20s\n",
-			v.user_id,
-			v.mutual,
-			fmt.Sprintf("%s %s", contacts[v.user_id].first_name, contacts[v.user_id].last_name),
-			contacts[v.user_id].username,
-		)
-	}
-
-	return nil
-}
-
-//! DEPRECATED
-func (m *MTProto) TestAnything() error {
-	resp := make(chan TL, 1)
-	m.queueSend <- packetToSend{TL_contacts_getContacts{""}, resp}
-	x := <-resp
-	pp.Println(x)
-	return nil
-}
-
-//! DEPRECATED
-func (m *MTProto) SendMessage(user_id int32, msg string) error {
-	resp := make(chan TL, 1)
-	m.queueSend <- packetToSend{
-		TL_messages_sendMessage{
-			TL_inputPeerContact{user_id},
-			msg,
-			rand.Int63(),
-		},
-		resp,
-	}
-	x := <-resp
-	_, ok := x.(TL_messages_sentMessage)
-	if !ok {
-		return fmt.Errorf("RPC: %#v", x)
-	}
-
-	return nil
-}
-*/

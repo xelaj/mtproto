@@ -17,7 +17,16 @@ import (
 )
 
 type Decoder struct {
-	buf *bytes.Buffer
+	buf                   *bytes.Buffer
+	currentObjectDecoding []string // debug only
+}
+
+func (d *Decoder) panic(msg interface{}) {
+	fmt.Println("Debug info:")
+	println()
+	fmt.Println("Offset:")
+
+	panic(msg)
 }
 
 func NewDecoder(input []byte) *Decoder {
@@ -27,54 +36,46 @@ func NewDecoder(input []byte) *Decoder {
 }
 
 func (d *Decoder) PopLong() int64 {
-	pp.Println("PopLong")
 	val := make([]byte, LongLen)
 	d.mustRead(val)
 	return int64(binary.LittleEndian.Uint64(val))
 }
 
 func (d *Decoder) PopDouble() float64 {
-	pp.Println("PopDouble")
 	val := make([]byte, DoubleLen)
 	d.mustRead(val)
 	return math.Float64frombits(binary.LittleEndian.Uint64(val))
 }
 
 func (d *Decoder) PopInt() int32 {
-	pp.Println("PopInt")
 	val := make([]byte, WordLen)
 	d.mustRead(val)
 	return int32(binary.LittleEndian.Uint32(val))
 }
 
 func (d *Decoder) PopUint() uint32 {
-	pp.Println("PopUint")
 	val := make([]byte, WordLen)
 	d.mustRead(val)
 	return binary.LittleEndian.Uint32(val)
 }
 
 func (d *Decoder) PopInt128() *Int128 {
-	pp.Println("PopInt128")
 	val := d.PopRawBytes(Int128Len)
 	return &Int128{big.NewInt(0).SetBytes(val)}
 }
 
 func (d *Decoder) PopInt256() *Int256 {
-	pp.Println("PopInt256")
 	val := d.PopRawBytes(Int256Len)
 	return &Int256{big.NewInt(0).SetBytes(val)}
 }
 
 func (d *Decoder) PopRawBytes(size int) []byte {
-	pp.Println("PopRawBytes")
 	val := make([]byte, size)
 	d.mustRead(val)
 	return val
 }
 
 func (d *Decoder) PopMessage() []byte {
-	pp.Println("PopMessage")
 	var firstByte byte
 	val := []byte{0}
 
@@ -104,6 +105,7 @@ func (d *Decoder) PopMessage() []byte {
 		d.mustRead(voidBytes) // читаем оставшиеся пустые байты. пустые, потому что длина слова 4 байта, может остаться 1,2 или 3 лишних байта
 		for _, b := range voidBytes {
 			if b != 0 {
+				pp.Println(string(buf))
 				panic("some of bytes doesn't equal zero: " + fmt.Sprintf("%#v", voidBytes))
 			}
 		}
@@ -117,22 +119,19 @@ func (d *Decoder) GetRestOfMessage() []byte {
 }
 
 func (d *Decoder) PopString() string {
-	pp.Println("PopString")
 	return string(d.PopMessage())
 }
 
 // TODO: непонятно, схерали int128 int256 это набор байт?
 func (d *Decoder) PopBigInt() *big.Int {
-	pp.Println("PopBigInt")
 	return new(big.Int).SetBytes(d.PopMessage())
 }
 
 func (d *Decoder) PopBool() bool {
-	pp.Println("PopBool")
 	switch crc := d.PopUint(); crc {
-	case crc_boolTrue:
+	case crcTrue:
 		return true
-	case crc_boolFalse:
+	case crcFalse:
 		return false
 	default:
 		panic("not a bool value, actually: " + fmt.Sprintf("%#v", crc))
@@ -140,8 +139,8 @@ func (d *Decoder) PopBool() bool {
 }
 
 func (d *Decoder) PopNull() interface{} {
-	if d.PopUint() != crc_null {
-		panic("not a bool value, actually")
+	if d.PopUint() != crcNull {
+		panic("not a null value, actually")
 	}
 	return nil
 }
@@ -151,7 +150,6 @@ func (d *Decoder) PopNull() interface{} {
 // быть объявлены в CustomDecoders. поиск и создание объекта выполняется в том
 // порядке, в котором были объявлены сами функции в CustomDecoders.
 func (d *Decoder) PopObj() TL {
-	pp.Println("PopObj")
 	constructorID := d.PopCRC()
 
 	var obj TL
@@ -174,12 +172,10 @@ func (d *Decoder) PopObj() TL {
 	if !isEnum {
 		d.PopToObjUsingReflection(obj, true)
 	}
-
 	return obj
 }
 
 func (d *Decoder) PopToObjUsingReflection(item TL, ignoreCRCReading bool) {
-	pp.Println("PopToObjUsingReflection")
 	if !ignoreCRCReading {
 		crcCode := d.PopCRC()
 		if crcCode != item.CRC() {
@@ -188,11 +184,12 @@ func (d *Decoder) PopToObjUsingReflection(item TL, ignoreCRCReading bool) {
 		}
 	}
 
+	//if v, ok := item.(*innerVectorObject); ok {
+	//	v
+	//}
+
 	// если есть метод DecodeFrom, то нам незачем париться
 	if v, ok := item.(TLDecoder); ok {
-		pp.Println("decoding native " + reflect.TypeOf(item).String())
-		pp.Println(d.GetRestOfMessage())
-		pp.Println("END decoding native " + reflect.TypeOf(item).String())
 		v.DecodeFrom(d)
 		return
 	}
@@ -223,44 +220,33 @@ func (d *Decoder) PopToObjUsingReflection(item TL, ignoreCRCReading bool) {
 			}
 		}
 		if flagTag != nil {
-			fmt.Println(vtyp.Field(i).Name + " имеет теги flag " + flagTag.String())
 			triggerBit, err := strconv.Atoi(flagTag.Name)
 			dry.PanicIfErr(err)
 			if optionalBitSet&(1<<triggerBit) == 0 {
-				fmt.Println("бит не задан так что пропускаем")
 				continue
 			}
 
 			if dry.StringInSlice("encoded_in_bitflags", flagTag.Options) {
-				fmt.Println("значение находится в битфлагах")
 				value.Field(i).Set(reflect.ValueOf(true).Convert(ftyp))
 				continue
 			}
-
-			fmt.Println("у этого филда задан бит тег!")
 		}
-		fmt.Println("парсим " + vtyp.Field(i).Name)
 		switch value.Field(i).Kind() {
+		case reflect.Float64:
+			value.Field(i).Set(reflect.ValueOf(d.PopDouble()).Convert(ftyp))
 		case reflect.Int64:
-			println("это int64!")
 			value.Field(i).Set(reflect.ValueOf(d.PopLong()).Convert(ftyp))
 		case reflect.Uint32: // это применимо так же к енумам
-			println("это uint32!")
 			value.Field(i).Set(reflect.ValueOf(d.PopUint()).Convert(ftyp))
 		case reflect.Int32:
-			println("это int32!")
 			value.Field(i).Set(reflect.ValueOf(d.PopInt()).Convert(ftyp))
 		case reflect.Bool:
-			println("это bool!")
 			value.Field(i).Set(reflect.ValueOf(d.PopBool()).Convert(ftyp))
 		case reflect.String:
-			println("это string!")
 			value.Field(i).Set(reflect.ValueOf(d.PopString()).Convert(ftyp))
 		case reflect.Struct:
-			println("это struct!")
 			if vtyp.Field(i).Name == "__flagsPosition" {
 				optionalBitSet = d.PopUint()
-				fmt.Printf("нашли битфлаг! %b\n", optionalBitSet)
 				continue
 			}
 			fieldValue := reflect.New(ftyp).Elem().Interface().(TL)
@@ -268,26 +254,35 @@ func (d *Decoder) PopToObjUsingReflection(item TL, ignoreCRCReading bool) {
 			value.Field(i).Set(reflect.ValueOf(fieldValue).Convert(ftyp))
 
 		case reflect.Slice:
-			println("это slice!")
 			if _, ok := value.Field(i).Interface().([]byte); ok {
 				value.Field(i).Set(reflect.ValueOf(d.PopMessage()))
 			} else {
 				value.Field(i).Set(reflect.ValueOf(d.PopVector(ftyp.Elem())).Convert(ftyp))
 			}
 		case reflect.Ptr:
-			println("это ptr!")
 			// если поинтер то это структура на что-то
-			if _, ok := value.Field(i).Interface().(*Int128); ok {
+			switch {
+			case reflectIsInt128(value.Field(i)):
 				value.Field(i).Set(reflect.ValueOf(d.PopInt128()))
-			} else if _, ok := value.Field(i).Interface().(*Int256); ok {
+			case reflectIsInt256(value.Field(i)):
 				value.Field(i).Set(reflect.ValueOf(d.PopInt256()))
-			} else if _, ok := value.Field(i).Interface().(TL); ok {
+			case reflectIsTL(value.Field(i)):
 				value.Field(i).Set(reflect.New(value.Field(i).Type().Elem()))
 				d.PopToObjUsingReflection(value.Field(i).Interface().(TL), false)
-
-			} else {
+			default:
 				panic("неизвестная штука: " + value.Field(i).Type().String())
 			}
+
+		case reflect.Interface:
+			if !value.Field(i).Type().Implements(reflect.TypeOf((*TL)(nil)).Elem()) {
+				panic("can't parse any type, if it don't implement TL")
+			}
+			field := d.PopObj()
+
+			if !reflect.TypeOf(field).Implements(value.Field(i).Type()) {
+				panic("received value " + reflect.TypeOf(field).String() + "; expected " + value.Field(i).Type().String())
+			}
+			value.Field(i).Set(reflect.ValueOf(field))
 
 		default:
 			panic("неизвестная штука: " + value.Field(i).Type().String())
@@ -297,18 +292,15 @@ func (d *Decoder) PopToObjUsingReflection(item TL, ignoreCRCReading bool) {
 }
 
 func (d *Decoder) PopCRC() uint32 {
-	pp.Println("PopCRC")
 	return d.PopUint() // я так и не понял, кажется что crc это bigendian, но видимо нет
 }
 
 func (d *Decoder) PopVector(as reflect.Type) interface{} {
-	pp.Println("PopVector")
 	constructorID := d.PopCRC()
-
-	if constructorID != crc_vector {
-		pp.Println(d.buf.Bytes())
+	if constructorID != crcVector {
 		panic("not a vector: " + fmt.Sprintf("%#v", constructorID) + " want: 0x1cb5c415")
 	}
+
 	size := int(d.PopUint())
 
 	x := reflect.MakeSlice(reflect.SliceOf(as), size, size)
@@ -339,6 +331,17 @@ func (d *Decoder) PopVector(as reflect.Type) interface{} {
 			n := reflect.New(as.Elem()).Interface().(TL)
 			d.PopToObjUsingReflection(n, false)
 			v = n
+		case reflect.Interface:
+			if !as.Implements(reflect.TypeOf((*TL)(nil)).Elem()) {
+				panic("can't parse any type, if it don't implement TL")
+			}
+			item := d.PopObj()
+
+			if !reflect.TypeOf(item).Implements(as) {
+				panic("received value " + reflect.TypeOf(item).String() + "; expected " + as.Elem().String())
+			}
+
+			v = item
 		default:
 			panic("как обрабатывать? " + as.String())
 		}
@@ -355,5 +358,5 @@ func (d *Decoder) mustRead(into []byte) {
 	}
 	n, err := d.buf.Read(into)
 	dry.PanicIfErr(errors.Wrap(err, fmt.Sprintf("read %v bytes", n)))
-	dry.PanicIf(n != len(into), fmt.Sprintf("expected to read equal %v bytes, got %v", len(into), n))
+	dry.PanicIf(n != len(into), fmt.Sprintf("expected to read exactly %v bytes, got %v", len(into), n))
 }

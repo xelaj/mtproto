@@ -3,7 +3,9 @@
 package telegram
 
 import (
-	"errors"
+	"fmt"
+
+	"github.com/xelaj/errs"
 	serialize "github.com/xelaj/mtproto/serialize"
 )
 
@@ -1670,6 +1672,6 @@ func GenerateStructByConstructor(constructorID uint32) (object serialize.TL, isE
 	case uint32(0xfffe1bac):
 		return &PrivacyValueAllowContacts{}, false, nil
 	default:
-		return nil, false, errors.New("constructor not found")
+		return nil, false, errs.NotFound("constructorID", fmt.Sprintf("%#v", constructorID))
 	}
 }

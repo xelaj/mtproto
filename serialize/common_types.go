@@ -3,14 +3,14 @@
 package serialize
 
 import (
-	"github.com/xelaj/errs"
 	"bytes"
 	"compress/gzip"
+	"encoding/binary"
 	"fmt"
 	"reflect"
 
 	"github.com/k0kubun/pp"
-
+	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
 )
 
@@ -23,7 +23,7 @@ type ResPQ struct {
 	Fingerprints []int64
 }
 
-func (_ *ResPQ) CRC() uint32 {
+func (*ResPQ) CRC() uint32 {
 	return 0x05162463
 }
 
@@ -36,11 +36,11 @@ func (t *ResPQ) Encode() []byte {
 	return buf.GetBuffer()
 }
 
-func (e *ResPQ) DecodeFrom(d *Decoder) {
-	e.Nonce = d.PopInt128()
-	e.ServerNonce = d.PopInt128()
-	e.Pq = d.PopMessage()
-	e.Fingerprints = d.PopVector(int64Type).([]int64)
+func (t *ResPQ) DecodeFrom(d *Decoder) {
+	t.Nonce = d.PopInt128()
+	t.ServerNonce = d.PopInt128()
+	t.Pq = d.PopMessage()
+	t.Fingerprints = d.PopVector(int64Type).([]int64)
 }
 
 type PQInnerData struct {
@@ -266,8 +266,8 @@ type RpcResult struct {
 	Obj      TL
 }
 
-func (_ *RpcResult) CRC() uint32 {
-	return 0xf35c6d01
+func (*RpcResult) CRC() uint32 {
+	return CrcRpcResult
 }
 
 func (t *RpcResult) Encode() []byte {
@@ -277,6 +277,30 @@ func (t *RpcResult) Encode() []byte {
 func (t *RpcResult) DecodeFrom(d *Decoder) {
 	t.ReqMsgID = d.PopLong()
 	t.Obj = d.PopObj()
+}
+
+// DecodeFromButItsVector
+// декодирует ТАК ЖЕ как DecodeFrom, но за тем исключением, что достает не объект, а слайс.
+// проблема в том, что вектор (слайс) в понятиях MTProto это как-бы объект, но вот как бы и нет
+// технически, эта функция — костыль, т.к. нет никакого внятного способа передать декодеру
+// информацию, что нужно доставать вектор (ведь RPC Result это всегда объекты, но вектор тоже
+// объект, кто бы мог подумать)
+// другими словами:
+// т.к. telegram отсылает на реквесты сообщения (messages, TL в рамках этого пакета)
+// НО! иногда на некоторые запросы приходят ответы в виде вектора. Просто потому что.
+// поэтому этот кусочек возвращает корявое апи к его же описанию — ответы это всегда объекты.
+func (t *RpcResult) DecodeFromButItsVector(d *Decoder, as reflect.Type) {
+	t.ReqMsgID = d.PopLong()
+	crc := binary.LittleEndian.Uint32(d.GetRestOfMessage()[:WordLen])
+	if crc == CrcGzipPacked {
+		_ = d.PopCRC()
+		gz := &GzipPacked{}
+		gz.DecodeFromButItsVector(d, as)
+		t.Obj = gz.Obj.(*InnerVectorObject)
+	} else {
+		vector := d.PopVector(as)
+		t.Obj = &InnerVectorObject{I: vector}
+	}
 }
 
 type RpcError struct {
@@ -446,13 +470,11 @@ func (t *MessageContainer) Encode() []byte {
 
 	buf.PutInt(int32(len(*t)))
 	for _, msg := range *t {
-		encoded := msg.Msg.Encode()
-
 		buf.PutLong(msg.MsgID)
 		buf.PutInt(msg.SeqNo)
 		//         msgID     seqNo     len             object
-		buf.PutInt(LongLen + WordLen + WordLen + int32(len(encoded)))
-		buf.PutRawBytes(encoded)
+		buf.PutInt(LongLen + WordLen + WordLen + int32(len(msg.Msg)))
+		buf.PutRawBytes(msg.Msg)
 	}
 	return buf.GetBuffer()
 }
@@ -464,8 +486,8 @@ func (t *MessageContainer) DecodeFrom(d *Decoder) {
 		msg := new(EncryptedMessage)
 		msg.MsgID = d.PopLong()
 		msg.SeqNo = d.PopInt()
-		_ = d.PopInt() // size, но нам нахуй не нужен
-		msg.Msg = d.PopObj().(TL)
+		size := d.PopInt()
+		msg.Msg = d.PopRawBytes(int(size)) // или size * wordLen?
 		arr[i] = msg
 	}
 	*t = arr
@@ -499,20 +521,36 @@ type GzipPacked struct {
 	Obj TL
 }
 
-func (_ *GzipPacked) CRC() uint32 {
-	return 0x3072cfa1
+func (*GzipPacked) CRC() uint32 {
+	return CrcGzipPacked
 }
 
-func (t *GzipPacked) Encode() []byte {
+func (*GzipPacked) Encode() []byte {
 	panic("not implemented")
 }
 
 func (t *GzipPacked) DecodeFrom(d *Decoder) {
-	// TODO: СТАНДАРТНЫЙ СУКА ПАКЕТ gzip пишет "gzip: invalid header". при этом как я разобрался, в сам гзип попадает кусок, который находится за миллиард бит от реального сообщения
-	//       например: сообщение начинается с 0x1f 0x8b 0x08 0x00 ..., но при этом в сам гзип отдается кусок, который дальше начала сообщения за 500+ байт
+	obj := t.popMessageAsBytes(d)
+	innerDecoder := NewDecoder(obj)
+	t.Obj = innerDecoder.PopObj()
+}
+
+func (t *GzipPacked) DecodeFromButItsVector(d *Decoder, as reflect.Type) {
+	obj := t.popMessageAsBytes(d)
+
+	innerDecoder := NewDecoder(obj)
+	vector := innerDecoder.PopVector(as)
+	t.Obj = &InnerVectorObject{I: vector}
+}
+
+func (*GzipPacked) popMessageAsBytes(d *Decoder) []byte {
+	// TODO: СТАНДАРТНЫЙ СУКА ПАКЕТ gzip пишет "gzip: invalid header". при этом как я разобрался, в
+	//       сам гзип попадает кусок, который находится за миллиард бит от реального сообщения
+	//       например: сообщение начинается с 0x1f 0x8b 0x08 0x00 ..., но при этом в сам гзип
+	//       отдается кусок, который дальше начала сообщения за 500+ байт
 	//! вот ЭТОТ кусок работает. так что наверное не будем трогать, дай бог чтоб работал
 
-	obj := make([]byte, 0, 4096)
+	decompressed := make([]byte, 0, 4096)
 
 	var buf bytes.Buffer
 	_, _ = buf.Write(d.PopMessage())
@@ -522,15 +560,13 @@ func (t *GzipPacked) DecodeFrom(d *Decoder) {
 	for {
 		n, _ := gz.Read(b)
 
-		obj = append(obj, b[0:n]...)
+		decompressed = append(decompressed, b[0:n]...)
 		if n <= 0 {
 			break
 		}
 	}
 
-	decoder := NewDecoder(obj)
-	t.Obj = decoder.PopObj()
-
+	return decompressed
 	//? это то что я пытался сделать
 	// data := d.PopMessage()
 	// gz, err := gzip.NewReader(bytes.NewBuffer(data))
@@ -539,10 +575,7 @@ func (t *GzipPacked) DecodeFrom(d *Decoder) {
 	// decompressed, err := ioutil.ReadAll(gz)
 	// dry.PanicIfErr(err)
 
-	// decoder := NewDecoder(decompressed)
-	// t.Obj = decoder.PopObj()
-
-	// return
+	// return decompressed
 }
 
 type MsgsAck struct {
@@ -756,7 +789,7 @@ func GenerateCommonObject(constructorID uint32) (obj TL, isEnum bool, err error)
 		return &DHGenRetry{}, false, nil
 	case 0xa69dae02:
 		return &DHGenFail{}, false, nil
-	case 0xf35c6d01:
+	case CrcRpcResult:
 		return &RpcResult{}, false, nil
 	case 0x2144ca19:
 		return &RpcError{}, false, nil
@@ -782,7 +815,7 @@ func GenerateCommonObject(constructorID uint32) (obj TL, isEnum bool, err error)
 		return &MessageContainer{}, false, nil
 	case 0xe06046b2:
 		return &MsgCopy{}, false, nil
-	case 0x3072cfa1:
+	case CrcGzipPacked:
 		return &GzipPacked{}, false, nil
 	case 0x62d6b459:
 		return &MsgsAck{}, false, nil

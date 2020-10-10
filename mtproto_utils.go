@@ -1,6 +1,8 @@
 package mtproto
 
 import (
+	"reflect"
+
 	"github.com/xelaj/mtproto/serialize"
 	"github.com/xelaj/mtproto/utils"
 )
@@ -56,5 +58,9 @@ func (m *MTProto) SetAuthKey(key []byte) {
 }
 
 func (m *MTProto) MakeRequest(msg serialize.TL) (serialize.TL, error) {
-	return m.makeRequest(msg)
+	return m.makeRequest(msg, nil)
+}
+
+func (m *MTProto) MakeRequestAsSlice(msg serialize.TL, as reflect.Type) (serialize.TL, error) {
+	return m.makeRequest(msg, as)
 }

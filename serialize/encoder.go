@@ -6,7 +6,6 @@ import (
 	"math/big"
 	"reflect"
 
-	"github.com/k0kubun/pp"
 	"github.com/xelaj/go-dry"
 )
 
@@ -30,9 +29,9 @@ func (e *Encoder) Result() []byte {
 // то можно считать, что это две crc константы
 func (e *Encoder) PutBool(v bool) {
 	buf := make([]byte, WordLen)
-	crc := crc_boolFalse
+	crc := crcFalse
 	if v {
-		crc = crc_boolTrue
+		crc = crcTrue
 	}
 
 	binary.LittleEndian.PutUint32(buf, uint32(crc))
@@ -149,7 +148,13 @@ func (e *Encoder) PutRawBytes(s []byte) {
 func (e *Encoder) PutVector(v interface{}) {
 	slice := dry.SliceToInterfaceSlice(v)
 	buf := NewEncoder()
-	buf.PutCRC(crc_vector)
+	if v == nil {
+		buf.PutCRC(crcVector)
+		buf.PutUint(0)
+		return
+	}
+
+	buf.PutCRC(crcVector)
 	buf.PutUint(uint32(len(slice)))
 
 	for _, item := range slice {
@@ -183,7 +188,6 @@ func (e *Encoder) PutVector(v interface{}) {
 		}
 
 	}
-	pp.Println(buf.buf)
 
 	e.buf = append(e.buf, buf.buf...)
 }

@@ -19,10 +19,14 @@ const (
 	ByteLenMagicNumber = 0xfe // ???
 
 	// https://core.telegram.org/schema/mtproto
-	crc_vector    = 0x1cb5c415
-	crc_boolFalse = 0xbc799737
-	crc_boolTrue  = 0x997275b5
-	crc_null      = 0x56730bcc
+	crcVector = 0x1cb5c415
+	crcFalse  = 0xbc799737
+	crcTrue   = 0x997275b5
+	crcNull   = 0x56730bcc
+
+	// CrcRpcResult публичная переменная, т.к. это специфический конструктор
+	CrcRpcResult  = 0xf35c6d01 // nolint
+	CrcGzipPacked = 0x3072cfa1
 )
 
 var (
@@ -34,6 +38,11 @@ var (
 type TL interface {
 	CRC() uint32
 	TLEncoder
+}
+
+func reflectIsTL(v reflect.Value) bool {
+	_, ok := v.Interface().(TL)
+	return ok
 }
 
 type TLDecoder interface {
@@ -51,6 +60,11 @@ func RandomInt128() *Int128 {
 	return i
 }
 
+func reflectIsInt128(v reflect.Value) bool {
+	_, ok := v.Interface().(*Int128)
+	return ok
+}
+
 type Int256 struct {
 	*big.Int
 }
@@ -59,6 +73,11 @@ func RandomInt256() *Int256 {
 	i := &Int256{big.NewInt(0)}
 	i.SetBytes(dry.RandomBytes(Int256Len))
 	return i
+}
+
+func reflectIsInt256(v reflect.Value) bool {
+	_, ok := v.Interface().(*Int256)
+	return ok
 }
 
 // TL_Null это пустой объект, который нужен для передачи в каналы TL с информацией, что ответа можно не ждать
@@ -95,6 +114,8 @@ func (*ErrorSessionConfigsChanged) DecodeFrom(d *Decoder) {
 func (*ErrorSessionConfigsChanged) Error() string {
 	return "session configuration was changed"
 }
+
+// --------------------------------------------------------------------------------------
 
 // dummy bool struct for methods generation
 type Bool struct{}
@@ -138,6 +159,22 @@ func (*Int) Encode() []byte {
 }
 
 func (*Int) DecodeFrom(d *Decoder) {
+	panic("it's a dummy constructor!")
+}
+
+// блять! вектор ведь это тоже структура! короче вот эта структура просто в себе хранит
+// слайс либо стандартных типов ([]int32, []float64, []bool и прочее), либо тл объекта
+// ([]TL). алгоритм который использует эту структуру должен гарантировать, что параметр
+// является слайсом, а элементы слайса являются либо стандартные типы, либо TL.
+type InnerVectorObject struct {
+	I interface{}
+}
+
+func (*InnerVectorObject) CRC() uint32 {
+	panic("it's a dummy constructor!")
+}
+
+func (*InnerVectorObject) Encode() []byte {
 	panic("it's a dummy constructor!")
 }
 

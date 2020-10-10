@@ -19,22 +19,67 @@ ipPortSecret#37982646 ipv4:int port:int secret:bytes = IpPort;
 accessPointRule#4679b65f phone_prefix_rules:string dc_id:int ips:Vector<IpPort> = AccessPointRule;
 help.configSimple#5a592a6c date:int expires:int rules:Vector<AccessPointRule> = help.ConfigSimple;
 
+// @type Peer
+// @constructor An empty constructor, no user or chat is defined.
 inputPeerEmpty#7f3b18ea = InputPeer;
+// @constructor Defines the current user.
 inputPeerSelf#7da07ec9 = InputPeer;
+// @constructor Defines a chat for further interaction.
+// @param chat_id Chat idientifier
 inputPeerChat#179be863 chat_id:int = InputPeer;
+// @constructor Defines a user for further interaction.
+// @param user_id User identifier
+// @param access_hash **access_hash** value from the [user](https://core.telegram.org/constructor/user) constructor
 inputPeerUser#7b8e7de6 user_id:int access_hash:long = InputPeer;
+// @constructor Defines a channel for further interaction.
+// @param channel_id Channel identifier
+// @param access_hash **access_hash** value from the [channel](https://core.telegram.org/constructor/channel) constructor
 inputPeerChannel#20adaef8 channel_id:int access_hash:long = InputPeer;
+// @constructor Defines a [min](https://core.telegram.org/api/min) user that was seen in a certain message of a certain chat.
+// @param peer The chat where the user was seen
+// @param msg_id The message ID
+// @param user_id The identifier of the user that was seen
 inputPeerUserFromMessage#17bae2e6 peer:InputPeer msg_id:int user_id:int = InputPeer;
+// @constructor Defines a [min](https://core.telegram.org/api/min) channel that was seen in a certain message of a certain chat.
+// @param peer The chat where the channel's message was seen
+// @param msg_id The message ID
+// @param channel_id The identifier of the channel that was seen
 inputPeerChannelFromMessage#9c95f7bb peer:InputPeer msg_id:int channel_id:int = InputPeer;
 
+// @type Defines a user for subsequent interaction.
+// @constructor Empty constructor, does not define a user.
 inputUserEmpty#b98886cf = InputUser;
+// @constructor Defines the current user.
 inputUserSelf#f7c1b13f = InputUser;
+// @constructor Defines a user for further interaction.
+// @param access_hash access_hash value from the user constructor
+// @param user_id     User identifier
 inputUser#d8292816 user_id:int access_hash:long = InputUser;
+// @constructor Defines a min user that was seen in a certain message of a certain chat.
+// @param msg_id  The message ID
+// @param peer    The chat where the user was seen
+// @param user_id The identifier of the user that was seen
 inputUserFromMessage#2d117597 peer:InputPeer msg_id:int user_id:int = InputUser;
 
+// @type Object defines a contact from the user's phonebook.
+// @constructor Phone contact. The client_id is just an arbitrary contact ID: it should be set, for example, to an incremental number when using contacts.importContacts, in order to retry importing only the contacts that weren't imported successfully.
+// @param client_id  User identifier on the client
+// @param first_name Contact's first name
+// @param last_name  Contact's last name
+// @param phone      Phone number
 inputPhoneContact#f392b7f4 client_id:long phone:string first_name:string last_name:string = InputContact;
 
+// @type Defines a file uploaded by the client.
+// @constructor Defines a file saved in parts using the method upload.saveFilePart.
+// @param id           Random file identifier created by the client
+// @param md5_checksum In case the file's md5-hash was passed, contents of the file will be checked prior to use
+// @param name         Full name of the file
+// @param parts        Number of parts saved
 inputFile#f52ff27f id:long parts:int name:string md5_checksum:string = InputFile;
+// @constructor Assigns a big file (over 10Mb in size), saved in part using the method upload.saveBigFilePart.
+// @param id    Random file id, created by the client
+// @param name  Full file name
+// @param parts Number of parts saved
 inputFileBig#fa4f0bb5 id:long parts:int name:string = InputFile;
 
 inputMediaEmpty#9664f57f = InputMedia;
@@ -73,19 +118,37 @@ inputPhotoLegacyFileLocation#d83466f3 id:long access_hash:long file_reference:by
 inputPeerPhotoFileLocation#27d69997 flags:# big:flags.0?true peer:InputPeer volume_id:long local_id:int = InputFileLocation;
 inputStickerSetThumb#dbaeae9 stickerset:InputStickerSet volume_id:long local_id:int = InputFileLocation;
 
+// @type Chat partner or group.
+// @constructor Chat partner
+// @param user_id User identifier
 peerUser#9db1bc6d user_id:int = Peer;
+// @constructor Group.
+// @param chat_id Group identifier
 peerChat#bad0e5bb chat_id:int = Peer;
+// @constructor Channel/supergroup
+// @param channel_id Channel ID
 peerChannel#bddde532 channel_id:int = Peer;
 
+// @type Object describes the file type.
+// @enum Unknown type.
 storage.fileUnknown#aa963b05 = storage.FileType;
+// @enum Part of a bigger file.
 storage.filePartial#40bc6f52 = storage.FileType;
+// @enum JPEG image. MIME type: image/jpeg.
 storage.fileJpeg#7efe0e = storage.FileType;
+// @enum GIF image. MIME type: image/gif.
 storage.fileGif#cae1aadf = storage.FileType;
+// @enum PNG image. MIME type: image/png.
 storage.filePng#a4f63c0 = storage.FileType;
+// @enum PDF document image. MIME type: application/pdf.
 storage.filePdf#ae1e508d = storage.FileType;
+// @enum Mp3 audio. MIME type: audio/mpeg.
 storage.fileMp3#528a0677 = storage.FileType;
+// @enum Quicktime video. MIME type: video/quicktime.
 storage.fileMov#4b09ebbc = storage.FileType;
+// @enum MPEG-4 video. MIME type: video/mp4.
 storage.fileMp4#b3cea0e4 = storage.FileType;
+// @enum WEBP image. MIME type: image/webp.
 storage.fileWebp#1081464c = storage.FileType;
 
 userEmpty#200250ba id:int = User;
@@ -427,13 +490,22 @@ sendMessageUploadRoundAction#243e1c66 progress:int = SendMessageAction;
 
 contacts.found#b3134d9d my_results:Vector<Peer> results:Vector<Peer> chats:Vector<Chat> users:Vector<User> = contacts.Found;
 
+// @type Privacy key
+// @enum Whether we can see the exact last online timestamp of the user
 inputPrivacyKeyStatusTimestamp#4f96cb18 = InputPrivacyKey;
+// @enum Whether the user can be invited to chats
 inputPrivacyKeyChatInvite#bdfb0426 = InputPrivacyKey;
+// @enum Whether the user will accept phone calls
 inputPrivacyKeyPhoneCall#fabadc5f = InputPrivacyKey;
+// @enum Whether the user allows P2P communication during VoIP calls
 inputPrivacyKeyPhoneP2P#db9e70d2 = InputPrivacyKey;
+// @enum Whether messages forwarded from this user will be [anonymous](https://telegram.org/blog/unsend-privacy-emoji#anonymous-forwarding)
 inputPrivacyKeyForwards#a4dd4c08 = InputPrivacyKey;
+// @enum Whether people will be able to see the user's profile picture
 inputPrivacyKeyProfilePhoto#5719bacc = InputPrivacyKey;
+// @enum Whether people will be able to see the user's phone number
 inputPrivacyKeyPhoneNumber#352dafa = InputPrivacyKey;
+// @enum Whether people can add you to their contact list by your phone number
 inputPrivacyKeyAddedByPhone#d1219bdd = InputPrivacyKey;
 
 privacyKeyStatusTimestamp#bc2eab30 = PrivacyKey;
@@ -485,9 +557,38 @@ messages.allStickers#edfd405f hash:int sets:Vector<StickerSet> = messages.AllSti
 
 messages.affectedMessages#84d19185 pts:int pts_count:int = messages.AffectedMessages;
 
+// @type Instant View webpage preview
+// @constructor No preview is available for the webpage
+// @param Preview ID
 webPageEmpty#eb1477e8 id:long = WebPage;
+// @constructor A preview of the webpage is currently being generated
+// @param date When was the processing started
+// @param id   ID of preview
 webPagePending#c586da1c id:long date:int = WebPage;
+// @constructor Webpage preview
+// @param attributes   Webpage attributes
+// @param author       Author of the content
+// @param cached_page  Page contents in instant view format
+// @param description  Content description
+// @param display_url  Webpage URL to be displayed to the user
+// @param document     Preview of the content as a media file
+// @param duration     Duration of the content, in seconds
+// @param embed_height Height of the embedded preview
+// @param embed_type   MIME type of the embedded preview, (e.g., text/html or video/mp4)
+// @param embed_url    URL to show in the embedded preview
+// @param embed_width  Width of the embedded preview
+// @param flags        Flags, see TL conditional fields
+// @param hash         Hash for pagination, for more info click here
+// @param id           Preview ID
+// @param photo        Image representing the content
+// @param site_name    Short name of the site (e.g., Google Docs, App Store)
+// @param title        Title of the content
+// @param type         Type of the web page. Can be: article, photo, audio, video, document, profile, app, or something else
+// @param url          URL of previewed webpage
 webPage#e89c45b2 flags:# id:long url:string display_url:string hash:int type:flags.0?string site_name:flags.1?string title:flags.2?string description:flags.3?string photo:flags.4?Photo embed_url:flags.5?string embed_type:flags.5?string embed_width:flags.6?int embed_height:flags.6?int duration:flags.7?int author:flags.8?string document:flags.9?Document cached_page:flags.10?Page attributes:flags.12?Vector<WebPageAttribute> = WebPage;
+// @constructor The preview of the webpage hasn't changed
+// @param cached_page_views Page view count
+// @param flags             Flags, see TL conditional fields
 webPageNotModified#7311ca11 flags:# cached_page_views:flags.0?int = WebPage;
 
 authorization#ad01d61d flags:# current:flags.0?true official_app:flags.1?true password_pending:flags.2?true hash:long device_model:string platform:string system_version:string api_id:int app_name:string app_version:string date_created:int date_active:int ip:string country:string region:string = Authorization;
@@ -773,6 +874,19 @@ inputWebFileGeoPointLocation#9f2221c9 geo_point:InputGeoPoint access_hash:long w
 
 upload.webFile#21e753bc size:int mime_type:string file_type:storage.FileType mtime:int bytes:bytes = upload.WebFile;
 
+// @constructor Payment form
+// @param bot_id               Bot ID
+// @param can_save_credentials Whether the user can choose to save credentials.
+// @param flags                Flags, see TL conditional fields
+// @param invoice              Invoice
+// @param native_params        Contains information about the payment provider, if available, to support it natively without the need for opening the URL.A JSON object that can contain the following fields:- publishable_key: Stripe API publishable key- apple_pay_merchant_id: Apple Pay merchant ID- android_pay_public_key: Android Pay public key- android_pay_bgcolor: Android Pay form background color- android_pay_inverse: Whether to use the dark theme in the Android Pay form- need_country: True, if the user country must be provided,- need_zip: True, if the user ZIP/postal code must be provided,- need_cardholder_name: True, if the cardholder name must be provided
+// @param native_provider      Payment provider name.One of the following:- stripe
+// @param password_missing     Indicates that the user can save payment credentials, but only after setting up a 2FA password (currently the account doesn't have a 2FA password)
+// @param provider_id          Payment provider ID.
+// @param saved_credentials    Contains information about saved card credentials
+// @param saved_info           Saved server-side order information
+// @param url                  Payment form URL
+// @param users                Users
 payments.paymentForm#3f56aea3 flags:# can_save_credentials:flags.2?true password_missing:flags.3?true bot_id:int invoice:Invoice provider_id:int url:string native_provider:flags.4?string native_params:flags.4?DataJSON saved_info:flags.0?PaymentRequestedInfo saved_credentials:flags.1?PaymentSavedCredentials users:Vector<User> = payments.PaymentForm;
 
 payments.validatedRequestedInfo#d1451883 flags:# id:flags.0?string shipping_options:flags.1?Vector<ShippingOption> = payments.ValidatedRequestedInfo;
@@ -1420,6 +1534,9 @@ channels.deleteMessages#84c1fd4e channel:InputChannel id:Vector<int> = messages.
 channels.deleteUserHistory#d10dd71b channel:InputChannel user_id:InputUser = messages.AffectedHistory;
 channels.reportSpam#fe087810 channel:InputChannel user_id:InputUser id:Vector<int> = Bool;
 channels.getMessages#ad8c9a23 channel:InputChannel id:Vector<InputMessage> = messages.Messages;
+// @method Get the participants of a channel
+// @param channel Channel
+// @param filter Which participant types to fetch
 channels.getParticipants#123e05e9 channel:InputChannel filter:ChannelParticipantsFilter offset:int limit:int hash:int = channels.ChannelParticipants;
 channels.getParticipant#546dd7a6 channel:InputChannel user_id:InputUser = channels.ChannelParticipant;
 channels.getChannels#a7f6bbb id:Vector<InputChannel> = messages.Chats;

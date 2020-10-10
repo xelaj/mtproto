@@ -1,9 +1,12 @@
 package telegram
 
 import (
-	"crypto/rsa"
+	"reflect"
+	"runtime"
 
+	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
+	"github.com/xelaj/errs"
 	dry "github.com/xelaj/go-dry"
 
 	"github.com/xelaj/mtproto"
@@ -11,17 +14,89 @@ import (
 	"github.com/xelaj/mtproto/serialize"
 )
 
-func init() {
-	keyfile := "~/go/src/github.com/xelaj/mtproto/keys/keys.pem"
-	TelegramPublicKeys, err := keys.ReadFromFile(keyfile)
-	dry.PanicIfErr(err)
-	choosedKey := dry.RandomChoose(dry.InterfaceSlice(TelegramPublicKeys)...).(*rsa.PublicKey)
-
-	_ = choosedKey
-}
-
 type Client struct {
 	*mtproto.MTProto
+	config *ClientConfig
+}
+
+type ClientConfig struct {
+	SessionFile    string
+	ServerHost     string
+	PublicKeysFile string
+	DeviceModel    string
+	SystemVersion  string
+	AppVersion     string
+	AppID          int
+	AppHash        string
+}
+
+func NewClient(c ClientConfig) (*Client, error) {
+	if !dry.FileExists(c.PublicKeysFile) {
+		return nil, errs.NotFound("file", c.PublicKeysFile)
+	}
+
+	if !dry.PathIsWirtable(c.SessionFile) {
+		return nil, errs.Permission(c.SessionFile).Scope("write")
+	}
+
+	if c.DeviceModel == "" {
+		c.DeviceModel = "Unknown"
+	}
+
+	if c.SystemVersion == "" {
+		c.SystemVersion = runtime.GOOS + "/" + runtime.GOARCH
+	}
+
+	if c.AppVersion == "" {
+		c.AppVersion = "v0.0.0"
+	}
+
+	publicKeys, err := keys.ReadFromFile(c.PublicKeysFile)
+	if err != nil {
+		return nil, errors.Wrap(err, "reading public keys")
+	}
+
+	m, err := mtproto.NewMTProto(mtproto.Config{
+		AuthKeyFile: c.SessionFile,
+		ServerHost:  c.ServerHost,
+		PublicKey:   publicKeys[0],
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "setup common MTProto client")
+	}
+
+	err = m.CreateConnection()
+	if err != nil {
+		return nil, errors.Wrap(err, "creating connection")
+	}
+
+	client := &Client{
+		MTProto: m,
+		config:  &c,
+	}
+
+	resp, err := client.InvokeWithLayer(ApiVersion, &InitConnectionParams{
+		ApiID:          int32(c.AppID),
+		DeviceModel:    c.DeviceModel,
+		SystemVersion:  c.SystemVersion,
+		AppVersion:     c.AppVersion,
+		SystemLangCode: "en", // can't be edited, cause docs says that a single possible parameter
+		LangCode:       "en",
+		Query:          &HelpGetConfigParams{},
+	})
+
+	if err != nil {
+		return nil, errors.Wrap(err, "getting server configs")
+	}
+
+	config, ok := resp.(*Config)
+	if !ok {
+		return nil, errors.New("got wrong response: " + reflect.TypeOf(resp).String())
+	}
+
+	pp.Println(config)
+
+	return client, nil
 }
 
 //----------------------------------------------------------------------------
@@ -51,6 +126,39 @@ func (m *Client) InvokeWithLayer(layer int, query serialize.TLEncoder) (serializ
 	data, err := m.MakeRequest(&InvokeWithLayerParams{
 		Layer: int32(layer),
 		Query: query,
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "sending InvokeWithLayer")
+	}
+
+	return data, nil
+}
+
+type InvokeWithTakeoutParams struct {
+	TakeoutID int64
+	Query     serialize.TLEncoder
+}
+
+func (*InvokeWithTakeoutParams) CRC() uint32 {
+	return 0xaca9fd2e
+}
+
+func (t *InvokeWithTakeoutParams) Encode() []byte {
+	buf := serialize.NewEncoder()
+	buf.PutUint(t.CRC())
+	buf.PutLong(t.TakeoutID)
+	buf.PutRawBytes(t.Query.Encode())
+	return buf.Result()
+}
+
+func (t *InvokeWithTakeoutParams) DecodeFrom(d *serialize.Decoder) {
+	panic("makes no sense")
+}
+
+func (m *Client) InvokeWithTakeout(takeoutID int, query serialize.TLEncoder) (serialize.TL, error) {
+	data, err := m.MakeRequest(&InvokeWithTakeoutParams{
+		TakeoutID: int64(takeoutID),
+		Query:     query,
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending InvokeWithLayer")
@@ -110,8 +218,8 @@ func (t *InitConnectionParams) DecodeFrom(d *serialize.Decoder) {
 	panic("makes no sense")
 }
 
-func (m *Client) InitConnection(params InitConnectionParams) (serialize.TL, error) {
-	data, err := m.MakeRequest(&params)
+func (m *Client) InitConnection(params *InitConnectionParams) (serialize.TL, error) {
+	data, err := m.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sending InitConnection")
 	}
