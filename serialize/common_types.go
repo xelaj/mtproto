@@ -3,10 +3,10 @@
 package serialize
 
 import (
-	"github.com/xelaj/errs"
 	"bytes"
 	"compress/gzip"
 	"fmt"
+	"github.com/xelaj/errs"
 	"reflect"
 
 	"github.com/k0kubun/pp"

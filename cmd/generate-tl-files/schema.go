@@ -39,7 +39,6 @@ type DefinitionMethod struct {
 	Parameters []*Param
 }
 
-
 func GetCRCCode(constructorTrimmedLine string) (string, uint32, error) {
 	var crcCode uint32
 	crcCodeStr := regexp.MustCompilePOSIX("#[0-9a-f]{1,8}").FindString(constructorTrimmedLine)
