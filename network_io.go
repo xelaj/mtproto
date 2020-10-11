@@ -3,6 +3,7 @@ package mtproto
 import (
 	"context"
 	"encoding/binary"
+	"fmt"
 	"reflect"
 	"strconv"
 	"time"
@@ -114,7 +115,7 @@ func (m *MTProto) readFromConn(ctx context.Context) (data []byte, err error) {
 	//	restOfSize := make([]byte, 3)
 	//	n, err := reader.Read(restOfSize)
 	//	dry.PanicIfErr(err)
-	//	dry.PanicIf(n != 3, "expected read 3 bytes, got "+strconv.Itoa(n))
+	//	dry.PanicIf(n != 3, fmt.Sprintf("expected read 3 bytes, got %d", n))
 	//
 	//	sizeInBytes, _ = utils.GetPacketLengthMTProtoCompatible(append([]byte{firstByte}, restOfSize...))
 	//
@@ -129,7 +130,7 @@ func (m *MTProto) readFromConn(ctx context.Context) (data []byte, err error) {
 		return nil, errors.Wrap(err, "reading length")
 	}
 	if n != 4 {
-		return nil, errors.New("size is not length of int32, expected 4 bytes, got " + strconv.Itoa(n))
+		return nil, fmt.Errorf("size is not length of int32, expected 4 bytes, got %d", n)
 	}
 
 	size := binary.LittleEndian.Uint32(sizeInBytes)
@@ -137,7 +138,7 @@ func (m *MTProto) readFromConn(ctx context.Context) (data []byte, err error) {
 	data = make([]byte, int(size))
 	n, err = reader.Read(data)
 	dry.PanicIfErr(err)
-	dry.PanicIf(n != int(size), "expected read "+strconv.Itoa(int(size))+" bytes, got "+strconv.Itoa(n))
+	dry.PanicIf(n != int(size), fmt.Sprintf("expected read %d bytes, got %d", size, n))
 
 	return data, nil
 }

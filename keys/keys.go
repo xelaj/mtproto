@@ -7,7 +7,6 @@ import (
 	"encoding/pem"
 	"io/ioutil"
 	"math/big"
-	"strconv"
 
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
@@ -48,7 +47,7 @@ func ReadFromFile(path string) ([]*rsa.PublicKey, error) {
 		key, err := pemBytesToRsa(block.Bytes)
 		if err != nil {
 			const offset = 1 // +1 потому что считаем с 0
-			return nil, errors.Wrap(err, "deconding key №"+strconv.Itoa(len(keys)+offset))
+			return nil, errors.Wrapf(err, "decoding key №%d", len(keys)+offset)
 		}
 
 		keys = append(keys, key)

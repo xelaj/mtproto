@@ -3,7 +3,7 @@
 package mtproto
 
 import (
-	"strconv"
+	"fmt"
 
 	"github.com/xelaj/mtproto/serialize"
 )
@@ -28,7 +28,7 @@ func RpcErrorToNative(r *serialize.RpcError) error {
 }
 
 func (e *ErrResponseCode) Error() string {
-	return e.Description + " (code " + strconv.Itoa(e.Code) + ") "
+	return fmt.Sprintf("%s (code %d)", e.Description, e.Code)
 }
 
 // gathered all errors from all methods. don't have reference in docs at all

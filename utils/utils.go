@@ -9,7 +9,6 @@ import (
 	"math/rand"
 	"os"
 	"runtime"
-	"strconv"
 	"time"
 
 	"github.com/xelaj/go-dry"
@@ -56,7 +55,7 @@ var (
 // исходя из переданного числа в bytestoGetInfo считает количество СЛОВ и отдает количество БАЙТ которые нужно прочитать
 func GetPacketLengthMTProtoCompatible(bytesToGetInfo []byte) (int, error) {
 	if len(bytesToGetInfo) != 1 && len(bytesToGetInfo) != 4 {
-		panic("invalid size of bytes. require only 1 or 4, got " + strconv.Itoa(len(bytesToGetInfo)))
+		panic(fmt.Sprintf("invalid size of bytes. require only 1 or 4, got %d", len(bytesToGetInfo)))
 	}
 
 	if bytesToGetInfo[0] != magicValueSizeMoreThanSingleByte {
