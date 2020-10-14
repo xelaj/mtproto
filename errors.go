@@ -4,6 +4,10 @@ package mtproto
 
 import (
 	"fmt"
+<<<<<<< HEAD
+=======
+	"strconv"
+>>>>>>> 🏇 multiple changes
 
 	"github.com/xelaj/mtproto/serialize"
 )
@@ -366,8 +370,24 @@ var errorMessages = map[string]string{
 	"YOU_BLOCKED_USER":                    "You blocked this user",
 }
 
+type BadMsgError struct {
+	*serialize.BadMsgNotification
+	Description string
+}
+
+func BadMsgErrorFromNative(in *serialize.BadMsgNotification) *BadMsgError {
+	return &BadMsgError{
+		BadMsgNotification: in,
+		Description:        badMsgErrorCodes[uint8(in.Code)],
+	}
+}
+
+func (e *BadMsgError) Error() string {
+	return fmt.Sprintf("%v (code %v)", e.Description, e.Code)
+}
+
 // https://core.telegram.org/mtproto/service_messages_about_messages#notice-of-ignored-error-message
-var badSystemMessageCodes = map[uint8]string{
+var badMsgErrorCodes = map[uint8]string{
 	16: "msg_id too low (most likely, client time is wrong; it would be worthwhile to synchronize it using msg_id notifications and re-send the original message with the “correct” msg_id or wrap it in a container with a new msg_id if the original message had waited too long on the client to be transmitted)",
 	17: "msg_id too high (similar to the previous case, the client time has to be synchronized, and the message re-sent with the correct msg_id",
 	18: "incorrect two lower order msg_id bits (the server expects client message msg_id to be divisible by 4)",
@@ -380,3 +400,20 @@ var badSystemMessageCodes = map[uint8]string{
 	48: "incorrect server salt (in this case, the bad_server_salt response is received with the correct salt, and the message is to be re-sent with it)",
 	64: "invalid container",
 }
+
+type BadSystemMessageCode int32
+
+const (
+	ErrBadMsgUnknown             BadSystemMessageCode = 0
+	ErrBadMsgIdTooLow            BadSystemMessageCode = 16
+	ErrBadMsgIdTooHigh           BadSystemMessageCode = 17
+	ErrBadMsgIncorrectMsgIdBits  BadSystemMessageCode = 18
+	ErrBadMsgWrongContainerMsgId BadSystemMessageCode = 19 // this must never happen
+	ErrBadMsgMessageTooOld       BadSystemMessageCode = 20
+	ErrBadMsgSeqNoTooLow         BadSystemMessageCode = 32
+	ErrBadMsgSeqNoTooHigh        BadSystemMessageCode = 33
+	ErrBadMsgSeqNoExpectedEven   BadSystemMessageCode = 34
+	ErrBadMsgSeqNoExpectedOdd    BadSystemMessageCode = 35
+	ErrBadMsgServerSaltIncorrect BadSystemMessageCode = 48
+	ErrBadMsgInvalidContainer    BadSystemMessageCode = 64
+)

@@ -30,7 +30,9 @@ type ClientConfig struct {
 	AppHash        string
 }
 
-func NewClient(c ClientConfig) (*Client, error) {
+func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not ptr cause we call
+	//                                                               it only once, don't care
+	//                                                               about copying big args.
 	if !dry.FileExists(c.PublicKeysFile) {
 		return nil, errs.NotFound("file", c.PublicKeysFile)
 	}
@@ -75,6 +77,8 @@ func NewClient(c ClientConfig) (*Client, error) {
 		config:  &c,
 	}
 
+	client.AddCustomServerRequestHandler(client.handleSpecialRequests())
+
 	resp, err := client.InvokeWithLayer(ApiVersion, &InitConnectionParams{
 		ApiID:          int32(c.AppID),
 		DeviceModel:    c.DeviceModel,
@@ -97,6 +101,21 @@ func NewClient(c ClientConfig) (*Client, error) {
 	pp.Println(config)
 
 	return client, nil
+}
+
+func (c *Client) handleSpecialRequests() func(interface{}) bool {
+	return func(i interface{}) bool {
+		switch msg := i.(type) {
+		case *UpdatesObj:
+			pp.Println(msg, "UPDATE")
+			return true
+		case *UpdateShort:
+			pp.Println(msg, "SHORT UPDATE")
+			return true
+		}
+
+		return false
+	}
 }
 
 //----------------------------------------------------------------------------

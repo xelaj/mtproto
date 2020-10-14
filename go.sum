@@ -43,6 +43,8 @@ github.com/xelaj/errs v0.0.0-20200831133608-d1c11863e019 h1:3BHWVEmYnGFozw/ApnuO
 github.com/xelaj/errs v0.0.0-20200831133608-d1c11863e019/go.mod h1:ZRqZExT3DbVJwy4R3q2HEXCyMwGs/lUO52dA0uorbrg=
 github.com/xelaj/go-dry v0.0.0-20201006211243-f7ba64332fc9 h1:59FzfXQ+y6c76KcDrz8zqSfwRoBmKN5f+8r/EgBrH9s=
 github.com/xelaj/go-dry v0.0.0-20201006211243-f7ba64332fc9/go.mod h1:JPOhGQLpRVDqeIt7bgb9MmXXL7X+06q7oO80nLHZOzA=
+github.com/xelaj/go-dry v0.0.0-20201010171752-598e686efb39 h1:ES3PtvJIG6+n1s0BYHRK332iwUqpuqSgCfbKnQBqTHU=
+github.com/xelaj/go-dry v0.0.0-20201010171752-598e686efb39/go.mod h1:JPOhGQLpRVDqeIt7bgb9MmXXL7X+06q7oO80nLHZOzA=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0 h1:hb9wdF1z5waM+dSIICn1l0DkLVDT3hqhhQsDNUmHPRE=
 golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=

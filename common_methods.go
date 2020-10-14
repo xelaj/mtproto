@@ -28,7 +28,6 @@ func (t *ReqPQParams) DecodeFrom(d *serialize.Decoder) {
 }
 
 func (m *MTProto) ReqPQ(nonce *serialize.Int128) (*serialize.ResPQ, error) {
-	println("sending ReqPQ")
 	data, err := m.MakeRequest(&ReqPQParams{Nonce: nonce})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending ReqPQ")
@@ -36,7 +35,7 @@ func (m *MTProto) ReqPQ(nonce *serialize.Int128) (*serialize.ResPQ, error) {
 
 	resp, ok := data.(*serialize.ResPQ)
 	if !ok {
-		panic(errors.New("got invalid response type: " + reflect.TypeOf(data).String()))
+		return nil, errors.New("got invalid response type: " + reflect.TypeOf(data).String())
 	}
 
 	return resp, nil
@@ -91,7 +90,7 @@ func (m *MTProto) ReqDHParams(nonce, serverNonce *serialize.Int128, p, q []byte,
 
 	resp, ok := data.(serialize.ServerDHParams)
 	if !ok {
-		panic(errors.New("got invalid response type: " + reflect.TypeOf(data).String()))
+		return nil, errors.New("got invalid response type: " + reflect.TypeOf(data).String())
 	}
 
 	return resp, nil
@@ -134,7 +133,7 @@ func (m *MTProto) SetClientDHParams(nonce, serverNonce *serialize.Int128, encryp
 
 	resp, ok := data.(serialize.SetClientDHParamsAnswer)
 	if !ok {
-		panic(errors.New("got invalid response type: " + reflect.TypeOf(data).String()))
+		return nil, errors.New("got invalid response type: " + reflect.TypeOf(data).String())
 	}
 
 	return resp, nil
@@ -172,7 +171,7 @@ func (m *MTProto) Ping(pingID int64) (*serialize.Pong, error) {
 
 	resp, ok := data.(*serialize.Pong)
 	if !ok {
-		panic(errors.New("got invalid response type: " + reflect.TypeOf(data).String()))
+		return nil, errors.New("got invalid response type: " + reflect.TypeOf(data).String())
 	}
 
 	return resp, nil

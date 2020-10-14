@@ -1,6 +1,8 @@
 package main
 
 import (
+	"sort"
+
 	"github.com/k0kubun/pp"
 	"github.com/xelaj/go-dry"
 	"github.com/xelaj/mtproto/telegram"
@@ -12,46 +14,80 @@ func main() {
 	client, err := telegram.NewClient(telegram.ClientConfig{
 		// where to store session configuration. must be set
 		SessionFile: "/home/me/.local/var/lib/mtproto/session1.json",
-		// host address of mtproto server. actualy, it can'be mtproxy, not only official
+		// host address of mtproto server. Actually, it can'be mtproxy, not only official
 		ServerHost: "149.154.167.50:443",
 		// public keys file is patrh to file with public keys, which you must get from https://my.telelgram.org
-		PublicKeysFile: "/home/me/go/src/github.com/xelaj/mtproto/keys/keys.pem",
+		PublicKeysFile: "/home/me/.local/var/lib/mtproto/tg_public_keys.pem",
 		AppID:          94575,                              // app id, could be find at https://my.telegram.org
 		AppHash:        "a3406de8d171bb422bb6ddf3bbd800e2", // app hash, could be find at https://my.telegram.org
 	})
 	dry.PanicIfErr(err)
 
 	// get this hash from channel invite link (after t.me/join/<HASH>)
-	hash := "AAAAAEkCCtUBS84eqWdEeA"
+	hash := "AAAAAEkCCtoerhjfii34iiii" // add here any link that you are ADMINISTRATING cause participants can be viewed only by admins
 
 	// syntax sugared method, more easy to read than default ways to solve some troubles
-	//pp.Println(client.GetChannelInfoByInviteLink(hash))
-
-	// get channel participants
-	chat, err := client.GetChatInfoByHashLink(hash)
+	peer, err := client.GetChatInfoByHashLink(hash)
 	dry.PanicIfErr(err)
-	channelSimpleData, ok := chat.(*telegram.Channel)
-	if !ok {
-		panic("not a channel")
+
+	total, err := client.GetPossibleAllParticipantsOfGroup(telegram.InputChannel(&telegram.InputChannelObj{
+		ChannelId:  peer.(*telegram.Channel).Id,
+		AccessHash: peer.(*telegram.Channel).AccessHash,
+	}))
+
+	dry.PanicIfErr(err)
+	pp.Println(total, len(total))
+
+	println("this is partial users in CHANNEL. In supergroup you can use more easy way to find, see below")
+
+	resolved, err := client.ContactsResolveUsername(&telegram.ContactsResolveUsernameParams{"gogolang"})
+	dry.PanicIfErr(err)
+
+	channel := resolved.Chats[0].(*telegram.Channel)
+	inCh := telegram.InputChannel(&telegram.InputChannelObj{
+		ChannelId:  channel.Id,
+		AccessHash: channel.AccessHash,
+	})
+
+	res := make(map[int]struct{})
+	totalCount := 100 // at least 100
+	offset := 0
+	for offset < totalCount {
+		resp, err := client.ChannelsGetParticipants(&telegram.ChannelsGetParticipantsParams{
+			Channel: inCh,
+			Filter:  telegram.ChannelParticipantsFilter(&telegram.ChannelParticipantsRecent{}),
+			Limit:   100,
+			Offset:  int32(offset),
+		})
+		dry.PanicIfErr(err)
+		data := resp.(*telegram.ChannelsChannelParticipantsObj)
+		totalCount = int(data.Count)
+		for _, participant := range data.Participants {
+			switch user := participant.(type) {
+			case *telegram.ChannelParticipantSelf:
+				res[int(user.UserId)] = struct{}{}
+			case *telegram.ChannelParticipantObj:
+				res[int(user.UserId)] = struct{}{}
+			case *telegram.ChannelParticipantAdmin:
+				res[int(user.UserId)] = struct{}{}
+			case *telegram.ChannelParticipantCreator:
+				res[int(user.UserId)] = struct{}{}
+			default:
+				pp.Println(user)
+				panic("что?")
+			}
+		}
+
+		offset += 100
+		pp.Println(offset, totalCount)
 	}
 
-	inChannel := telegram.InputChannel(&telegram.InputChannelObj{
-		ChannelId:  channelSimpleData.Id,
-		AccessHash: channelSimpleData.AccessHash,
-	})
+	total = make([]int, 0, len(res))
+	for k := range res {
+		total = append(total, k)
+	}
 
-	resp, err := client.ChannelsGetParticipants(&telegram.ChannelsGetParticipantsParams{
-		Channel: inChannel,
-		Filter:  telegram.ChannelParticipantsFilter(&telegram.ChannelParticipantsRecent{}),
-		Limit:   100,
-	})
-	dry.PanicIfErr(err)
-	pp.Println(resp)
-	//users := resp.(*telegram.ChannelsChannelParticipantsObj)
-	//for i, participant := range users.Participants {
-	//	user := participant.(*telegram.ChannelParticipantObj)
-	//	pp.Println(i, user.UserId)
-	//
-	//}
+	sort.Ints(total)
 
+	pp.Println(total, len(total))
 }

@@ -55,7 +55,11 @@ var (
 // исходя из переданного числа в bytestoGetInfo считает количество СЛОВ и отдает количество БАЙТ которые нужно прочитать
 func GetPacketLengthMTProtoCompatible(bytesToGetInfo []byte) (int, error) {
 	if len(bytesToGetInfo) != 1 && len(bytesToGetInfo) != 4 {
+<<<<<<< HEAD
 		panic(fmt.Sprintf("invalid size of bytes. require only 1 or 4, got %d", len(bytesToGetInfo)))
+=======
+		return 0, fmt.Errorf("invalid size of bytes. require only 1 or 4, got %v", len(bytesToGetInfo))
+>>>>>>> 🏇 multiple changes
 	}
 
 	if bytesToGetInfo[0] != magicValueSizeMoreThanSingleByte {
@@ -66,8 +70,9 @@ func GetPacketLengthMTProtoCompatible(bytesToGetInfo []byte) (int, error) {
 		return 0, ErrPacketSizeIsBigger
 	}
 
-	// 3 последующих байта сейчас прочтем, последний для доведения до uint32, то есть в буффере значение будет 0x00ffffff, где f любой байт, который показывает число
-	buf := append(bytesToGetInfo, byte(0x00))
+	// 3 последующих байта сейчас прочтем, последний для доведения до uint32, то есть в буффере
+	// значение будет 0x00ffffff, где f любой байт, который показывает число
+	buf := append(bytesToGetInfo, 0x00)
 
 	value := binary.LittleEndian.Uint32(buf)
 	return int(value) * wordLen, nil
@@ -75,7 +80,7 @@ func GetPacketLengthMTProtoCompatible(bytesToGetInfo []byte) (int, error) {
 
 func GenerateSessionID() int64 {
 	rand.Seed(time.Now().UnixNano())
-	return rand.Int63()
+	return rand.Int63() // nolint: gosec потому что начерта?
 }
 
 func FullStack() {

@@ -22,6 +22,7 @@ func (m *MTProto) sendPacketNew(request serialize.TL, expectVector reflect.Type)
 		resp = m.serviceChannel
 	}
 	var data []byte
+	var err error
 	var msgID = utils.GenerateMessageId()
 
 	// может мы ожидаем вектор, см. erialize.RpcResult для понимания
@@ -38,11 +39,14 @@ func (m *MTProto) sendPacketNew(request serialize.TL, expectVector reflect.Type)
 			requireToAck = true
 		}
 
-		data = (&serialize.EncryptedMessage{
+		data, err = (&serialize.EncryptedMessage{
 			Msg:         request.Encode(),
 			MsgID:       msgID,
 			AuthKeyHash: m.authKeyHash,
 		}).Serialize(m, requireToAck)
+		if err != nil {
+			return nil, errors.Wrap(err, "serializing message")
+		}
 
 		if !isNullableResponse(request) {
 			m.mutex.Lock()
@@ -59,7 +63,7 @@ func (m *MTProto) sendPacketNew(request serialize.TL, expectVector reflect.Type)
 		// этот кусок не часть кодирования так что делаем при отправке
 		m.lastSeqNo += 2
 	} else {
-		data = (&serialize.UnencryptedMessage{
+		data, _ = (&serialize.UnencryptedMessage{ //nolint: errcheck нешифрованое не отправляет ошибки
 			Msg:   request.Encode(),
 			MsgID: msgID,
 		}).Serialize(m)
@@ -68,13 +72,14 @@ func (m *MTProto) sendPacketNew(request serialize.TL, expectVector reflect.Type)
 	//? https://core.telegram.org/mtproto/mtproto-transports#intermediate
 	size := make([]byte, 4)
 	binary.LittleEndian.PutUint32(size, uint32(len(data)))
-	_, err := m.conn.Write(size)
-	dry.PanicIfErr(err)
+	_, err = m.conn.Write(size)
+	if err != nil {
+		return nil, errors.Wrap(err, "sending data")
+	}
 
 	//? https://core.telegram.org/mtproto/mtproto-transports#abridged
 	// _, err := m.conn.Write(utils.PacketLengthMTProtoCompatible(data))
 	// dry.PanicIfErr(err)
-	println("writing message")
 	_, err = m.conn.Write(data)
 	if err != nil {
 		return nil, errors.Wrap(err, "sending request")

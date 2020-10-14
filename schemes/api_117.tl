@@ -278,7 +278,13 @@ contactBlocked#561bc879 user_id:int date:int = ContactBlocked;
 
 contactStatus#d3680c61 user_id:int status:UserStatus = ContactStatus;
 
+// @type Info on the current user's contact list.
+// @constructor Contact list on the server is the same as the list on the client.
 contacts.contactsNotModified#b74ba9d2 = contacts.Contacts;
+// @constructor The current user's contact list and info on users.
+// @param contacts    Contact list
+// @param saved_count Number of contacts that were saved successfully
+// @param users       User list
 contacts.contacts#eae87e42 contacts:Vector<Contact> saved_count:int users:Vector<User> = contacts.Contacts;
 
 contacts.importedContacts#77d01c3b imported:Vector<ImportedContact> popular_invites:Vector<PopularContact> retry_contacts:Vector<long> users:Vector<User> = contacts.ImportedContacts;

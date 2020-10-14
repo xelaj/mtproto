@@ -1,7 +1,10 @@
 package mtproto
 
 import (
+	"fmt"
 	"reflect"
+
+	"github.com/xelaj/go-dry"
 
 	"github.com/xelaj/mtproto/serialize"
 	"github.com/xelaj/mtproto/utils"
@@ -63,4 +66,19 @@ func (m *MTProto) MakeRequest(msg serialize.TL) (serialize.TL, error) {
 
 func (m *MTProto) MakeRequestAsSlice(msg serialize.TL, as reflect.Type) (serialize.TL, error) {
 	return m.makeRequest(msg, as)
+}
+
+func (m *MTProto) recoverGoroutine() {
+	if r := recover(); r != nil {
+		if m.RecoverFunc != nil {
+			fmt.Println(dry.StackTrace(0))
+			m.RecoverFunc(r)
+		} else {
+			panic(r)
+		}
+	}
+}
+
+func (m *MTProto) AddCustomServerRequestHandler(handler customHandlerFunc) {
+	m.serverRequestHandlers = append(m.serverRequestHandlers, handler)
 }

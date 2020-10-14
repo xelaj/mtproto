@@ -10,7 +10,6 @@ import (
 	"time"
 
 	bus "github.com/asaskevich/EventBus"
-	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
@@ -74,7 +73,16 @@ type MTProto struct {
 	// привязки к MsgID
 	serviceChannel       chan serialize.TL
 	serviceModeActivated bool
+
+	//! DEPRECATED RecoverFunc используется только до того момента, когда из пакета будут убраны все паники
+	RecoverFunc func(i interface{})
+	// если задан, то в канал пишутся ошибки
+	Warnings chan error
+
+	serverRequestHandlers []customHandlerFunc
 }
+
+type customHandlerFunc = func(i interface{}) bool
 
 type Config struct {
 	AuthKeyFile string
@@ -101,6 +109,7 @@ func NewMTProto(c Config) (*MTProto, error) {
 	m.publicKey = c.PublicKey
 	m.responseChannels = make(map[int64]chan serialize.TL)
 	m.msgsIdDecodeAsVector = make(map[int64]reflect.Type)
+	m.serverRequestHandlers = make([]customHandlerFunc, 0)
 	m.resetAck()
 
 	return m, nil
@@ -150,8 +159,6 @@ func (m *MTProto) CreateConnection() error {
 
 // отправить запрос
 func (m *MTProto) makeRequest(data serialize.TL, as reflect.Type) (serialize.TL, error) {
-	println("sending packet " + reflect.TypeOf(data).String())
-
 	resp, err := m.sendPacketNew(data, as)
 	if err != nil {
 		return nil, errors.Wrap(err, "sending message")
@@ -192,13 +199,18 @@ func (m *MTProto) Disconnect() error {
 func (m *MTProto) startPinging(ctx context.Context) {
 	ticker := time.Tick(60 * time.Second)
 	go func() {
+		defer m.recoverGoroutine()
 		for {
 			select {
 			case <-ctx.Done():
 				return
 			case <-ticker:
 				_, err := m.Ping(0xCADACADA)
-				dry.PanicIfErr(err)
+				if err != nil {
+					if m.Warnings != nil {
+						m.Warnings <- errors.Wrap(err, "ping unsuccsesful")
+					}
+				}
 			}
 		}
 	}()
@@ -206,16 +218,21 @@ func (m *MTProto) startPinging(ctx context.Context) {
 
 func (m *MTProto) startReadingResponses(ctx context.Context) {
 	go func() {
+		defer m.recoverGoroutine()
 		for {
 			select {
 			case <-ctx.Done():
 				return
 			default:
 				data, err := m.readFromConn(ctx)
-				dry.PanicIfErr(err)
+				if err != nil {
+					m.Warnings <- errors.Wrap(err, "reading from connection")
+				}
 
 				response, err := m.decodeRecievedData(data)
-				dry.PanicIfErr(err)
+				if err != nil {
+					m.Warnings <- errors.Wrap(err, "decoding received data")
+				}
 
 				if m.serviceModeActivated {
 					// сервисные сообщения ГАРАНТИРОВАННО в теле содержат TL.
@@ -224,7 +241,9 @@ func (m *MTProto) startReadingResponses(ctx context.Context) {
 					m.serviceChannel <- obj
 				} else {
 					err = m.processResponse(int(m.msgId), int(m.seqNo), response)
-					dry.PanicIfErr(err)
+					if err != nil {
+						m.Warnings <- errors.Wrap(err, "processing response")
+					}
 				}
 			}
 		}
@@ -279,14 +298,11 @@ func (m *MTProto) processResponse(msgId, seqNo int, msg serialize.CommonMessage)
 		println("session created")
 		m.serverSalt = message.ServerSalt
 		err := m.SaveSession()
-		dry.PanicIfErr(err)
-
-	//case *serialize.Ping:
-	//	resp, err := m.makeRequest(&TL_Pong{MsgID: int64(msgId), PingID: message.PingID})
-	//	pp.Println(resp)
-	//	if err != nil {
-	//		return errors.Wrap(err, "processing ping")
-	//	}
+		if err != nil {
+			if m.Warnings != nil {
+				m.Warnings <- errors.Wrap(err, "saving session")
+			}
+		}
 
 	case *serialize.Pong:
 		// игнорим, пришло и пришло, че бубнить то
@@ -297,8 +313,8 @@ func (m *MTProto) processResponse(msgId, seqNo int, msg serialize.CommonMessage)
 		}
 
 	case *serialize.BadMsgNotification:
-		pp.Println(message)
-		panic("bad msg notification")
+		panic(message)
+		return BadMsgErrorFromNative(message)
 
 	case *serialize.RpcResult:
 		obj := message.Obj
@@ -312,11 +328,22 @@ func (m *MTProto) processResponse(msgId, seqNo int, msg serialize.CommonMessage)
 		}
 
 	default:
-		panic("this is not system message: " + reflect.TypeOf(message).String())
+		processed := false
+		for _, f := range m.serverRequestHandlers {
+			processed = f(message)
+			if processed {
+				break
+			}
+		}
+		if !processed {
+			if m.Warnings != nil {
+				m.Warnings <- errors.New("got nonsystem message from server: " + reflect.TypeOf(message).String())
+			}
+		}
 	}
 
 	if (seqNo & 1) != 0 {
-		_, err := m.makeRequest(&serialize.MsgsAck{[]int64{int64(msgId)}}, nil)
+		_, err := m.MakeRequest(&serialize.MsgsAck{MsgIds: []int64{int64(msgId)}})
 		if err != nil {
 			return errors.Wrap(err, "sending ack")
 		}

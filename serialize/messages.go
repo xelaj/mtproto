@@ -32,17 +32,19 @@ type EncryptedMessage struct {
 	MsgKey    []byte
 }
 
-func (msg *EncryptedMessage) Serialize(client MessageInformator, requireToAck bool) []byte {
+func (msg *EncryptedMessage) Serialize(client MessageInformator, requireToAck bool) ([]byte, error) {
 	obj := serializePacket(client, msg.Msg, msg.MsgID, requireToAck)
 	encryptedData, err := ige.Encrypt(obj, client.GetAuthKey())
-	dry.PanicIfErr(err)
+	if err != nil {
+		return nil, errors.Wrap(err, "encrypting")
+	}
 
 	buf := NewEncoder()
 	buf.PutRawBytes(utils.AuthKeyHash(client.GetAuthKey()))
 	buf.PutRawBytes(ige.MessageKey(obj))
 	buf.PutRawBytes(encryptedData)
 
-	return buf.Result()
+	return buf.Result(), nil
 }
 
 func DeserializeEncryptedMessage(data, authKey []byte) (*EncryptedMessage, error) {
@@ -103,15 +105,14 @@ type UnencryptedMessage struct {
 	MsgID int64
 }
 
-func (msg *UnencryptedMessage) Serialize(client MessageInformator) []byte {
-
+func (msg *UnencryptedMessage) Serialize(client MessageInformator) ([]byte, error) {
 	buf := NewEncoder()
 	// authKeyHash, always 0 if unencrypted
 	buf.PutLong(0)
 	buf.PutLong(msg.MsgID)
 	buf.PutInt(int32(len(msg.Msg)))
 	buf.PutRawBytes(msg.Msg)
-	return buf.Result()
+	return buf.Result(), nil
 }
 
 func DeserializeUnencryptedMessage(data []byte) (*UnencryptedMessage, error) {

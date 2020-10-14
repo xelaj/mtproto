@@ -26,7 +26,7 @@ func (m *MTProto) makeAuthKey() error {
 	}
 
 	if nonceFirst.Cmp(res.Nonce.Int) != 0 {
-		return errors.New("Handshake: Wrong nonce")
+		return errors.New("handshake: Wrong nonce")
 	}
 	found := false
 	for _, b := range res.Fingerprints {
@@ -36,7 +36,7 @@ func (m *MTProto) makeAuthKey() error {
 		}
 	}
 	if !found {
-		return errors.New("Handshake: Can't find fingerprint")
+		return errors.New("handshake: Can't find fingerprint")
 	}
 
 	// (encoding) p_q_inner_data
@@ -61,17 +61,19 @@ func (m *MTProto) makeAuthKey() error {
 
 	keyFingerprint := int64(binary.LittleEndian.Uint64(keys.RSAFingerprint(m.publicKey)))
 	dhResponse, err := m.ReqDHParams(nonceFirst, nonceServer, p.Bytes(), q.Bytes(), keyFingerprint, encryptedMessage)
-	dry.PanicIfErr(errors.Wrap(err, "sending ReqDHParams"))
+	if err != nil {
+		return errors.Wrap(err, "sending ReqDHParams")
+	}
 	dhParams, ok := dhResponse.(*serialize.ServerDHParamsOk)
 	if !ok {
-		panic("Handshake: Need ServerDHParamsOk")
+		return errors.New("handshake: Need ServerDHParamsOk")
 	}
 
 	if nonceFirst.Cmp(dhParams.Nonce.Int) != 0 {
-		panic("Handshake: Wrong nonce")
+		return errors.New("handshake: Wrong nonce")
 	}
 	if nonceServer.Cmp(dhParams.ServerNonce.Int) != 0 {
-		panic("Handshake: Wrong server_nonce")
+		return errors.New("handshake: Wrong server_nonce")
 	}
 
 	// проверку по хешу, удаление рандомных байт происходит в этой функции
@@ -117,30 +119,30 @@ func (m *MTProto) makeAuthKey() error {
 	encryptedMessage = ige.EncryptMessageWithTempKeys(clientDHData.Encode(), nonceSecond.Int, nonceServer.Int)
 
 	dhGenStatus, err := m.SetClientDHParams(nonceFirst, nonceServer, encryptedMessage)
-	dry.PanicIfErr(err)
+	if err != nil {
+		return errors.Wrap(err, "sending clientDHParams")
+	}
 
 	dhg, ok := dhGenStatus.(*serialize.DHGenOk)
 	if !ok {
 		return errors.New("Handshake: Need DHGenOk")
 	}
 	if nonceFirst.Cmp(dhg.Nonce.Int) != 0 {
-		panic(fmt.Sprintf("Handshake: Wrong nonce: %v, %v", nonceFirst, dhg.Nonce))
+		return fmt.Errorf("Handshake: Wrong nonce: %v, %v", nonceFirst, dhg.Nonce)
 	}
 	if nonceServer.Cmp(dhg.ServerNonce.Int) != 0 {
-		panic(fmt.Sprintf("Handshake: Wrong server_nonce: %v, %v", nonceServer, dhg.ServerNonce))
+		return fmt.Errorf("Handshake: Wrong server_nonce: %v, %v", nonceServer, dhg.ServerNonce)
 	}
 	if !bytes.Equal(nonceHash1, dhg.NewNonceHash1.Bytes()) {
-		panic(fmt.Sprintf(
-			"Handshake: Wrong new_nonce_hash1: %v, %v",
+		return fmt.Errorf(
+			"handshake: Wrong new_nonce_hash1: %v, %v",
 			hex.EncodeToString(nonceHash1),
 			hex.EncodeToString(dhg.NewNonceHash1.Bytes()),
-		))
+		)
 	}
 	m.serviceModeActivated = false
 
 	// (all ok)
 	err = m.SaveSession()
-	dry.PanicIfErr(err)
-
-	return nil
+	return errors.Wrap(err, "saving session")
 }

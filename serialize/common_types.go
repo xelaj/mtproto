@@ -599,8 +599,8 @@ func (t *MsgsAck) DecodeFrom(d *Decoder) {
 
 type BadMsgNotification struct {
 	BadMsgID    int64
-	MadMsgSeqNo int32
-	ErrorCode   int32
+	BadMsgSeqNo int32
+	Code        int32
 }
 
 func (t *BadMsgNotification) ImplementsBadMsgNotification() {}
@@ -613,15 +613,15 @@ func (t *BadMsgNotification) Encode() []byte {
 	buf := NewEncoder()
 	buf.PutCRC(t.CRC())
 	buf.PutLong(t.BadMsgID)
-	buf.PutInt(t.MadMsgSeqNo)
-	buf.PutInt(t.ErrorCode)
+	buf.PutInt(t.BadMsgSeqNo)
+	buf.PutInt(t.Code)
 	return buf.Result()
 }
 
 func (t *BadMsgNotification) DecodeFrom(d *Decoder) {
 	t.BadMsgID = d.PopLong()
-	t.MadMsgSeqNo = d.PopInt()
-	t.ErrorCode = d.PopInt()
+	t.BadMsgSeqNo = d.PopInt()
+	t.Code = d.PopInt()
 }
 
 type BadServerSalt struct {
