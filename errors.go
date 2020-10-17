@@ -4,10 +4,6 @@ package mtproto
 
 import (
 	"fmt"
-<<<<<<< HEAD
-=======
-	"strconv"
->>>>>>> 🏇 multiple changes
 
 	"github.com/xelaj/mtproto/serialize"
 )
