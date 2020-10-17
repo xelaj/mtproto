@@ -4,8 +4,7 @@ package mtproto
 
 import (
 	"fmt"
-	"strconv"
-	
+
 	"github.com/xelaj/mtproto/serialize"
 )
 
