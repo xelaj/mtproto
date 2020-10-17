@@ -55,11 +55,7 @@ var (
 // исходя из переданного числа в bytestoGetInfo считает количество СЛОВ и отдает количество БАЙТ которые нужно прочитать
 func GetPacketLengthMTProtoCompatible(bytesToGetInfo []byte) (int, error) {
 	if len(bytesToGetInfo) != 1 && len(bytesToGetInfo) != 4 {
-<<<<<<< HEAD
-		panic(fmt.Sprintf("invalid size of bytes. require only 1 or 4, got %d", len(bytesToGetInfo)))
-=======
 		return 0, fmt.Errorf("invalid size of bytes. require only 1 or 4, got %v", len(bytesToGetInfo))
->>>>>>> 🏇 multiple changes
 	}
 
 	if bytesToGetInfo[0] != magicValueSizeMoreThanSingleByte {
