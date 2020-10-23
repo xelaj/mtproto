@@ -34,6 +34,8 @@ func (m *MTProto) LoadSession() (err error) {
 	if errs.IsNotFound(err) {
 		return err
 	}
+	dry.PanicIfErr(err)
+
 	m.authKey = s.Key
 	m.authKeyHash = s.Hash
 	m.serverSalt = int64(binary.LittleEndian.Uint64(s.Salt)) // СОЛЬ ЭТО LONG
