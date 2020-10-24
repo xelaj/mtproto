@@ -79,14 +79,19 @@ func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not 
 
 	client.AddCustomServerRequestHandler(client.handleSpecialRequests())
 
-	resp, err := client.InvokeWithLayer(ApiVersion, &InitConnectionParams{
+	return client, nil
+}
+
+func GetInvokeWithLayer(cl *Client, c ClientConfig, hgc HelpGetConfigParams) (*Config, error) {
+
+	resp, err := cl.InvokeWithLayer(ApiVersion, &InitConnectionParams{
 		ApiID:          int32(c.AppID),
 		DeviceModel:    c.DeviceModel,
 		SystemVersion:  c.SystemVersion,
 		AppVersion:     c.AppVersion,
 		SystemLangCode: "en", // can't be edited, cause docs says that a single possible parameter
 		LangCode:       "en",
-		Query:          &HelpGetConfigParams{},
+		Query:          &hgc,
 	})
 
 	if err != nil {
@@ -98,9 +103,8 @@ func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not 
 		return nil, errors.New("got wrong response: " + reflect.TypeOf(resp).String())
 	}
 
-	pp.Println(config)
+	return config, nil
 
-	return client, nil
 }
 
 func (c *Client) handleSpecialRequests() func(interface{}) bool {
