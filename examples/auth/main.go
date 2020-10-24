@@ -2,7 +2,10 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
+	"github.com/xelaj/mtproto"
+	"github.com/xelaj/mtproto/telegram/srp"
 	"os"
 	"strings"
 
@@ -41,7 +44,38 @@ func main() {
 	code, _ := bufio.NewReader(os.Stdin).ReadString('\n')
 	code = strings.Replace(code, "\n", "", -1)
 
-	pp.Println(client.AuthSignIn(&telegram.AuthSignInParams{
+	auth, err := client.AuthSignIn(&telegram.AuthSignInParams{
 		phoneNumber, setCode.PhoneCodeHash, code,
-	}))
+	})
+	if err == nil {
+		pp.Println(auth)
+
+		fmt.Println("Auth completed")
+		return
+	}
+
+	// 2fa password
+
+	mtError, ok := errors.Unwrap(err).(*mtproto.ErrResponseCode)
+	if !ok || mtError.Message != "SESSION_PASSWORD_NEEDED" {
+		pp.Println(err)
+		return
+	}
+
+	accountPassword, err := client.AccountGetPassword()
+	dry.PanicIfErr(err)
+	pp.Println(accountPassword)
+
+	fmt.Print("2FA password:")
+	password, _ := bufio.NewReader(os.Stdin).ReadString('\n')
+	password = strings.Replace(password, "\n", "", -1)
+
+	inputCheck, err := srp.GetInputCheckPassword(password, accountPassword, srp.Random256Bytes())
+	dry.PanicIfErr(err)
+
+	auth2, err := client.AuthCheckPassword(&telegram.AuthCheckPasswordParams{
+		Password: inputCheck,
+	})
+	dry.PanicIfErr(err)
+	pp.Println(auth2)
 }

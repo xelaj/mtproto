@@ -14,5 +14,6 @@ require (
 	github.com/vikyd/zero v0.0.0-20190921142904-0f738d0bc858
 	github.com/xelaj/errs v0.0.0-20200831133608-d1c11863e019
 	github.com/xelaj/go-dry v0.0.0-20201010171752-598e686efb39
+	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 )
