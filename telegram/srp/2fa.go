@@ -19,25 +19,12 @@ func GetInputCheckPassword(password string, accountPassword *telegram.AccountPas
 		return &telegram.InputCheckPasswordEmpty{}, nil
 	}
 
-	// У CurrentAlgo должен быть этот самый тип, с длинным названием алгоритма
-	// https://github.com/tdlib/td/blob/f9009cbc01e9c4c77d31120a61feb9c639c6aeda/td/telegram/AuthManager.cpp#L537
-	current, ok := accountPassword.CurrentAlgo.(*telegram.PasswordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow)
-	if !ok {
-		return nil, errors.New("invalid CurrentAlgo type")
-	}
-
-	if dhHandshakeCheckConfigIsError(current.G, current.P) {
-		return &telegram.InputCheckPasswordEmpty{}, errors.New("receive invalid config g")
+	current, err := validateCurrentAlgo(accountPassword)
+	if err != nil {
+		return nil, err
 	}
 
 	p := bytesToBig(current.P)
-	gbBig := bytesToBig(accountPassword.SrpB)
-	zero := big.NewInt(0)
-
-	if zero.Cmp(gbBig) != -1 || gbBig.Cmp(p) != -1 || len(accountPassword.SrpB) < 248 || len(accountPassword.SrpB) > 256 {
-		return &telegram.InputCheckPasswordEmpty{}, errors.New("receive invalid value of B")
-	}
-
 	g := big.NewInt(int64(current.G))
 	gBytes := pad256(g.Bytes())
 
@@ -66,8 +53,8 @@ func GetInputCheckPassword(password string, accountPassword *telegram.AccountPas
 	kv := k.Mul(k, v).Mod(k, p)
 
 	// t = (g_b - k_v) % p
-	t := new(big.Int).Sub(gbBig, kv)
-	if t.Cmp(zero) == -1 {
+	t := bytesToBig(accountPassword.SrpB)
+	if t.Sub(t, kv).Cmp(big.NewInt(0)) == -1 {
 		t.Add(t, p)
 	}
 
@@ -96,6 +83,28 @@ func GetInputCheckPassword(password string, accountPassword *telegram.AccountPas
 
 func Random256Bytes() []byte {
 	return dry.RandomBytes(256)
+}
+
+func validateCurrentAlgo(accountPassword *telegram.AccountPassword) (*telegram.PasswordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow, error) {
+	// У CurrentAlgo должен быть этот самый тип, с длинным названием алгоритма
+	// https://github.com/tdlib/td/blob/f9009cbc01e9c4c77d31120a61feb9c639c6aeda/td/telegram/AuthManager.cpp#L537
+	current, ok := accountPassword.CurrentAlgo.(*telegram.PasswordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow)
+	if !ok {
+		return nil, errors.New("invalid CurrentAlgo type")
+	}
+
+	if dhHandshakeCheckConfigIsError(current.G, current.P) {
+		return nil, errors.New("receive invalid config g")
+	}
+
+	p := bytesToBig(current.P)
+	gb := bytesToBig(accountPassword.SrpB)
+
+	if big.NewInt(0).Cmp(gb) != -1 || gb.Cmp(p) != -1 || len(accountPassword.SrpB) < 248 || len(accountPassword.SrpB) > 256 {
+		return nil, errors.New("receive invalid value of B")
+	}
+
+	return current, nil
 }
 
 func saltingHashing(data, salt []byte) []byte {
