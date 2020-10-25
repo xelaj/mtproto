@@ -3,7 +3,6 @@ package srp
 import (
 	"crypto/sha256"
 	"crypto/sha512"
-	"encoding/binary"
 	"errors"
 	"github.com/xelaj/go-dry"
 	"github.com/xelaj/mtproto/telegram"
@@ -11,11 +10,15 @@ import (
 	"math/big"
 )
 
-// GetInputCheckPassword считает нужные для 2FA хеши, работает аналогично функции из tdlib:
-// https://github.com/tdlib/td/blob/f9009cbc01e9c4c77d31120a61feb9c639c6aeda/td/telegram/PasswordManager.cpp#L72
+// GetInputCheckPassword считает нужные для 2FA хеши, описан в доке телеграма:
+// https://core.telegram.org/api/srp#checking-the-password-with-srp
 //
 // В random256Bytes нужно передать рандомные 256 байт, можно использовать Random256Bytes().
-func GetInputCheckPassword(passwordStr string, accountPassword *telegram.AccountPassword, random256Bytes []byte) (telegram.InputCheckPasswordSRP, error) {
+func GetInputCheckPassword(password string, accountPassword *telegram.AccountPassword, random256Bytes []byte) (telegram.InputCheckPasswordSRP, error) {
+	if password == "" {
+		return &telegram.InputCheckPasswordEmpty{}, nil
+	}
+
 	// У CurrentAlgo должен быть этот самый тип, с длинным названием алгоритма
 	// https://github.com/tdlib/td/blob/f9009cbc01e9c4c77d31120a61feb9c639c6aeda/td/telegram/AuthManager.cpp#L537
 	current, ok := accountPassword.CurrentAlgo.(*telegram.PasswordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow)
@@ -23,97 +26,71 @@ func GetInputCheckPassword(passwordStr string, accountPassword *telegram.Account
 		return nil, errors.New("invalid CurrentAlgo type")
 	}
 
-	password := []byte(passwordStr)
-	clientSalt := current.Salt1
-	serverSalt := current.Salt2
-	g := current.G
-	p := current.P
-	B := accountPassword.SrpB
-	id := accountPassword.SrpId
-
-	if len(password) == 0 {
-		return &telegram.InputCheckPasswordEmpty{}, nil
-	}
-
-	if dhHandshakeCheckConfigIsError(g, p) {
+	if dhHandshakeCheckConfigIsError(current.G, current.P) {
 		return &telegram.InputCheckPasswordEmpty{}, errors.New("receive invalid config g")
 	}
 
-	p_bn := new(big.Int).SetBytes(p)
-	B_bn := new(big.Int).SetBytes(B)
+	p := bytesToBig(current.P)
+	gbBig := bytesToBig(accountPassword.SrpB)
 	zero := big.NewInt(0)
 
-	if zero.Cmp(B_bn) != -1 || B_bn.Cmp(p_bn) != -1 || len(B) < 248 || len(B) > 256 {
+	if zero.Cmp(gbBig) != -1 || gbBig.Cmp(p) != -1 || len(accountPassword.SrpB) < 248 || len(accountPassword.SrpB) > 256 {
 		return &telegram.InputCheckPasswordEmpty{}, errors.New("receive invalid value of B")
 	}
 
-	g_bn := big.NewInt(int64(g))
-	g_padded := make([]byte, 256)
-	binary.BigEndian.PutUint32(g_padded[256-4:], uint32(g))
+	g := big.NewInt(int64(current.G))
+	gBytes := pad256(g.Bytes())
 
-	x := passwordHash2(password, clientSalt, serverSalt)
-	x_bn := new(big.Int).SetBytes(x)
+	// random 2048-bit number a
+	a := bytesToBig(random256Bytes)
 
-	a_bn := new(big.Int).SetBytes(random256Bytes)
+	// g_a = pow(g, a) mod p
+	ga := pad256(bigExp(g, a, p).Bytes())
 
-	A_bn := new(big.Int).Exp(g_bn, a_bn, p_bn)
-	A := pad256(A_bn.Bytes())
+	// g_b = srp_B
+	gb := pad256(accountPassword.SrpB)
 
-	B_pad := make([]byte, 256-len(B))
+	// u = H(g_a | g_b)
+	u := bytesToBig(calcSHA256(ga, gb))
 
-	u256 := sha256.New()
-	u256.Write(A)
-	u256.Write(B_pad)
-	u256.Write(B)
-	u := u256.Sum(nil)
-	u_bn := new(big.Int).SetBytes(u)
+	// x = PH2(password, salt1, salt2)
+	x := bytesToBig(passwordHash2([]byte(password), current.Salt1, current.Salt2))
 
-	k256 := sha256.New()
-	k256.Write(p)
-	k256.Write(g_padded)
-	k := k256.Sum(nil)
-	k_bn := new(big.Int).SetBytes(k)
+	// v = pow(g, x) mod p
+	v := bigExp(g, x, p)
 
-	v_bn := new(big.Int).Exp(g_bn, x_bn, p_bn)
+	// k = (k * v) mod p
+	k := bytesToBig(calcSHA256(current.P, gBytes))
 
-	kv_bn := new(big.Int).Mul(k_bn, v_bn)
-	kv_bn.Mod(kv_bn, p_bn)
+	// k_v = (k * v) % p
+	kv := k.Mul(k, v).Mod(k, p)
 
-	t_bn := new(big.Int).Sub(B_bn, kv_bn)
-	if t_bn.Cmp(zero) == -1 {
-		t_bn.Add(t_bn, p_bn)
+	// t = (g_b - k_v) % p
+	t := new(big.Int).Sub(gbBig, kv)
+	if t.Cmp(zero) == -1 {
+		t.Add(t, p)
 	}
 
-	exp_bn := new(big.Int).Mul(u_bn, x_bn)
-	exp_bn.Add(exp_bn, a_bn)
+	// s_a = pow(t, a + u * x) mod p
+	sa := pad256(bigExp(t, u.Mul(u, x).Add(u, a), p).Bytes())
 
-	S_bn := new(big.Int).Exp(t_bn, exp_bn, p_bn)
-	S := pad256(S_bn.Bytes())
-	K := sha256.Sum256(S)
+	// k_a = H(s_a)
+	ka := calcSHA256(sa)
 
-	h1 := sha256.Sum256(p)
-	h2 := sha256.Sum256(g_padded)
-	for i := range h1 {
-		h1[i] ^= h2[i]
-	}
-
-	clientSalt256 := sha256.Sum256(clientSalt)
-	serverSalt256 := sha256.Sum256(serverSalt)
-
-	M256 := sha256.New()
-	M256.Write(h1[:])
-	M256.Write(clientSalt256[:])
-	M256.Write(serverSalt256[:])
-	M256.Write(A)
-	M256.Write(pad256(B))
-	M256.Write(K[:])
-
-	M := M256.Sum(nil)
+	// M1 := H(H(p) xor H(g) | H2(salt1) | H2(salt2) | g_a | g_b | k_a)
+	M1 := calcSHA256(
+		xorBytes(calcSHA256(current.P), calcSHA256(gBytes)),
+		calcSHA256(current.Salt1),
+		calcSHA256(current.Salt2),
+		ga,
+		gb,
+		ka,
+	)
 
 	return &telegram.InputCheckPasswordSRPObj{
-		SrpId: id,
-		A:     A,
-		M1:    M[:],
+		SrpId: accountPassword.SrpId,
+		A:     ga,
+		M1:    M1,
 	}, nil
 }
 
@@ -122,12 +99,7 @@ func Random256Bytes() []byte {
 }
 
 func saltingHashing(data, salt []byte) []byte {
-	h := sha256.New()
-	h.Write(salt)
-	h.Write(data)
-	h.Write(salt)
-
-	return h.Sum(nil)
+	return calcSHA256(salt, data, salt)
 }
 
 func passwordHash1(password, salt1, salt2 []byte) []byte {
@@ -151,6 +123,30 @@ func pad256(b []byte) []byte {
 	copy(tmp[256-len(b):], b)
 
 	return tmp
+}
+
+func xorBytes(a, b []byte) []byte {
+	c := make([]byte, len(a))
+	for i := range c {
+		c[i] = a[i] ^ b[i]
+	}
+	return c
+}
+
+func calcSHA256(arrays ...[]byte) []byte {
+	h := sha256.New()
+	for _, arr := range arrays {
+		h.Write(arr)
+	}
+	return h.Sum(nil)
+}
+
+func bytesToBig(b []byte) *big.Int {
+	return new(big.Int).SetBytes(b)
+}
+
+func bigExp(x, y, m *big.Int) *big.Int {
+	return new(big.Int).Exp(x, y, m)
 }
 
 func dhHandshakeCheckConfigIsError(gInt int32, primeStr []byte) bool {
