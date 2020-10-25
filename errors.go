@@ -4,31 +4,98 @@ package mtproto
 
 import (
 	"fmt"
-<<<<<<< HEAD
-=======
+	"reflect"
 	"strconv"
->>>>>>> 🏇 multiple changes
+	"strings"
 
+	"github.com/xelaj/go-dry"
+
+	"github.com/pkg/errors"
 	"github.com/xelaj/mtproto/serialize"
 )
 
 type ErrResponseCode struct {
-	Code        int
-	Message     string
-	Description string
+	Code           int
+	Message        string
+	Description    string
+	AdditionalInfo interface{} // some errors has additional data like timeout seconds, dc id etc.
 }
 
 func RpcErrorToNative(r *serialize.RpcError) error {
-	desc, ok := errorMessages[r.ErrorMessage]
+	nativeErrorName, additionalData := TryExpandError(r.ErrorMessage)
+
+	desc, ok := errorMessages[nativeErrorName]
 	if !ok {
-		desc = r.ErrorMessage
+		desc = nativeErrorName
+	}
+
+	if additionalData != nil {
+		desc = fmt.Sprintf(desc, additionalData)
 	}
 
 	return &ErrResponseCode{
-		Code:        int(r.ErrorCode),
-		Message:     r.ErrorMessage,
-		Description: desc,
+		Code:           int(r.ErrorCode),
+		Message:        nativeErrorName,
+		Description:    desc,
+		AdditionalInfo: additionalData,
 	}
+}
+
+type prefixSuffix struct {
+	prefix string
+	suffix string
+	kind   reflect.Kind // int string bool etc.
+}
+
+var specificErrors = []prefixSuffix{
+	{"EMAIL_UNCONFIRMED_", "", reflect.Int},
+	{"FILE_MIGRATE_", "", reflect.Int},
+	{"FILE_PART_", "_MISSING", reflect.Int},
+	{"FLOOD_TEST_PHONE_WAIT_", "", reflect.Int},
+	{"FLOOD_WAIT_", "", reflect.Int},
+	{"INTERDC_", "_CALL_ERROR", reflect.Int},
+	{"INTERDC_", "_CALL_RICH_ERROR", reflect.Int},
+	{"NETWORK_MIGRATE_", "", reflect.Int},
+	{"PASSWORD_TOO_FRESH_", "", reflect.Int},
+	{"PHONE_MIGRATE_", "", reflect.Int},
+	{"SESSION_TOO_FRESH_", "", reflect.Int},
+	{"SLOWMODE_WAIT_", "", reflect.Int},
+	{"STATS_MIGRATE_", "", reflect.Int},
+	{"TAKEOUT_INIT_DELAY_", "", reflect.Int},
+	{"USER_MIGRATE_", "", reflect.Int},
+}
+
+func TryExpandError(errStr string) (nativeErrorName string, additionalData interface{}) {
+	var choosedPrefixSuffix *prefixSuffix
+
+	for _, errCase := range specificErrors {
+		if strings.HasPrefix(errStr, errCase.prefix) && strings.HasSuffix(errStr, errCase.suffix) {
+			choosedPrefixSuffix = &errCase //nolint:gosec cause we need nil if not found
+			break
+		}
+	}
+
+	if choosedPrefixSuffix != nil {
+		return errStr, nil // common error, returning
+	}
+
+	nativeErrorName = choosedPrefixSuffix.prefix + "X" + choosedPrefixSuffix.suffix
+	trimmedData := strings.TrimSuffix(strings.TrimPrefix(errStr, choosedPrefixSuffix.prefix), choosedPrefixSuffix.suffix)
+
+	switch v := choosedPrefixSuffix.kind; v {
+	case reflect.Int:
+		var err error
+		additionalData, err = strconv.Atoi(trimmedData)
+		dry.PanicIfErr(errors.Wrap(err, "error of parsing expected int value"))
+
+	case reflect.String:
+		additionalData = trimmedData
+
+	default:
+		panic("couldn't parse this type: " + v.String())
+	}
+
+	return nativeErrorName, additionalData
 }
 
 func (e *ErrResponseCode) Error() string {
@@ -122,7 +189,6 @@ var errorMessages = map[string]string{
 	"DH_G_A_INVALID":                      "g_a invalid",
 	"EMAIL_HASH_EXPIRED":                  "The email hash expired and cannot be used to verify it",
 	"EMAIL_INVALID":                       "The given email is invalid",
-	"EMAIL_UNCONFIRMED_X":                 "Email unconfirmed, the length of the code must be {code_length}",
 	"EMOTICON_EMPTY":                      "The emoticon field cannot be empty",
 	"EMOTICON_INVALID":                    "The specified emoticon cannot be used or was not a emoticon",
 	"ENCRYPTED_MESSAGE_INVALID":           "Encrypted message invalid",
@@ -139,7 +205,6 @@ var errorMessages = map[string]string{
 	"FIELD_NAME_EMPTY":                    "The field with the name FIELD_NAME is missing",
 	"FIELD_NAME_INVALID":                  "The field with the name FIELD_NAME is invalid",
 	"FILE_ID_INVALID":                     "The provided file id is invalid. Make sure all parameters are present, have the correct type and are not empty (ID, access hash, file reference, thumb size ...)",
-	"FILE_MIGRATE_X":                      "The file to be accessed is currently stored in DC {new_dc}",
 	"FILE_PARTS_INVALID":                  "The number of file parts is invalid",
 	"FILE_PART_0_MISSING":                 "File part 0 missing",
 	"FILE_PART_EMPTY":                     "The provided file part is empty",
@@ -147,13 +212,10 @@ var errorMessages = map[string]string{
 	"FILE_PART_LENGTH_INVALID":            "The length of a file part is invalid",
 	"FILE_PART_SIZE_CHANGED":              "The file part size (chunk size) cannot change during upload",
 	"FILE_PART_SIZE_INVALID":              "The provided file part size is invalid",
-	"FILE_PART_X_MISSING":                 "Part {which} of the file is missing from storage",
 	"FILE_REFERENCE_EMPTY":                "The file reference must exist to access the media and it cannot be empty",
 	"FILE_REFERENCE_EXPIRED":              "The file reference has expired and is no longer valid or it belongs to self-destructing media and cannot be resent",
 	"FILEREF_UPGRADE_NEEDED":              "The file reference needs to be refreshed before being used again",
 	"FIRSTNAME_INVALID":                   "The first name is invalid",
-	"FLOOD_TEST_PHONE_WAIT_X":             "A wait of {seconds} seconds is required in the test servers",
-	"FLOOD_WAIT_X":                        "A wait of {seconds} seconds is required",
 	"FOLDER_ID_EMPTY":                     "The folder you tried to delete was already empty",
 	"FOLDER_ID_INVALID":                   "The folder you tried to use was not valid",
 	"FRESH_CHANGE_ADMINS_FORBIDDEN":       "Recently logged-in users cannot add or change admins",
@@ -174,8 +236,6 @@ var errorMessages = map[string]string{
 	"INPUT_METHOD_INVALID":                "The invoked method does not exist anymore or has never existed",
 	"INPUT_REQUEST_TOO_LONG":              "The input request was too long. This may be a bug in the library as it can occur when serializing more bytes than it should (like appending the vector constructor code at the end of a message)",
 	"INPUT_USER_DEACTIVATED":              "The specified user was deleted",
-	"INTERDC_X_CALL_ERROR":                "An error occurred while communicating with DC {dc}",
-	"INTERDC_X_CALL_RICH_ERROR":           "A rich error occurred while communicating with DC {dc}",
 	"INVITE_HASH_EMPTY":                   "The invite hash is empty",
 	"INVITE_HASH_EXPIRED":                 "The chat the user tried to join has expired and is not valid anymore",
 	"INVITE_HASH_INVALID":                 "The invite hash is invalid",
@@ -213,7 +273,6 @@ var errorMessages = map[string]string{
 	"MT_SEND_QUEUE_TOO_LONG":              "<DOESN'T HAVE ANY INFO ABOUT ERROR MT_SEND_QUEUE_TOO_LONG>",
 	"NEED_CHAT_INVALID":                   "The provided chat is invalid",
 	"NEED_MEMBER_INVALID":                 "The provided member is invalid or does not exist (for example a thumb size)",
-	"NETWORK_MIGRATE_X":                   "The source IP address is associated with DC {new_dc}",
 	"NEW_SALT_INVALID":                    "The new salt is invalid",
 	"NEW_SETTINGS_INVALID":                "The new settings are invalid",
 	"OFFSET_INVALID":                      "The given offset was invalid, it must be divisible by 1KB. See https://core.telegram.org/api/files#downloading-files",
@@ -229,7 +288,6 @@ var errorMessages = map[string]string{
 	"PASSWORD_HASH_INVALID":               "The password (and thus its hash value) you entered is invalid",
 	"PASSWORD_MISSING":                    "The account must have 2-factor authentication enabled (a password) before this method can be used",
 	"PASSWORD_REQUIRED":                   "The account must have 2-factor authentication enabled (a password) before this method can be used",
-	"PASSWORD_TOO_FRESH_X":                "The password was added too recently and {seconds} seconds must pass before using the method",
 	"PAYMENT_PROVIDER_INVALID":            "The payment provider was not recognized or its token was invalid",
 	"PEER_FLOOD":                          "Too many requests",
 	"PEER_ID_INVALID":                     "An invalid Peer was used. Make sure to pass the right peer type",
@@ -241,7 +299,6 @@ var errorMessages = map[string]string{
 	"PHONE_CODE_EXPIRED":                  "The confirmation code has expired",
 	"PHONE_CODE_HASH_EMPTY":               "The phone code hash is missing",
 	"PHONE_CODE_INVALID":                  "The phone code entered was invalid",
-	"PHONE_MIGRATE_X":                     "The phone number a user is trying to use for authorization is associated with DC {new_dc}",
 	"PHONE_NUMBER_APP_SIGNUP_FORBIDDEN":   "New accounts can be registrated only from official apps, this app doesn't allow it.",
 	"PHONE_NUMBER_BANNED":                 "The used phone number has been banned from Telegram and cannot be used anymore. Maybe check https://www.telegram.org/faq_spam",
 	"PHONE_NUMBER_FLOOD":                  "You asked for the code too many times.",
@@ -300,13 +357,10 @@ var errorMessages = map[string]string{
 	"SESSION_EXPIRED":                     "The authorization has expired",
 	"SESSION_PASSWORD_NEEDED":             "Two-steps verification is enabled and a password is required",
 	"SESSION_REVOKED":                     "The authorization has been invalidated, because of the user terminating all sessions",
-	"SESSION_TOO_FRESH_X":                 "The session logged in too recently and {seconds} seconds must pass before calling the method",
 	"SHA256_HASH_INVALID":                 "The provided SHA256 hash is invalid",
 	"SHORTNAME_OCCUPY_FAILED":             "An error occurred when trying to register the short-name used for the sticker pack. Try a different name",
-	"SLOWMODE_WAIT_X":                     "A wait of {seconds} seconds is required before sending another message in this chat",
 	"START_PARAM_EMPTY":                   "The start parameter is empty",
 	"START_PARAM_INVALID":                 "Start parameter invalid",
-	"STATS_MIGRATE_X":                     "The channel statistics must be fetched from DC {dc}",
 	"STICKERSET_INVALID":                  "The provided sticker set is invalid",
 	"STICKERS_EMPTY":                      "No sticker provided",
 	"STICKER_DOCUMENT_INVALID":            "The sticker file was invalid (this file has failed Telegram internal checks, make sure to use the correct format and comply with https://core.telegram.org/animated_stickers)",
@@ -318,7 +372,6 @@ var errorMessages = map[string]string{
 	"STICKER_PNG_NOPNG":                   "Stickers must be a png file but the used image was not a png",
 	"STORAGE_CHECK_FAILED":                "Server storage check failed",
 	"STORE_INVALID_SCALAR_TYPE":           "<DOESN'T HAVE ANY INFO ABOUT ERROR STORE_INVALID_SCALAR_TYPE>",
-	"TAKEOUT_INIT_DELAY_X":                "A wait of {seconds} seconds is required before being able to initiate the takeout",
 	"TAKEOUT_INVALID":                     "The takeout session has been invalidated by another data export session",
 	"TAKEOUT_REQUIRED":                    "You must initialize a takeout request first",
 	"TEMP_AUTH_KEY_EMPTY":                 "No temporary auth key provided",
@@ -353,7 +406,6 @@ var errorMessages = map[string]string{
 	"USER_IS_BLOCKED":                     "User is blocked",
 	"USER_IS_BOT":                         "Bots can't send messages to other bots",
 	"USER_KICKED":                         "This user was kicked from this supergroup/channel",
-	"USER_MIGRATE_X":                      "The user whose identity is being used to execute queries is associated with DC {new_dc}",
 	"USER_NOT_MUTUAL_CONTACT":             "The provided user is not a mutual contact",
 	"USER_NOT_PARTICIPANT":                "The target user is not a member of the specified megagroup or channel",
 	"USER_PRIVACY_RESTRICTED":             "The user's privacy settings do not allow you to do this",
@@ -368,6 +420,23 @@ var errorMessages = map[string]string{
 	"WEBPAGE_MEDIA_EMPTY":                 "Webpage media empty",
 	"WORKER_BUSY_TOO_LONG_RETRY":          "Telegram workers are too busy to respond immediately",
 	"YOU_BLOCKED_USER":                    "You blocked this user",
+
+	// errors with additional data
+	"EMAIL_UNCONFIRMED_X":       "Email unconfirmed, the length of the code must be %v",
+	"FILE_MIGRATE_X":            "The file to be accessed is currently stored in DC %v",
+	"FILE_PART_X_MISSING":       "Part %v of the file is missing from storage",
+	"FLOOD_TEST_PHONE_WAIT_X":   "A wait of %v seconds is required in the test servers",
+	"FLOOD_WAIT_X":              "A wait of %v seconds is required",
+	"INTERDC_X_CALL_ERROR":      "An error occurred while communicating with DC %v",
+	"INTERDC_X_CALL_RICH_ERROR": "A rich error occurred while communicating with DC %v",
+	"NETWORK_MIGRATE_X":         "The source IP address is associated with DC %v",
+	"PASSWORD_TOO_FRESH_X":      "The password was added too recently and %v seconds must pass before using the method",
+	"PHONE_MIGRATE_X":           "The phone number a user is trying to use for authorization is associated with DC %v",
+	"SESSION_TOO_FRESH_X":       "The session logged in too recently and %v seconds must pass before calling the method",
+	"SLOWMODE_WAIT_X":           "A wait of %v seconds is required before sending another message in this chat",
+	"STATS_MIGRATE_X":           "The channel statistics must be fetched from DC %v",
+	"TAKEOUT_INIT_DELAY_X":      "A wait of %v seconds is required before being able to initiate the takeout",
+	"USER_MIGRATE_X":            "The user whose identity is being used to execute queries is associated with DC %v",
 }
 
 type BadMsgError struct {

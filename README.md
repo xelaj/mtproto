@@ -196,11 +196,25 @@ Please read [contributing guide](https://github.com/xelaj/mtproto/blob/master/do
 
 ## TODO
 
-[ ]
+[x] Basic MTProto implementation
+[x] Implement all Methods for latest layer
+[x] Make TL Encoder/Decoder
+[ ] Get away from panics in parsing TL
+[ ] Support MTProxy
+[ ] Support socks5 as well
+[ ] Multiple tests
+[ ] Write amazing docs
 
 ## Authors
 
 * **Richard Cooper** <[rcooper.xelaj@protonmail.com](mailto:rcooper.xelaj@protonmail.com)>
+* **Anton Larionov** <[Anton.Larionov@infobip.com](mailto:Anton.Larionov@infobip.com)>
+* **Roman Timofeev** <[timofeev@uteka.ru](mailto:timofeev@uteka.ru)>
+* **Bo-Yi Wu** <[appleboy.tw@gmail.com](mailto:appleboy.tw@gmail.com)>
+* **0xflotus** <[0xflotus@gmail.com](mailto:0xflotus@gmail.com)>
+* **Luclu7** <[me@luclu7.fr](mailto:me@luclu7.fr)>
+* **Vladimir Stolyarov** <[xakep6666@gmail.com](mailto:xakep6666@gmail.com)>
+* **rs** <[yuiop1955@mail.ru](mailto:yuiop1955@mail.ru)>
 
 ## License
 
