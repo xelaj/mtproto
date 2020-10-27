@@ -158,6 +158,25 @@ type StructObject struct {
 	Fields  []*Param
 }
 
+func (s *StructObject) HaveOptionalArgs() bool {
+	for _, arg := range s.Fields {
+		if arg.IsOptional {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *StructObject) MaxFlagBit() int {
+	max := 0
+	for _, arg := range s.Fields {
+		if max < arg.BitToTrigger {
+			max = arg.BitToTrigger
+		}
+	}
+	return max
+}
+
 type FuncObject struct {
 	CRCCode     uint32
 	Name        string
@@ -165,6 +184,14 @@ type FuncObject struct {
 	HasOptional bool
 	TooManyArgs bool
 	Returns     *MethodResponse
+}
+
+func (f *FuncObject) ParamsStruct() *StructObject {
+	return &StructObject{
+		Name:    f.Name + "Params",
+		CRCCode: f.CRCCode,
+		Fields:  f.Arguments,
+	}
 }
 
 type FileDeclarations struct {

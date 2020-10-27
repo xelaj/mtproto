@@ -3,13 +3,14 @@ package main
 import (
 	"encoding/binary"
 	"encoding/hex"
+	"fmt"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/willf/pad"
-	"github.com/xelaj/go-dry"
 )
 
 type DefinitionObject struct {
@@ -128,7 +129,9 @@ func ParseFunction(line string) (*DefinitionMethod, error) {
 					typ = strings.TrimPrefix(typ, triggeringBitStr)
 
 					triggeringBit, err := strconv.Atoi(triggeringBitStr)
-					dry.PanicIfErr(err)
+					if err != nil {
+						return nil, fmt.Errorf("triggeringBitStr is not integer")
+					}
 
 					realType := strings.TrimPrefix(typ, "?")
 					p.Type = realType
@@ -162,12 +165,18 @@ func ParseFunction(line string) (*DefinitionMethod, error) {
 		response.IsList = true
 	}
 
-	return &DefinitionMethod{
+	def := &DefinitionMethod{
 		CRC:        crcCode,
 		MethodName: methodName,
 		Response:   response,
 		Parameters: params,
-	}, nil
+	}
+
+	sort.Slice(def.Parameters, func(i, j int) bool {
+		return def.Parameters[i].Name < def.Parameters[j].Name
+	})
+
+	return def, nil
 }
 
 func ParseType(line string) (*DefinitionObject, error) {
@@ -249,12 +258,14 @@ func ParseType(line string) (*DefinitionObject, error) {
 					typ = strings.TrimPrefix(typ, "flags.")
 					triggeringBitStr := regexp.MustCompilePOSIX("^[0-9]+").FindString(typ)
 					if triggeringBitStr == "" {
-						errors.New("expected number of bit for triggering")
+						return nil, errors.New("expected number of bit for triggering")
 					}
 
 					typ = strings.TrimPrefix(typ, triggeringBitStr)
 					triggeringBit, err := strconv.Atoi(triggeringBitStr)
-					dry.PanicIfErr(err)
+					if err != nil {
+						return nil, fmt.Errorf("triggeringBitStr is not integer")
+					}
 
 					realType := strings.TrimPrefix(typ, "?")
 
@@ -278,12 +289,18 @@ func ParseType(line string) (*DefinitionObject, error) {
 	_interface = strings.TrimLeftFunc(_interface, func(r rune) bool { return r == '=' || r == ' ' })
 	_interface = strings.TrimSuffix(_interface, ";")
 
-	return &DefinitionObject{
+	def := &DefinitionObject{
 		CRC:         crcCode,
 		Constructor: constructor,
 		Interface:   _interface,
 		Parameters:  params,
-	}, nil
+	}
+
+	sort.Slice(def.Parameters, func(i, j int) bool {
+		return def.Parameters[i].Name < def.Parameters[j].Name
+	})
+
+	return def, nil
 }
 
 type TLSchema struct {
@@ -296,7 +313,11 @@ func ParseTL(data string) (*TLSchema, error) {
 	methods := make([]*DefinitionMethod, 0)
 	definingFuncs := false
 	for lineNumber, line := range strings.Split(data, "\n") {
-		lineNumber++ // т.к. начинаем с нуля, а строчки то с 1
+		line = strings.TrimSpace(line)
+		if len(line) == 0 {
+			continue
+		}
+
 		if strings.Contains(line, "---functions---") {
 			definingFuncs = true // функции отдельно отрабатываем
 			continue
@@ -305,6 +326,7 @@ func ParseTL(data string) (*TLSchema, error) {
 			definingFuncs = false // типы судя по докам могут и после функций идти
 			continue
 		}
+
 		var err error
 		if definingFuncs {
 			var method *DefinitionMethod
@@ -321,11 +343,21 @@ func ParseTL(data string) (*TLSchema, error) {
 		}
 
 		if err != nil {
-			return nil, errors.Wrapf(err, "line %d", lineNumber)
+			return nil, errors.Wrapf(err, "line %d", lineNumber+1)
 		}
 	}
-	return &TLSchema{
+	s := &TLSchema{
 		Objects: objects,
 		Methods: methods,
-	}, nil
+	}
+
+	sort.Slice(s.Objects, func(i, j int) bool {
+		return s.Objects[i].Interface < s.Objects[j].Interface
+	})
+
+	sort.Slice(s.Methods, func(i, j int) bool {
+		return s.Methods[i].MethodName < s.Methods[j].MethodName
+	})
+
+	return s, nil
 }

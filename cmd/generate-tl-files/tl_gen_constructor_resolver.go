@@ -37,7 +37,7 @@ func GenerateConstructorRouter(file *jen.File, data *FileStructure) error {
 	}
 
 	cases = append(cases, jen.Default().Block(
-		jen.Return(jen.Nil(), jen.False(), jen.Qual("github.com/xelaj/errs", "NotFound").Call(jen.Lit("constructorID"), jen.Id("constructorID"))),
+		jen.Return(jen.Nil(), jen.False(), jen.Qual("fmt", "Errorf").Call(jen.Lit("unknown constructorID: %d"), jen.Id("constructorID"))),
 	))
 
 	f := jen.Func().Id("GenerateStructByConstructor").Params(jen.Id("constructorID").Uint32()).
