@@ -7,12 +7,13 @@ import (
 	"strconv"
 )
 
+// строчка в tl
 type definition struct {
-	Name       string
-	CRC        uint32
-	Params     []Parameter
-	EqType     string
-	IsEqVector bool
+	Name       string      // название в самом начале
+	CRC        uint32      // crc после #
+	Params     []Parameter // параметры после crc
+	EqType     string      // тип после параметров и знака равенства
+	IsEqVector bool        // тип после знака равенства векторный?
 }
 
 func ParseSchema(source string) (Schema, error) {
@@ -68,6 +69,9 @@ func ParseSchema(source string) (Schema, error) {
 			continue
 		}
 
+		// если мы спарсили объект
+		// тип после знака равенства это интерфейс
+		// и он не может быть вектором
 		if def.IsEqVector {
 			panic("wut")
 		}
@@ -90,44 +94,64 @@ func parseDefinition(cur *Cursor) (def definition, err error) {
 	cur.SkipSpaces()
 
 	{
-		typSpace, err := cur.ReadAt(' ')
+		// блок тупо для проверки записей типа таких:
+		// int ? = Int;
+		//    ↑ - читаем до этого пробела и смотрим тип
+		typSpace, err := cur.ReadAt(' ') // typSpace = int
 		if err != nil {
 			return def, fmt.Errorf("parse def row: %w", err)
 		}
 
+		// если он в excludedTypes
 		if _, found := excludedTypes[typSpace]; found {
+			// дочитываем строку до конца
 			if _, err := cur.ReadAt(';'); err != nil {
 				return def, err
 			}
 
-			cur.Skip(1)
+			cur.Skip(1) // пропускаем ';'
+			// говорим что прочитали хуйню
 			return def, errExcluded{typSpace}
 		}
 
 		cur.Unread(len(typSpace))
 	}
 
-	def.Name, err = cur.ReadAt('#')
+	// ipPort#d433ad73 ipv4:int port:int = IpPort;
+	//       ↑ - читаем до решеточки, получаем название
+	def.Name, err = cur.ReadAt('#') // def.Name = ipPort
 	if err != nil {
 		return def, fmt.Errorf("parse object name: %w", err)
 	}
 
+	// проверяем название на наличие в блоклисте
 	if _, found := excludedDefinitions[def.Name]; found {
+		// дочитываем строку до конца
 		if _, err := cur.ReadAt(';'); err != nil {
 			return def, err
 		}
 
-		cur.Skip(1)
+		cur.Skip(1) // пропускаем ';'
+		// говорим что прочитали хуйню
 		return def, errExcluded{def.Name}
 	}
 
 	cur.Skip(1) // skip #
+
+	//        ↓ - курсор здесь
+	// ipPort#d433ad73 ipv4:int port:int = IpPort;
+	//                ↑ - читаем до пробела, получаем crc
 	crcString, err := cur.ReadAt(' ')
 	if err != nil {
 		return def, fmt.Errorf("parse object crc: %w", err)
 	}
 
 	cur.SkipSpaces()
+
+	//                 ↓ - курсор здесь
+	// ipPort#d433ad73 ipv4:int port:int = IpPort;
+
+	// читаем параметры
 	for !cur.IsNext("=") {
 		param, err := parseParam(cur)
 		if err != nil {
@@ -143,6 +167,9 @@ func parseDefinition(cur *Cursor) (def definition, err error) {
 	}
 
 	cur.SkipSpaces()
+	// читаем тип после знака =
+	//                                     ↓ - курсор здесь
+	// ipPort#d433ad73 ipv4:int port:int = IpPort;
 	if cur.IsNext("Vector") {
 		cur.Skip(1) // skip <
 		def.EqType, err = cur.ReadAt('>')
@@ -171,15 +198,24 @@ func parseDefinition(cur *Cursor) (def definition, err error) {
 
 func parseParam(cur *Cursor) (param Parameter, err error) {
 	cur.SkipSpaces()
-
+	// ↓ - курсор здесь
+	// correct_answers:flags.0?Vector<bytes> foo:bar
+	//                ↑ - читаем до двоеточия, получаем название параметра
 	param.Name, err = cur.ReadAt(':')
 	if err != nil {
 		return param, fmt.Errorf("read param name: %w", err)
 	}
-	cur.Skip(1)
+	cur.Skip(1) // skip :
 
+	//                  ↓ - курсор здесь
+	//  correct_answers:flags.0?Vector<bytes> foo:bar
+
+	// если после ':' идет flags.
 	if cur.IsNext("flags.") {
-		//fmt.Println("read digit:", string(cur.source[cur.pos-1:cur.pos+10]))
+		//                       ↓ - курсор здесь
+		// correct_answers:flags.0?Vector<bytes> foo:bar
+
+		// читаем цифры
 		r, err := cur.ReadDigits() //read bit index, must be digit
 		if err != nil {
 			return param, fmt.Errorf("read param bitflag: %w", err)
@@ -190,13 +226,20 @@ func parseParam(cur *Cursor) (param Parameter, err error) {
 			return param, fmt.Errorf("invalid bitflag index: %s", string(r))
 		}
 
+		//                        ↓ - курсор здесь
+		// correct_answers:flags.0?Vector<bytes> foo:bar
+		// ожидаем знак '?'
 		if !cur.IsNext("?") {
 			return param, fmt.Errorf("expected '?'")
 		}
 		param.IsOptional = true
 	}
 
+	// читаем тип параметра
 	if cur.IsNext("Vector") {
+		//                               ↓ - курсор здесь
+		// correct_answers:flags.0?Vector<bytes> foo:bar
+
 		cur.Skip(1) // skip <
 		param.IsVector = true
 		param.Type, err = cur.ReadAt('>')
@@ -206,6 +249,7 @@ func parseParam(cur *Cursor) (param Parameter, err error) {
 
 		cur.Skip(1) // skip >
 	} else {
+		// если не вектор, просто вычитываем тип до пробела
 		param.Type, err = cur.ReadAt(' ')
 		if err != nil {
 			return param, fmt.Errorf("read param type: %w", err)
