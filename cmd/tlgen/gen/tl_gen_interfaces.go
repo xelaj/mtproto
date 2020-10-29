@@ -6,16 +6,16 @@ import (
 	"github.com/dave/jennifer/jen"
 )
 
-func (g *Generator) generateInterfaces(f *jen.File, data *internalSchema) error {
-	keys := make([]string, 0, len(data.Types))
-	for key := range data.Types {
+func (g *Generator) generateInterfaces(f *jen.File) error {
+	keys := make([]string, 0, len(g.schema.Types))
+	for key := range g.schema.Types {
 		keys = append(keys, key)
 	}
 
 	sort.Strings(keys)
 
 	for _, i := range keys {
-		structs := data.Types[i]
+		structs := g.schema.Types[i]
 
 		iface := jen.Type().Id(g.goify(i)).Interface(
 			jen.Qual("github.com/xelaj/mtproto/serialize", "TL"),
@@ -27,10 +27,8 @@ func (g *Generator) generateInterfaces(f *jen.File, data *internalSchema) error 
 			jen.Line(),
 		)
 
-		//fmt.Println("data.Types_key[interface{}]: ", i)
-
 		for _, _struct := range structs {
-			str, err := g.generateStruct(_struct, data)
+			str, err := g.generateStruct(_struct)
 			if err != nil {
 				return err
 			}
@@ -42,24 +40,21 @@ func (g *Generator) generateInterfaces(f *jen.File, data *internalSchema) error 
 
 			implFunc := jen.Func().Params(jen.Id("*" + structName)).Id("Implements" + g.goify(i)).Params().Block()
 
-			encoderFunc, err := g.generateEncodeFunc(_struct, data)
+			encoderFunc, err := g.generateEncodeFunc(_struct)
 			if err != nil {
 				return err
 			}
 
-			encoderNonReflectFunc, err := g.generateEncodeNonreflectFunc(_struct, data)
+			encoderNonReflectFunc, err := g.generateEncodeNonreflectFunc(_struct)
 			if err != nil {
 				return err
 			}
 
-			validateFn, err := g.generateStructValidatorFunc(_struct, data)
+			validateFn, err := g.generateStructValidatorFunc(_struct)
 			if err != nil {
 				return err
 			}
 
-			_ = crcFunc
-			_ = encoderFunc
-			_ = encoderNonReflectFunc
 			f.Add(
 				str,
 				jen.Line(),
@@ -81,6 +76,7 @@ func (g *Generator) generateInterfaces(f *jen.File, data *internalSchema) error 
 				jen.Line(),
 			)
 
+			// старые комменты, не ебу
 			// part of DecodeFram(d *serialize.Decoder)
 			// don't touch, we try to make it more cool
 			//* calls = make([]jen.Code, 0)

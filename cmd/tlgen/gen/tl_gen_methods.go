@@ -2,52 +2,43 @@ package gen
 
 import (
 	"fmt"
-	"sort"
 
 	"github.com/dave/jennifer/jen"
 )
 
-func (g *Generator) generateMethods(f *jen.File, data *internalSchema) error {
-	sort.Slice(data.Methods, func(i, j int) bool {
-		return data.Methods[i].Name < data.Methods[j].Name
-	})
+func (g *Generator) generateMethods(f *jen.File) error {
+	for _, method := range g.schema.Methods {
+		params := createParamsStructFromMethod(method)
 
-	for _, method := range data.Methods {
-		paramsStruct, err := g.generateStruct(createParamsStructFromMethod(method), data)
+		paramsStruct, err := g.generateStruct(params)
 		if err != nil {
 			return fmt.Errorf("generate method params struct: %s: %w", method.Name, err)
 		}
 
-		methodName := g.goify(method.Name)
-		typeName := methodName + "Params"
-
-		crcFunc := jen.Func().Params(jen.Id("e").Id("*" + typeName)).Id("CRC").Params().Uint32().Block(
+		crcFunc := jen.Func().Params(jen.Id("e").Id("*" + g.goify(params.Name))).Id("CRC").Params().Uint32().Block(
 			jen.Return(jen.Lit(method.CRC)),
 		)
 
-		validatorFunc, err := g.generateStructValidatorFunc(createParamsStructFromMethod(method), data)
+		validatorFunc, err := g.generateStructValidatorFunc(params)
 		if err != nil {
 			return fmt.Errorf("generate validator func for method params %s: %w", method.Name, err)
 		}
 
-		encodeFunc, err := g.generateEncodeFunc(createParamsStructFromMethod(method), data)
+		encoderFunc, err := g.generateEncodeFunc(params)
 		if err != nil {
 			return fmt.Errorf("generate encode func for method %s: %w", method.Name, err)
 		}
 
-		encodeNonreflectFunc, err := g.generateEncodeNonreflectFunc(createParamsStructFromMethod(method), data)
+		encoderNonreflectFunc, err := g.generateEncodeNonreflectFunc(params)
 		if err != nil {
 			return fmt.Errorf("generate encode func for method %s: %w", method.Name, err)
 		}
 
-		callerFunc, err := g.generateMethodCallerFunc(method, data)
+		callerFunc, err := g.generateMethodCallerFunc(method)
 		if err != nil {
 			return fmt.Errorf("generate caller func for method %s: %w", method.Name, err)
 		}
-		_ = callerFunc
-		_ = encodeFunc
-		_ = encodeNonreflectFunc
-		_ = crcFunc
+
 		f.Add(
 			paramsStruct,
 			jen.Line(),
@@ -58,10 +49,10 @@ func (g *Generator) generateMethods(f *jen.File, data *internalSchema) error {
 			validatorFunc,
 			jen.Line(),
 			jen.Line(),
-			encodeFunc,
+			encoderFunc,
 			jen.Line(),
 			jen.Line(),
-			encodeNonreflectFunc,
+			encoderNonreflectFunc,
 			jen.Line(),
 			jen.Line(),
 			callerFunc,

@@ -6,10 +6,10 @@ import (
 	"github.com/dave/jennifer/jen"
 )
 
-func (g *Generator) generateEnumDefinitions(file *jen.File, data *internalSchema) error {
-	enumTypes := make([]string, len(data.Enums))
+func (g *Generator) generateEnumDefinitions(file *jen.File) error {
+	enumTypes := make([]string, len(g.schema.Enums))
 	enumIndex := 0
-	for _type := range data.Enums {
+	for _type := range g.schema.Enums {
 		enumTypes[enumIndex] = _type
 		enumIndex++
 	}
@@ -17,7 +17,7 @@ func (g *Generator) generateEnumDefinitions(file *jen.File, data *internalSchema
 	sort.Strings(enumTypes)
 
 	for _, enumType := range enumTypes {
-		values := data.Enums[enumType]
+		values := g.schema.Enums[enumType]
 		sort.Slice(values, func(i, j int) bool {
 			return values[i].Name < values[j].Name
 		})
@@ -56,7 +56,7 @@ func (g *Generator) generateSpecificEnum(enumType string, enumValues []enum) []j
 		jen.Return(jen.Uint32().Call(jen.Id("e"))),
 	)
 
-	encodeFunc := jen.Func().Params(jen.Id("e").Id(typeID)).Id("Encode").Params().Index().Byte().Block(
+	encoderFunc := jen.Func().Params(jen.Id("e").Id(typeID)).Id("Encode").Params().Index().Byte().Block(
 		jen.Id("buf").Op(":=").Qual("github.com/xelaj/mtproto/serialize", "NewEncoder").Call(),
 		jen.Id("buf.PutCRC").Call(jen.Uint32().Call(jen.Id("e"))),
 		jen.Line(),
@@ -70,13 +70,14 @@ func (g *Generator) generateSpecificEnum(enumType string, enumValues []enum) []j
 		crcFunc,
 		jen.Line(),
 		jen.Line(),
-		encodeFunc,
+		encoderFunc,
 		jen.Line(),
 		jen.Line(),
 	)
 
 	return total
 
+	// старые комменты, не ебу
 	/*
 		!type InputWallPaper uint32
 		!

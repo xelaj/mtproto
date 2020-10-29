@@ -19,8 +19,8 @@ type enum struct {
 	CRC  uint32
 }
 
-func (g *Generator) createInternalSchema(schema tlparser.Schema) (*internalSchema, error) {
-	res := &internalSchema{
+func createInternalSchema(schema tlparser.Schema) (*internalSchema, error) {
+	ischem := &internalSchema{
 		Enums:                    make(map[string][]enum),
 		Types:                    make(map[string][]tlparser.Object),
 		SingleInterfaceTypes:     make([]tlparser.Object, 0),
@@ -49,7 +49,7 @@ func (g *Generator) createInternalSchema(schema tlparser.Schema) (*internalSchem
 				}
 			}
 
-			res.Enums[interfaceName] = enums
+			ischem.Enums[interfaceName] = enums
 			continue
 		}
 
@@ -61,19 +61,8 @@ func (g *Generator) createInternalSchema(schema tlparser.Schema) (*internalSchem
 		//? конструктор этот тип (интерфейс), если нет, то идет дальше. ВОЗМОЖНО это сделано чисто для оптимизации, хуй его знает. Но другого объяснения, почему в методы
 		//? отдают вот прям только интерфейсы и ничего больше, у меня вариантов тупо нет
 		if interfaceIsSpecific(objects) {
-			if len(objects) != 1 {
-				panic("defined as single object, but in real has multiple constructors")
-			}
-
-			// singleObject := &tlparser.Object{
-			// 	Name:       objects[0].Name,
-			// 	CRC:        objects[0].CRC,
-			// 	Parameters: objects[0].Parameters,
-			// 	Interface:  objects[0].Interface,
-			// }
-
-			res.SingleInterfaceTypes = append(res.SingleInterfaceTypes, objects[0])
-			res.SingleInterfaceCanonical[interfaceName] = objects[0].Name
+			ischem.SingleInterfaceTypes = append(ischem.SingleInterfaceTypes, objects[0])
+			ischem.SingleInterfaceCanonical[interfaceName] = objects[0].Name
 			delete(reversedObjects, interfaceName)
 			continue
 		}
@@ -94,26 +83,26 @@ func (g *Generator) createInternalSchema(schema tlparser.Schema) (*internalSchem
 				Interface:  obj.Interface,
 			}
 		}
-		res.Types[interfaceName] = resultStructs
+		ischem.Types[interfaceName] = resultStructs
 	}
 
 	// погнали по методам
 	for _, method := range schema.Methods {
-		res.Methods = append(res.Methods, method)
+		ischem.Methods = append(ischem.Methods, method)
 	}
 
-	return res, nil
+	return ischem, nil
 }
 
-func (g *Generator) getAllConstructors(s *internalSchema) (structs, enums map[uint32]string) {
+func (g *Generator) getAllConstructors() (structs, enums map[uint32]string) {
 	structs = make(map[uint32]string)
-	for _, items := range s.Types {
+	for _, items := range g.schema.Types {
 		for _, _struct := range items {
 			structs[_struct.CRC] = g.goify(_struct.Name)
 		}
 	}
-	for _, _struct := range s.SingleInterfaceTypes {
-		for k, v := range s.SingleInterfaceCanonical {
+	for _, _struct := range g.schema.SingleInterfaceTypes {
+		for k, v := range g.schema.SingleInterfaceCanonical {
 			if v == _struct.Name {
 				structs[_struct.CRC] = g.goify(k)
 			}
@@ -122,7 +111,7 @@ func (g *Generator) getAllConstructors(s *internalSchema) (structs, enums map[ui
 	}
 
 	enums = make(map[uint32]string)
-	for _, items := range s.Enums {
+	for _, items := range g.schema.Enums {
 		for _, enum := range items {
 			enums[enum.CRC] = g.goify(enum.Name)
 		}

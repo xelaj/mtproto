@@ -7,8 +7,8 @@ import (
 	"github.com/dave/jennifer/jen"
 )
 
-func (g *Generator) generateConstructorRouter(file *jen.File, data *internalSchema) error {
-	structs, enums := g.getAllConstructors(data)
+func (g *Generator) generateConstructorRouter(file *jen.File) error {
+	structs, enums := g.getAllConstructors()
 
 	sortedCrcs := make([]uint32, 0)
 	for crc := range structs {

@@ -42,5 +42,10 @@ func root(tlfile, outdir string) error {
 		return fmt.Errorf("parse schema file: %w", err)
 	}
 
-	return gen.NewGenerator(schema, outdir).Generate()
+	g, err := gen.NewGenerator(schema, outdir)
+	if err != nil {
+		return err
+	}
+
+	return g.Generate()
 }

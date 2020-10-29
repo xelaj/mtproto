@@ -7,7 +7,7 @@ func createParamsStructFromMethod(method tlparser.Method) tlparser.Object {
 		Name:       method.Name + "Params",
 		CRC:        method.CRC,
 		Parameters: method.Parameters,
-		Interface:  "<???>",
+		Interface:  "<???>", // эта херня нигде не всплывает, так что пофик
 	}
 }
 

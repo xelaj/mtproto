@@ -9,7 +9,7 @@ import (
 	"github.com/xelaj/mtproto/cmd/tlgen/tlparser"
 )
 
-func (g *Generator) generateStruct(str tlparser.Object, data *internalSchema) (*jen.Statement, error) {
+func (g *Generator) generateStruct(str tlparser.Object) (*jen.Statement, error) {
 	fields := make([]jen.Code, 0, len(str.Parameters))
 
 	for _, field := range str.Parameters {
@@ -48,20 +48,20 @@ func (g *Generator) generateStruct(str tlparser.Object, data *internalSchema) (*
 			//! если в опциональном флаге указан true, то это значение true уходит в битфлаги и его типа десериализовать не надо!!! ебать!!! ЕБАТЬ!!!
 			valueInsideFlag = true
 		default:
-			if _, ok := data.Enums[typ]; ok {
+			if _, ok := g.schema.Enums[typ]; ok {
 				f = f.Id(g.goify(typ))
 				break
 			}
-			if _, ok := data.Types[typ]; ok {
+			if _, ok := g.schema.Types[typ]; ok {
 				f = f.Id(g.goify(typ))
 				break
 			}
-			if _, ok := data.SingleInterfaceCanonical[typ]; ok {
+			if _, ok := g.schema.SingleInterfaceCanonical[typ]; ok {
 				f = f.Id("*" + g.goify(typ))
 				break
 			}
 
-			//pp.Fprintln(os.Stderr, data)
+			//pp.Fprintln(os.Stderr, g.schema)
 			panic("пробовали обработать '" + field.Type + "'")
 		}
 
@@ -86,7 +86,7 @@ func (g *Generator) generateStruct(str tlparser.Object, data *internalSchema) (*
 	), nil
 }
 
-func (g *Generator) generateEncodeFunc(str tlparser.Object, data *internalSchema) (*jen.Statement, error) {
+func (g *Generator) generateEncodeFunc(str tlparser.Object) (*jen.Statement, error) {
 	calls := make([]jen.Code, 0)
 	if len(str.Parameters) > 0 {
 		// calls = append(calls,
@@ -109,59 +109,55 @@ func (g *Generator) generateEncodeFunc(str tlparser.Object, data *internalSchema
 
 	putCalls := make([]jen.Code, 0)
 
-	// sort.Slice(str.Parameters, func(i, j int) bool {
-	// 	return str.Parameters[i].Name < str.Parameters[j].Name
-	// })
-
 	for _, field := range str.Parameters {
-		ЗНАЧЕНИЕ_В_ФЛАГЕ := false
+		valueInsideFlag := false
 		typ := field.Type
 		name := strcase.ToCamel(field.Name)
 		if name == "Flags" && typ == "bitflags" {
 			name = "__flagsPosition"
 		}
 
-		putFuncId := ""
+		putFuncID := ""
 		switch typ {
 		case "Bool":
-			putFuncId = "buf.PutBool"
+			putFuncID = "buf.PutBool"
 		case "long":
-			putFuncId = "buf.PutLong"
+			putFuncID = "buf.PutLong"
 		case "double":
-			putFuncId = "buf.PutDouble"
+			putFuncID = "buf.PutDouble"
 		case "int":
-			putFuncId = "buf.PutInt"
+			putFuncID = "buf.PutInt"
 		case "string":
-			putFuncId = "buf.PutString"
+			putFuncID = "buf.PutString"
 		case "bytes":
-			putFuncId = "buf.PutMessage"
+			putFuncID = "buf.PutMessage"
 		case "true":
 			//! ИСКЛЮЧЕНИЕ БЛЯТЬ! ИСКЛЮЧЕНИЕ!!!
 			//! если в опциональном флаге указан true, то это значение true уходит в битфлаги и его типа десериализовать не надо!!! ебать!!! ЕБАТЬ!!!
-			ЗНАЧЕНИЕ_В_ФЛАГЕ = true
+			valueInsideFlag = true
 		default:
-			putFuncId = "buf.PutRawBytes"
+			putFuncID = "buf.PutRawBytes"
 		}
 
 		if field.IsVector {
-			putFuncId = "buf.PutVector"
+			putFuncID = "buf.PutVector"
 		}
 
 		putFunc := jen.Null()
 		switch {
 		case name == "__flagsPosition":
 			putFunc = jen.Id("buf.PutUint").Call(jen.Id("flag"))
-		case ЗНАЧЕНИЕ_В_ФЛАГЕ:
+		case valueInsideFlag:
 			// не делаем ничего, значение уже заложили в флаг
-		case putFuncId == "buf.PutRawBytes":
-			putFunc = jen.Id(putFuncId).Call(jen.Id("e." + name).Dot("Encode").Call())
-		case putFuncId != "":
-			putFunc = jen.Id(putFuncId).Call(jen.Id("e." + name))
+		case putFuncID == "buf.PutRawBytes":
+			putFunc = jen.Id(putFuncID).Call(jen.Id("e." + name).Dot("Encode").Call())
+		case putFuncID != "":
+			putFunc = jen.Id(putFuncID).Call(jen.Id("e." + name))
 		default:
 			panic("putFincID is empty!")
 		}
 
-		if field.IsOptional && !ЗНАЧЕНИЕ_В_ФЛАГЕ {
+		if field.IsOptional && !valueInsideFlag {
 			putFunc = jen.If(jen.Op("!").Qual("github.com/vikyd/zero", "IsZeroVal").Call(jen.Id("e." + strcase.ToCamel(field.Name)))).Block(
 				putFunc,
 			)
@@ -228,7 +224,7 @@ func (g *Generator) generateEncodeFunc(str tlparser.Object, data *internalSchema
 	), nil
 }
 
-func (g *Generator) generateEncodeNonreflectFunc(str tlparser.Object, data *internalSchema) (*jen.Statement, error) {
+func (g *Generator) generateEncodeNonreflectFunc(str tlparser.Object) (*jen.Statement, error) {
 	calls := make([]jen.Code, 0)
 	if len(str.Parameters) > 0 {
 		calls = append(calls,
@@ -254,30 +250,30 @@ func (g *Generator) generateEncodeNonreflectFunc(str tlparser.Object, data *inte
 			name = "__flagsPosition"
 		}
 
-		putFuncId := ""
+		putFuncID := ""
 		switch typ {
 		case "Bool":
-			putFuncId = "buf.PutBool"
+			putFuncID = "buf.PutBool"
 		case "long":
-			putFuncId = "buf.PutLong"
+			putFuncID = "buf.PutLong"
 		case "double":
-			putFuncId = "buf.PutDouble"
+			putFuncID = "buf.PutDouble"
 		case "int":
-			putFuncId = "buf.PutInt"
+			putFuncID = "buf.PutInt"
 		case "string":
-			putFuncId = "buf.PutString"
+			putFuncID = "buf.PutString"
 		case "bytes":
-			putFuncId = "buf.PutMessage"
+			putFuncID = "buf.PutMessage"
 		case "true":
 			//! ИСКЛЮЧЕНИЕ БЛЯТЬ! ИСКЛЮЧЕНИЕ!!!
 			//! если в опциональном флаге указан true, то это значение true уходит в битфлаги и его типа десериализовать не надо!!! ебать!!! ЕБАТЬ!!!
 			valueInsideFlag = true
 		default:
-			putFuncId = "buf.PutRawBytes"
+			putFuncID = "buf.PutRawBytes"
 		}
 
 		if field.IsVector {
-			putFuncId = "buf.PutVector"
+			putFuncID = "buf.PutVector"
 		}
 
 		putFunc := jen.Null()
@@ -286,16 +282,16 @@ func (g *Generator) generateEncodeNonreflectFunc(str tlparser.Object, data *inte
 			putFunc = jen.Id("buf.PutUint").Call(jen.Id("flag"))
 		case valueInsideFlag:
 			// не делаем ничего, значение уже заложили в флаг
-		case putFuncId == "buf.PutRawBytes":
-			putFunc = jen.Id(putFuncId).Call(jen.Id("e." + name).Dot("Encode").Call())
-		case putFuncId != "":
-			putFunc = jen.Id(putFuncId).Call(jen.Id("e." + name))
+		case putFuncID == "buf.PutRawBytes":
+			putFunc = jen.Id(putFuncID).Call(jen.Id("e." + name).Dot("Encode").Call())
+		case putFuncID != "":
+			putFunc = jen.Id(putFuncID).Call(jen.Id("e." + name))
 		default:
 			panic("putFincID is empty!")
 		}
 
 		if field.IsOptional && !valueInsideFlag {
-			checkStmt, err := g.createZeroValCheckStmt(field, data)
+			checkStmt, err := g.createZeroValueCheckStmt(field)
 			if err != nil {
 				kek := jen.Op("!").Qual("github.com/vikyd/zero", "IsZeroVal").Call(jen.Id("e." + strcase.ToCamel(field.Name)))
 				fmt.Println("goodv:", kek)
@@ -311,7 +307,6 @@ func (g *Generator) generateEncodeNonreflectFunc(str tlparser.Object, data *inte
 	}
 
 	if haveOptionalParams(str.Parameters) {
-		// string это fieldname
 		sortedOptionalValues := make([][]tlparser.Parameter, maxBitflag(str.Parameters)+1)
 		for _, field := range str.Parameters {
 			if !field.IsOptional {
@@ -342,17 +337,11 @@ func (g *Generator) generateEncodeNonreflectFunc(str tlparser.Object, data *inte
 					statements.Add(jen.Op("||"))
 				}
 
-				checkStmt, err := g.createZeroValCheckStmt(field, data)
+				checkStmt, err := g.createZeroValueCheckStmt(field)
 				if err != nil {
 					kek := jen.Op("!").Qual("github.com/vikyd/zero", "IsZeroVal").Call(jen.Id("e." + strcase.ToCamel(field.Name))).GoString()
-					fmt.Println("goodv:", kek)
-					panic(err)
+					return nil, fmt.Errorf("bad zero value check stmt: %w (good example: %s)", err, kek)
 				}
-
-				// if field.Name == "documents" && field.Type == "Document" {
-				// 	pp.Println(str)
-				// 	panic("done")
-				// }
 
 				statements.Add(checkStmt)
 			}
@@ -382,7 +371,7 @@ func (g *Generator) generateEncodeNonreflectFunc(str tlparser.Object, data *inte
 	), nil
 }
 
-func (g *Generator) generateMethodCallerFunc(method tlparser.Method, data *internalSchema) (*jen.Statement, error) {
+func (g *Generator) generateMethodCallerFunc(method tlparser.Method) (*jen.Statement, error) {
 	resp := createParamsStructFromMethod(method)
 	maximumPositionalArguments := 0
 	if haveOptionalParams(resp.Parameters) {
@@ -411,7 +400,7 @@ func (g *Generator) generateMethodCallerFunc(method tlparser.Method, data *inter
 
 	assertedType := g.goify(method.Response.Type)
 
-	if _, ok := data.SingleInterfaceCanonical[method.Response.Type]; ok {
+	if _, ok := g.schema.SingleInterfaceCanonical[method.Response.Type]; ok {
 		assertedType = "*" + assertedType
 	}
 
@@ -442,7 +431,6 @@ func (g *Generator) generateMethodCallerFunc(method tlparser.Method, data *inter
 		jen.Line(),
 		jen.List(jen.Id("resp"), jen.Id("ok")).Op(":=").Id("data").Assert(jen.Id(assertedType)),
 		jen.If(jen.Op("!").Id("ok")).Block(
-			//jen.Panic(jen.Lit("got invalid response type: ").Op("+").Qual("reflect", "TypeOf").Call(jen.Id("data")).Dot("String").Call()),
 			jen.Err().Op(":=").Qual("fmt", "Errorf").Call(jen.Lit(methodName+": got invalid response type: %T"), jen.Id("data")),
 			jen.Comment(
 				jen.Return(
@@ -461,53 +449,69 @@ func (g *Generator) generateMethodCallerFunc(method tlparser.Method, data *inter
 	), nil
 }
 
-func (g *Generator) generateStructValidatorFunc(str tlparser.Object, data *internalSchema) (*jen.Statement, error) {
+func (g *Generator) generateStructValidatorFunc(str tlparser.Object) (*jen.Statement, error) {
 	checks := make([]jen.Code, 0)
 	for _, field := range str.Parameters {
 		if field.IsOptional {
-			_, isStruct := data.SingleInterfaceCanonical[field.Type]
-			_, isIface := data.Types[field.Type]
-			if !isStruct && !isIface {
+			_, isStruct := g.schema.SingleInterfaceCanonical[field.Type]
+			_, isIface := g.schema.Types[field.Type]
+			isBuiltin := !isStruct && !isIface
+
+			// если поле - опциональный билтин
+			// не проверяем его
+			if isBuiltin {
 				continue
 			}
+
+			// если поле - опциональный НЕ билтин (т.е. структура или интерфейс)
+			// нужно сначала проверить его на nil
+			//
+			// если оно nil - не валидируем его т.к. оно опционально
+			// если оно НЕ nil - выполняем валидацию
 		}
 
-		fv, err := g.createFieldValidation(field, data, false)
+		validateStmt, err := g.createFieldValidation(field, false)
 		if err != nil {
 			return nil, err
 		}
 
-		if fv == nil {
+		if validateStmt == nil {
 			continue
 		}
 
-		checks = append(checks, fv)
+		checks = append(checks, validateStmt)
 		checks = append(checks, jen.Line())
 	}
 
-	checks = append(checks, jen.Return(jen.Id("nil")))
-	structName := g.goify(str.Name)
-	return jen.Func().Params(jen.Id("e").Id("*" + structName)).Id("Validate").Params().Params(jen.Error()).Block(
+	// если все валидации прошли, отдаем nil
+	checks = append(checks, jen.Return(jen.Nil()))
+
+	return jen.Func().Params(jen.Id("e").Id("*" + g.goify(str.Name))).Id("Validate").Params().Params(jen.Error()).Block(
 		checks...,
 	), nil
 }
 
-func (g *Generator) createFieldValidation(field tlparser.Parameter, data *internalSchema, insideRange bool) (jen.Code, error) {
-	name := g.goify(field.Name)
-	direct := "e." + name
+func (g *Generator) createFieldValidation(field tlparser.Parameter, insideRange bool) (jen.Code, error) {
+	// название проверяемого филда без префикса структуры
+	// (нужно для ошибок)
+	goname := g.goify(field.Name)
+
+	// филд с префиксом структуры
+	// юзается непосредственно для обращения к полю
+	direct := "e." + goname
+
+	// если проверка идет внтури итерации
 	if insideRange {
 		direct = "item"
 	}
-	typ := field.Type
 
 	if field.IsVector {
-		name = g.goify(field.Name)
-		direct := "e." + name
-
+		// делаем проверку на длину слайса
 		checkLen := jen.If(jen.Len(jen.Id(direct)).Op("==").Id("0")).Block(
-			jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("field '" + name + "' is not set"))),
+			jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("field '" + goname + "' is not set"))),
 		).Comment("slice_len_check")
 
+		// копируем текущий параметр, но без вектора
 		cp := tlparser.Parameter{
 			Name:         field.Name,
 			Type:         field.Type,
@@ -516,14 +520,15 @@ func (g *Generator) createFieldValidation(field tlparser.Parameter, data *intern
 			IsVector:     false,
 		}
 
-		fv, err := g.createFieldValidation(cp, data, true)
+		// мутим для него валидатор, чтобы юзать внутри итерации
+		validateStmt, err := g.createFieldValidation(cp, true)
 		if err != nil {
 			return nil, err
 		}
 
-		if fv != nil {
+		if validateStmt != nil {
 			iterCheck := jen.For(jen.Id("_").Op(",").Id("item").Op(":=").Range().Id(direct).Block(
-				fv,
+				validateStmt,
 			)).Comment("subitem_check")
 
 			return jen.Add(checkLen, jen.Line(), iterCheck, jen.Line()), nil
@@ -533,39 +538,33 @@ func (g *Generator) createFieldValidation(field tlparser.Parameter, data *intern
 	}
 
 	zeroval := ""
-	switch typ {
+	switch field.Type {
 	case "Bool":
 		zeroval = "false"
 	case "long", "double", "int":
 		zeroval = "0"
 	case "string":
-		zeroval = "\"\""
+		zeroval = `""`
 	case "bytes":
 		return jen.If(jen.Len(jen.Id(direct)).Op("==").Id("0")).Block(
-			jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("field '" + name + "' is not set"))),
+			jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("field '" + goname + "' is not set"))),
 		).Comment("byte_slice_check"), nil
 	case "bitflags":
 		return nil, nil
 	case "true":
 		zeroval = "false"
-		//panic("owwwooo22")
 	default:
-		if !insideRange {
-			name = g.goify(field.Name)
-			direct = "e." + name
-		}
-
-		if _, ok := data.Enums[typ]; ok {
+		if _, ok := g.schema.Enums[field.Type]; ok {
 			// видимо енумы всегда uint32?
 			return jen.If(
 				jen.Id(direct).Op("==").Id("0"),
 			).Block(
-				jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("field '" + name + "' is not set"))),
+				jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("field '" + goname + "' is not set"))),
 			).Comment("enum_check"), nil
 		}
 
-		_, isStruct := data.SingleInterfaceCanonical[field.Type]
-		_, isIface := data.Types[field.Type]
+		_, isStruct := g.schema.SingleInterfaceCanonical[field.Type]
+		_, isIface := g.schema.Types[field.Type]
 		if isStruct || isIface {
 			typComment := "struct"
 			if isIface {
@@ -580,7 +579,7 @@ func (g *Generator) createFieldValidation(field tlparser.Parameter, data *intern
 						jen.Err().Op(":=").Id(direct+".Validate").Call(),
 						jen.Err().Op("!=").Nil(),
 					).Block(
-						jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("field '"+name+"': %w"), jen.Id("err"))),
+						jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("field '"+goname+"': %w"), jen.Id("err"))),
 					),
 				).Comment("optional_" + typComment + "_valid_check")
 
@@ -590,14 +589,14 @@ func (g *Generator) createFieldValidation(field tlparser.Parameter, data *intern
 			nilcheck := jen.If(
 				jen.Id(direct).Op("==").Nil(),
 			).Block(
-				jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("field '" + name + "' required"))),
+				jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("field '" + goname + "' required"))),
 			).Comment("required_" + typComment + "_nil_check")
 
 			validcheck := jen.If(
 				jen.Err().Op(":=").Id(direct+".Validate").Call(),
 				jen.Err().Op("!=").Nil(),
 			).Block(
-				jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("field '"+name+"': %w"), jen.Id("err"))),
+				jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("field '"+goname+"': %w"), jen.Id("err"))),
 			).Comment("required_" + typComment + "_valid_check")
 
 			return nilcheck.Line().Add(validcheck), nil
@@ -619,24 +618,28 @@ func (g *Generator) createFieldValidation(field tlparser.Parameter, data *intern
 
 	}
 
-	// обычный билтин изи бризи
+	// обычный билтин
 	return jen.If(jen.Id(direct).Op("==").Id(zeroval)).Block(
-		jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("field '" + name + "' is not set"))),
+		jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("field '" + goname + "' is not set"))),
 	).Comment("builtin_check"), nil
 }
 
-func (g *Generator) createZeroValCheckStmt(field tlparser.Parameter, data *internalSchema) (*jen.Statement, error) {
+// отдает проверку на zero value
+// abc != 0
+// foo != ""
+// len(slice) > 0
+func (g *Generator) createZeroValueCheckStmt(field tlparser.Parameter) (*jen.Statement, error) {
 	name := g.goify(field.Name)
 	direct := "e." + name
-	typ := field.Type
 
-	if field.IsVector || typ == "bytes" {
+	// если вектор или байты, просто проверяем длину слайса
+	if field.IsVector || field.Type == "bytes" {
 		check := jen.Len(jen.Id(direct)).Op(">").Id("0")
 		return check, nil
 	}
 
 	zeroval := ""
-	switch typ {
+	switch field.Type {
 	case "Bool":
 		zeroval = "false"
 	case "long", "double", "int":
@@ -646,17 +649,20 @@ func (g *Generator) createZeroValCheckStmt(field tlparser.Parameter, data *inter
 	case "bitflags":
 		return nil, nil
 	case "true":
-		// че?
 		zeroval = "false"
 	default:
-		if _, ok := data.Enums[typ]; ok {
+		// енум
+		if _, ok := g.schema.Enums[field.Type]; ok {
 			return jen.Id(direct).Op("!=").Id("0"), nil
 		}
 
+		// структура или интерфейс
+		// (структуры всегда с указателем, хз почему)
 		check := jen.Id(direct).Op("!=").Nil().Op("&&").
 			Id(direct + ".Validate").Call().Op("==").Nil()
 		return check, nil
 	}
 
+	// билтин
 	return jen.Id(direct).Op("!=").Id(zeroval), nil
 }

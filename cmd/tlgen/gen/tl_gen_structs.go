@@ -7,26 +7,18 @@ import (
 	"github.com/xelaj/mtproto/cmd/tlgen/tlparser"
 )
 
-func (g *Generator) generateSpecificStructs(f *jen.File, data *internalSchema) error {
-	sort.Slice(data.SingleInterfaceTypes, func(i, j int) bool {
-		return data.SingleInterfaceTypes[i].Name < data.SingleInterfaceTypes[j].Name
-	})
-
-	sigKeys := make([]string, 0, len(data.SingleInterfaceCanonical))
-	for key := range data.SingleInterfaceCanonical {
+func (g *Generator) generateSpecificStructs(f *jen.File) error {
+	sigKeys := make([]string, 0, len(g.schema.SingleInterfaceCanonical))
+	for key := range g.schema.SingleInterfaceCanonical {
 		sigKeys = append(sigKeys, key)
 
 	}
 	sort.Strings(sigKeys)
 
-	// for _, key := range sigKeys {
-	// 	fmt.Println("data.SingleInterfaceCanonical[interface]: ", key)
-	// }
-
-	for _, _type := range data.SingleInterfaceTypes {
+	for _, _type := range g.schema.SingleInterfaceTypes {
 		interfaceName := ""
 		for _, k := range sigKeys {
-			v := data.SingleInterfaceCanonical[k]
+			v := g.schema.SingleInterfaceCanonical[k]
 			if v == _type.Name {
 				interfaceName = k
 			}
@@ -42,7 +34,7 @@ func (g *Generator) generateSpecificStructs(f *jen.File, data *internalSchema) e
 			Parameters: _type.Parameters,
 		}
 
-		str, err := g.generateStruct(_structWithIfaceName, data)
+		str, err := g.generateStruct(_structWithIfaceName)
 		if err != nil {
 			return err
 		}
@@ -51,25 +43,21 @@ func (g *Generator) generateSpecificStructs(f *jen.File, data *internalSchema) e
 			jen.Return(jen.Lit(_structWithIfaceName.CRC)),
 		)
 
-		//fmt.Println("SingleInterfaceTypes_name[struct]:", _structWithIfaceName.Name)
-		validatorFunc, err := g.generateStructValidatorFunc(_structWithIfaceName, data)
+		validatorFunc, err := g.generateStructValidatorFunc(_structWithIfaceName)
 		if err != nil {
 			return err
 		}
 
-		encoderFunc, err := g.generateEncodeFunc(_structWithIfaceName, data)
+		encoderFunc, err := g.generateEncodeFunc(_structWithIfaceName)
 		if err != nil {
 			return err
 		}
 
-		encoderNonreflectFunc, err := g.generateEncodeNonreflectFunc(_structWithIfaceName, data)
+		encoderNonreflectFunc, err := g.generateEncodeNonreflectFunc(_structWithIfaceName)
 		if err != nil {
 			return err
 		}
 
-		_ = crcFunc
-		_ = encoderFunc
-		_ = encoderNonreflectFunc
 		f.Add(
 			// jen.Commentf("interface name: %s", interfaceName),
 			// jen.Line(),
