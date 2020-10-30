@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 )
 
 // строчка в tl
@@ -16,13 +17,18 @@ type definition struct {
 	IsEqVector bool        // тип после знака равенства векторный?
 }
 
-func ParseSchema(source string) (Schema, error) {
+func ParseSchema(source string) (*Schema, error) {
 	cur := NewCursor(source)
 
 	var (
-		objects     []Object
-		methods     []Method
-		isFunctions = false
+		objects       []Object
+		methods       []Method
+		typeComments  = make(map[string]string)
+		paramComments = make(map[string]string)
+
+		isFunctions        = false
+		nextTypeComment    string
+		constructorComment string
 	)
 
 	for {
@@ -38,7 +44,27 @@ func ParseSchema(source string) (Schema, error) {
 		}
 
 		if cur.IsNext("//") {
-			cur.ReadAt('\n')
+			comment, _ := cur.ReadAt('\n')
+			comment = strings.TrimSpace(comment)
+			// TODO: make more beautiful
+			switch {
+			case strings.HasPrefix(comment, CommentTypeType.String()):
+				comment = strings.TrimPrefix(comment, CommentTypeType.String())
+				nextTypeComment = strings.TrimSpace(comment)
+			case strings.HasPrefix(comment, CommentTypeEnum.String()),
+				strings.HasPrefix(comment, CommentTypeConstructor.String()),
+				strings.HasPrefix(comment, CommentTypeMethod.String()):
+				comment = strings.TrimPrefix(comment, CommentTypeEnum.String())
+				comment = strings.TrimPrefix(comment, CommentTypeConstructor.String())
+				comment = strings.TrimPrefix(comment, CommentTypeMethod.String())
+				constructorComment = strings.TrimSpace(comment)
+			case strings.HasPrefix(comment, CommentTypeParam.String()):
+				comment = strings.TrimSpace(strings.TrimPrefix(comment, CommentTypeParam.String()))
+				paramName := strings.Fields(comment)[0]
+				comment = strings.TrimSpace(strings.TrimPrefix(comment, paramName))
+				paramComments[paramName] = comment
+			}
+
 			cur.Skip(1)
 			continue
 		}
@@ -53,7 +79,11 @@ func ParseSchema(source string) (Schema, error) {
 				continue
 			}
 
-			return Schema{}, err
+			return nil, err
+		}
+
+		for i := range def.Params {
+			def.Params[i].Comment = paramComments[def.Params[i].Name]
 		}
 
 		if isFunctions {
@@ -73,21 +103,34 @@ func ParseSchema(source string) (Schema, error) {
 		// тип после знака равенства это интерфейс
 		// и он не может быть вектором
 		if def.IsEqVector {
-			panic("wut")
+			return nil, errors.New("type can't be a vector")
 		}
 
 		objects = append(objects, Object{
 			Name:       def.Name,
+			Comment:    constructorComment,
 			CRC:        def.CRC,
 			Parameters: def.Params,
 			Interface:  def.EqType,
 		})
+
+		if nextTypeComment != "" {
+			typeComments[def.EqType] = nextTypeComment
+			nextTypeComment = ""
+		}
+		constructorComment = ""
+		paramComments = make(map[string]string)
 	}
 
-	return Schema{
+	res := &Schema{
 		Objects: objects,
 		Methods: methods,
-	}, nil
+	}
+	if len(typeComments) != 0 {
+		res.TypeComments = typeComments
+	}
+
+	return res, nil
 }
 
 func parseDefinition(cur *Cursor) (def definition, err error) {
@@ -97,7 +140,8 @@ func parseDefinition(cur *Cursor) (def definition, err error) {
 		// блок тупо для проверки записей типа таких:
 		// int ? = Int;
 		//    ↑ - читаем до этого пробела и смотрим тип
-		typSpace, err := cur.ReadAt(' ') // typSpace = int
+		var typSpace string
+		typSpace, err = cur.ReadAt(' ') // typSpace is int for example
 		if err != nil {
 			return def, fmt.Errorf("parse def row: %w", err)
 		}
@@ -105,7 +149,7 @@ func parseDefinition(cur *Cursor) (def definition, err error) {
 		// если он в excludedTypes
 		if _, found := excludedTypes[typSpace]; found {
 			// дочитываем строку до конца
-			if _, err := cur.ReadAt(';'); err != nil {
+			if _, err = cur.ReadAt(';'); err != nil {
 				return def, err
 			}
 
@@ -119,7 +163,7 @@ func parseDefinition(cur *Cursor) (def definition, err error) {
 
 	// ipPort#d433ad73 ipv4:int port:int = IpPort;
 	//       ↑ - читаем до решеточки, получаем название
-	def.Name, err = cur.ReadAt('#') // def.Name = ipPort
+	def.Name, err = cur.ReadAt('#') // def.Name is ipPort for this example
 	if err != nil {
 		return def, fmt.Errorf("parse object name: %w", err)
 	}
@@ -127,7 +171,7 @@ func parseDefinition(cur *Cursor) (def definition, err error) {
 	// проверяем название на наличие в блоклисте
 	if _, found := excludedDefinitions[def.Name]; found {
 		// дочитываем строку до конца
-		if _, err := cur.ReadAt(';'); err != nil {
+		if _, err = cur.ReadAt(';'); err != nil {
 			return def, err
 		}
 
@@ -153,7 +197,8 @@ func parseDefinition(cur *Cursor) (def definition, err error) {
 
 	// читаем параметры
 	for !cur.IsNext("=") {
-		param, err := parseParam(cur)
+		var param Parameter
+		param, err = parseParam(cur)
 		if err != nil {
 			return def, fmt.Errorf("parse param: %w", err)
 		}
@@ -178,7 +223,7 @@ func parseDefinition(cur *Cursor) (def definition, err error) {
 		}
 
 		def.IsEqVector = true
-		cur.Skip(2) // skip >;
+		cur.Skip(len(">;")) // skip >;
 	} else {
 		def.EqType, err = cur.ReadAt(';')
 		if err != nil {
@@ -216,14 +261,15 @@ func parseParam(cur *Cursor) (param Parameter, err error) {
 		// correct_answers:flags.0?Vector<bytes> foo:bar
 
 		// читаем цифры
-		r, err := cur.ReadDigits() //read bit index, must be digit
+		var digits string
+		digits, err = cur.ReadDigits() // read bit index, must be digit
 		if err != nil {
 			return param, fmt.Errorf("read param bitflag: %w", err)
 		}
 
-		param.BitToTrigger, err = strconv.Atoi(r)
+		param.BitToTrigger, err = strconv.Atoi(digits)
 		if err != nil {
-			return param, fmt.Errorf("invalid bitflag index: %s", string(r))
+			return param, fmt.Errorf("invalid bitflag index: %s", digits)
 		}
 
 		//                        ↓ - курсор здесь

@@ -1,29 +1,33 @@
 package tlparser
 
-import "fmt"
+import (
+	"fmt"
 
-var excludedDefinitions = map[string]struct{}{
-	"true":      {},
-	"boolFalse": {},
-	"boolTrue":  {},
-	"vector":    {},
+	"github.com/xelaj/go-dry"
+)
 
-	"invokeAfterMsg":          {},
-	"invokeAfterMsgs":         {},
-	"initConnection":          {},
-	"invokeWithLayer":         {},
-	"invokeWithoutUpdates":    {},
-	"invokeWithMessagesRange": {},
-	"invokeWithTakeout":       {},
-}
+var excludedDefinitions = dry.SliceUnique([]string{
+	"true",
+	"boolFalse",
+	"boolTrue",
+	"vector",
 
-var excludedTypes = map[string]struct{}{
-	"int":    {},
-	"long":   {},
-	"double": {},
-	"string": {},
-	"bytes":  {},
-}
+	"invokeAfterMsg",
+	"invokeAfterMsgs",
+	"initConnection",
+	"invokeWithLayer",
+	"invokeWithoutUpdates",
+	"invokeWithMessagesRange",
+	"invokeWithTakeout",
+}).(map[string]struct{})
+
+var excludedTypes = dry.SliceUnique([]string{
+	"int",
+	"long",
+	"double",
+	"string",
+	"bytes",
+}).(map[string]struct{})
 
 type errExcluded struct {
 	name string

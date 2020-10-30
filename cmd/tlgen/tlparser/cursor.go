@@ -10,6 +10,7 @@ type Cursor struct {
 	pos    int
 }
 
+// TODO: add `Line() int` and `Col() int` methods
 func NewCursor(source string) *Cursor {
 	return &Cursor{
 		source: []rune(source),
