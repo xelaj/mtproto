@@ -25,7 +25,7 @@ type Generator struct {
 	nofmt bool
 }
 
-func NewGenerator(tlschema tlparser.Schema, outdir string) (*Generator, error) {
+func NewGenerator(tlschema *tlparser.Schema, outdir string) (*Generator, error) {
 	internalSchema, err := createInternalSchema(tlschema)
 	if err != nil {
 		return nil, err

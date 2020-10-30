@@ -19,7 +19,7 @@ type enum struct {
 	CRC  uint32
 }
 
-func createInternalSchema(schema tlparser.Schema) (*internalSchema, error) {
+func createInternalSchema(schema *tlparser.Schema) (*internalSchema, error) {
 	ischem := &internalSchema{
 		Enums:                    make(map[string][]enum),
 		Types:                    make(map[string][]tlparser.Object),
