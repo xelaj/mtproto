@@ -44,25 +44,42 @@ func ParseSchema(source string) (*Schema, error) {
 		}
 
 		if cur.IsNext("//") {
-			comment, _ := cur.ReadAt('\n')
-			comment = strings.TrimSpace(comment)
-			// TODO: make more beautiful
-			switch {
-			case strings.HasPrefix(comment, CommentTypeType.String()):
-				comment = strings.TrimPrefix(comment, CommentTypeType.String())
+			cur.SkipSpaces()
+			ctype, err := cur.ReadAt(' ')
+			if err != nil {
+				return nil, fmt.Errorf("read comment type: %w", err)
+			}
+
+			cur.SkipSpaces()
+
+			switch ctype {
+			case "@type":
+				comment, err := cur.ReadAt('\n')
+				if err != nil {
+					return nil, fmt.Errorf("read comment: %w", err)
+				}
 				nextTypeComment = strings.TrimSpace(comment)
-			case strings.HasPrefix(comment, CommentTypeEnum.String()),
-				strings.HasPrefix(comment, CommentTypeConstructor.String()),
-				strings.HasPrefix(comment, CommentTypeMethod.String()):
-				comment = strings.TrimPrefix(comment, CommentTypeEnum.String())
-				comment = strings.TrimPrefix(comment, CommentTypeConstructor.String())
-				comment = strings.TrimPrefix(comment, CommentTypeMethod.String())
+			case "@enum", "@constructor", "@method":
+				comment, err := cur.ReadAt('\n')
+				if err != nil {
+					return nil, fmt.Errorf("read comment: %w", err)
+				}
 				constructorComment = strings.TrimSpace(comment)
-			case strings.HasPrefix(comment, CommentTypeParam.String()):
-				comment = strings.TrimSpace(strings.TrimPrefix(comment, CommentTypeParam.String()))
-				paramName := strings.Fields(comment)[0]
-				comment = strings.TrimSpace(strings.TrimPrefix(comment, paramName))
-				paramComments[paramName] = comment
+			case "@param":
+				pname, err := cur.ReadAt(' ')
+				if err != nil {
+					return nil, fmt.Errorf("read comment param name: %w", err)
+				}
+
+				cur.SkipSpaces()
+				pcomment, err := cur.ReadAt('\n')
+				if err != nil {
+					return nil, fmt.Errorf("read comment param: %w", err)
+				}
+
+				paramComments[pname] = strings.TrimSpace(pcomment)
+			default:
+				return nil, fmt.Errorf("unknown comment type: %s", ctype)
 			}
 
 			cur.Skip(1)
