@@ -6,6 +6,8 @@ import (
 	"io"
 	"strconv"
 	"strings"
+
+	"github.com/xelaj/go-dry"
 )
 
 // строчка в tl
@@ -160,7 +162,7 @@ func parseDefinition(cur *Cursor) (def definition, err error) {
 		}
 
 		// если он в excludedTypes
-		if _, found := excludedTypes[typSpace]; found {
+		if dry.SliceContains(excludedTypes, typSpace) {
 			// дочитываем строку до конца
 			if _, err = cur.ReadAt(';'); err != nil {
 				return def, err
@@ -182,7 +184,7 @@ func parseDefinition(cur *Cursor) (def definition, err error) {
 	}
 
 	// проверяем название на наличие в блоклисте
-	if _, found := excludedDefinitions[def.Name]; found {
+	if dry.SliceContains(excludedDefinitions, def.Name) {
 		// дочитываем строку до конца
 		if _, err = cur.ReadAt(';'); err != nil {
 			return def, err

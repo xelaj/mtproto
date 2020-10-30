@@ -7,17 +7,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/xelaj/go-dry"
 )
-
-func LoadTestFile(file string) string {
-	_, filename, _, _ := runtime.Caller(0) // nolint: dogsled cause we don't need another stuff
-	f, err := ioutil.ReadFile(filepath.Join(filepath.Dir(filename), "testdata", file))
-	if err != nil {
-		panic(err)
-	}
-
-	return string(f)
-}
 
 func TestSimplestFixture(t *testing.T) {
 	file := LoadTestFile("simplest.tl")
@@ -45,7 +36,7 @@ func TestSimplestFixture(t *testing.T) {
 				},
 			},
 		},
-		TypeComments: make(map[string]string),
+		TypeComments: map[string]string{},
 	}, schema)
 }
 
@@ -90,4 +81,11 @@ func TestWithCommentsFixture(t *testing.T) {
 			"CoolEnumerate": "some cool enums!",
 		},
 	}, schema)
+}
+
+func LoadTestFile(file string) string {
+	_, filename, _, _ := runtime.Caller(0) // nolint: dogsled cause we don't need another stuff
+	f, err := ioutil.ReadFile(filepath.Join(filepath.Dir(filename), "testdata", file))
+	dry.PanicIfErr(err)
+	return string(f)
 }

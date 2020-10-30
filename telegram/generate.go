@@ -2,4 +2,4 @@
 
 package telegram
 
-//go:generate go run ../cmd/generate-tl-files ../schemes/api_latest.tl .
+//go:generate go run ../cmd/tlgen ../schemes/api_latest.tl .

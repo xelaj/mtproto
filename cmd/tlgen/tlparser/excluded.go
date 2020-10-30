@@ -2,27 +2,27 @@ package tlparser
 
 import "fmt"
 
-var excludedDefinitions = map[string]struct{}{
-	"true":      {},
-	"boolFalse": {},
-	"boolTrue":  {},
-	"vector":    {},
+var excludedDefinitions = []string{
+	"true",
+	"boolFalse",
+	"boolTrue",
+	"vector",
 
-	"invokeAfterMsg":          {},
-	"invokeAfterMsgs":         {},
-	"initConnection":          {},
-	"invokeWithLayer":         {},
-	"invokeWithoutUpdates":    {},
-	"invokeWithMessagesRange": {},
-	"invokeWithTakeout":       {},
+	"invokeAfterMsg",
+	"invokeAfterMsgs",
+	"initConnection",
+	"invokeWithLayer",
+	"invokeWithoutUpdates",
+	"invokeWithMessagesRange",
+	"invokeWithTakeout",
 }
 
-var excludedTypes = map[string]struct{}{
-	"int":    {},
-	"long":   {},
-	"double": {},
-	"string": {},
-	"bytes":  {},
+var excludedTypes = []string{
+	"int",
+	"long",
+	"double",
+	"string",
+	"bytes",
 }
 
 type errExcluded struct {
