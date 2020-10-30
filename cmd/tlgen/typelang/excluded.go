@@ -1,4 +1,4 @@
-package tlparser
+package typelang
 
 import "fmt"
 
