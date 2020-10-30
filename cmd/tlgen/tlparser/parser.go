@@ -139,15 +139,11 @@ func ParseSchema(source string) (*Schema, error) {
 		paramComments = make(map[string]string)
 	}
 
-	res := &Schema{
-		Objects: objects,
-		Methods: methods,
-	}
-	if len(typeComments) != 0 {
-		res.TypeComments = typeComments
-	}
-
-	return res, nil
+	return &Schema{
+		Objects:      objects,
+		Methods:      methods,
+		TypeComments: typeComments,
+	}, nil
 }
 
 func parseDefinition(cur *Cursor) (def definition, err error) {

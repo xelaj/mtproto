@@ -45,6 +45,7 @@ func TestSimplestFixture(t *testing.T) {
 				},
 			},
 		},
+		TypeComments: make(map[string]string),
 	}, schema)
 }
 
