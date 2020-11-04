@@ -209,11 +209,15 @@ Please read [contributing guide](https://github.com/xelaj/mtproto/blob/master/do
 
 * **Richard Cooper** <[rcooper.xelaj@protonmail.com](mailto:rcooper.xelaj@protonmail.com)>
 * **Anton Larionov** <[Anton.Larionov@infobip.com](mailto:Anton.Larionov@infobip.com)>
+* **Arthur Petukhovsky** <[petuhovskiy@yandex.ru](mailto:petuhovskiy@yandex.ru)>
 * **Roman Timofeev** <[timofeev@uteka.ru](mailto:timofeev@uteka.ru)>
+* **Artem** <[webgutar@gmail.com](mailto:webgutar@gmail.com)>
 * **Bo-Yi Wu** <[appleboy.tw@gmail.com](mailto:appleboy.tw@gmail.com)>
 * **0xflotus** <[0xflotus@gmail.com](mailto:0xflotus@gmail.com)>
 * **Luclu7** <[me@luclu7.fr](mailto:me@luclu7.fr)>
 * **Vladimir Stolyarov** <[xakep6666@gmail.com](mailto:xakep6666@gmail.com)>
+* **grinrill** [@grinrill](https://github.com/grinrill)
+* **kulallador** <[ilyastalk@bk.ru](ilyastalk@bk.ru)>
 * **rs** <[yuiop1955@mail.ru](mailto:yuiop1955@mail.ru)>
 
 ## License
