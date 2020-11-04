@@ -4,14 +4,13 @@ import (
 	"sort"
 
 	"github.com/dave/jennifer/jen"
-	"github.com/xelaj/mtproto/cmd/tlgen/tlparser"
+	"github.com/xelaj/mtproto/cmd/tlgen/typelang"
 )
 
 func (g *Generator) generateSpecificStructs(f *jen.File) error {
 	sigKeys := make([]string, 0, len(g.schema.SingleInterfaceCanonical))
 	for key := range g.schema.SingleInterfaceCanonical {
 		sigKeys = append(sigKeys, key)
-
 	}
 	sort.Strings(sigKeys)
 
@@ -28,7 +27,7 @@ func (g *Generator) generateSpecificStructs(f *jen.File) error {
 			panic("не нашли каноничное имя")
 		}
 
-		_structWithIfaceName := tlparser.Object{
+		_structWithIfaceName := typelang.Object{
 			Name:       interfaceName,
 			CRC:        _type.CRC,
 			Parameters: _type.Parameters,
@@ -39,7 +38,7 @@ func (g *Generator) generateSpecificStructs(f *jen.File) error {
 			return err
 		}
 
-		crcFunc := jen.Func().Params(jen.Id("e").Id("*" + g.goify(interfaceName))).Id("CRC").Params().Uint32().Block(
+		crcFunc := jen.Func().Params(jen.Id("e").Id("*" + noramlizeIdentificator(interfaceName))).Id("CRC").Params().Uint32().Block(
 			jen.Return(jen.Lit(_structWithIfaceName.CRC)),
 		)
 

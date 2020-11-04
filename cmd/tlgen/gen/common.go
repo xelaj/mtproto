@@ -1,15 +1,14 @@
 package gen
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/dave/jennifer/jen"
 	"github.com/iancoleman/strcase"
-	"github.com/xelaj/mtproto/cmd/tlgen/tlparser"
+	"github.com/xelaj/mtproto/cmd/tlgen/typelang"
 )
 
-func (g *Generator) generateStruct(str tlparser.Object) (*jen.Statement, error) {
+func (g *Generator) generateStruct(str typelang.Object) (*jen.Statement, error) {
 	fields := make([]jen.Code, 0, len(str.Parameters))
 
 	for _, field := range str.Parameters {
@@ -49,15 +48,15 @@ func (g *Generator) generateStruct(str tlparser.Object) (*jen.Statement, error) 
 			valueInsideFlag = true
 		default:
 			if _, ok := g.schema.Enums[typ]; ok {
-				f = f.Id(g.goify(typ))
+				f = f.Id(noramlizeIdentificator(typ))
 				break
 			}
 			if _, ok := g.schema.Types[typ]; ok {
-				f = f.Id(g.goify(typ))
+				f = f.Id(noramlizeIdentificator(typ))
 				break
 			}
 			if _, ok := g.schema.SingleInterfaceCanonical[typ]; ok {
-				f = f.Id("*" + g.goify(typ))
+				f = f.Id("*" + noramlizeIdentificator(typ))
 				break
 			}
 
@@ -79,14 +78,14 @@ func (g *Generator) generateStruct(str tlparser.Object) (*jen.Statement, error) 
 		fields = append(fields, f)
 	}
 
-	structName := g.goify(str.Name)
+	structName := noramlizeIdentificator(str.Name)
 
 	return jen.Type().Id(structName).Struct(
 		fields...,
 	), nil
 }
 
-func (g *Generator) generateEncodeFunc(str tlparser.Object) (*jen.Statement, error) {
+func (g *Generator) generateEncodeFunc(str typelang.Object) (*jen.Statement, error) {
 	calls := make([]jen.Code, 0)
 	if len(str.Parameters) > 0 {
 		// calls = append(calls,
@@ -114,7 +113,7 @@ func (g *Generator) generateEncodeFunc(str tlparser.Object) (*jen.Statement, err
 		typ := field.Type
 		name := strcase.ToCamel(field.Name)
 		if name == "Flags" && typ == "bitflags" {
-			name = "__flagsPosition"
+			name = flagsPositionField
 		}
 
 		putFuncID := ""
@@ -145,7 +144,7 @@ func (g *Generator) generateEncodeFunc(str tlparser.Object) (*jen.Statement, err
 
 		putFunc := jen.Null()
 		switch {
-		case name == "__flagsPosition":
+		case name == flagsPositionField:
 			putFunc = jen.Id("buf.PutUint").Call(jen.Id("flag"))
 		case valueInsideFlag:
 			// не делаем ничего, значение уже заложили в флаг
@@ -168,16 +167,16 @@ func (g *Generator) generateEncodeFunc(str tlparser.Object) (*jen.Statement, err
 
 	if haveOptionalParams(str.Parameters) {
 		// string это fieldname
-		sortedOptionalValues := make([][]tlparser.Parameter, maxBitflag(str.Parameters)+1)
+		sortedOptionalValues := make([][]typelang.Parameter, maxBitflag(str.Parameters)+1)
 		for _, field := range str.Parameters {
 			if !field.IsOptional {
 				continue
 			}
 			if sortedOptionalValues[field.BitToTrigger] == nil {
-				sortedOptionalValues[field.BitToTrigger] = make([]tlparser.Parameter, 0)
+				sortedOptionalValues[field.BitToTrigger] = make([]typelang.Parameter, 0)
 			}
 
-			sortedOptionalValues[field.BitToTrigger] = append(sortedOptionalValues[field.BitToTrigger], tlparser.Parameter{
+			sortedOptionalValues[field.BitToTrigger] = append(sortedOptionalValues[field.BitToTrigger], typelang.Parameter{
 				Name: field.Name,
 				Type: field.Type,
 			})
@@ -219,12 +218,12 @@ func (g *Generator) generateEncodeFunc(str tlparser.Object) (*jen.Statement, err
 	calls = append(calls, putCalls...)
 	calls = append(calls, jen.Return(jen.Id("buf.Result").Call()))
 
-	return jen.Func().Params(jen.Id("e").Id("*" + g.goify(str.Name))).Id("Encode").Params().Index().Byte().Block(
+	return jen.Func().Params(jen.Id("e").Id("*" + noramlizeIdentificator(str.Name))).Id("Encode").Params().Index().Byte().Block(
 		calls...,
 	), nil
 }
 
-func (g *Generator) generateEncodeNonreflectFunc(str tlparser.Object) (*jen.Statement, error) {
+func (g *Generator) generateEncodeNonreflectFunc(str typelang.Object) (*jen.Statement, error) {
 	calls := make([]jen.Code, 0)
 	if len(str.Parameters) > 0 {
 		calls = append(calls,
@@ -247,7 +246,7 @@ func (g *Generator) generateEncodeNonreflectFunc(str tlparser.Object) (*jen.Stat
 		typ := field.Type
 		name := strcase.ToCamel(field.Name)
 		if name == "Flags" && typ == "bitflags" {
-			name = "__flagsPosition"
+			name = flagsPositionField
 		}
 
 		putFuncID := ""
@@ -278,7 +277,7 @@ func (g *Generator) generateEncodeNonreflectFunc(str tlparser.Object) (*jen.Stat
 
 		putFunc := jen.Null()
 		switch {
-		case name == "__flagsPosition":
+		case name == flagsPositionField:
 			putFunc = jen.Id("buf.PutUint").Call(jen.Id("flag"))
 		case valueInsideFlag:
 			// не делаем ничего, значение уже заложили в флаг
@@ -291,12 +290,7 @@ func (g *Generator) generateEncodeNonreflectFunc(str tlparser.Object) (*jen.Stat
 		}
 
 		if field.IsOptional && !valueInsideFlag {
-			checkStmt, err := g.createZeroValueCheckStmt(field)
-			if err != nil {
-				kek := jen.Op("!").Qual("github.com/vikyd/zero", "IsZeroVal").Call(jen.Id("e." + strcase.ToCamel(field.Name)))
-				fmt.Println("goodv:", kek)
-				panic(err)
-			}
+			checkStmt := g.zeroValueCheckStmt(&field)
 
 			putFunc = jen.If(checkStmt).Block(
 				putFunc,
@@ -307,16 +301,16 @@ func (g *Generator) generateEncodeNonreflectFunc(str tlparser.Object) (*jen.Stat
 	}
 
 	if haveOptionalParams(str.Parameters) {
-		sortedOptionalValues := make([][]tlparser.Parameter, maxBitflag(str.Parameters)+1)
+		sortedOptionalValues := make([][]typelang.Parameter, maxBitflag(str.Parameters)+1)
 		for _, field := range str.Parameters {
 			if !field.IsOptional {
 				continue
 			}
 			if sortedOptionalValues[field.BitToTrigger] == nil {
-				sortedOptionalValues[field.BitToTrigger] = make([]tlparser.Parameter, 0)
+				sortedOptionalValues[field.BitToTrigger] = make([]typelang.Parameter, 0)
 			}
 
-			sortedOptionalValues[field.BitToTrigger] = append(sortedOptionalValues[field.BitToTrigger], tlparser.Parameter{
+			sortedOptionalValues[field.BitToTrigger] = append(sortedOptionalValues[field.BitToTrigger], typelang.Parameter{
 				Name:         field.Name,
 				Type:         field.Type,
 				IsVector:     field.IsVector,
@@ -337,11 +331,7 @@ func (g *Generator) generateEncodeNonreflectFunc(str tlparser.Object) (*jen.Stat
 					statements.Add(jen.Op("||"))
 				}
 
-				checkStmt, err := g.createZeroValueCheckStmt(field)
-				if err != nil {
-					kek := jen.Op("!").Qual("github.com/vikyd/zero", "IsZeroVal").Call(jen.Id("e." + strcase.ToCamel(field.Name))).GoString()
-					return nil, fmt.Errorf("bad zero value check stmt: %w (good example: %s)", err, kek)
-				}
+				checkStmt := g.zeroValueCheckStmt(&field)
 
 				statements.Add(checkStmt)
 			}
@@ -366,12 +356,12 @@ func (g *Generator) generateEncodeNonreflectFunc(str tlparser.Object) (*jen.Stat
 	calls = append(calls, putCalls...)
 	calls = append(calls, jen.Return(jen.Id("buf.Result").Call()))
 
-	return jen.Func().Params(jen.Id("e").Id("*" + g.goify(str.Name))).Id("EncodeNonreflect").Params().Index().Byte().Block(
+	return jen.Func().Params(jen.Id("e").Id("*" + noramlizeIdentificator(str.Name))).Id("EncodeNonreflect").Params().Index().Byte().Block(
 		calls...,
 	), nil
 }
 
-func (g *Generator) generateMethodCallerFunc(method tlparser.Method) (*jen.Statement, error) {
+func (g *Generator) generateMethodCallerFunc(method *typelang.Method) (*jen.Statement, error) {
 	resp := createParamsStructFromMethod(method)
 	maximumPositionalArguments := 0
 	if haveOptionalParams(resp.Parameters) {
@@ -379,7 +369,7 @@ func (g *Generator) generateMethodCallerFunc(method tlparser.Method) (*jen.State
 	}
 
 	funcParameters := make([]jen.Code, 0)
-	methodName := g.goify(method.Name)
+	methodName := noramlizeIdentificator(method.Name)
 	typeName := methodName + "Params"
 
 	argsAsSingleItem := false
@@ -398,7 +388,7 @@ func (g *Generator) generateMethodCallerFunc(method tlparser.Method) (*jen.State
 		requestStruct = jen.Id("params")
 	}
 
-	assertedType := g.goify(method.Response.Type)
+	assertedType := noramlizeIdentificator(method.Response.Type)
 
 	if _, ok := g.schema.SingleInterfaceCanonical[method.Response.Type]; ok {
 		assertedType = "*" + assertedType
@@ -449,7 +439,7 @@ func (g *Generator) generateMethodCallerFunc(method tlparser.Method) (*jen.State
 	), nil
 }
 
-func (g *Generator) generateStructValidatorFunc(str tlparser.Object) (*jen.Statement, error) {
+func (g *Generator) generateStructValidatorFunc(str typelang.Object) (*jen.Statement, error) {
 	checks := make([]jen.Code, 0)
 	for _, field := range str.Parameters {
 		if field.IsOptional {
@@ -479,22 +469,21 @@ func (g *Generator) generateStructValidatorFunc(str tlparser.Object) (*jen.State
 			continue
 		}
 
-		checks = append(checks, validateStmt)
-		checks = append(checks, jen.Line())
+		checks = append(checks, validateStmt, jen.Line())
 	}
 
 	// если все валидации прошли, отдаем nil
 	checks = append(checks, jen.Return(jen.Nil()))
 
-	return jen.Func().Params(jen.Id("e").Id("*" + g.goify(str.Name))).Id("Validate").Params().Params(jen.Error()).Block(
+	return jen.Func().Params(jen.Id("e").Id("*" + noramlizeIdentificator(str.Name))).Id("Validate").Params().Params(jen.Error()).Block(
 		checks...,
 	), nil
 }
 
-func (g *Generator) createFieldValidation(field tlparser.Parameter, insideRange bool) (jen.Code, error) {
+func (g *Generator) createFieldValidation(field typelang.Parameter, insideRange bool) (jen.Code, error) {
 	// название проверяемого филда без префикса структуры
 	// (нужно для ошибок)
-	goname := g.goify(field.Name)
+	goname := noramlizeIdentificator(field.Name)
 
 	// филд с префиксом структуры
 	// юзается непосредственно для обращения к полю
@@ -512,7 +501,7 @@ func (g *Generator) createFieldValidation(field tlparser.Parameter, insideRange 
 		).Comment("slice_len_check")
 
 		// копируем текущий параметр, но без вектора
-		cp := tlparser.Parameter{
+		cp := typelang.Parameter{
 			Name:         field.Name,
 			Type:         field.Type,
 			IsOptional:   field.IsOptional,
@@ -615,7 +604,6 @@ func (g *Generator) createFieldValidation(field tlparser.Parameter, insideRange 
 		// 	).Comment("interface_valid_check"), nil
 		// }
 		panic("wat")
-
 	}
 
 	// обычный билтин
@@ -628,14 +616,14 @@ func (g *Generator) createFieldValidation(field tlparser.Parameter, insideRange 
 // abc != 0
 // foo != ""
 // len(slice) > 0
-func (g *Generator) createZeroValueCheckStmt(field tlparser.Parameter) (*jen.Statement, error) {
-	name := g.goify(field.Name)
+func (g *Generator) zeroValueCheckStmt(field *typelang.Parameter) jen.Code {
+	name := noramlizeIdentificator(field.Name)
 	direct := "e." + name
 
 	// если вектор или байты, просто проверяем длину слайса
 	if field.IsVector || field.Type == "bytes" {
-		check := jen.Len(jen.Id(direct)).Op(">").Id("0")
-		return check, nil
+		check := jen.Len(jen.Id(direct)).Op(">").Lit(0)
+		return check
 	}
 
 	zeroval := ""
@@ -647,22 +635,22 @@ func (g *Generator) createZeroValueCheckStmt(field tlparser.Parameter) (*jen.Sta
 	case "string":
 		zeroval = "\"\""
 	case "bitflags":
-		return nil, nil
+		return nil
 	case "true":
 		zeroval = "false"
 	default:
 		// енум
 		if _, ok := g.schema.Enums[field.Type]; ok {
-			return jen.Id(direct).Op("!=").Id("0"), nil
+			return jen.Id(direct).Op("!=").Id("0")
 		}
 
 		// структура или интерфейс
 		// (структуры всегда с указателем, хз почему)
 		check := jen.Id(direct).Op("!=").Nil().Op("&&").
 			Id(direct + ".Validate").Call().Op("==").Nil()
-		return check, nil
+		return check
 	}
 
 	// билтин
-	return jen.Id(direct).Op("!=").Id(zeroval), nil
+	return jen.Id(direct).Op("!=").Id(zeroval)
 }

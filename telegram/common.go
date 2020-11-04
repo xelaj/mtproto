@@ -237,7 +237,7 @@ func (t *InitConnectionParams) DecodeFrom(d *serialize.Decoder) {
 	panic("makes no sense")
 }
 
-func (m *Client) InitConnection(params *InitConnectionParams) (serialize.TL, error) {
+func (c *Client) InitConnection(params *InitConnectionParams) (serialize.TL, error) {
 	data, err := m.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sending InitConnection")

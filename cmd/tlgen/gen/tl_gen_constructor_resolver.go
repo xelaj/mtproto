@@ -25,10 +25,10 @@ func (g *Generator) generateConstructorRouter(file *jen.File) error {
 	for _, crc := range sortedCrcs {
 		var obj jen.Code
 		var isEnum jen.Code
-		if id, ok := structs[uint32(crc)]; ok {
+		if id, ok := structs[crc]; ok {
 			obj = jen.Op("&").Id(id).Values()
 			isEnum = jen.False()
-		} else if id, ok := enums[uint32(crc)]; ok {
+		} else if id, ok := enums[crc]; ok {
 			obj = jen.Id(id)
 			isEnum = jen.True()
 		} else {
@@ -44,7 +44,7 @@ func (g *Generator) generateConstructorRouter(file *jen.File) error {
 
 	f := jen.Func().Id("GenerateStructByConstructor").Params(jen.Id("constructorID").Uint32()).
 		Params(
-			jen.Id("object").Qual("github.com/xelaj/mtproto/serialize", "TL"),
+			jen.Id("object").Qual(serializePackage, "TL"),
 			jen.Id("isEnum").Bool(),
 			jen.Id("err").Error(),
 		).

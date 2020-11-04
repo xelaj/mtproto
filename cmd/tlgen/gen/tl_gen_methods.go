@@ -8,14 +8,14 @@ import (
 
 func (g *Generator) generateMethods(f *jen.File) error {
 	for _, method := range g.schema.Methods {
-		params := createParamsStructFromMethod(method)
+		params := createParamsStructFromMethod(&method)
 
 		paramsStruct, err := g.generateStruct(params)
 		if err != nil {
 			return fmt.Errorf("generate method params struct: %s: %w", method.Name, err)
 		}
 
-		crcFunc := jen.Func().Params(jen.Id("e").Id("*" + g.goify(params.Name))).Id("CRC").Params().Uint32().Block(
+		crcFunc := jen.Func().Params(jen.Id("e").Id("*" + noramlizeIdentificator(params.Name))).Id("CRC").Params().Uint32().Block(
 			jen.Return(jen.Lit(method.CRC)),
 		)
 
@@ -34,7 +34,7 @@ func (g *Generator) generateMethods(f *jen.File) error {
 			return fmt.Errorf("generate encode func for method %s: %w", method.Name, err)
 		}
 
-		callerFunc, err := g.generateMethodCallerFunc(method)
+		callerFunc, err := g.generateMethodCallerFunc(&method)
 		if err != nil {
 			return fmt.Errorf("generate caller func for method %s: %w", method.Name, err)
 		}

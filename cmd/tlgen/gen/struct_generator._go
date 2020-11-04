@@ -34,7 +34,7 @@ func GenerateStructDefinition(def *StructObject, implements []string, data *File
 		typ := field.Type
 
 		if name == "Flags" && typ == "bitflags" {
-			name = "__flagsPosition"
+			name = flagsPositionField
 		}
 
 		f := jen.Id(name)
