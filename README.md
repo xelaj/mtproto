@@ -196,14 +196,14 @@ Please read [contributing guide](https://github.com/xelaj/mtproto/blob/master/do
 
 ## TODO
 
-[x] Basic MTProto implementation
-[x] Implement all Methods for latest layer
-[x] Make TL Encoder/Decoder
-[ ] Get away from panics in parsing TL
-[ ] Support MTProxy
-[ ] Support socks5 as well
-[ ] Multiple tests
-[ ] Write amazing docs
+- [x] Basic MTProto implementation
+- [x] Implement all Methods for latest layer
+- [x] Make TL Encoder/Decoder
+- [ ] Get away from panics in parsing TL
+- [ ] Support MTProxy
+- [ ] Support socks5 as well
+- [ ] Multiple tests
+- [ ] Write amazing docs
 
 ## Authors
 
