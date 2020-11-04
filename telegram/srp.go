@@ -32,7 +32,7 @@ func GetInputCheckPassword(password string, accountPassword *AccountPassword) (I
 
 	return &InputCheckPasswordSRPObj{
 		SrpId: accountPassword.SrpId,
-		A:     ga,
-		M1:    M1,
+		A:     res.GA,
+		M1:    res.M1,
 	}, nil
 }
