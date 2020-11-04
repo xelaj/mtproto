@@ -4,13 +4,12 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/xelaj/mtproto"
-	"github.com/xelaj/mtproto/telegram/srp"
 	"os"
 	"strings"
 
 	"github.com/k0kubun/pp"
 	"github.com/xelaj/go-dry"
+	"github.com/xelaj/mtproto"
 	"github.com/xelaj/mtproto/telegram"
 )
 
@@ -40,42 +39,52 @@ func main() {
 	dry.PanicIfErr(err)
 	pp.Println(setCode)
 
-	fmt.Print("Код авторизации:")
+	fmt.Print("Auth code:")
 	code, _ := bufio.NewReader(os.Stdin).ReadString('\n')
-	code = strings.Replace(code, "\n", "", -1)
+	code = strings.ReplaceAll(code, "\n", "")
 
 	auth, err := client.AuthSignIn(&telegram.AuthSignInParams{
-		phoneNumber, setCode.PhoneCodeHash, code,
+		PhoneNumber:   phoneNumber,
+		PhoneCodeHash: setCode.PhoneCodeHash,
+		PhoneCode:     code,
 	})
 	if err == nil {
 		pp.Println(auth)
 
-		fmt.Println("Auth completed")
+		fmt.Println("Success! You've signed in!")
 		return
 	}
 
-	// 2fa password
+	// if you don't have password protection — THAT'S ALL! You're already logged in.
+	// but if you have 2FA, you need to make few more steps:
+
+	// could be some errors:
 
 	mtError, ok := errors.Unwrap(err).(*mtproto.ErrResponseCode)
+	// SESSION_PASSWORD_NEEDED says that your account has 2FA protection
 	if !ok || mtError.Message != "SESSION_PASSWORD_NEEDED" {
+		fmt.Println("SignIn failed:", err)
+		println("\n\nMore info about error:")
 		pp.Println(err)
 		return
 	}
 
+	fmt.Print("Password:")
+	password, _ := bufio.NewReader(os.Stdin).ReadString('\n')
+	password = strings.ReplaceAll(password, "\n", "")
+
 	accountPassword, err := client.AccountGetPassword()
 	dry.PanicIfErr(err)
-	pp.Println(accountPassword)
 
-	fmt.Print("2FA password:")
-	password, _ := bufio.NewReader(os.Stdin).ReadString('\n')
-	password = strings.Replace(password, "\n", "", -1)
-
-	inputCheck, err := srp.GetInputCheckPassword(password, accountPassword, srp.Random256Bytes())
+	// GetInputCheckPassword is fast response object generator
+	inputCheck, err := telegram.GetInputCheckPassword(password, accountPassword)
 	dry.PanicIfErr(err)
 
-	auth2, err := client.AuthCheckPassword(&telegram.AuthCheckPasswordParams{
+	auth, err = client.AuthCheckPassword(&telegram.AuthCheckPasswordParams{
 		Password: inputCheck,
 	})
 	dry.PanicIfErr(err)
-	pp.Println(auth2)
+
+	pp.Println(auth)
+	fmt.Println("Success! You've signed in!")
 }

@@ -1,59 +1,77 @@
 package srp
 
+//! WARNING: if you want to understand this algorithm, go to https://core.telegram.org/api/srp, and try to
+//  this code on right side, and algorith description on left side. Then, try to search via Cmd+F func
+//  descriptions in algo descritpion. Then bless your god and drink few whiskey. As far as this way i can help
+//  you to understand this secure-like shit created by telegram developers.
+
 import (
 	"crypto/sha256"
 	"crypto/sha512"
-	"errors"
-	"github.com/xelaj/go-dry"
-	"github.com/xelaj/mtproto/telegram"
-	"golang.org/x/crypto/pbkdf2"
 	"math/big"
+
+	"github.com/pkg/errors"
+	"github.com/xelaj/go-dry"
+	"golang.org/x/crypto/pbkdf2"
+)
+
+const (
+	randombyteLen = 256 // 2048 bit
 )
 
 // GetInputCheckPassword считает нужные для 2FA хеши, описан в доке телеграма:
 // https://core.telegram.org/api/srp#checking-the-password-with-srp
-//
-// В random256Bytes нужно передать рандомные 256 байт, можно использовать Random256Bytes().
-func GetInputCheckPassword(password string, accountPassword *telegram.AccountPassword, random256Bytes []byte) (telegram.InputCheckPasswordSRP, error) {
+func GetInputCheckPassword(password string, srpB []byte, mp *ModPow) (*SrpAnswer, error) {
+	return getInputCheckPassword(password, srpB, mp, dry.RandomBytes(randombyteLen))
+}
+
+func getInputCheckPassword(
+	password string,
+	srpB []byte,
+	mp *ModPow,
+	random []byte,
+) (
+	*SrpAnswer, error,
+) {
 	if password == "" {
-		return &telegram.InputCheckPasswordEmpty{}, nil
+		return nil, nil
 	}
 
-	current, err := validateCurrentAlgo(accountPassword)
+	err := validateCurrentAlgo(srpB, mp)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "validating CurrentAlgo")
 	}
 
-	p := bytesToBig(current.P)
-	g := big.NewInt(int64(current.G))
+	p := bytesToBig(mp.P)
+	g := big.NewInt(int64(mp.G))
 	gBytes := pad256(g.Bytes())
 
 	// random 2048-bit number a
-	a := bytesToBig(random256Bytes)
+	a := bytesToBig(random)
 
 	// g_a = pow(g, a) mod p
 	ga := pad256(bigExp(g, a, p).Bytes())
 
 	// g_b = srp_B
-	gb := pad256(accountPassword.SrpB)
+	gb := pad256(srpB)
 
 	// u = H(g_a | g_b)
 	u := bytesToBig(calcSHA256(ga, gb))
 
 	// x = PH2(password, salt1, salt2)
-	x := bytesToBig(passwordHash2([]byte(password), current.Salt1, current.Salt2))
+	x := bytesToBig(passwordHash2([]byte(password), mp.Salt1, mp.Salt2))
 
 	// v = pow(g, x) mod p
 	v := bigExp(g, x, p)
 
 	// k = (k * v) mod p
-	k := bytesToBig(calcSHA256(current.P, gBytes))
+	k := bytesToBig(calcSHA256(mp.P, gBytes))
 
 	// k_v = (k * v) % p
 	kv := k.Mul(k, v).Mod(k, p)
 
 	// t = (g_b - k_v) % p
-	t := bytesToBig(accountPassword.SrpB)
+	t := bytesToBig(srpB)
 	if t.Sub(t, kv).Cmp(big.NewInt(0)) == -1 {
 		t.Add(t, p)
 	}
@@ -66,47 +84,52 @@ func GetInputCheckPassword(password string, accountPassword *telegram.AccountPas
 
 	// M1 := H(H(p) xor H(g) | H2(salt1) | H2(salt2) | g_a | g_b | k_a)
 	M1 := calcSHA256(
-		xorBytes(calcSHA256(current.P), calcSHA256(gBytes)),
-		calcSHA256(current.Salt1),
-		calcSHA256(current.Salt2),
+		dry.BytesXor(calcSHA256(mp.P), calcSHA256(gBytes)),
+		calcSHA256(mp.Salt1),
+		calcSHA256(mp.Salt2),
 		ga,
 		gb,
 		ka,
 	)
 
-	return &telegram.InputCheckPasswordSRPObj{
-		SrpId: accountPassword.SrpId,
-		A:     ga,
-		M1:    M1,
+	return &SrpAnswer{
+		GA: ga,
+		M1: M1,
 	}, nil
 }
 
-func Random256Bytes() []byte {
-	return dry.RandomBytes(256)
+// this is simpler struct, copied from PasswordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow
+type ModPow struct {
+	Salt1 []byte
+	Salt2 []byte
+	G     int32
+	P     []byte
 }
 
-func validateCurrentAlgo(accountPassword *telegram.AccountPassword) (*telegram.PasswordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow, error) {
-	// У CurrentAlgo должен быть этот самый тип, с длинным названием алгоритма
-	// https://github.com/tdlib/td/blob/f9009cbc01e9c4c77d31120a61feb9c639c6aeda/td/telegram/AuthManager.cpp#L537
-	current, ok := accountPassword.CurrentAlgo.(*telegram.PasswordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow)
-	if !ok {
-		return nil, errors.New("invalid CurrentAlgo type")
-	}
-
-	if dhHandshakeCheckConfigIsError(current.G, current.P) {
-		return nil, errors.New("receive invalid config g")
-	}
-
-	p := bytesToBig(current.P)
-	gb := bytesToBig(accountPassword.SrpB)
-
-	if big.NewInt(0).Cmp(gb) != -1 || gb.Cmp(p) != -1 || len(accountPassword.SrpB) < 248 || len(accountPassword.SrpB) > 256 {
-		return nil, errors.New("receive invalid value of B")
-	}
-
-	return current, nil
+// copy of InputCheckPasswordSRPObj
+type SrpAnswer struct {
+	GA []byte
+	M1 []byte
 }
 
+// Validating mod pow from server side. just works, don't touch.
+func validateCurrentAlgo(srpB []byte, mp *ModPow) error {
+	if dhHandshakeCheckConfigIsError(mp.G, mp.P) {
+		return errors.New("receive invalid config g")
+	}
+
+	p := bytesToBig(mp.P)
+	gb := bytesToBig(srpB)
+
+	//?                        awwww so cute ref (^_^), try to guess ↓↓↓
+	if big.NewInt(0).Cmp(gb) != -1 || gb.Cmp(p) != -1 || len(srpB) < 248 || len(srpB) > 256 {
+		return errors.New("receive invalid value of B")
+	}
+
+	return nil
+}
+
+// SH(data, salt) := H(salt | data | salt)
 func saltingHashing(data, salt []byte) []byte {
 	return calcSHA256(salt, data, salt)
 }
@@ -134,14 +157,8 @@ func pad256(b []byte) []byte {
 	return tmp
 }
 
-func xorBytes(a, b []byte) []byte {
-	c := make([]byte, len(a))
-	for i := range c {
-		c[i] = a[i] ^ b[i]
-	}
-	return c
-}
-
+// joining arrays into single one and calculating hash
+// H(a | b | c)
 func calcSHA256(arrays ...[]byte) []byte {
 	h := sha256.New()
 	for _, arr := range arrays {
@@ -159,13 +176,14 @@ func bigExp(x, y, m *big.Int) *big.Int {
 }
 
 func dhHandshakeCheckConfigIsError(gInt int32, primeStr []byte) bool {
-	prime := new(big.Int).SetBytes(primeStr)
-	_ = prime
+	//prime := new(big.Int).SetBytes(primeStr)
+	//_ = prime
 
 	// Функция описана здесь, и что-то проверяет.
 	// Реализовывать пока что лень.
 	// TODO: запилить
-	// https://github.com/tdlib/td/blob/f9009cbc01e9c4c77d31120a61feb9c639c6aeda/td/mtproto/DhHandshake.cpp#L18
+	//       или болт положить, ¯\_(ツ)_/¯
+	// https://github.com/tdlib/td/blob/f9009cbc01e9c4c77d31120a61feb9c639c6aeda/td/mtproto/DhHandshake.cpp
 
 	return false
 }
