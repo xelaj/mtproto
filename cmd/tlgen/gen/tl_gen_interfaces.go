@@ -18,9 +18,9 @@ func (g *Generator) generateInterfaces(f *jen.File) error {
 		structs := g.schema.Types[i]
 
 		iface := jen.Type().Id(g.goify(i)).Interface(
-			jen.Qual("github.com/xelaj/mtproto/serialize", "TL"),
+			jen.Qual("github.com/xelaj/mtproto/encoding/tl", "Object"),
 			jen.Id("Implements"+g.goify(i)).Params(),
-			jen.Id("Validate").Params().Id("error"),
+			//jen.Id("Validate").Params().Id("error"),
 		)
 		f.Add(
 			iface,
@@ -40,26 +40,23 @@ func (g *Generator) generateInterfaces(f *jen.File) error {
 
 			implFunc := jen.Func().Params(jen.Id("*" + structName)).Id("Implements" + g.goify(i)).Params().Block()
 
-			encoderFunc, err := g.generateEncodeFunc(_struct)
-			if err != nil {
-				return err
-			}
+			// encoderFunc, err := g.generateEncodeFunc(_struct)
+			// if err != nil {
+			// 	return err
+			// }
 
-			encoderNonReflectFunc, err := g.generateEncodeNonreflectFunc(_struct)
-			if err != nil {
-				return err
-			}
+			// encoderNonReflectFunc, err := g.generateEncodeNonreflectFunc(_struct)
+			// if err != nil {
+			// 	return err
+			// }
 
-			validateFn, err := g.generateStructValidatorFunc(_struct)
-			if err != nil {
-				return err
-			}
+			// validateFn, err := g.generateStructValidatorFunc(_struct)
+			// if err != nil {
+			// 	return err
+			// }
 
 			f.Add(
 				str,
-				jen.Line(),
-				jen.Line(),
-				validateFn,
 				jen.Line(),
 				jen.Line(),
 				crcFunc,
@@ -68,12 +65,15 @@ func (g *Generator) generateInterfaces(f *jen.File) error {
 				implFunc,
 				jen.Line(),
 				jen.Line(),
-				encoderFunc,
-				jen.Line(),
-				jen.Line(),
-				encoderNonReflectFunc,
-				jen.Line(),
-				jen.Line(),
+				// validateFn,
+				// jen.Line(),
+				// jen.Line(),
+				// encoderFunc,
+				// jen.Line(),
+				// jen.Line(),
+				// encoderNonReflectFunc,
+				// jen.Line(),
+				// jen.Line(),
 			)
 
 			// старые комменты, не ебу

@@ -66,12 +66,10 @@ func (g *Generator) generateStruct(str tlparser.Object) (*jen.Statement, error) 
 		}
 
 		tags := map[string]string{}
-		if !field.IsOptional {
-			tags["validate"] = "required"
-		} else {
-			tags["flag"] = strconv.Itoa(field.BitToTrigger)
+		if field.IsOptional {
+			tags["tl"] = "flag:" + strconv.Itoa(field.BitToTrigger)
 			if valueInsideFlag {
-				tags["flag"] += ",encoded_in_bitflags"
+				tags["tl"] += ",encoded_in_bitflags"
 			}
 		}
 
@@ -399,49 +397,46 @@ func (g *Generator) generateMethodCallerFunc(method tlparser.Method) (*jen.State
 	}
 
 	assertedType := g.goify(method.Response.Type)
-
-	if _, ok := g.schema.SingleInterfaceCanonical[method.Response.Type]; ok {
-		assertedType = "*" + assertedType
-	}
-
-	firstErrorReturn := jen.Code(jen.Nil())
+	//firstErrorReturn := jen.Code(jen.Nil())
 	if assertedType == "Bool" {
-		assertedType = "*serialize.Bool"
+		assertedType = "bool"
 		//firstErrorReturn = jen.False()
 	}
 	if assertedType == "Long" {
-		assertedType = "*serialize.Long"
+		assertedType = "int64"
 		//firstErrorReturn = jen.Lit(0)
 	}
 	if assertedType == "Int" {
-		assertedType = "*serialize.Int"
+		assertedType = "int"
 		//firstErrorReturn = jen.Lit(0)
 	}
 
+	if method.Response.IsList {
+		assertedType = "[]" + assertedType
+	}
+
 	calls := make([]jen.Code, 0)
+
+	// if _, ok := g.schema.SingleInterfaceCanonical[method.Response.Type]; ok {
+	// 	// assertedType = "*" + assertedType
+	// 	calls = append(calls, jen.Id("resp").Op(":=").New(jen.Id(assertedType)))
+	// } else {
+	// 	calls = append(calls, jen.Var().Id("resp").Id(assertedType))
+	// }
+
+	calls = append(calls, jen.Var().Id("resp").Id(assertedType))
 	calls = append(calls,
-		jen.List(jen.Id("data"), jen.Err()).Op(":=").Id("c.MakeRequest").Call(requestStruct),
-		jen.If(jen.Err().Op("!=").Nil()).Block(
-			//jen.Return(firstErrorReturn, jen.Qual("github.com/pkg/errors", "Wrap").Call(jen.Err(), jen.Lit("sedning "+methodName))),
-			jen.Return(
-				firstErrorReturn,
-				jen.Qual("fmt", "Errorf").Call(jen.Lit(methodName+": %w"), jen.Id("err")),
-			),
-		),
-		jen.Line(),
-		jen.List(jen.Id("resp"), jen.Id("ok")).Op(":=").Id("data").Assert(jen.Id(assertedType)),
-		jen.If(jen.Op("!").Id("ok")).Block(
-			jen.Err().Op(":=").Qual("fmt", "Errorf").Call(jen.Lit(methodName+": got invalid response type: %T"), jen.Id("data")),
-			jen.Comment(
-				jen.Return(
-					firstErrorReturn,
-					jen.Qual("fmt", "Errorf").Call(jen.Lit(methodName+": got invalid response type: %T"), jen.Id("data")),
-				).GoString(),
-			),
-			jen.Panic(jen.Err()),
-		),
-		jen.Line(),
-		jen.Return(jen.Id("resp"), jen.Nil()),
+		// jen.If(
+		// 	jen.Err().Op(":=").Id("c.MakeRequest2").Call(requestStruct, jen.Id("&resp")),
+		// 	jen.Err().Op("!=").Nil()).
+		// 	Block(
+		// 		jen.Return(
+		// 			firstErrorReturn,
+		// 			jen.Qual("fmt", "Errorf").Call(jen.Lit(methodName+": %w"), jen.Id("err")),
+		// 		),
+		// 	),
+		jen.Err().Op(":=").Id("c.MakeRequest2").Call(requestStruct, jen.Id("&resp")),
+		jen.Return(jen.Id("resp"), jen.Err()),
 	)
 
 	return jen.Func().Params(jen.Id("c").Id("*Client")).Id(methodName).Params(funcParameters...).Params(jen.Id(assertedType), jen.Error()).Block(

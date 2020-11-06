@@ -6,8 +6,6 @@ import (
 
 	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
-	"github.com/xelaj/errs"
-	dry "github.com/xelaj/go-dry"
 
 	"github.com/xelaj/mtproto"
 	"github.com/xelaj/mtproto/keys"
@@ -33,13 +31,13 @@ type ClientConfig struct {
 func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not ptr cause we call
 	//                                                               it only once, don't care
 	//                                                               about copying big args.
-	if !dry.FileExists(c.PublicKeysFile) {
-		return nil, errs.NotFound("file", c.PublicKeysFile)
-	}
+	// if !dry.FileExists(c.PublicKeysFile) {
+	// 	return nil, errs.NotFound("file", c.PublicKeysFile)
+	// }
 
-	if !dry.PathIsWirtable(c.SessionFile) {
-		return nil, errs.Permission(c.SessionFile).Scope("write")
-	}
+	// if !dry.PathIsWirtable(c.SessionFile) {
+	// 	return nil, errs.Permission(c.SessionFile).Scope("write")
+	// }
 
 	if c.DeviceModel == "" {
 		c.DeviceModel = "Unknown"

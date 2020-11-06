@@ -39,24 +39,24 @@ func (g *Generator) generateSpecificStructs(f *jen.File) error {
 			return err
 		}
 
-		crcFunc := jen.Func().Params(jen.Id("e").Id("*" + g.goify(interfaceName))).Id("CRC").Params().Uint32().Block(
+		crcFunc := jen.Func().Params(jen.Id("*" + g.goify(interfaceName))).Id("CRC").Params().Uint32().Block(
 			jen.Return(jen.Lit(_structWithIfaceName.CRC)),
 		)
 
-		validatorFunc, err := g.generateStructValidatorFunc(_structWithIfaceName)
-		if err != nil {
-			return err
-		}
+		// validatorFunc, err := g.generateStructValidatorFunc(_structWithIfaceName)
+		// if err != nil {
+		// 	return err
+		// }
 
-		encoderFunc, err := g.generateEncodeFunc(_structWithIfaceName)
-		if err != nil {
-			return err
-		}
+		// encoderFunc, err := g.generateEncodeFunc(_structWithIfaceName)
+		// if err != nil {
+		// 	return err
+		// }
 
-		encoderNonreflectFunc, err := g.generateEncodeNonreflectFunc(_structWithIfaceName)
-		if err != nil {
-			return err
-		}
+		// encoderNonreflectFunc, err := g.generateEncodeNonreflectFunc(_structWithIfaceName)
+		// if err != nil {
+		// 	return err
+		// }
 
 		f.Add(
 			// jen.Commentf("interface name: %s", interfaceName),
@@ -66,16 +66,16 @@ func (g *Generator) generateSpecificStructs(f *jen.File) error {
 			str,
 			jen.Line(),
 			jen.Line(),
-			validatorFunc,
+			//validatorFunc,
 			jen.Line(),
 			jen.Line(),
 			crcFunc,
 			jen.Line(),
 			jen.Line(),
-			encoderFunc,
+			//encoderFunc,
 			jen.Line(),
 			jen.Line(),
-			encoderNonreflectFunc,
+			//encoderNonreflectFunc,
 			jen.Line(),
 			jen.Line(),
 		)

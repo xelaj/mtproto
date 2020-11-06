@@ -56,12 +56,12 @@ func (g *Generator) generateSpecificEnum(enumType string, enumValues []enum) []j
 		jen.Return(jen.Uint32().Call(jen.Id("e"))),
 	)
 
-	encoderFunc := jen.Func().Params(jen.Id("e").Id(typeID)).Id("Encode").Params().Index().Byte().Block(
-		jen.Id("buf").Op(":=").Qual("github.com/xelaj/mtproto/serialize", "NewEncoder").Call(),
-		jen.Id("buf.PutCRC").Call(jen.Uint32().Call(jen.Id("e"))),
-		jen.Line(),
-		jen.Return(jen.Id("buf.Result").Call()),
-	)
+	// encoderFunc := jen.Func().Params(jen.Id("e").Id(typeID)).Id("Encode").Params().Index().Byte().Block(
+	// 	jen.Id("buf").Op(":=").Qual("github.com/xelaj/mtproto/serialize", "NewEncoder").Call(),
+	// 	jen.Id("buf.PutCRC").Call(jen.Uint32().Call(jen.Id("e"))),
+	// 	jen.Line(),
+	// 	jen.Return(jen.Id("buf.Result").Call()),
+	// )
 
 	total = append(total,
 		stringFunc,
@@ -70,9 +70,9 @@ func (g *Generator) generateSpecificEnum(enumType string, enumValues []enum) []j
 		crcFunc,
 		jen.Line(),
 		jen.Line(),
-		encoderFunc,
-		jen.Line(),
-		jen.Line(),
+		// encoderFunc,
+		// jen.Line(),
+		// jen.Line(),
 	)
 
 	return total

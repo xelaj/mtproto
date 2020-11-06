@@ -19,20 +19,20 @@ func (g *Generator) generateMethods(f *jen.File) error {
 			jen.Return(jen.Lit(method.CRC)),
 		)
 
-		validatorFunc, err := g.generateStructValidatorFunc(params)
-		if err != nil {
-			return fmt.Errorf("generate validator func for method params %s: %w", method.Name, err)
-		}
+		// validatorFunc, err := g.generateStructValidatorFunc(params)
+		// if err != nil {
+		// 	return fmt.Errorf("generate validator func for method params %s: %w", method.Name, err)
+		// }
 
-		encoderFunc, err := g.generateEncodeFunc(params)
-		if err != nil {
-			return fmt.Errorf("generate encode func for method %s: %w", method.Name, err)
-		}
+		// encoderFunc, err := g.generateEncodeFunc(params)
+		// if err != nil {
+		// 	return fmt.Errorf("generate encode func for method %s: %w", method.Name, err)
+		// }
 
-		encoderNonreflectFunc, err := g.generateEncodeNonreflectFunc(params)
-		if err != nil {
-			return fmt.Errorf("generate encode func for method %s: %w", method.Name, err)
-		}
+		// encoderNonreflectFunc, err := g.generateEncodeNonreflectFunc(params)
+		// if err != nil {
+		// 	return fmt.Errorf("generate encode func for method %s: %w", method.Name, err)
+		// }
 
 		callerFunc, err := g.generateMethodCallerFunc(method)
 		if err != nil {
@@ -44,15 +44,15 @@ func (g *Generator) generateMethods(f *jen.File) error {
 			jen.Line(),
 			jen.Line(),
 			crcFunc,
-			jen.Line(),
-			jen.Line(),
-			validatorFunc,
-			jen.Line(),
-			jen.Line(),
-			encoderFunc,
-			jen.Line(),
-			jen.Line(),
-			encoderNonreflectFunc,
+			// jen.Line(),
+			// jen.Line(),
+			// validatorFunc,
+			// jen.Line(),
+			// jen.Line(),
+			// encoderFunc,
+			// jen.Line(),
+			// jen.Line(),
+			// encoderNonreflectFunc,
 			jen.Line(),
 			jen.Line(),
 			callerFunc,

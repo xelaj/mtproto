@@ -96,9 +96,14 @@ func (g *Generator) Generate() error {
 		return fmt.Errorf("generate methods: %w", err)
 	}
 
-	err = g.generateFile(g.generateConstructorRouter, "constructor.go")
+	// err = g.generateFile(g.generateConstructorRouter, "constructor.go")
+	// if err != nil {
+	// 	return fmt.Errorf("generate constructor: %w", err)
+	// }
+
+	err = g.generateFile(g.generateInit, "init.go")
 	if err != nil {
-		return fmt.Errorf("generate constructor: %w", err)
+		return fmt.Errorf("generate init: %w", err)
 	}
 
 	return nil
