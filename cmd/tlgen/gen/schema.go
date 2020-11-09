@@ -60,7 +60,7 @@ func createInternalSchema(schema *tlparser.Schema) (*internalSchema, error) {
 		//? ВОЗМОЖНО (не уверен), сервер проверяет на типизацию так: он сначала проходится по типам (интерфейсам), которых не так много, и в каждом типе проверяет, соблюдает ли
 		//? конструктор этот тип (интерфейс), если нет, то идет дальше. ВОЗМОЖНО это сделано чисто для оптимизации, хуй его знает. Но другого объяснения, почему в методы
 		//? отдают вот прям только интерфейсы и ничего больше, у меня вариантов тупо нет
-		if interfaceIsSpecific(objects) {
+		if len(objects) == 1 {
 			ischem.SingleInterfaceTypes = append(ischem.SingleInterfaceTypes, objects[0])
 			ischem.SingleInterfaceCanonical[interfaceName] = objects[0].Name
 			delete(reversedObjects, interfaceName)
@@ -128,8 +128,4 @@ func interfaceIsEnum(in []tlparser.Object) bool {
 	}
 
 	return true
-}
-
-func interfaceIsSpecific(in []tlparser.Object) bool {
-	return len(in) == 1
 }

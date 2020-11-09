@@ -6,7 +6,7 @@ import (
 	"github.com/dave/jennifer/jen"
 )
 
-func (g *Generator) generateEnumDefinitions(file *jen.File) error {
+func (g *Generator) generateEnumDefinitions(file *jen.File) {
 	enumTypes := make([]string, len(g.schema.Enums))
 	enumIndex := 0
 	for _type := range g.schema.Enums {
@@ -24,7 +24,6 @@ func (g *Generator) generateEnumDefinitions(file *jen.File) error {
 
 		file.Add(g.generateSpecificEnum(enumType, values)...)
 	}
-	return nil
 }
 
 func (g *Generator) generateSpecificEnum(enumType string, enumValues []enum) []jen.Code {
@@ -52,16 +51,8 @@ func (g *Generator) generateSpecificEnum(enumType string, enumValues []enum) []j
 		jen.Switch(jen.Id("e")).Block(cases...),
 	)
 
-	crcFunc := jen.Func().Params(jen.Id("e").Id(typeID)).Id("CRC").Params().Uint32().Block(
-		jen.Return(jen.Uint32().Call(jen.Id("e"))),
-	)
-
-	// encoderFunc := jen.Func().Params(jen.Id("e").Id(typeID)).Id("Encode").Params().Index().Byte().Block(
-	// 	jen.Id("buf").Op(":=").Qual("github.com/xelaj/mtproto/serialize", "NewEncoder").Call(),
-	// 	jen.Id("buf.PutCRC").Call(jen.Uint32().Call(jen.Id("e"))),
-	// 	jen.Line(),
-	// 	jen.Return(jen.Id("buf.Result").Call()),
-	// )
+	crcFunc := jen.Func().Params(jen.Id("e").Id(typeID)).Id("CRC").Params().Uint32().
+		Id("{ return uint32(e) }")
 
 	total = append(total,
 		stringFunc,
@@ -70,35 +61,7 @@ func (g *Generator) generateSpecificEnum(enumType string, enumValues []enum) []j
 		crcFunc,
 		jen.Line(),
 		jen.Line(),
-		// encoderFunc,
-		// jen.Line(),
-		// jen.Line(),
 	)
 
 	return total
-
-	// старые комменты, не ебу
-	/*
-		!type InputWallPaper uint32
-		!
-		!const (
-		!	InputWallPaperNoFile InputWallPaper = 2217196460
-		!)
-		!
-		!func (e *InputWallPaper) String() string {
-		!	switch e {
-		!	case 2217196460:
-		!		return "inputWallPaperNoFile"
-		!	default:
-		!		return "<UNKNOWN input.WallPaper>"
-		!	}
-		!}
-		!
-		!func (e *InputWallPaper) Encode() []byte {
-		!	buf := mtproto.NewEncoder()
-		!	buf.PutUint(uint32(e))
-		!
-		!	return buf.Result()
-		!}
-	*/
 }

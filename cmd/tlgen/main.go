@@ -9,7 +9,7 @@ import (
 	"github.com/xelaj/mtproto/cmd/tlgen/tlparser"
 )
 
-const helpMsg = `generate-tl-files
+const helpMsg = `tlgen
 usage: tlgen input_file.tl output_dir/
 
 THIS TOOL IS USING ONLY FOR AUTOMATIC CODE
