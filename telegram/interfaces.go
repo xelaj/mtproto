@@ -2,1284 +2,68 @@
 
 package telegram
 
-import tl "github.com/xelaj/mtproto/encoding/tl"
+import (
+	validator "github.com/go-playground/validator"
+	zero "github.com/vikyd/zero"
+	dry "github.com/xelaj/go-dry"
+	serialize "github.com/xelaj/mtproto/serialize"
+)
 
-type BotInlineMessage interface {
-	tl.Object
-	ImplementsBotInlineMessage()
+type PageListItem interface {
+	serialize.TL
+	ImplementsPageListItem()
 }
 
-type BotInlineMessageMediaAuto struct {
-	// flags position
-	Message     string
-	Entities    []MessageEntity `tl:"flag:1"`
-	ReplyMarkup ReplyMarkup     `tl:"flag:2"`
+type PageListItemText struct {
+	Text RichText `validate:"required"`
 }
 
-func (*BotInlineMessageMediaAuto) CRC() uint32 {
-	return uint32(0x764cf810)
+func (*PageListItemText) CRC() uint32 {
+	return uint32(0xb92fb6cd)
 }
 
-func (*BotInlineMessageMediaAuto) ImplementsBotInlineMessage() {}
+func (*PageListItemText) ImplementsPageListItem() {}
 
-type BotInlineMessageText struct {
-	// flags position
-	NoWebpage   bool `tl:"flag:0,encoded_in_bitflags"`
-	Message     string
-	Entities    []MessageEntity `tl:"flag:1"`
-	ReplyMarkup ReplyMarkup     `tl:"flag:2"`
-}
-
-func (*BotInlineMessageText) CRC() uint32 {
-	return uint32(0x8c7f65e2)
-}
-
-func (*BotInlineMessageText) ImplementsBotInlineMessage() {}
-
-type BotInlineMessageMediaGeo struct {
-	// flags position
-	Geo         GeoPoint
-	Period      int32
-	ReplyMarkup ReplyMarkup `tl:"flag:2"`
-}
-
-func (*BotInlineMessageMediaGeo) CRC() uint32 {
-	return uint32(0xb722de65)
-}
-
-func (*BotInlineMessageMediaGeo) ImplementsBotInlineMessage() {}
-
-type BotInlineMessageMediaVenue struct {
-	// flags position
-	Geo         GeoPoint
-	Title       string
-	Address     string
-	Provider    string
-	VenueId     string
-	VenueType   string
-	ReplyMarkup ReplyMarkup `tl:"flag:2"`
-}
-
-func (*BotInlineMessageMediaVenue) CRC() uint32 {
-	return uint32(0x8a86659c)
-}
-
-func (*BotInlineMessageMediaVenue) ImplementsBotInlineMessage() {}
-
-type BotInlineMessageMediaContact struct {
-	// flags position
-	PhoneNumber string
-	FirstName   string
-	LastName    string
-	Vcard       string
-	ReplyMarkup ReplyMarkup `tl:"flag:2"`
-}
-
-func (*BotInlineMessageMediaContact) CRC() uint32 {
-	return uint32(0x18d1cdc2)
-}
-
-func (*BotInlineMessageMediaContact) ImplementsBotInlineMessage() {}
-
-type BotInlineResult interface {
-	tl.Object
-	ImplementsBotInlineResult()
-}
-
-type BotInlineResultObj struct {
-	// flags position
-	Id          string
-	Type        string
-	Title       string      `tl:"flag:1"`
-	Description string      `tl:"flag:2"`
-	Url         string      `tl:"flag:3"`
-	Thumb       WebDocument `tl:"flag:4"`
-	Content     WebDocument `tl:"flag:5"`
-	SendMessage BotInlineMessage
-}
-
-func (*BotInlineResultObj) CRC() uint32 {
-	return uint32(0x11965f3a)
-}
-
-func (*BotInlineResultObj) ImplementsBotInlineResult() {}
-
-type BotInlineMediaResult struct {
-	// flags position
-	Id          string
-	Type        string
-	Photo       Photo    `tl:"flag:0"`
-	Document    Document `tl:"flag:1"`
-	Title       string   `tl:"flag:2"`
-	Description string   `tl:"flag:3"`
-	SendMessage BotInlineMessage
-}
-
-func (*BotInlineMediaResult) CRC() uint32 {
-	return uint32(0x17db940b)
-}
-
-func (*BotInlineMediaResult) ImplementsBotInlineResult() {}
-
-type ChannelAdminLogEventAction interface {
-	tl.Object
-	ImplementsChannelAdminLogEventAction()
-}
-
-type ChannelAdminLogEventActionChangeTitle struct {
-	PrevValue string
-	NewValue  string
-}
-
-func (*ChannelAdminLogEventActionChangeTitle) CRC() uint32 {
-	return uint32(0xe6dfb825)
-}
-
-func (*ChannelAdminLogEventActionChangeTitle) ImplementsChannelAdminLogEventAction() {}
-
-type ChannelAdminLogEventActionChangeAbout struct {
-	PrevValue string
-	NewValue  string
-}
-
-func (*ChannelAdminLogEventActionChangeAbout) CRC() uint32 {
-	return uint32(0x55188a2e)
-}
-
-func (*ChannelAdminLogEventActionChangeAbout) ImplementsChannelAdminLogEventAction() {}
-
-type ChannelAdminLogEventActionChangeUsername struct {
-	PrevValue string
-	NewValue  string
-}
-
-func (*ChannelAdminLogEventActionChangeUsername) CRC() uint32 {
-	return uint32(0x6a4afc38)
-}
-
-func (*ChannelAdminLogEventActionChangeUsername) ImplementsChannelAdminLogEventAction() {}
-
-type ChannelAdminLogEventActionChangePhoto struct {
-	PrevPhoto Photo
-	NewPhoto  Photo
-}
-
-func (*ChannelAdminLogEventActionChangePhoto) CRC() uint32 {
-	return uint32(0x434bd2af)
-}
-
-func (*ChannelAdminLogEventActionChangePhoto) ImplementsChannelAdminLogEventAction() {}
-
-type ChannelAdminLogEventActionToggleInvites struct {
-	NewValue bool
-}
-
-func (*ChannelAdminLogEventActionToggleInvites) CRC() uint32 {
-	return uint32(0x1b7907ae)
-}
-
-func (*ChannelAdminLogEventActionToggleInvites) ImplementsChannelAdminLogEventAction() {}
-
-type ChannelAdminLogEventActionToggleSignatures struct {
-	NewValue bool
-}
-
-func (*ChannelAdminLogEventActionToggleSignatures) CRC() uint32 {
-	return uint32(0x26ae0971)
-}
-
-func (*ChannelAdminLogEventActionToggleSignatures) ImplementsChannelAdminLogEventAction() {}
-
-type ChannelAdminLogEventActionUpdatePinned struct {
-	Message Message
-}
-
-func (*ChannelAdminLogEventActionUpdatePinned) CRC() uint32 {
-	return uint32(0xe9e82c18)
-}
-
-func (*ChannelAdminLogEventActionUpdatePinned) ImplementsChannelAdminLogEventAction() {}
-
-type ChannelAdminLogEventActionEditMessage struct {
-	PrevMessage Message
-	NewMessage  Message
-}
-
-func (*ChannelAdminLogEventActionEditMessage) CRC() uint32 {
-	return uint32(0x709b2405)
-}
-
-func (*ChannelAdminLogEventActionEditMessage) ImplementsChannelAdminLogEventAction() {}
-
-type ChannelAdminLogEventActionDeleteMessage struct {
-	Message Message
-}
-
-func (*ChannelAdminLogEventActionDeleteMessage) CRC() uint32 {
-	return uint32(0x42e047bb)
-}
-
-func (*ChannelAdminLogEventActionDeleteMessage) ImplementsChannelAdminLogEventAction() {}
-
-type ChannelAdminLogEventActionParticipantJoin struct{}
-
-func (*ChannelAdminLogEventActionParticipantJoin) CRC() uint32 {
-	return uint32(0x183040d3)
-}
-
-func (*ChannelAdminLogEventActionParticipantJoin) ImplementsChannelAdminLogEventAction() {}
-
-type ChannelAdminLogEventActionParticipantLeave struct{}
-
-func (*ChannelAdminLogEventActionParticipantLeave) CRC() uint32 {
-	return uint32(0xf89777f2)
-}
-
-func (*ChannelAdminLogEventActionParticipantLeave) ImplementsChannelAdminLogEventAction() {}
-
-type ChannelAdminLogEventActionParticipantInvite struct {
-	Participant ChannelParticipant
-}
-
-func (*ChannelAdminLogEventActionParticipantInvite) CRC() uint32 {
-	return uint32(0xe31c34d8)
-}
-
-func (*ChannelAdminLogEventActionParticipantInvite) ImplementsChannelAdminLogEventAction() {}
-
-type ChannelAdminLogEventActionParticipantToggleBan struct {
-	PrevParticipant ChannelParticipant
-	NewParticipant  ChannelParticipant
-}
-
-func (*ChannelAdminLogEventActionParticipantToggleBan) CRC() uint32 {
-	return uint32(0xe6d83d7e)
-}
-
-func (*ChannelAdminLogEventActionParticipantToggleBan) ImplementsChannelAdminLogEventAction() {}
-
-type ChannelAdminLogEventActionParticipantToggleAdmin struct {
-	PrevParticipant ChannelParticipant
-	NewParticipant  ChannelParticipant
-}
-
-func (*ChannelAdminLogEventActionParticipantToggleAdmin) CRC() uint32 {
-	return uint32(0xd5676710)
-}
-
-func (*ChannelAdminLogEventActionParticipantToggleAdmin) ImplementsChannelAdminLogEventAction() {}
-
-type ChannelAdminLogEventActionChangeStickerSet struct {
-	PrevStickerset InputStickerSet
-	NewStickerset  InputStickerSet
-}
-
-func (*ChannelAdminLogEventActionChangeStickerSet) CRC() uint32 {
-	return uint32(0xb1c3caa7)
-}
-
-func (*ChannelAdminLogEventActionChangeStickerSet) ImplementsChannelAdminLogEventAction() {}
-
-type ChannelAdminLogEventActionTogglePreHistoryHidden struct {
-	NewValue bool
-}
-
-func (*ChannelAdminLogEventActionTogglePreHistoryHidden) CRC() uint32 {
-	return uint32(0x5f5c95f1)
-}
-
-func (*ChannelAdminLogEventActionTogglePreHistoryHidden) ImplementsChannelAdminLogEventAction() {}
-
-type ChannelAdminLogEventActionDefaultBannedRights struct {
-	PrevBannedRights *ChatBannedRights
-	NewBannedRights  *ChatBannedRights
-}
-
-func (*ChannelAdminLogEventActionDefaultBannedRights) CRC() uint32 {
-	return uint32(0x2df5fc0a)
-}
-
-func (*ChannelAdminLogEventActionDefaultBannedRights) ImplementsChannelAdminLogEventAction() {}
-
-type ChannelAdminLogEventActionStopPoll struct {
-	Message Message
-}
-
-func (*ChannelAdminLogEventActionStopPoll) CRC() uint32 {
-	return uint32(0x8f079643)
-}
-
-func (*ChannelAdminLogEventActionStopPoll) ImplementsChannelAdminLogEventAction() {}
-
-type ChannelAdminLogEventActionChangeLinkedChat struct {
-	PrevValue int32
-	NewValue  int32
-}
-
-func (*ChannelAdminLogEventActionChangeLinkedChat) CRC() uint32 {
-	return uint32(0xa26f881b)
-}
-
-func (*ChannelAdminLogEventActionChangeLinkedChat) ImplementsChannelAdminLogEventAction() {}
-
-type ChannelAdminLogEventActionChangeLocation struct {
-	PrevValue ChannelLocation
-	NewValue  ChannelLocation
-}
-
-func (*ChannelAdminLogEventActionChangeLocation) CRC() uint32 {
-	return uint32(0xe6b76ae)
-}
-
-func (*ChannelAdminLogEventActionChangeLocation) ImplementsChannelAdminLogEventAction() {}
-
-type ChannelAdminLogEventActionToggleSlowMode struct {
-	PrevValue int32
-	NewValue  int32
-}
-
-func (*ChannelAdminLogEventActionToggleSlowMode) CRC() uint32 {
-	return uint32(0x53909779)
-}
-
-func (*ChannelAdminLogEventActionToggleSlowMode) ImplementsChannelAdminLogEventAction() {}
-
-type ChannelLocation interface {
-	tl.Object
-	ImplementsChannelLocation()
-}
-
-type ChannelLocationEmpty struct{}
-
-func (*ChannelLocationEmpty) CRC() uint32 {
-	return uint32(0xbfb5ad8b)
-}
-
-func (*ChannelLocationEmpty) ImplementsChannelLocation() {}
-
-type ChannelLocationObj struct {
-	GeoPoint GeoPoint
-	Address  string
-}
-
-func (*ChannelLocationObj) CRC() uint32 {
-	return uint32(0x209b82db)
-}
-
-func (*ChannelLocationObj) ImplementsChannelLocation() {}
-
-type ChannelMessagesFilter interface {
-	tl.Object
-	ImplementsChannelMessagesFilter()
-}
-
-type ChannelMessagesFilterEmpty struct{}
-
-func (*ChannelMessagesFilterEmpty) CRC() uint32 {
-	return uint32(0x94d42ee7)
-}
-
-func (*ChannelMessagesFilterEmpty) ImplementsChannelMessagesFilter() {}
-
-type ChannelMessagesFilterObj struct {
-	// flags position
-	ExcludeNewMessages bool `tl:"flag:1,encoded_in_bitflags"`
-	Ranges             []*MessageRange
-}
-
-func (*ChannelMessagesFilterObj) CRC() uint32 {
-	return uint32(0xcd77d957)
-}
-
-func (*ChannelMessagesFilterObj) ImplementsChannelMessagesFilter() {}
-
-type ChannelParticipant interface {
-	tl.Object
-	ImplementsChannelParticipant()
-}
-
-type ChannelParticipantObj struct {
-	UserId int32
-	Date   int32
-}
-
-func (*ChannelParticipantObj) CRC() uint32 {
-	return uint32(0x15ebac1d)
-}
-
-func (*ChannelParticipantObj) ImplementsChannelParticipant() {}
-
-type ChannelParticipantSelf struct {
-	UserId    int32
-	InviterId int32
-	Date      int32
-}
-
-func (*ChannelParticipantSelf) CRC() uint32 {
-	return uint32(0xa3289a6d)
-}
-
-func (*ChannelParticipantSelf) ImplementsChannelParticipant() {}
-
-type ChannelParticipantCreator struct {
-	// flags position
-	UserId int32
-	Rank   string `tl:"flag:0"`
-}
-
-func (*ChannelParticipantCreator) CRC() uint32 {
-	return uint32(0x808d15a4)
-}
-
-func (*ChannelParticipantCreator) ImplementsChannelParticipant() {}
-
-type ChannelParticipantAdmin struct {
-	// flags position
-	CanEdit     bool `tl:"flag:0,encoded_in_bitflags"`
-	Self        bool `tl:"flag:1,encoded_in_bitflags"`
-	UserId      int32
-	InviterId   int32 `tl:"flag:1"`
-	PromotedBy  int32
-	Date        int32
-	AdminRights *ChatAdminRights
-	Rank        string `tl:"flag:2"`
-}
-
-func (*ChannelParticipantAdmin) CRC() uint32 {
-	return uint32(0xccbebbaf)
-}
-
-func (*ChannelParticipantAdmin) ImplementsChannelParticipant() {}
-
-type ChannelParticipantBanned struct {
-	// flags position
-	Left         bool `tl:"flag:0,encoded_in_bitflags"`
-	UserId       int32
-	KickedBy     int32
-	Date         int32
-	BannedRights *ChatBannedRights
-}
-
-func (*ChannelParticipantBanned) CRC() uint32 {
-	return uint32(0x1c0facaf)
-}
-
-func (*ChannelParticipantBanned) ImplementsChannelParticipant() {}
-
-type ChannelParticipantsFilter interface {
-	tl.Object
-	ImplementsChannelParticipantsFilter()
-}
-
-type ChannelParticipantsRecent struct{}
-
-func (*ChannelParticipantsRecent) CRC() uint32 {
-	return uint32(0xde3f3c79)
-}
-
-func (*ChannelParticipantsRecent) ImplementsChannelParticipantsFilter() {}
-
-type ChannelParticipantsAdmins struct{}
-
-func (*ChannelParticipantsAdmins) CRC() uint32 {
-	return uint32(0xb4608969)
-}
-
-func (*ChannelParticipantsAdmins) ImplementsChannelParticipantsFilter() {}
-
-type ChannelParticipantsKicked struct {
-	Q string
-}
-
-func (*ChannelParticipantsKicked) CRC() uint32 {
-	return uint32(0xa3b54985)
-}
-
-func (*ChannelParticipantsKicked) ImplementsChannelParticipantsFilter() {}
-
-type ChannelParticipantsBots struct{}
-
-func (*ChannelParticipantsBots) CRC() uint32 {
-	return uint32(0xb0d1865b)
-}
-
-func (*ChannelParticipantsBots) ImplementsChannelParticipantsFilter() {}
-
-type ChannelParticipantsBanned struct {
-	Q string
-}
-
-func (*ChannelParticipantsBanned) CRC() uint32 {
-	return uint32(0x1427a5e1)
-}
-
-func (*ChannelParticipantsBanned) ImplementsChannelParticipantsFilter() {}
-
-type ChannelParticipantsSearch struct {
-	Q string
-}
-
-func (*ChannelParticipantsSearch) CRC() uint32 {
-	return uint32(0x656ac4b)
-}
-
-func (*ChannelParticipantsSearch) ImplementsChannelParticipantsFilter() {}
-
-type ChannelParticipantsContacts struct {
-	Q string
-}
-
-func (*ChannelParticipantsContacts) CRC() uint32 {
-	return uint32(0xbb6ae88d)
-}
-
-func (*ChannelParticipantsContacts) ImplementsChannelParticipantsFilter() {}
-
-type Chat interface {
-	tl.Object
-	ImplementsChat()
-}
-
-type ChatEmpty struct {
-	Id int32
-}
-
-func (*ChatEmpty) CRC() uint32 {
-	return uint32(0x9ba2d800)
-}
-
-func (*ChatEmpty) ImplementsChat() {}
-
-type ChatObj struct {
-	// flags position
-	Creator             bool `tl:"flag:0,encoded_in_bitflags"`
-	Kicked              bool `tl:"flag:1,encoded_in_bitflags"`
-	Left                bool `tl:"flag:2,encoded_in_bitflags"`
-	Deactivated         bool `tl:"flag:5,encoded_in_bitflags"`
-	Id                  int32
-	Title               string
-	Photo               ChatPhoto
-	ParticipantsCount   int32
-	Date                int32
-	Version             int32
-	MigratedTo          InputChannel      `tl:"flag:6"`
-	AdminRights         *ChatAdminRights  `tl:"flag:14"`
-	DefaultBannedRights *ChatBannedRights `tl:"flag:18"`
-}
-
-func (*ChatObj) CRC() uint32 {
-	return uint32(0x3bda1bde)
-}
-
-func (*ChatObj) ImplementsChat() {}
-
-type ChatForbidden struct {
-	Id    int32
-	Title string
-}
-
-func (*ChatForbidden) CRC() uint32 {
-	return uint32(0x7328bdb)
-}
-
-func (*ChatForbidden) ImplementsChat() {}
+func (e *PageListItemText) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
 
-type Channel struct {
-	// flags position
-	Creator             bool `tl:"flag:0,encoded_in_bitflags"`
-	Left                bool `tl:"flag:2,encoded_in_bitflags"`
-	Broadcast           bool `tl:"flag:5,encoded_in_bitflags"`
-	Verified            bool `tl:"flag:7,encoded_in_bitflags"`
-	Megagroup           bool `tl:"flag:8,encoded_in_bitflags"`
-	Restricted          bool `tl:"flag:9,encoded_in_bitflags"`
-	Signatures          bool `tl:"flag:11,encoded_in_bitflags"`
-	Min                 bool `tl:"flag:12,encoded_in_bitflags"`
-	Scam                bool `tl:"flag:19,encoded_in_bitflags"`
-	HasLink             bool `tl:"flag:20,encoded_in_bitflags"`
-	HasGeo              bool `tl:"flag:21,encoded_in_bitflags"`
-	SlowmodeEnabled     bool `tl:"flag:22,encoded_in_bitflags"`
-	Id                  int32
-	AccessHash          int64 `tl:"flag:13"`
-	Title               string
-	Username            string `tl:"flag:6"`
-	Photo               ChatPhoto
-	Date                int32
-	Version             int32
-	RestrictionReason   []*RestrictionReason `tl:"flag:9"`
-	AdminRights         *ChatAdminRights     `tl:"flag:14"`
-	BannedRights        *ChatBannedRights    `tl:"flag:15"`
-	DefaultBannedRights *ChatBannedRights    `tl:"flag:18"`
-	ParticipantsCount   int32                `tl:"flag:17"`
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	return buf.Result()
 }
 
-func (*Channel) CRC() uint32 {
-	return uint32(0xd31a961e)
+type PageListItemBlocks struct {
+	Blocks []PageBlock `validate:"required"`
 }
 
-func (*Channel) ImplementsChat() {}
-
-type ChannelForbidden struct {
-	// flags position
-	Broadcast  bool `tl:"flag:5,encoded_in_bitflags"`
-	Megagroup  bool `tl:"flag:8,encoded_in_bitflags"`
-	Id         int32
-	AccessHash int64
-	Title      string
-	UntilDate  int32 `tl:"flag:16"`
-}
-
-func (*ChannelForbidden) CRC() uint32 {
-	return uint32(0x289da732)
-}
-
-func (*ChannelForbidden) ImplementsChat() {}
-
-type ChatFull interface {
-	tl.Object
-	ImplementsChatFull()
-}
-
-type ChatFullObj struct {
-	// flags position
-	CanSetUsername bool `tl:"flag:7,encoded_in_bitflags"`
-	HasScheduled   bool `tl:"flag:8,encoded_in_bitflags"`
-	Id             int32
-	About          string
-	Participants   ChatParticipants
-	ChatPhoto      Photo `tl:"flag:2"`
-	NotifySettings *PeerNotifySettings
-	ExportedInvite ExportedChatInvite
-	BotInfo        []*BotInfo `tl:"flag:3"`
-	PinnedMsgId    int32      `tl:"flag:6"`
-	FolderId       int32      `tl:"flag:11"`
-}
-
-func (*ChatFullObj) CRC() uint32 {
-	return uint32(0x1b7c9db3)
-}
-
-func (*ChatFullObj) ImplementsChatFull() {}
-
-type ChannelFull struct {
-	// flags position
-	CanViewParticipants  bool `tl:"flag:3,encoded_in_bitflags"`
-	CanSetUsername       bool `tl:"flag:6,encoded_in_bitflags"`
-	CanSetStickers       bool `tl:"flag:7,encoded_in_bitflags"`
-	HiddenPrehistory     bool `tl:"flag:10,encoded_in_bitflags"`
-	CanSetLocation       bool `tl:"flag:16,encoded_in_bitflags"`
-	HasScheduled         bool `tl:"flag:19,encoded_in_bitflags"`
-	CanViewStats         bool `tl:"flag:20,encoded_in_bitflags"`
-	Id                   int32
-	About                string
-	ParticipantsCount    int32 `tl:"flag:0"`
-	AdminsCount          int32 `tl:"flag:1"`
-	KickedCount          int32 `tl:"flag:2"`
-	BannedCount          int32 `tl:"flag:2"`
-	OnlineCount          int32 `tl:"flag:13"`
-	ReadInboxMaxId       int32
-	ReadOutboxMaxId      int32
-	UnreadCount          int32
-	ChatPhoto            Photo
-	NotifySettings       *PeerNotifySettings
-	ExportedInvite       ExportedChatInvite
-	BotInfo              []*BotInfo
-	MigratedFromChatId   int32           `tl:"flag:4"`
-	MigratedFromMaxId    int32           `tl:"flag:4"`
-	PinnedMsgId          int32           `tl:"flag:5"`
-	Stickerset           *StickerSet     `tl:"flag:8"`
-	AvailableMinId       int32           `tl:"flag:9"`
-	FolderId             int32           `tl:"flag:11"`
-	LinkedChatId         int32           `tl:"flag:14"`
-	Location             ChannelLocation `tl:"flag:15"`
-	SlowmodeSeconds      int32           `tl:"flag:17"`
-	SlowmodeNextSendDate int32           `tl:"flag:18"`
-	StatsDc              int32           `tl:"flag:12"`
-	Pts                  int32
-}
-
-func (*ChannelFull) CRC() uint32 {
-	return uint32(0xf0e6672a)
-}
-
-func (*ChannelFull) ImplementsChatFull() {}
-
-type ChatInvite interface {
-	tl.Object
-	ImplementsChatInvite()
-}
-
-type ChatInviteAlready struct {
-	Chat Chat
-}
-
-func (*ChatInviteAlready) CRC() uint32 {
-	return uint32(0x5a686d7c)
-}
-
-func (*ChatInviteAlready) ImplementsChatInvite() {}
-
-type ChatInviteObj struct {
-	// flags position
-	Channel           bool `tl:"flag:0,encoded_in_bitflags"`
-	Broadcast         bool `tl:"flag:1,encoded_in_bitflags"`
-	Public            bool `tl:"flag:2,encoded_in_bitflags"`
-	Megagroup         bool `tl:"flag:3,encoded_in_bitflags"`
-	Title             string
-	Photo             Photo
-	ParticipantsCount int32
-	Participants      []User `tl:"flag:4"`
-}
-
-func (*ChatInviteObj) CRC() uint32 {
-	return uint32(0xdfc2f58e)
-}
-
-func (*ChatInviteObj) ImplementsChatInvite() {}
-
-type ChatInvitePeek struct {
-	Chat    Chat
-	Expires int32
-}
-
-func (*ChatInvitePeek) CRC() uint32 {
-	return uint32(0x61695cb0)
-}
-
-func (*ChatInvitePeek) ImplementsChatInvite() {}
-
-type ChatParticipant interface {
-	tl.Object
-	ImplementsChatParticipant()
-}
-
-type ChatParticipantObj struct {
-	UserId    int32
-	InviterId int32
-	Date      int32
-}
-
-func (*ChatParticipantObj) CRC() uint32 {
-	return uint32(0xc8d7493e)
-}
-
-func (*ChatParticipantObj) ImplementsChatParticipant() {}
-
-type ChatParticipantCreator struct {
-	UserId int32
-}
-
-func (*ChatParticipantCreator) CRC() uint32 {
-	return uint32(0xda13538a)
-}
-
-func (*ChatParticipantCreator) ImplementsChatParticipant() {}
-
-type ChatParticipantAdmin struct {
-	UserId    int32
-	InviterId int32
-	Date      int32
-}
-
-func (*ChatParticipantAdmin) CRC() uint32 {
-	return uint32(0xe2d6e436)
-}
-
-func (*ChatParticipantAdmin) ImplementsChatParticipant() {}
-
-type ChatParticipants interface {
-	tl.Object
-	ImplementsChatParticipants()
-}
-
-type ChatParticipantsForbidden struct {
-	// flags position
-	ChatId          int32
-	SelfParticipant ChatParticipant `tl:"flag:0"`
-}
-
-func (*ChatParticipantsForbidden) CRC() uint32 {
-	return uint32(0xfc900c2b)
-}
-
-func (*ChatParticipantsForbidden) ImplementsChatParticipants() {}
-
-type ChatParticipantsObj struct {
-	ChatId       int32
-	Participants []ChatParticipant
-	Version      int32
-}
-
-func (*ChatParticipantsObj) CRC() uint32 {
-	return uint32(0x3f460fed)
-}
-
-func (*ChatParticipantsObj) ImplementsChatParticipants() {}
-
-type ChatPhoto interface {
-	tl.Object
-	ImplementsChatPhoto()
-}
-
-type ChatPhotoEmpty struct{}
-
-func (*ChatPhotoEmpty) CRC() uint32 {
-	return uint32(0x37c1011c)
-}
-
-func (*ChatPhotoEmpty) ImplementsChatPhoto() {}
-
-type ChatPhotoObj struct {
-	// flags position
-	HasVideo   bool `tl:"flag:0,encoded_in_bitflags"`
-	PhotoSmall *FileLocation
-	PhotoBig   *FileLocation
-	DcId       int32
-}
-
-func (*ChatPhotoObj) CRC() uint32 {
-	return uint32(0xd20b9f3c)
-}
-
-func (*ChatPhotoObj) ImplementsChatPhoto() {}
-
-type Dialog interface {
-	tl.Object
-	ImplementsDialog()
-}
-
-type DialogObj struct {
-	// flags position
-	Pinned              bool `tl:"flag:2,encoded_in_bitflags"`
-	UnreadMark          bool `tl:"flag:3,encoded_in_bitflags"`
-	Peer                Peer
-	TopMessage          int32
-	ReadInboxMaxId      int32
-	ReadOutboxMaxId     int32
-	UnreadCount         int32
-	UnreadMentionsCount int32
-	NotifySettings      *PeerNotifySettings
-	Pts                 int32        `tl:"flag:0"`
-	Draft               DraftMessage `tl:"flag:1"`
-	FolderId            int32        `tl:"flag:4"`
-}
-
-func (*DialogObj) CRC() uint32 {
-	return uint32(0x2c171f72)
-}
-
-func (*DialogObj) ImplementsDialog() {}
-
-type DialogFolder struct {
-	// flags position
-	Pinned                     bool `tl:"flag:2,encoded_in_bitflags"`
-	Folder                     *Folder
-	Peer                       Peer
-	TopMessage                 int32
-	UnreadMutedPeersCount      int32
-	UnreadUnmutedPeersCount    int32
-	UnreadMutedMessagesCount   int32
-	UnreadUnmutedMessagesCount int32
-}
-
-func (*DialogFolder) CRC() uint32 {
-	return uint32(0x71bd134c)
-}
-
-func (*DialogFolder) ImplementsDialog() {}
-
-type DialogPeer interface {
-	tl.Object
-	ImplementsDialogPeer()
-}
-
-type DialogPeerObj struct {
-	Peer Peer
-}
-
-func (*DialogPeerObj) CRC() uint32 {
-	return uint32(0xe56dbf05)
-}
-
-func (*DialogPeerObj) ImplementsDialogPeer() {}
-
-type DialogPeerFolder struct {
-	FolderId int32
-}
-
-func (*DialogPeerFolder) CRC() uint32 {
-	return uint32(0x514519e2)
-}
-
-func (*DialogPeerFolder) ImplementsDialogPeer() {}
-
-type Document interface {
-	tl.Object
-	ImplementsDocument()
-}
-
-type DocumentEmpty struct {
-	Id int64
-}
-
-func (*DocumentEmpty) CRC() uint32 {
-	return uint32(0x36f8c871)
-}
-
-func (*DocumentEmpty) ImplementsDocument() {}
-
-type DocumentObj struct {
-	// flags position
-	Id            int64
-	AccessHash    int64
-	FileReference []byte
-	Date          int32
-	MimeType      string
-	Size          int32
-	Thumbs        []PhotoSize  `tl:"flag:0"`
-	VideoThumbs   []*VideoSize `tl:"flag:1"`
-	DcId          int32
-	Attributes    []DocumentAttribute
-}
-
-func (*DocumentObj) CRC() uint32 {
-	return uint32(0x1e87342b)
-}
-
-func (*DocumentObj) ImplementsDocument() {}
-
-type DocumentAttribute interface {
-	tl.Object
-	ImplementsDocumentAttribute()
-}
-
-type DocumentAttributeImageSize struct {
-	W int32
-	H int32
-}
-
-func (*DocumentAttributeImageSize) CRC() uint32 {
-	return uint32(0x6c37c15c)
-}
-
-func (*DocumentAttributeImageSize) ImplementsDocumentAttribute() {}
-
-type DocumentAttributeAnimated struct{}
-
-func (*DocumentAttributeAnimated) CRC() uint32 {
-	return uint32(0x11b58939)
-}
-
-func (*DocumentAttributeAnimated) ImplementsDocumentAttribute() {}
-
-type DocumentAttributeSticker struct {
-	// flags position
-	Mask       bool `tl:"flag:1,encoded_in_bitflags"`
-	Alt        string
-	Stickerset InputStickerSet
-	MaskCoords *MaskCoords `tl:"flag:0"`
-}
-
-func (*DocumentAttributeSticker) CRC() uint32 {
-	return uint32(0x6319d612)
-}
-
-func (*DocumentAttributeSticker) ImplementsDocumentAttribute() {}
-
-type DocumentAttributeVideo struct {
-	// flags position
-	RoundMessage      bool `tl:"flag:0,encoded_in_bitflags"`
-	SupportsStreaming bool `tl:"flag:1,encoded_in_bitflags"`
-	Duration          int32
-	W                 int32
-	H                 int32
-}
-
-func (*DocumentAttributeVideo) CRC() uint32 {
-	return uint32(0xef02ce6)
-}
-
-func (*DocumentAttributeVideo) ImplementsDocumentAttribute() {}
-
-type DocumentAttributeAudio struct {
-	// flags position
-	Voice     bool `tl:"flag:10,encoded_in_bitflags"`
-	Duration  int32
-	Title     string `tl:"flag:0"`
-	Performer string `tl:"flag:1"`
-	Waveform  []byte `tl:"flag:2"`
-}
-
-func (*DocumentAttributeAudio) CRC() uint32 {
-	return uint32(0x9852f9c6)
-}
-
-func (*DocumentAttributeAudio) ImplementsDocumentAttribute() {}
-
-type DocumentAttributeFilename struct {
-	FileName string
-}
-
-func (*DocumentAttributeFilename) CRC() uint32 {
-	return uint32(0x15590068)
-}
-
-func (*DocumentAttributeFilename) ImplementsDocumentAttribute() {}
-
-type DocumentAttributeHasStickers struct{}
-
-func (*DocumentAttributeHasStickers) CRC() uint32 {
-	return uint32(0x9801d2f7)
-}
-
-func (*DocumentAttributeHasStickers) ImplementsDocumentAttribute() {}
-
-type DraftMessage interface {
-	tl.Object
-	ImplementsDraftMessage()
-}
-
-type DraftMessageEmpty struct {
-	// flags position
-	Date int32 `tl:"flag:0"`
-}
-
-func (*DraftMessageEmpty) CRC() uint32 {
-	return uint32(0x1b0c841a)
-}
-
-func (*DraftMessageEmpty) ImplementsDraftMessage() {}
-
-type DraftMessageObj struct {
-	// flags position
-	NoWebpage    bool  `tl:"flag:1,encoded_in_bitflags"`
-	ReplyToMsgId int32 `tl:"flag:0"`
-	Message      string
-	Entities     []MessageEntity `tl:"flag:3"`
-	Date         int32
-}
-
-func (*DraftMessageObj) CRC() uint32 {
-	return uint32(0xfd8e711f)
-}
-
-func (*DraftMessageObj) ImplementsDraftMessage() {}
-
-type EmojiKeyword interface {
-	tl.Object
-	ImplementsEmojiKeyword()
-}
-
-type EmojiKeywordObj struct {
-	Keyword   string
-	Emoticons []string
-}
-
-func (*EmojiKeywordObj) CRC() uint32 {
-	return uint32(0xd5b3b9f9)
-}
-
-func (*EmojiKeywordObj) ImplementsEmojiKeyword() {}
-
-type EmojiKeywordDeleted struct {
-	Keyword   string
-	Emoticons []string
-}
-
-func (*EmojiKeywordDeleted) CRC() uint32 {
-	return uint32(0x236df622)
-}
-
-func (*EmojiKeywordDeleted) ImplementsEmojiKeyword() {}
-
-type EncryptedChat interface {
-	tl.Object
-	ImplementsEncryptedChat()
-}
-
-type EncryptedChatEmpty struct {
-	Id int32
-}
-
-func (*EncryptedChatEmpty) CRC() uint32 {
-	return uint32(0xab7ec0a0)
-}
-
-func (*EncryptedChatEmpty) ImplementsEncryptedChat() {}
-
-type EncryptedChatWaiting struct {
-	Id            int32
-	AccessHash    int64
-	Date          int32
-	AdminId       int32
-	ParticipantId int32
+func (*PageListItemBlocks) CRC() uint32 {
+	return uint32(0x25e073fc)
 }
 
-func (*EncryptedChatWaiting) CRC() uint32 {
-	return uint32(0x3bf703dc)
-}
-
-func (*EncryptedChatWaiting) ImplementsEncryptedChat() {}
-
-type EncryptedChatRequested struct {
-	// flags position
-	FolderId      int32 `tl:"flag:0"`
-	Id            int32
-	AccessHash    int64
-	Date          int32
-	AdminId       int32
-	ParticipantId int32
-	GA            []byte
-}
-
-func (*EncryptedChatRequested) CRC() uint32 {
-	return uint32(0x62718a82)
-}
-
-func (*EncryptedChatRequested) ImplementsEncryptedChat() {}
-
-type EncryptedChatObj struct {
-	Id             int32
-	AccessHash     int64
-	Date           int32
-	AdminId        int32
-	ParticipantId  int32
-	GAOrB          []byte
-	KeyFingerprint int64
-}
-
-func (*EncryptedChatObj) CRC() uint32 {
-	return uint32(0xfa56ce36)
-}
-
-func (*EncryptedChatObj) ImplementsEncryptedChat() {}
-
-type EncryptedChatDiscarded struct {
-	Id int32
-}
-
-func (*EncryptedChatDiscarded) CRC() uint32 {
-	return uint32(0x13d6dd27)
-}
-
-func (*EncryptedChatDiscarded) ImplementsEncryptedChat() {}
-
-type EncryptedFile interface {
-	tl.Object
-	ImplementsEncryptedFile()
-}
-
-type EncryptedFileEmpty struct{}
-
-func (*EncryptedFileEmpty) CRC() uint32 {
-	return uint32(0xc21f497e)
-}
-
-func (*EncryptedFileEmpty) ImplementsEncryptedFile() {}
-
-type EncryptedFileObj struct {
-	Id             int64
-	AccessHash     int64
-	Size           int32
-	DcId           int32
-	KeyFingerprint int32
-}
-
-func (*EncryptedFileObj) CRC() uint32 {
-	return uint32(0x4a70994c)
-}
-
-func (*EncryptedFileObj) ImplementsEncryptedFile() {}
-
-type EncryptedMessage interface {
-	tl.Object
-	ImplementsEncryptedMessage()
-}
-
-type EncryptedMessageObj struct {
-	RandomId int64
-	ChatId   int32
-	Date     int32
-	Bytes    []byte
-	File     EncryptedFile
-}
-
-func (*EncryptedMessageObj) CRC() uint32 {
-	return uint32(0xed18c118)
-}
-
-func (*EncryptedMessageObj) ImplementsEncryptedMessage() {}
-
-type EncryptedMessageService struct {
-	RandomId int64
-	ChatId   int32
-	Date     int32
-	Bytes    []byte
-}
-
-func (*EncryptedMessageService) CRC() uint32 {
-	return uint32(0x23734b06)
-}
-
-func (*EncryptedMessageService) ImplementsEncryptedMessage() {}
-
-type ExportedChatInvite interface {
-	tl.Object
-	ImplementsExportedChatInvite()
-}
-
-type ChatInviteEmpty struct{}
-
-func (*ChatInviteEmpty) CRC() uint32 {
-	return uint32(0x69df3769)
-}
-
-func (*ChatInviteEmpty) ImplementsExportedChatInvite() {}
-
-type ChatInviteExported struct {
-	Link string
-}
-
-func (*ChatInviteExported) CRC() uint32 {
-	return uint32(0xfc2e05bc)
-}
-
-func (*ChatInviteExported) ImplementsExportedChatInvite() {}
+func (*PageListItemBlocks) ImplementsPageListItem() {}
 
-type GeoPoint interface {
-	tl.Object
-	ImplementsGeoPoint()
-}
-
-type GeoPointEmpty struct{}
-
-func (*GeoPointEmpty) CRC() uint32 {
-	return uint32(0x1117dd5f)
-}
+func (e *PageListItemBlocks) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
 
-func (*GeoPointEmpty) ImplementsGeoPoint() {}
-
-type GeoPointObj struct {
-	Long       float64
-	Lat        float64
-	AccessHash int64
-}
-
-func (*GeoPointObj) CRC() uint32 {
-	return uint32(0x296f104)
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Blocks)
+	return buf.Result()
 }
-
-func (*GeoPointObj) ImplementsGeoPoint() {}
 
 type InputBotInlineMessage interface {
-	tl.Object
+	serialize.TL
 	ImplementsInputBotInlineMessage()
 }
 
 type InputBotInlineMessageMediaAuto struct {
-	// flags position
-	Message     string
-	Entities    []MessageEntity `tl:"flag:1"`
-	ReplyMarkup ReplyMarkup     `tl:"flag:2"`
+	__flagsPosition struct{}        // flags param position `validate:"required"`
+	Message         string          `validate:"required"`
+	Entities        []MessageEntity `flag:"1"`
+	ReplyMarkup     ReplyMarkup     `flag:"2"`
 }
 
 func (*InputBotInlineMessageMediaAuto) CRC() uint32 {
@@ -1288,12 +72,36 @@ func (*InputBotInlineMessageMediaAuto) CRC() uint32 {
 
 func (*InputBotInlineMessageMediaAuto) ImplementsInputBotInlineMessage() {}
 
+func (e *InputBotInlineMessageMediaAuto) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Entities) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutString(e.Message)
+	if !zero.IsZeroVal(e.Entities) {
+		buf.PutVector(e.Entities)
+	}
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		buf.PutRawBytes(e.ReplyMarkup.Encode())
+	}
+	return buf.Result()
+}
+
 type InputBotInlineMessageText struct {
-	// flags position
-	NoWebpage   bool `tl:"flag:0,encoded_in_bitflags"`
-	Message     string
-	Entities    []MessageEntity `tl:"flag:1"`
-	ReplyMarkup ReplyMarkup     `tl:"flag:2"`
+	__flagsPosition struct{}        // flags param position `validate:"required"`
+	NoWebpage       bool            `flag:"0,encoded_in_bitflags"`
+	Message         string          `validate:"required"`
+	Entities        []MessageEntity `flag:"1"`
+	ReplyMarkup     ReplyMarkup     `flag:"2"`
 }
 
 func (*InputBotInlineMessageText) CRC() uint32 {
@@ -1302,11 +110,40 @@ func (*InputBotInlineMessageText) CRC() uint32 {
 
 func (*InputBotInlineMessageText) ImplementsInputBotInlineMessage() {}
 
+func (e *InputBotInlineMessageText) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.NoWebpage) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Entities) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.NoWebpage) {
+	}
+	buf.PutString(e.Message)
+	if !zero.IsZeroVal(e.Entities) {
+		buf.PutVector(e.Entities)
+	}
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		buf.PutRawBytes(e.ReplyMarkup.Encode())
+	}
+	return buf.Result()
+}
+
 type InputBotInlineMessageMediaGeo struct {
-	// flags position
-	GeoPoint    InputGeoPoint
-	Period      int32
-	ReplyMarkup ReplyMarkup `tl:"flag:2"`
+	__flagsPosition struct{}      // flags param position `validate:"required"`
+	GeoPoint        InputGeoPoint `validate:"required"`
+	Period          int32         `validate:"required"`
+	ReplyMarkup     ReplyMarkup   `flag:"2"`
 }
 
 func (*InputBotInlineMessageMediaGeo) CRC() uint32 {
@@ -1315,15 +152,34 @@ func (*InputBotInlineMessageMediaGeo) CRC() uint32 {
 
 func (*InputBotInlineMessageMediaGeo) ImplementsInputBotInlineMessage() {}
 
+func (e *InputBotInlineMessageMediaGeo) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutRawBytes(e.GeoPoint.Encode())
+	buf.PutInt(e.Period)
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		buf.PutRawBytes(e.ReplyMarkup.Encode())
+	}
+	return buf.Result()
+}
+
 type InputBotInlineMessageMediaVenue struct {
-	// flags position
-	GeoPoint    InputGeoPoint
-	Title       string
-	Address     string
-	Provider    string
-	VenueId     string
-	VenueType   string
-	ReplyMarkup ReplyMarkup `tl:"flag:2"`
+	__flagsPosition struct{}      // flags param position `validate:"required"`
+	GeoPoint        InputGeoPoint `validate:"required"`
+	Title           string        `validate:"required"`
+	Address         string        `validate:"required"`
+	Provider        string        `validate:"required"`
+	VenueId         string        `validate:"required"`
+	VenueType       string        `validate:"required"`
+	ReplyMarkup     ReplyMarkup   `flag:"2"`
 }
 
 func (*InputBotInlineMessageMediaVenue) CRC() uint32 {
@@ -1332,13 +188,36 @@ func (*InputBotInlineMessageMediaVenue) CRC() uint32 {
 
 func (*InputBotInlineMessageMediaVenue) ImplementsInputBotInlineMessage() {}
 
+func (e *InputBotInlineMessageMediaVenue) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutRawBytes(e.GeoPoint.Encode())
+	buf.PutString(e.Title)
+	buf.PutString(e.Address)
+	buf.PutString(e.Provider)
+	buf.PutString(e.VenueId)
+	buf.PutString(e.VenueType)
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		buf.PutRawBytes(e.ReplyMarkup.Encode())
+	}
+	return buf.Result()
+}
+
 type InputBotInlineMessageMediaContact struct {
-	// flags position
-	PhoneNumber string
-	FirstName   string
-	LastName    string
-	Vcard       string
-	ReplyMarkup ReplyMarkup `tl:"flag:2"`
+	__flagsPosition struct{}    // flags param position `validate:"required"`
+	PhoneNumber     string      `validate:"required"`
+	FirstName       string      `validate:"required"`
+	LastName        string      `validate:"required"`
+	Vcard           string      `validate:"required"`
+	ReplyMarkup     ReplyMarkup `flag:"2"`
 }
 
 func (*InputBotInlineMessageMediaContact) CRC() uint32 {
@@ -1347,9 +226,30 @@ func (*InputBotInlineMessageMediaContact) CRC() uint32 {
 
 func (*InputBotInlineMessageMediaContact) ImplementsInputBotInlineMessage() {}
 
+func (e *InputBotInlineMessageMediaContact) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutString(e.PhoneNumber)
+	buf.PutString(e.FirstName)
+	buf.PutString(e.LastName)
+	buf.PutString(e.Vcard)
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		buf.PutRawBytes(e.ReplyMarkup.Encode())
+	}
+	return buf.Result()
+}
+
 type InputBotInlineMessageGame struct {
-	// flags position
-	ReplyMarkup ReplyMarkup `tl:"flag:2"`
+	__flagsPosition struct{}    // flags param position `validate:"required"`
+	ReplyMarkup     ReplyMarkup `flag:"2"`
 }
 
 func (*InputBotInlineMessageGame) CRC() uint32 {
@@ -1358,1297 +258,30 @@ func (*InputBotInlineMessageGame) CRC() uint32 {
 
 func (*InputBotInlineMessageGame) ImplementsInputBotInlineMessage() {}
 
-type InputBotInlineResult interface {
-	tl.Object
-	ImplementsInputBotInlineResult()
+func (e *InputBotInlineMessageGame) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		buf.PutRawBytes(e.ReplyMarkup.Encode())
+	}
+	return buf.Result()
 }
-
-type InputBotInlineResultObj struct {
-	// flags position
-	Id          string
-	Type        string
-	Title       string            `tl:"flag:1"`
-	Description string            `tl:"flag:2"`
-	Url         string            `tl:"flag:3"`
-	Thumb       *InputWebDocument `tl:"flag:4"`
-	Content     *InputWebDocument `tl:"flag:5"`
-	SendMessage InputBotInlineMessage
-}
-
-func (*InputBotInlineResultObj) CRC() uint32 {
-	return uint32(0x88bf9319)
-}
-
-func (*InputBotInlineResultObj) ImplementsInputBotInlineResult() {}
-
-type InputBotInlineResultPhoto struct {
-	Id          string
-	Type        string
-	Photo       InputPhoto
-	SendMessage InputBotInlineMessage
-}
-
-func (*InputBotInlineResultPhoto) CRC() uint32 {
-	return uint32(0xa8d864a7)
-}
-
-func (*InputBotInlineResultPhoto) ImplementsInputBotInlineResult() {}
-
-type InputBotInlineResultDocument struct {
-	// flags position
-	Id          string
-	Type        string
-	Title       string `tl:"flag:1"`
-	Description string `tl:"flag:2"`
-	Document    InputDocument
-	SendMessage InputBotInlineMessage
-}
-
-func (*InputBotInlineResultDocument) CRC() uint32 {
-	return uint32(0xfff8fdc4)
-}
-
-func (*InputBotInlineResultDocument) ImplementsInputBotInlineResult() {}
-
-type InputBotInlineResultGame struct {
-	Id          string
-	ShortName   string
-	SendMessage InputBotInlineMessage
-}
-
-func (*InputBotInlineResultGame) CRC() uint32 {
-	return uint32(0x4fa417f2)
-}
-
-func (*InputBotInlineResultGame) ImplementsInputBotInlineResult() {}
-
-type InputChannel interface {
-	tl.Object
-	ImplementsInputChannel()
-}
-
-type InputChannelEmpty struct{}
-
-func (*InputChannelEmpty) CRC() uint32 {
-	return uint32(0xee8c1e86)
-}
-
-func (*InputChannelEmpty) ImplementsInputChannel() {}
-
-type InputChannelObj struct {
-	ChannelId  int32
-	AccessHash int64
-}
-
-func (*InputChannelObj) CRC() uint32 {
-	return uint32(0xafeb712e)
-}
-
-func (*InputChannelObj) ImplementsInputChannel() {}
-
-type InputChannelFromMessage struct {
-	Peer      InputPeer
-	MsgId     int32
-	ChannelId int32
-}
-
-func (*InputChannelFromMessage) CRC() uint32 {
-	return uint32(0x2a286531)
-}
-
-func (*InputChannelFromMessage) ImplementsInputChannel() {}
-
-type InputChatPhoto interface {
-	tl.Object
-	ImplementsInputChatPhoto()
-}
-
-type InputChatPhotoEmpty struct{}
-
-func (*InputChatPhotoEmpty) CRC() uint32 {
-	return uint32(0x1ca48f57)
-}
-
-func (*InputChatPhotoEmpty) ImplementsInputChatPhoto() {}
-
-type InputChatUploadedPhoto struct {
-	// flags position
-	File         InputFile `tl:"flag:0"`
-	Video        InputFile `tl:"flag:1"`
-	VideoStartTs float64   `tl:"flag:2"`
-}
-
-func (*InputChatUploadedPhoto) CRC() uint32 {
-	return uint32(0xc642724e)
-}
-
-func (*InputChatUploadedPhoto) ImplementsInputChatPhoto() {}
-
-type InputChatPhotoObj struct {
-	Id InputPhoto
-}
-
-func (*InputChatPhotoObj) CRC() uint32 {
-	return uint32(0x8953ad37)
-}
-
-func (*InputChatPhotoObj) ImplementsInputChatPhoto() {}
-
-type InputCheckPasswordSRP interface {
-	tl.Object
-	ImplementsInputCheckPasswordSRP()
-}
-
-type InputCheckPasswordEmpty struct{}
-
-func (*InputCheckPasswordEmpty) CRC() uint32 {
-	return uint32(0x9880f658)
-}
-
-func (*InputCheckPasswordEmpty) ImplementsInputCheckPasswordSRP() {}
-
-type InputCheckPasswordSRPObj struct {
-	SrpId int64
-	A     []byte
-	M1    []byte
-}
-
-func (*InputCheckPasswordSRPObj) CRC() uint32 {
-	return uint32(0xd27ff082)
-}
-
-func (*InputCheckPasswordSRPObj) ImplementsInputCheckPasswordSRP() {}
-
-type InputDialogPeer interface {
-	tl.Object
-	ImplementsInputDialogPeer()
-}
-
-type InputDialogPeerObj struct {
-	Peer InputPeer
-}
-
-func (*InputDialogPeerObj) CRC() uint32 {
-	return uint32(0xfcaafeb7)
-}
-
-func (*InputDialogPeerObj) ImplementsInputDialogPeer() {}
-
-type InputDialogPeerFolder struct {
-	FolderId int32
-}
-
-func (*InputDialogPeerFolder) CRC() uint32 {
-	return uint32(0x64600527)
-}
-
-func (*InputDialogPeerFolder) ImplementsInputDialogPeer() {}
-
-type InputDocument interface {
-	tl.Object
-	ImplementsInputDocument()
-}
-
-type InputDocumentEmpty struct{}
-
-func (*InputDocumentEmpty) CRC() uint32 {
-	return uint32(0x72f0eaae)
-}
-
-func (*InputDocumentEmpty) ImplementsInputDocument() {}
-
-type InputDocumentObj struct {
-	Id            int64
-	AccessHash    int64
-	FileReference []byte
-}
-
-func (*InputDocumentObj) CRC() uint32 {
-	return uint32(0x1abfb575)
-}
-
-func (*InputDocumentObj) ImplementsInputDocument() {}
-
-type InputEncryptedFile interface {
-	tl.Object
-	ImplementsInputEncryptedFile()
-}
-
-type InputEncryptedFileEmpty struct{}
-
-func (*InputEncryptedFileEmpty) CRC() uint32 {
-	return uint32(0x1837c364)
-}
-
-func (*InputEncryptedFileEmpty) ImplementsInputEncryptedFile() {}
-
-type InputEncryptedFileUploaded struct {
-	Id             int64
-	Parts          int32
-	Md5Checksum    string
-	KeyFingerprint int32
-}
-
-func (*InputEncryptedFileUploaded) CRC() uint32 {
-	return uint32(0x64bd0306)
-}
-
-func (*InputEncryptedFileUploaded) ImplementsInputEncryptedFile() {}
-
-type InputEncryptedFileObj struct {
-	Id         int64
-	AccessHash int64
-}
-
-func (*InputEncryptedFileObj) CRC() uint32 {
-	return uint32(0x5a17b5e5)
-}
-
-func (*InputEncryptedFileObj) ImplementsInputEncryptedFile() {}
-
-type InputEncryptedFileBigUploaded struct {
-	Id             int64
-	Parts          int32
-	KeyFingerprint int32
-}
-
-func (*InputEncryptedFileBigUploaded) CRC() uint32 {
-	return uint32(0x2dc173c8)
-}
-
-func (*InputEncryptedFileBigUploaded) ImplementsInputEncryptedFile() {}
-
-type InputFile interface {
-	tl.Object
-	ImplementsInputFile()
-}
-
-type InputFileObj struct {
-	Id          int64
-	Parts       int32
-	Name        string
-	Md5Checksum string
-}
-
-func (*InputFileObj) CRC() uint32 {
-	return uint32(0xf52ff27f)
-}
-
-func (*InputFileObj) ImplementsInputFile() {}
-
-type InputFileBig struct {
-	Id    int64
-	Parts int32
-	Name  string
-}
-
-func (*InputFileBig) CRC() uint32 {
-	return uint32(0xfa4f0bb5)
-}
-
-func (*InputFileBig) ImplementsInputFile() {}
-
-type InputFileLocation interface {
-	tl.Object
-	ImplementsInputFileLocation()
-}
-
-type InputFileLocationObj struct {
-	VolumeId      int64
-	LocalId       int32
-	Secret        int64
-	FileReference []byte
-}
-
-func (*InputFileLocationObj) CRC() uint32 {
-	return uint32(0xdfdaabe1)
-}
-
-func (*InputFileLocationObj) ImplementsInputFileLocation() {}
-
-type InputEncryptedFileLocation struct {
-	Id         int64
-	AccessHash int64
-}
-
-func (*InputEncryptedFileLocation) CRC() uint32 {
-	return uint32(0xf5235d55)
-}
-
-func (*InputEncryptedFileLocation) ImplementsInputFileLocation() {}
-
-type InputDocumentFileLocation struct {
-	Id            int64
-	AccessHash    int64
-	FileReference []byte
-	ThumbSize     string
-}
-
-func (*InputDocumentFileLocation) CRC() uint32 {
-	return uint32(0xbad07584)
-}
-
-func (*InputDocumentFileLocation) ImplementsInputFileLocation() {}
-
-type InputSecureFileLocation struct {
-	Id         int64
-	AccessHash int64
-}
-
-func (*InputSecureFileLocation) CRC() uint32 {
-	return uint32(0xcbc7ee28)
-}
-
-func (*InputSecureFileLocation) ImplementsInputFileLocation() {}
-
-type InputTakeoutFileLocation struct{}
-
-func (*InputTakeoutFileLocation) CRC() uint32 {
-	return uint32(0x29be5899)
-}
-
-func (*InputTakeoutFileLocation) ImplementsInputFileLocation() {}
-
-type InputPhotoFileLocation struct {
-	Id            int64
-	AccessHash    int64
-	FileReference []byte
-	ThumbSize     string
-}
-
-func (*InputPhotoFileLocation) CRC() uint32 {
-	return uint32(0x40181ffe)
-}
-
-func (*InputPhotoFileLocation) ImplementsInputFileLocation() {}
-
-type InputPhotoLegacyFileLocation struct {
-	Id            int64
-	AccessHash    int64
-	FileReference []byte
-	VolumeId      int64
-	LocalId       int32
-	Secret        int64
-}
-
-func (*InputPhotoLegacyFileLocation) CRC() uint32 {
-	return uint32(0xd83466f3)
-}
-
-func (*InputPhotoLegacyFileLocation) ImplementsInputFileLocation() {}
-
-type InputPeerPhotoFileLocation struct {
-	// flags position
-	Big      bool `tl:"flag:0,encoded_in_bitflags"`
-	Peer     InputPeer
-	VolumeId int64
-	LocalId  int32
-}
-
-func (*InputPeerPhotoFileLocation) CRC() uint32 {
-	return uint32(0x27d69997)
-}
-
-func (*InputPeerPhotoFileLocation) ImplementsInputFileLocation() {}
-
-type InputStickerSetThumb struct {
-	Stickerset InputStickerSet
-	VolumeId   int64
-	LocalId    int32
-}
-
-func (*InputStickerSetThumb) CRC() uint32 {
-	return uint32(0xdbaeae9)
-}
-
-func (*InputStickerSetThumb) ImplementsInputFileLocation() {}
-
-type InputGame interface {
-	tl.Object
-	ImplementsInputGame()
-}
-
-type InputGameID struct {
-	Id         int64
-	AccessHash int64
-}
-
-func (*InputGameID) CRC() uint32 {
-	return uint32(0x32c3e77)
-}
-
-func (*InputGameID) ImplementsInputGame() {}
-
-type InputGameShortName struct {
-	BotId     InputUser
-	ShortName string
-}
-
-func (*InputGameShortName) CRC() uint32 {
-	return uint32(0xc331e80a)
-}
-
-func (*InputGameShortName) ImplementsInputGame() {}
-
-type InputGeoPoint interface {
-	tl.Object
-	ImplementsInputGeoPoint()
-}
-
-type InputGeoPointEmpty struct{}
-
-func (*InputGeoPointEmpty) CRC() uint32 {
-	return uint32(0xe4c123d6)
-}
-
-func (*InputGeoPointEmpty) ImplementsInputGeoPoint() {}
-
-type InputGeoPointObj struct {
-	Lat  float64
-	Long float64
-}
-
-func (*InputGeoPointObj) CRC() uint32 {
-	return uint32(0xf3b7acc9)
-}
-
-func (*InputGeoPointObj) ImplementsInputGeoPoint() {}
-
-type InputMedia interface {
-	tl.Object
-	ImplementsInputMedia()
-}
-
-type InputMediaEmpty struct{}
-
-func (*InputMediaEmpty) CRC() uint32 {
-	return uint32(0x9664f57f)
-}
-
-func (*InputMediaEmpty) ImplementsInputMedia() {}
-
-type InputMediaUploadedPhoto struct {
-	// flags position
-	File       InputFile
-	Stickers   []InputDocument `tl:"flag:0"`
-	TtlSeconds int32           `tl:"flag:1"`
-}
-
-func (*InputMediaUploadedPhoto) CRC() uint32 {
-	return uint32(0x1e287d04)
-}
-
-func (*InputMediaUploadedPhoto) ImplementsInputMedia() {}
-
-type InputMediaPhoto struct {
-	// flags position
-	Id         InputPhoto
-	TtlSeconds int32 `tl:"flag:0"`
-}
-
-func (*InputMediaPhoto) CRC() uint32 {
-	return uint32(0xb3ba0635)
-}
-
-func (*InputMediaPhoto) ImplementsInputMedia() {}
-
-type InputMediaGeoPoint struct {
-	GeoPoint InputGeoPoint
-}
-
-func (*InputMediaGeoPoint) CRC() uint32 {
-	return uint32(0xf9c44144)
-}
-
-func (*InputMediaGeoPoint) ImplementsInputMedia() {}
-
-type InputMediaContact struct {
-	PhoneNumber string
-	FirstName   string
-	LastName    string
-	Vcard       string
-}
-
-func (*InputMediaContact) CRC() uint32 {
-	return uint32(0xf8ab7dfb)
-}
-
-func (*InputMediaContact) ImplementsInputMedia() {}
-
-type InputMediaUploadedDocument struct {
-	// flags position
-	NosoundVideo bool `tl:"flag:3,encoded_in_bitflags"`
-	ForceFile    bool `tl:"flag:4,encoded_in_bitflags"`
-	File         InputFile
-	Thumb        InputFile `tl:"flag:2"`
-	MimeType     string
-	Attributes   []DocumentAttribute
-	Stickers     []InputDocument `tl:"flag:0"`
-	TtlSeconds   int32           `tl:"flag:1"`
-}
-
-func (*InputMediaUploadedDocument) CRC() uint32 {
-	return uint32(0x5b38c6c1)
-}
-
-func (*InputMediaUploadedDocument) ImplementsInputMedia() {}
-
-type InputMediaDocument struct {
-	// flags position
-	Id         InputDocument
-	TtlSeconds int32 `tl:"flag:0"`
-}
-
-func (*InputMediaDocument) CRC() uint32 {
-	return uint32(0x23ab23d2)
-}
-
-func (*InputMediaDocument) ImplementsInputMedia() {}
-
-type InputMediaVenue struct {
-	GeoPoint  InputGeoPoint
-	Title     string
-	Address   string
-	Provider  string
-	VenueId   string
-	VenueType string
-}
-
-func (*InputMediaVenue) CRC() uint32 {
-	return uint32(0xc13d1c11)
-}
-
-func (*InputMediaVenue) ImplementsInputMedia() {}
-
-type InputMediaPhotoExternal struct {
-	// flags position
-	Url        string
-	TtlSeconds int32 `tl:"flag:0"`
-}
-
-func (*InputMediaPhotoExternal) CRC() uint32 {
-	return uint32(0xe5bbfe1a)
-}
-
-func (*InputMediaPhotoExternal) ImplementsInputMedia() {}
-
-type InputMediaDocumentExternal struct {
-	// flags position
-	Url        string
-	TtlSeconds int32 `tl:"flag:0"`
-}
-
-func (*InputMediaDocumentExternal) CRC() uint32 {
-	return uint32(0xfb52dc99)
-}
-
-func (*InputMediaDocumentExternal) ImplementsInputMedia() {}
-
-type InputMediaGame struct {
-	Id InputGame
-}
-
-func (*InputMediaGame) CRC() uint32 {
-	return uint32(0xd33f43f3)
-}
-
-func (*InputMediaGame) ImplementsInputMedia() {}
-
-type InputMediaInvoice struct {
-	// flags position
-	Title        string
-	Description  string
-	Photo        *InputWebDocument `tl:"flag:0"`
-	Invoice      *Invoice
-	Payload      []byte
-	Provider     string
-	ProviderData *DataJSON
-	StartParam   string
-}
-
-func (*InputMediaInvoice) CRC() uint32 {
-	return uint32(0xf4e096c3)
-}
-
-func (*InputMediaInvoice) ImplementsInputMedia() {}
-
-type InputMediaGeoLive struct {
-	// flags position
-	Stopped  bool `tl:"flag:0,encoded_in_bitflags"`
-	GeoPoint InputGeoPoint
-	Period   int32 `tl:"flag:1"`
-}
-
-func (*InputMediaGeoLive) CRC() uint32 {
-	return uint32(0xce4e82fd)
-}
-
-func (*InputMediaGeoLive) ImplementsInputMedia() {}
-
-type InputMediaPoll struct {
-	// flags position
-	Poll             *Poll
-	CorrectAnswers   [][]byte        `tl:"flag:0"`
-	Solution         string          `tl:"flag:1"`
-	SolutionEntities []MessageEntity `tl:"flag:1"`
-}
-
-func (*InputMediaPoll) CRC() uint32 {
-	return uint32(0xf94e5f1)
-}
-
-func (*InputMediaPoll) ImplementsInputMedia() {}
-
-type InputMediaDice struct {
-	Emoticon string
-}
-
-func (*InputMediaDice) CRC() uint32 {
-	return uint32(0xe66fbf7b)
-}
-
-func (*InputMediaDice) ImplementsInputMedia() {}
-
-type InputMessage interface {
-	tl.Object
-	ImplementsInputMessage()
-}
-
-type InputMessageID struct {
-	Id int32
-}
-
-func (*InputMessageID) CRC() uint32 {
-	return uint32(0xa676a322)
-}
-
-func (*InputMessageID) ImplementsInputMessage() {}
-
-type InputMessageReplyTo struct {
-	Id int32
-}
-
-func (*InputMessageReplyTo) CRC() uint32 {
-	return uint32(0xbad88395)
-}
-
-func (*InputMessageReplyTo) ImplementsInputMessage() {}
-
-type InputMessagePinned struct{}
-
-func (*InputMessagePinned) CRC() uint32 {
-	return uint32(0x86872538)
-}
-
-func (*InputMessagePinned) ImplementsInputMessage() {}
-
-type InputNotifyPeer interface {
-	tl.Object
-	ImplementsInputNotifyPeer()
-}
-
-type InputNotifyPeerObj struct {
-	Peer InputPeer
-}
-
-func (*InputNotifyPeerObj) CRC() uint32 {
-	return uint32(0xb8bc5b0c)
-}
-
-func (*InputNotifyPeerObj) ImplementsInputNotifyPeer() {}
-
-type InputNotifyUsers struct{}
-
-func (*InputNotifyUsers) CRC() uint32 {
-	return uint32(0x193b4417)
-}
-
-func (*InputNotifyUsers) ImplementsInputNotifyPeer() {}
-
-type InputNotifyChats struct{}
-
-func (*InputNotifyChats) CRC() uint32 {
-	return uint32(0x4a95e84e)
-}
-
-func (*InputNotifyChats) ImplementsInputNotifyPeer() {}
-
-type InputNotifyBroadcasts struct{}
-
-func (*InputNotifyBroadcasts) CRC() uint32 {
-	return uint32(0xb1db7c7e)
-}
-
-func (*InputNotifyBroadcasts) ImplementsInputNotifyPeer() {}
-
-type InputPaymentCredentials interface {
-	tl.Object
-	ImplementsInputPaymentCredentials()
-}
-
-type InputPaymentCredentialsSaved struct {
-	Id          string
-	TmpPassword []byte
-}
-
-func (*InputPaymentCredentialsSaved) CRC() uint32 {
-	return uint32(0xc10eb2cf)
-}
-
-func (*InputPaymentCredentialsSaved) ImplementsInputPaymentCredentials() {}
-
-type InputPaymentCredentialsObj struct {
-	// flags position
-	Save bool `tl:"flag:0,encoded_in_bitflags"`
-	Data *DataJSON
-}
-
-func (*InputPaymentCredentialsObj) CRC() uint32 {
-	return uint32(0x3417d728)
-}
-
-func (*InputPaymentCredentialsObj) ImplementsInputPaymentCredentials() {}
-
-type InputPaymentCredentialsApplePay struct {
-	PaymentData *DataJSON
-}
-
-func (*InputPaymentCredentialsApplePay) CRC() uint32 {
-	return uint32(0xaa1c39f)
-}
-
-func (*InputPaymentCredentialsApplePay) ImplementsInputPaymentCredentials() {}
-
-type InputPaymentCredentialsAndroidPay struct {
-	PaymentToken        *DataJSON
-	GoogleTransactionId string
-}
-
-func (*InputPaymentCredentialsAndroidPay) CRC() uint32 {
-	return uint32(0xca05d50e)
-}
-
-func (*InputPaymentCredentialsAndroidPay) ImplementsInputPaymentCredentials() {}
-
-type InputPeer interface {
-	tl.Object
-	ImplementsInputPeer()
-}
-
-type InputPeerEmpty struct{}
-
-func (*InputPeerEmpty) CRC() uint32 {
-	return uint32(0x7f3b18ea)
-}
-
-func (*InputPeerEmpty) ImplementsInputPeer() {}
-
-type InputPeerSelf struct{}
-
-func (*InputPeerSelf) CRC() uint32 {
-	return uint32(0x7da07ec9)
-}
-
-func (*InputPeerSelf) ImplementsInputPeer() {}
-
-type InputPeerChat struct {
-	ChatId int32
-}
-
-func (*InputPeerChat) CRC() uint32 {
-	return uint32(0x179be863)
-}
-
-func (*InputPeerChat) ImplementsInputPeer() {}
-
-type InputPeerUser struct {
-	UserId     int32
-	AccessHash int64
-}
-
-func (*InputPeerUser) CRC() uint32 {
-	return uint32(0x7b8e7de6)
-}
-
-func (*InputPeerUser) ImplementsInputPeer() {}
-
-type InputPeerChannel struct {
-	ChannelId  int32
-	AccessHash int64
-}
-
-func (*InputPeerChannel) CRC() uint32 {
-	return uint32(0x20adaef8)
-}
-
-func (*InputPeerChannel) ImplementsInputPeer() {}
-
-type InputPeerUserFromMessage struct {
-	Peer   InputPeer
-	MsgId  int32
-	UserId int32
-}
-
-func (*InputPeerUserFromMessage) CRC() uint32 {
-	return uint32(0x17bae2e6)
-}
-
-func (*InputPeerUserFromMessage) ImplementsInputPeer() {}
-
-type InputPeerChannelFromMessage struct {
-	Peer      InputPeer
-	MsgId     int32
-	ChannelId int32
-}
-
-func (*InputPeerChannelFromMessage) CRC() uint32 {
-	return uint32(0x9c95f7bb)
-}
-
-func (*InputPeerChannelFromMessage) ImplementsInputPeer() {}
-
-type InputPhoto interface {
-	tl.Object
-	ImplementsInputPhoto()
-}
-
-type InputPhotoEmpty struct{}
-
-func (*InputPhotoEmpty) CRC() uint32 {
-	return uint32(0x1cd7bf0d)
-}
-
-func (*InputPhotoEmpty) ImplementsInputPhoto() {}
-
-type InputPhotoObj struct {
-	Id            int64
-	AccessHash    int64
-	FileReference []byte
-}
-
-func (*InputPhotoObj) CRC() uint32 {
-	return uint32(0x3bb3b94a)
-}
-
-func (*InputPhotoObj) ImplementsInputPhoto() {}
-
-type InputPrivacyRule interface {
-	tl.Object
-	ImplementsInputPrivacyRule()
-}
-
-type InputPrivacyValueAllowContacts struct{}
-
-func (*InputPrivacyValueAllowContacts) CRC() uint32 {
-	return uint32(0xd09e07b)
-}
-
-func (*InputPrivacyValueAllowContacts) ImplementsInputPrivacyRule() {}
-
-type InputPrivacyValueAllowAll struct{}
-
-func (*InputPrivacyValueAllowAll) CRC() uint32 {
-	return uint32(0x184b35ce)
-}
-
-func (*InputPrivacyValueAllowAll) ImplementsInputPrivacyRule() {}
-
-type InputPrivacyValueAllowUsers struct {
-	Users []InputUser
-}
-
-func (*InputPrivacyValueAllowUsers) CRC() uint32 {
-	return uint32(0x131cc67f)
-}
-
-func (*InputPrivacyValueAllowUsers) ImplementsInputPrivacyRule() {}
-
-type InputPrivacyValueDisallowContacts struct{}
-
-func (*InputPrivacyValueDisallowContacts) CRC() uint32 {
-	return uint32(0xba52007)
-}
-
-func (*InputPrivacyValueDisallowContacts) ImplementsInputPrivacyRule() {}
-
-type InputPrivacyValueDisallowAll struct{}
-
-func (*InputPrivacyValueDisallowAll) CRC() uint32 {
-	return uint32(0xd66b66c9)
-}
-
-func (*InputPrivacyValueDisallowAll) ImplementsInputPrivacyRule() {}
-
-type InputPrivacyValueDisallowUsers struct {
-	Users []InputUser
-}
-
-func (*InputPrivacyValueDisallowUsers) CRC() uint32 {
-	return uint32(0x90110467)
-}
-
-func (*InputPrivacyValueDisallowUsers) ImplementsInputPrivacyRule() {}
-
-type InputPrivacyValueAllowChatParticipants struct {
-	Chats []int32
-}
-
-func (*InputPrivacyValueAllowChatParticipants) CRC() uint32 {
-	return uint32(0x4c81c1ba)
-}
-
-func (*InputPrivacyValueAllowChatParticipants) ImplementsInputPrivacyRule() {}
-
-type InputPrivacyValueDisallowChatParticipants struct {
-	Chats []int32
-}
-
-func (*InputPrivacyValueDisallowChatParticipants) CRC() uint32 {
-	return uint32(0xd82363af)
-}
-
-func (*InputPrivacyValueDisallowChatParticipants) ImplementsInputPrivacyRule() {}
-
-type InputSecureFile interface {
-	tl.Object
-	ImplementsInputSecureFile()
-}
-
-type InputSecureFileUploaded struct {
-	Id          int64
-	Parts       int32
-	Md5Checksum string
-	FileHash    []byte
-	Secret      []byte
-}
-
-func (*InputSecureFileUploaded) CRC() uint32 {
-	return uint32(0x3334b0f0)
-}
-
-func (*InputSecureFileUploaded) ImplementsInputSecureFile() {}
-
-type InputSecureFileObj struct {
-	Id         int64
-	AccessHash int64
-}
-
-func (*InputSecureFileObj) CRC() uint32 {
-	return uint32(0x5367e5be)
-}
-
-func (*InputSecureFileObj) ImplementsInputSecureFile() {}
-
-type InputStickerSet interface {
-	tl.Object
-	ImplementsInputStickerSet()
-}
-
-type InputStickerSetEmpty struct{}
-
-func (*InputStickerSetEmpty) CRC() uint32 {
-	return uint32(0xffb62b95)
-}
-
-func (*InputStickerSetEmpty) ImplementsInputStickerSet() {}
-
-type InputStickerSetID struct {
-	Id         int64
-	AccessHash int64
-}
-
-func (*InputStickerSetID) CRC() uint32 {
-	return uint32(0x9de7a269)
-}
-
-func (*InputStickerSetID) ImplementsInputStickerSet() {}
-
-type InputStickerSetShortName struct {
-	ShortName string
-}
-
-func (*InputStickerSetShortName) CRC() uint32 {
-	return uint32(0x861cc8a0)
-}
-
-func (*InputStickerSetShortName) ImplementsInputStickerSet() {}
-
-type InputStickerSetAnimatedEmoji struct{}
-
-func (*InputStickerSetAnimatedEmoji) CRC() uint32 {
-	return uint32(0x28703c8)
-}
-
-func (*InputStickerSetAnimatedEmoji) ImplementsInputStickerSet() {}
-
-type InputStickerSetDice struct {
-	Emoticon string
-}
-
-func (*InputStickerSetDice) CRC() uint32 {
-	return uint32(0xe67f520e)
-}
-
-func (*InputStickerSetDice) ImplementsInputStickerSet() {}
-
-type InputStickeredMedia interface {
-	tl.Object
-	ImplementsInputStickeredMedia()
-}
-
-type InputStickeredMediaPhoto struct {
-	Id InputPhoto
-}
-
-func (*InputStickeredMediaPhoto) CRC() uint32 {
-	return uint32(0x4a992157)
-}
-
-func (*InputStickeredMediaPhoto) ImplementsInputStickeredMedia() {}
-
-type InputStickeredMediaDocument struct {
-	Id InputDocument
-}
-
-func (*InputStickeredMediaDocument) CRC() uint32 {
-	return uint32(0x438865b)
-}
-
-func (*InputStickeredMediaDocument) ImplementsInputStickeredMedia() {}
-
-type InputTheme interface {
-	tl.Object
-	ImplementsInputTheme()
-}
-
-type InputThemeObj struct {
-	Id         int64
-	AccessHash int64
-}
-
-func (*InputThemeObj) CRC() uint32 {
-	return uint32(0x3c5693e9)
-}
-
-func (*InputThemeObj) ImplementsInputTheme() {}
-
-type InputThemeSlug struct {
-	Slug string
-}
-
-func (*InputThemeSlug) CRC() uint32 {
-	return uint32(0xf5890df1)
-}
-
-func (*InputThemeSlug) ImplementsInputTheme() {}
-
-type InputUser interface {
-	tl.Object
-	ImplementsInputUser()
-}
-
-type InputUserEmpty struct{}
-
-func (*InputUserEmpty) CRC() uint32 {
-	return uint32(0xb98886cf)
-}
-
-func (*InputUserEmpty) ImplementsInputUser() {}
-
-type InputUserSelf struct{}
-
-func (*InputUserSelf) CRC() uint32 {
-	return uint32(0xf7c1b13f)
-}
-
-func (*InputUserSelf) ImplementsInputUser() {}
-
-type InputUserObj struct {
-	UserId     int32
-	AccessHash int64
-}
-
-func (*InputUserObj) CRC() uint32 {
-	return uint32(0xd8292816)
-}
-
-func (*InputUserObj) ImplementsInputUser() {}
-
-type InputUserFromMessage struct {
-	Peer   InputPeer
-	MsgId  int32
-	UserId int32
-}
-
-func (*InputUserFromMessage) CRC() uint32 {
-	return uint32(0x2d117597)
-}
-
-func (*InputUserFromMessage) ImplementsInputUser() {}
-
-type InputWallPaper interface {
-	tl.Object
-	ImplementsInputWallPaper()
-}
-
-type InputWallPaperObj struct {
-	Id         int64
-	AccessHash int64
-}
-
-func (*InputWallPaperObj) CRC() uint32 {
-	return uint32(0xe630b979)
-}
-
-func (*InputWallPaperObj) ImplementsInputWallPaper() {}
-
-type InputWallPaperSlug struct {
-	Slug string
-}
-
-func (*InputWallPaperSlug) CRC() uint32 {
-	return uint32(0x72091c80)
-}
-
-func (*InputWallPaperSlug) ImplementsInputWallPaper() {}
-
-type InputWallPaperNoFile struct{}
-
-func (*InputWallPaperNoFile) CRC() uint32 {
-	return uint32(0x8427bbac)
-}
-
-func (*InputWallPaperNoFile) ImplementsInputWallPaper() {}
-
-type InputWebFileLocation interface {
-	tl.Object
-	ImplementsInputWebFileLocation()
-}
-
-type InputWebFileLocationObj struct {
-	Url        string
-	AccessHash int64
-}
-
-func (*InputWebFileLocationObj) CRC() uint32 {
-	return uint32(0xc239d686)
-}
-
-func (*InputWebFileLocationObj) ImplementsInputWebFileLocation() {}
-
-type InputWebFileGeoPointLocation struct {
-	GeoPoint   InputGeoPoint
-	AccessHash int64
-	W          int32
-	H          int32
-	Zoom       int32
-	Scale      int32
-}
-
-func (*InputWebFileGeoPointLocation) CRC() uint32 {
-	return uint32(0x9f2221c9)
-}
-
-func (*InputWebFileGeoPointLocation) ImplementsInputWebFileLocation() {}
-
-type IpPort interface {
-	tl.Object
-	ImplementsIpPort()
-}
-
-type IpPortObj struct {
-	Ipv4 int32
-	Port int32
-}
-
-func (*IpPortObj) CRC() uint32 {
-	return uint32(0xd433ad73)
-}
-
-func (*IpPortObj) ImplementsIpPort() {}
-
-type IpPortSecret struct {
-	Ipv4   int32
-	Port   int32
-	Secret []byte
-}
-
-func (*IpPortSecret) CRC() uint32 {
-	return uint32(0x37982646)
-}
-
-func (*IpPortSecret) ImplementsIpPort() {}
-
-type JSONValue interface {
-	tl.Object
-	ImplementsJSONValue()
-}
-
-type JsonNull struct{}
-
-func (*JsonNull) CRC() uint32 {
-	return uint32(0x3f6d7b68)
-}
-
-func (*JsonNull) ImplementsJSONValue() {}
-
-type JsonBool struct {
-	Value bool
-}
-
-func (*JsonBool) CRC() uint32 {
-	return uint32(0xc7345e6a)
-}
-
-func (*JsonBool) ImplementsJSONValue() {}
-
-type JsonNumber struct {
-	Value float64
-}
-
-func (*JsonNumber) CRC() uint32 {
-	return uint32(0x2be0dfa4)
-}
-
-func (*JsonNumber) ImplementsJSONValue() {}
-
-type JsonString struct {
-	Value string
-}
-
-func (*JsonString) CRC() uint32 {
-	return uint32(0xb71e767a)
-}
-
-func (*JsonString) ImplementsJSONValue() {}
-
-type JsonArray struct {
-	Value []JSONValue
-}
-
-func (*JsonArray) CRC() uint32 {
-	return uint32(0xf7444763)
-}
-
-func (*JsonArray) ImplementsJSONValue() {}
-
-type JsonObject struct {
-	Value []*JSONObjectValue
-}
-
-func (*JsonObject) CRC() uint32 {
-	return uint32(0x99c1d49d)
-}
-
-func (*JsonObject) ImplementsJSONValue() {}
 
 type KeyboardButton interface {
-	tl.Object
+	serialize.TL
 	ImplementsKeyboardButton()
 }
 
 type KeyboardButtonObj struct {
-	Text string
+	Text string `validate:"required"`
 }
 
 func (*KeyboardButtonObj) CRC() uint32 {
@@ -2657,9 +290,19 @@ func (*KeyboardButtonObj) CRC() uint32 {
 
 func (*KeyboardButtonObj) ImplementsKeyboardButton() {}
 
+func (e *KeyboardButtonObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Text)
+	return buf.Result()
+}
+
 type KeyboardButtonUrl struct {
-	Text string
-	Url  string
+	Text string `validate:"required"`
+	Url  string `validate:"required"`
 }
 
 func (*KeyboardButtonUrl) CRC() uint32 {
@@ -2668,9 +311,20 @@ func (*KeyboardButtonUrl) CRC() uint32 {
 
 func (*KeyboardButtonUrl) ImplementsKeyboardButton() {}
 
+func (e *KeyboardButtonUrl) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Text)
+	buf.PutString(e.Url)
+	return buf.Result()
+}
+
 type KeyboardButtonCallback struct {
-	Text string
-	Data []byte
+	Text string `validate:"required"`
+	Data []byte `validate:"required"`
 }
 
 func (*KeyboardButtonCallback) CRC() uint32 {
@@ -2679,8 +333,19 @@ func (*KeyboardButtonCallback) CRC() uint32 {
 
 func (*KeyboardButtonCallback) ImplementsKeyboardButton() {}
 
+func (e *KeyboardButtonCallback) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Text)
+	buf.PutMessage(e.Data)
+	return buf.Result()
+}
+
 type KeyboardButtonRequestPhone struct {
-	Text string
+	Text string `validate:"required"`
 }
 
 func (*KeyboardButtonRequestPhone) CRC() uint32 {
@@ -2689,8 +354,18 @@ func (*KeyboardButtonRequestPhone) CRC() uint32 {
 
 func (*KeyboardButtonRequestPhone) ImplementsKeyboardButton() {}
 
+func (e *KeyboardButtonRequestPhone) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Text)
+	return buf.Result()
+}
+
 type KeyboardButtonRequestGeoLocation struct {
-	Text string
+	Text string `validate:"required"`
 }
 
 func (*KeyboardButtonRequestGeoLocation) CRC() uint32 {
@@ -2699,11 +374,21 @@ func (*KeyboardButtonRequestGeoLocation) CRC() uint32 {
 
 func (*KeyboardButtonRequestGeoLocation) ImplementsKeyboardButton() {}
 
+func (e *KeyboardButtonRequestGeoLocation) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Text)
+	return buf.Result()
+}
+
 type KeyboardButtonSwitchInline struct {
-	// flags position
-	SamePeer bool `tl:"flag:0,encoded_in_bitflags"`
-	Text     string
-	Query    string
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	SamePeer        bool     `flag:"0,encoded_in_bitflags"`
+	Text            string   `validate:"required"`
+	Query           string   `validate:"required"`
 }
 
 func (*KeyboardButtonSwitchInline) CRC() uint32 {
@@ -2712,8 +397,26 @@ func (*KeyboardButtonSwitchInline) CRC() uint32 {
 
 func (*KeyboardButtonSwitchInline) ImplementsKeyboardButton() {}
 
+func (e *KeyboardButtonSwitchInline) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.SamePeer) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.SamePeer) {
+	}
+	buf.PutString(e.Text)
+	buf.PutString(e.Query)
+	return buf.Result()
+}
+
 type KeyboardButtonGame struct {
-	Text string
+	Text string `validate:"required"`
 }
 
 func (*KeyboardButtonGame) CRC() uint32 {
@@ -2722,8 +425,18 @@ func (*KeyboardButtonGame) CRC() uint32 {
 
 func (*KeyboardButtonGame) ImplementsKeyboardButton() {}
 
+func (e *KeyboardButtonGame) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Text)
+	return buf.Result()
+}
+
 type KeyboardButtonBuy struct {
-	Text string
+	Text string `validate:"required"`
 }
 
 func (*KeyboardButtonBuy) CRC() uint32 {
@@ -2732,12 +445,22 @@ func (*KeyboardButtonBuy) CRC() uint32 {
 
 func (*KeyboardButtonBuy) ImplementsKeyboardButton() {}
 
+func (e *KeyboardButtonBuy) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Text)
+	return buf.Result()
+}
+
 type KeyboardButtonUrlAuth struct {
-	// flags position
-	Text     string
-	FwdText  string `tl:"flag:0"`
-	Url      string
-	ButtonId int32
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	Text            string   `validate:"required"`
+	FwdText         string   `flag:"0"`
+	Url             string   `validate:"required"`
+	ButtonId        int32    `validate:"required"`
 }
 
 func (*KeyboardButtonUrlAuth) CRC() uint32 {
@@ -2746,13 +469,33 @@ func (*KeyboardButtonUrlAuth) CRC() uint32 {
 
 func (*KeyboardButtonUrlAuth) ImplementsKeyboardButton() {}
 
+func (e *KeyboardButtonUrlAuth) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.FwdText) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutString(e.Text)
+	if !zero.IsZeroVal(e.FwdText) {
+		buf.PutString(e.FwdText)
+	}
+	buf.PutString(e.Url)
+	buf.PutInt(e.ButtonId)
+	return buf.Result()
+}
+
 type InputKeyboardButtonUrlAuth struct {
-	// flags position
-	RequestWriteAccess bool `tl:"flag:0,encoded_in_bitflags"`
-	Text               string
-	FwdText            string `tl:"flag:1"`
-	Url                string
-	Bot                InputUser
+	__flagsPosition    struct{}  // flags param position `validate:"required"`
+	RequestWriteAccess bool      `flag:"0,encoded_in_bitflags"`
+	Text               string    `validate:"required"`
+	FwdText            string    `flag:"1"`
+	Url                string    `validate:"required"`
+	Bot                InputUser `validate:"required"`
 }
 
 func (*InputKeyboardButtonUrlAuth) CRC() uint32 {
@@ -2761,10 +504,35 @@ func (*InputKeyboardButtonUrlAuth) CRC() uint32 {
 
 func (*InputKeyboardButtonUrlAuth) ImplementsKeyboardButton() {}
 
+func (e *InputKeyboardButtonUrlAuth) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.RequestWriteAccess) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.FwdText) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.RequestWriteAccess) {
+	}
+	buf.PutString(e.Text)
+	if !zero.IsZeroVal(e.FwdText) {
+		buf.PutString(e.FwdText)
+	}
+	buf.PutString(e.Url)
+	buf.PutRawBytes(e.Bot.Encode())
+	return buf.Result()
+}
+
 type KeyboardButtonRequestPoll struct {
-	// flags position
-	Quiz bool `tl:"flag:0"`
-	Text string
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	Quiz            bool     `flag:"0"`
+	Text            string   `validate:"required"`
 }
 
 func (*KeyboardButtonRequestPoll) CRC() uint32 {
@@ -2773,578 +541,26 @@ func (*KeyboardButtonRequestPoll) CRC() uint32 {
 
 func (*KeyboardButtonRequestPoll) ImplementsKeyboardButton() {}
 
-type LangPackString interface {
-	tl.Object
-	ImplementsLangPackString()
+func (e *KeyboardButtonRequestPoll) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Quiz) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Quiz) {
+		buf.PutBool(e.Quiz)
+	}
+	buf.PutString(e.Text)
+	return buf.Result()
 }
-
-type LangPackStringObj struct {
-	Key   string
-	Value string
-}
-
-func (*LangPackStringObj) CRC() uint32 {
-	return uint32(0xcad181f6)
-}
-
-func (*LangPackStringObj) ImplementsLangPackString() {}
-
-type LangPackStringPluralized struct {
-	// flags position
-	Key        string
-	ZeroValue  string `tl:"flag:0"`
-	OneValue   string `tl:"flag:1"`
-	TwoValue   string `tl:"flag:2"`
-	FewValue   string `tl:"flag:3"`
-	ManyValue  string `tl:"flag:4"`
-	OtherValue string
-}
-
-func (*LangPackStringPluralized) CRC() uint32 {
-	return uint32(0x6c47ac9f)
-}
-
-func (*LangPackStringPluralized) ImplementsLangPackString() {}
-
-type LangPackStringDeleted struct {
-	Key string
-}
-
-func (*LangPackStringDeleted) CRC() uint32 {
-	return uint32(0x2979eeb2)
-}
-
-func (*LangPackStringDeleted) ImplementsLangPackString() {}
-
-type Message interface {
-	tl.Object
-	ImplementsMessage()
-}
-
-type MessageEmpty struct {
-	Id int32
-}
-
-func (*MessageEmpty) CRC() uint32 {
-	return uint32(0x83e5de54)
-}
-
-func (*MessageEmpty) ImplementsMessage() {}
-
-type MessageObj struct {
-	// flags position
-	Out               bool `tl:"flag:1,encoded_in_bitflags"`
-	Mentioned         bool `tl:"flag:4,encoded_in_bitflags"`
-	MediaUnread       bool `tl:"flag:5,encoded_in_bitflags"`
-	Silent            bool `tl:"flag:13,encoded_in_bitflags"`
-	Post              bool `tl:"flag:14,encoded_in_bitflags"`
-	FromScheduled     bool `tl:"flag:18,encoded_in_bitflags"`
-	Legacy            bool `tl:"flag:19,encoded_in_bitflags"`
-	EditHide          bool `tl:"flag:21,encoded_in_bitflags"`
-	Id                int32
-	FromId            int32 `tl:"flag:8"`
-	ToId              Peer
-	FwdFrom           *MessageFwdHeader `tl:"flag:2"`
-	ViaBotId          int32             `tl:"flag:11"`
-	ReplyToMsgId      int32             `tl:"flag:3"`
-	Date              int32
-	Message           string
-	Media             MessageMedia         `tl:"flag:9"`
-	ReplyMarkup       ReplyMarkup          `tl:"flag:6"`
-	Entities          []MessageEntity      `tl:"flag:7"`
-	Views             int32                `tl:"flag:10"`
-	EditDate          int32                `tl:"flag:15"`
-	PostAuthor        string               `tl:"flag:16"`
-	GroupedId         int64                `tl:"flag:17"`
-	RestrictionReason []*RestrictionReason `tl:"flag:22"`
-}
-
-func (*MessageObj) CRC() uint32 {
-	return uint32(0x452c0e65)
-}
-
-func (*MessageObj) ImplementsMessage() {}
-
-type MessageService struct {
-	// flags position
-	Out          bool `tl:"flag:1,encoded_in_bitflags"`
-	Mentioned    bool `tl:"flag:4,encoded_in_bitflags"`
-	MediaUnread  bool `tl:"flag:5,encoded_in_bitflags"`
-	Silent       bool `tl:"flag:13,encoded_in_bitflags"`
-	Post         bool `tl:"flag:14,encoded_in_bitflags"`
-	Legacy       bool `tl:"flag:19,encoded_in_bitflags"`
-	Id           int32
-	FromId       int32 `tl:"flag:8"`
-	ToId         Peer
-	ReplyToMsgId int32 `tl:"flag:3"`
-	Date         int32
-	Action       MessageAction
-}
-
-func (*MessageService) CRC() uint32 {
-	return uint32(0x9e19a1f6)
-}
-
-func (*MessageService) ImplementsMessage() {}
-
-type MessageAction interface {
-	tl.Object
-	ImplementsMessageAction()
-}
-
-type MessageActionEmpty struct{}
-
-func (*MessageActionEmpty) CRC() uint32 {
-	return uint32(0xb6aef7b0)
-}
-
-func (*MessageActionEmpty) ImplementsMessageAction() {}
-
-type MessageActionChatCreate struct {
-	Title string
-	Users []int32
-}
-
-func (*MessageActionChatCreate) CRC() uint32 {
-	return uint32(0xa6638b9a)
-}
-
-func (*MessageActionChatCreate) ImplementsMessageAction() {}
-
-type MessageActionChatEditTitle struct {
-	Title string
-}
-
-func (*MessageActionChatEditTitle) CRC() uint32 {
-	return uint32(0xb5a1ce5a)
-}
-
-func (*MessageActionChatEditTitle) ImplementsMessageAction() {}
-
-type MessageActionChatEditPhoto struct {
-	Photo Photo
-}
-
-func (*MessageActionChatEditPhoto) CRC() uint32 {
-	return uint32(0x7fcb13a8)
-}
-
-func (*MessageActionChatEditPhoto) ImplementsMessageAction() {}
-
-type MessageActionChatDeletePhoto struct{}
-
-func (*MessageActionChatDeletePhoto) CRC() uint32 {
-	return uint32(0x95e3fbef)
-}
-
-func (*MessageActionChatDeletePhoto) ImplementsMessageAction() {}
-
-type MessageActionChatAddUser struct {
-	Users []int32
-}
-
-func (*MessageActionChatAddUser) CRC() uint32 {
-	return uint32(0x488a7337)
-}
-
-func (*MessageActionChatAddUser) ImplementsMessageAction() {}
-
-type MessageActionChatDeleteUser struct {
-	UserId int32
-}
-
-func (*MessageActionChatDeleteUser) CRC() uint32 {
-	return uint32(0xb2ae9b0c)
-}
-
-func (*MessageActionChatDeleteUser) ImplementsMessageAction() {}
-
-type MessageActionChatJoinedByLink struct {
-	InviterId int32
-}
-
-func (*MessageActionChatJoinedByLink) CRC() uint32 {
-	return uint32(0xf89cf5e8)
-}
-
-func (*MessageActionChatJoinedByLink) ImplementsMessageAction() {}
-
-type MessageActionChannelCreate struct {
-	Title string
-}
-
-func (*MessageActionChannelCreate) CRC() uint32 {
-	return uint32(0x95d2ac92)
-}
-
-func (*MessageActionChannelCreate) ImplementsMessageAction() {}
-
-type MessageActionChatMigrateTo struct {
-	ChannelId int32
-}
-
-func (*MessageActionChatMigrateTo) CRC() uint32 {
-	return uint32(0x51bdb021)
-}
-
-func (*MessageActionChatMigrateTo) ImplementsMessageAction() {}
-
-type MessageActionChannelMigrateFrom struct {
-	Title  string
-	ChatId int32
-}
-
-func (*MessageActionChannelMigrateFrom) CRC() uint32 {
-	return uint32(0xb055eaee)
-}
-
-func (*MessageActionChannelMigrateFrom) ImplementsMessageAction() {}
-
-type MessageActionPinMessage struct{}
-
-func (*MessageActionPinMessage) CRC() uint32 {
-	return uint32(0x94bd38ed)
-}
-
-func (*MessageActionPinMessage) ImplementsMessageAction() {}
-
-type MessageActionHistoryClear struct{}
-
-func (*MessageActionHistoryClear) CRC() uint32 {
-	return uint32(0x9fbab604)
-}
-
-func (*MessageActionHistoryClear) ImplementsMessageAction() {}
-
-type MessageActionGameScore struct {
-	GameId int64
-	Score  int32
-}
-
-func (*MessageActionGameScore) CRC() uint32 {
-	return uint32(0x92a72876)
-}
-
-func (*MessageActionGameScore) ImplementsMessageAction() {}
-
-type MessageActionPaymentSentMe struct {
-	// flags position
-	Currency         string
-	TotalAmount      int64
-	Payload          []byte
-	Info             *PaymentRequestedInfo `tl:"flag:0"`
-	ShippingOptionId string                `tl:"flag:1"`
-	Charge           *PaymentCharge
-}
-
-func (*MessageActionPaymentSentMe) CRC() uint32 {
-	return uint32(0x8f31b327)
-}
-
-func (*MessageActionPaymentSentMe) ImplementsMessageAction() {}
-
-type MessageActionPaymentSent struct {
-	Currency    string
-	TotalAmount int64
-}
-
-func (*MessageActionPaymentSent) CRC() uint32 {
-	return uint32(0x40699cd0)
-}
-
-func (*MessageActionPaymentSent) ImplementsMessageAction() {}
-
-type MessageActionPhoneCall struct {
-	// flags position
-	Video    bool `tl:"flag:2,encoded_in_bitflags"`
-	CallId   int64
-	Reason   PhoneCallDiscardReason `tl:"flag:0"`
-	Duration int32                  `tl:"flag:1"`
-}
-
-func (*MessageActionPhoneCall) CRC() uint32 {
-	return uint32(0x80e11a7f)
-}
-
-func (*MessageActionPhoneCall) ImplementsMessageAction() {}
-
-type MessageActionScreenshotTaken struct{}
-
-func (*MessageActionScreenshotTaken) CRC() uint32 {
-	return uint32(0x4792929b)
-}
-
-func (*MessageActionScreenshotTaken) ImplementsMessageAction() {}
-
-type MessageActionCustomAction struct {
-	Message string
-}
-
-func (*MessageActionCustomAction) CRC() uint32 {
-	return uint32(0xfae69f56)
-}
-
-func (*MessageActionCustomAction) ImplementsMessageAction() {}
-
-type MessageActionBotAllowed struct {
-	Domain string
-}
-
-func (*MessageActionBotAllowed) CRC() uint32 {
-	return uint32(0xabe9affe)
-}
-
-func (*MessageActionBotAllowed) ImplementsMessageAction() {}
-
-type MessageActionSecureValuesSentMe struct {
-	Values      []*SecureValue
-	Credentials *SecureCredentialsEncrypted
-}
-
-func (*MessageActionSecureValuesSentMe) CRC() uint32 {
-	return uint32(0x1b287353)
-}
-
-func (*MessageActionSecureValuesSentMe) ImplementsMessageAction() {}
-
-type MessageActionSecureValuesSent struct {
-	Types []SecureValueType
-}
-
-func (*MessageActionSecureValuesSent) CRC() uint32 {
-	return uint32(0xd95c6154)
-}
-
-func (*MessageActionSecureValuesSent) ImplementsMessageAction() {}
-
-type MessageActionContactSignUp struct{}
-
-func (*MessageActionContactSignUp) CRC() uint32 {
-	return uint32(0xf3f25f76)
-}
-
-func (*MessageActionContactSignUp) ImplementsMessageAction() {}
-
-type MessageEntity interface {
-	tl.Object
-	ImplementsMessageEntity()
-}
-
-type MessageEntityUnknown struct {
-	Offset int32
-	Length int32
-}
-
-func (*MessageEntityUnknown) CRC() uint32 {
-	return uint32(0xbb92ba95)
-}
-
-func (*MessageEntityUnknown) ImplementsMessageEntity() {}
-
-type MessageEntityMention struct {
-	Offset int32
-	Length int32
-}
-
-func (*MessageEntityMention) CRC() uint32 {
-	return uint32(0xfa04579d)
-}
-
-func (*MessageEntityMention) ImplementsMessageEntity() {}
-
-type MessageEntityHashtag struct {
-	Offset int32
-	Length int32
-}
-
-func (*MessageEntityHashtag) CRC() uint32 {
-	return uint32(0x6f635b0d)
-}
-
-func (*MessageEntityHashtag) ImplementsMessageEntity() {}
-
-type MessageEntityBotCommand struct {
-	Offset int32
-	Length int32
-}
-
-func (*MessageEntityBotCommand) CRC() uint32 {
-	return uint32(0x6cef8ac7)
-}
-
-func (*MessageEntityBotCommand) ImplementsMessageEntity() {}
-
-type MessageEntityUrl struct {
-	Offset int32
-	Length int32
-}
-
-func (*MessageEntityUrl) CRC() uint32 {
-	return uint32(0x6ed02538)
-}
-
-func (*MessageEntityUrl) ImplementsMessageEntity() {}
-
-type MessageEntityEmail struct {
-	Offset int32
-	Length int32
-}
-
-func (*MessageEntityEmail) CRC() uint32 {
-	return uint32(0x64e475c2)
-}
-
-func (*MessageEntityEmail) ImplementsMessageEntity() {}
-
-type MessageEntityBold struct {
-	Offset int32
-	Length int32
-}
-
-func (*MessageEntityBold) CRC() uint32 {
-	return uint32(0xbd610bc9)
-}
-
-func (*MessageEntityBold) ImplementsMessageEntity() {}
-
-type MessageEntityItalic struct {
-	Offset int32
-	Length int32
-}
-
-func (*MessageEntityItalic) CRC() uint32 {
-	return uint32(0x826f8b60)
-}
-
-func (*MessageEntityItalic) ImplementsMessageEntity() {}
-
-type MessageEntityCode struct {
-	Offset int32
-	Length int32
-}
-
-func (*MessageEntityCode) CRC() uint32 {
-	return uint32(0x28a20571)
-}
-
-func (*MessageEntityCode) ImplementsMessageEntity() {}
-
-type MessageEntityPre struct {
-	Offset   int32
-	Length   int32
-	Language string
-}
-
-func (*MessageEntityPre) CRC() uint32 {
-	return uint32(0x73924be0)
-}
-
-func (*MessageEntityPre) ImplementsMessageEntity() {}
-
-type MessageEntityTextUrl struct {
-	Offset int32
-	Length int32
-	Url    string
-}
-
-func (*MessageEntityTextUrl) CRC() uint32 {
-	return uint32(0x76a6d327)
-}
-
-func (*MessageEntityTextUrl) ImplementsMessageEntity() {}
-
-type MessageEntityMentionName struct {
-	Offset int32
-	Length int32
-	UserId int32
-}
-
-func (*MessageEntityMentionName) CRC() uint32 {
-	return uint32(0x352dca58)
-}
-
-func (*MessageEntityMentionName) ImplementsMessageEntity() {}
-
-type InputMessageEntityMentionName struct {
-	Offset int32
-	Length int32
-	UserId InputUser
-}
-
-func (*InputMessageEntityMentionName) CRC() uint32 {
-	return uint32(0x208e68c9)
-}
-
-func (*InputMessageEntityMentionName) ImplementsMessageEntity() {}
-
-type MessageEntityPhone struct {
-	Offset int32
-	Length int32
-}
-
-func (*MessageEntityPhone) CRC() uint32 {
-	return uint32(0x9b69e34b)
-}
-
-func (*MessageEntityPhone) ImplementsMessageEntity() {}
-
-type MessageEntityCashtag struct {
-	Offset int32
-	Length int32
-}
-
-func (*MessageEntityCashtag) CRC() uint32 {
-	return uint32(0x4c4e743f)
-}
-
-func (*MessageEntityCashtag) ImplementsMessageEntity() {}
-
-type MessageEntityUnderline struct {
-	Offset int32
-	Length int32
-}
-
-func (*MessageEntityUnderline) CRC() uint32 {
-	return uint32(0x9c4e7e8b)
-}
-
-func (*MessageEntityUnderline) ImplementsMessageEntity() {}
-
-type MessageEntityStrike struct {
-	Offset int32
-	Length int32
-}
-
-func (*MessageEntityStrike) CRC() uint32 {
-	return uint32(0xbf0693d4)
-}
-
-func (*MessageEntityStrike) ImplementsMessageEntity() {}
-
-type MessageEntityBlockquote struct {
-	Offset int32
-	Length int32
-}
-
-func (*MessageEntityBlockquote) CRC() uint32 {
-	return uint32(0x20df5d0)
-}
-
-func (*MessageEntityBlockquote) ImplementsMessageEntity() {}
-
-type MessageEntityBankCard struct {
-	Offset int32
-	Length int32
-}
-
-func (*MessageEntityBankCard) CRC() uint32 {
-	return uint32(0x761e6af4)
-}
-
-func (*MessageEntityBankCard) ImplementsMessageEntity() {}
 
 type MessageMedia interface {
-	tl.Object
+	serialize.TL
 	ImplementsMessageMedia()
 }
 
@@ -3356,10 +572,19 @@ func (*MessageMediaEmpty) CRC() uint32 {
 
 func (*MessageMediaEmpty) ImplementsMessageMedia() {}
 
+func (e *MessageMediaEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
 type MessageMediaPhoto struct {
-	// flags position
-	Photo      Photo `tl:"flag:0"`
-	TtlSeconds int32 `tl:"flag:2"`
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	Photo           Photo    `flag:"0"`
+	TtlSeconds      int32    `flag:"2"`
 }
 
 func (*MessageMediaPhoto) CRC() uint32 {
@@ -3368,8 +593,31 @@ func (*MessageMediaPhoto) CRC() uint32 {
 
 func (*MessageMediaPhoto) ImplementsMessageMedia() {}
 
+func (e *MessageMediaPhoto) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Photo) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.TtlSeconds) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Photo) {
+		buf.PutRawBytes(e.Photo.Encode())
+	}
+	if !zero.IsZeroVal(e.TtlSeconds) {
+		buf.PutInt(e.TtlSeconds)
+	}
+	return buf.Result()
+}
+
 type MessageMediaGeo struct {
-	Geo GeoPoint
+	Geo GeoPoint `validate:"required"`
 }
 
 func (*MessageMediaGeo) CRC() uint32 {
@@ -3378,12 +626,22 @@ func (*MessageMediaGeo) CRC() uint32 {
 
 func (*MessageMediaGeo) ImplementsMessageMedia() {}
 
+func (e *MessageMediaGeo) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Geo.Encode())
+	return buf.Result()
+}
+
 type MessageMediaContact struct {
-	PhoneNumber string
-	FirstName   string
-	LastName    string
-	Vcard       string
-	UserId      int32
+	PhoneNumber string `validate:"required"`
+	FirstName   string `validate:"required"`
+	LastName    string `validate:"required"`
+	Vcard       string `validate:"required"`
+	UserId      int32  `validate:"required"`
 }
 
 func (*MessageMediaContact) CRC() uint32 {
@@ -3391,6 +649,20 @@ func (*MessageMediaContact) CRC() uint32 {
 }
 
 func (*MessageMediaContact) ImplementsMessageMedia() {}
+
+func (e *MessageMediaContact) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.PhoneNumber)
+	buf.PutString(e.FirstName)
+	buf.PutString(e.LastName)
+	buf.PutString(e.Vcard)
+	buf.PutInt(e.UserId)
+	return buf.Result()
+}
 
 type MessageMediaUnsupported struct{}
 
@@ -3400,10 +672,19 @@ func (*MessageMediaUnsupported) CRC() uint32 {
 
 func (*MessageMediaUnsupported) ImplementsMessageMedia() {}
 
+func (e *MessageMediaUnsupported) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
 type MessageMediaDocument struct {
-	// flags position
-	Document   Document `tl:"flag:0"`
-	TtlSeconds int32    `tl:"flag:2"`
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	Document        Document `flag:"0"`
+	TtlSeconds      int32    `flag:"2"`
 }
 
 func (*MessageMediaDocument) CRC() uint32 {
@@ -3412,8 +693,31 @@ func (*MessageMediaDocument) CRC() uint32 {
 
 func (*MessageMediaDocument) ImplementsMessageMedia() {}
 
+func (e *MessageMediaDocument) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Document) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.TtlSeconds) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Document) {
+		buf.PutRawBytes(e.Document.Encode())
+	}
+	if !zero.IsZeroVal(e.TtlSeconds) {
+		buf.PutInt(e.TtlSeconds)
+	}
+	return buf.Result()
+}
+
 type MessageMediaWebPage struct {
-	Webpage WebPage
+	Webpage WebPage `validate:"required"`
 }
 
 func (*MessageMediaWebPage) CRC() uint32 {
@@ -3422,13 +726,23 @@ func (*MessageMediaWebPage) CRC() uint32 {
 
 func (*MessageMediaWebPage) ImplementsMessageMedia() {}
 
+func (e *MessageMediaWebPage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Webpage.Encode())
+	return buf.Result()
+}
+
 type MessageMediaVenue struct {
-	Geo       GeoPoint
-	Title     string
-	Address   string
-	Provider  string
-	VenueId   string
-	VenueType string
+	Geo       GeoPoint `validate:"required"`
+	Title     string   `validate:"required"`
+	Address   string   `validate:"required"`
+	Provider  string   `validate:"required"`
+	VenueId   string   `validate:"required"`
+	VenueType string   `validate:"required"`
 }
 
 func (*MessageMediaVenue) CRC() uint32 {
@@ -3437,8 +751,23 @@ func (*MessageMediaVenue) CRC() uint32 {
 
 func (*MessageMediaVenue) ImplementsMessageMedia() {}
 
+func (e *MessageMediaVenue) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Geo.Encode())
+	buf.PutString(e.Title)
+	buf.PutString(e.Address)
+	buf.PutString(e.Provider)
+	buf.PutString(e.VenueId)
+	buf.PutString(e.VenueType)
+	return buf.Result()
+}
+
 type MessageMediaGame struct {
-	Game *Game
+	Game *Game `validate:"required"`
 }
 
 func (*MessageMediaGame) CRC() uint32 {
@@ -3447,17 +776,27 @@ func (*MessageMediaGame) CRC() uint32 {
 
 func (*MessageMediaGame) ImplementsMessageMedia() {}
 
+func (e *MessageMediaGame) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Game.Encode())
+	return buf.Result()
+}
+
 type MessageMediaInvoice struct {
-	// flags position
-	ShippingAddressRequested bool `tl:"flag:1,encoded_in_bitflags"`
-	Test                     bool `tl:"flag:3,encoded_in_bitflags"`
-	Title                    string
-	Description              string
-	Photo                    WebDocument `tl:"flag:0"`
-	ReceiptMsgId             int32       `tl:"flag:2"`
-	Currency                 string
-	TotalAmount              int64
-	StartParam               string
+	__flagsPosition          struct{}    // flags param position `validate:"required"`
+	ShippingAddressRequested bool        `flag:"1,encoded_in_bitflags"`
+	Test                     bool        `flag:"3,encoded_in_bitflags"`
+	Title                    string      `validate:"required"`
+	Description              string      `validate:"required"`
+	Photo                    WebDocument `flag:"0"`
+	ReceiptMsgId             int32       `flag:"2"`
+	Currency                 string      `validate:"required"`
+	TotalAmount              int64       `validate:"required"`
+	StartParam               string      `validate:"required"`
 }
 
 func (*MessageMediaInvoice) CRC() uint32 {
@@ -3466,9 +805,47 @@ func (*MessageMediaInvoice) CRC() uint32 {
 
 func (*MessageMediaInvoice) ImplementsMessageMedia() {}
 
+func (e *MessageMediaInvoice) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Photo) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.ShippingAddressRequested) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.ReceiptMsgId) {
+		flag |= 1 << 2
+	}
+	if !zero.IsZeroVal(e.Test) {
+		flag |= 1 << 3
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.ShippingAddressRequested) {
+	}
+	if !zero.IsZeroVal(e.Test) {
+	}
+	buf.PutString(e.Title)
+	buf.PutString(e.Description)
+	if !zero.IsZeroVal(e.Photo) {
+		buf.PutRawBytes(e.Photo.Encode())
+	}
+	if !zero.IsZeroVal(e.ReceiptMsgId) {
+		buf.PutInt(e.ReceiptMsgId)
+	}
+	buf.PutString(e.Currency)
+	buf.PutLong(e.TotalAmount)
+	buf.PutString(e.StartParam)
+	return buf.Result()
+}
+
 type MessageMediaGeoLive struct {
-	Geo    GeoPoint
-	Period int32
+	Geo    GeoPoint `validate:"required"`
+	Period int32    `validate:"required"`
 }
 
 func (*MessageMediaGeoLive) CRC() uint32 {
@@ -3477,9 +854,20 @@ func (*MessageMediaGeoLive) CRC() uint32 {
 
 func (*MessageMediaGeoLive) ImplementsMessageMedia() {}
 
+func (e *MessageMediaGeoLive) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Geo.Encode())
+	buf.PutInt(e.Period)
+	return buf.Result()
+}
+
 type MessageMediaPoll struct {
-	Poll    *Poll
-	Results *PollResults
+	Poll    *Poll        `validate:"required"`
+	Results *PollResults `validate:"required"`
 }
 
 func (*MessageMediaPoll) CRC() uint32 {
@@ -3488,9 +876,20 @@ func (*MessageMediaPoll) CRC() uint32 {
 
 func (*MessageMediaPoll) ImplementsMessageMedia() {}
 
+func (e *MessageMediaPoll) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Poll.Encode())
+	buf.PutRawBytes(e.Results.Encode())
+	return buf.Result()
+}
+
 type MessageMediaDice struct {
-	Value    int32
-	Emoticon string
+	Value    int32  `validate:"required"`
+	Emoticon string `validate:"required"`
 }
 
 func (*MessageMediaDice) CRC() uint32 {
@@ -3499,3435 +898,19 @@ func (*MessageMediaDice) CRC() uint32 {
 
 func (*MessageMediaDice) ImplementsMessageMedia() {}
 
-type MessageUserVote interface {
-	tl.Object
-	ImplementsMessageUserVote()
+func (e *MessageMediaDice) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Value)
+	buf.PutString(e.Emoticon)
+	return buf.Result()
 }
-
-type MessageUserVoteObj struct {
-	UserId int32
-	Option []byte
-	Date   int32
-}
-
-func (*MessageUserVoteObj) CRC() uint32 {
-	return uint32(0xa28e5559)
-}
-
-func (*MessageUserVoteObj) ImplementsMessageUserVote() {}
-
-type MessageUserVoteInputOption struct {
-	UserId int32
-	Date   int32
-}
-
-func (*MessageUserVoteInputOption) CRC() uint32 {
-	return uint32(0x36377430)
-}
-
-func (*MessageUserVoteInputOption) ImplementsMessageUserVote() {}
-
-type MessageUserVoteMultiple struct {
-	UserId  int32
-	Options [][]byte
-	Date    int32
-}
-
-func (*MessageUserVoteMultiple) CRC() uint32 {
-	return uint32(0xe8fe0de)
-}
-
-func (*MessageUserVoteMultiple) ImplementsMessageUserVote() {}
-
-type MessagesFilter interface {
-	tl.Object
-	ImplementsMessagesFilter()
-}
-
-type InputMessagesFilterEmpty struct{}
-
-func (*InputMessagesFilterEmpty) CRC() uint32 {
-	return uint32(0x57e2f66c)
-}
-
-func (*InputMessagesFilterEmpty) ImplementsMessagesFilter() {}
-
-type InputMessagesFilterPhotos struct{}
-
-func (*InputMessagesFilterPhotos) CRC() uint32 {
-	return uint32(0x9609a51c)
-}
-
-func (*InputMessagesFilterPhotos) ImplementsMessagesFilter() {}
-
-type InputMessagesFilterVideo struct{}
-
-func (*InputMessagesFilterVideo) CRC() uint32 {
-	return uint32(0x9fc00e65)
-}
-
-func (*InputMessagesFilterVideo) ImplementsMessagesFilter() {}
-
-type InputMessagesFilterPhotoVideo struct{}
-
-func (*InputMessagesFilterPhotoVideo) CRC() uint32 {
-	return uint32(0x56e9f0e4)
-}
-
-func (*InputMessagesFilterPhotoVideo) ImplementsMessagesFilter() {}
-
-type InputMessagesFilterDocument struct{}
-
-func (*InputMessagesFilterDocument) CRC() uint32 {
-	return uint32(0x9eddf188)
-}
-
-func (*InputMessagesFilterDocument) ImplementsMessagesFilter() {}
-
-type InputMessagesFilterUrl struct{}
-
-func (*InputMessagesFilterUrl) CRC() uint32 {
-	return uint32(0x7ef0dd87)
-}
-
-func (*InputMessagesFilterUrl) ImplementsMessagesFilter() {}
-
-type InputMessagesFilterGif struct{}
-
-func (*InputMessagesFilterGif) CRC() uint32 {
-	return uint32(0xffc86587)
-}
-
-func (*InputMessagesFilterGif) ImplementsMessagesFilter() {}
-
-type InputMessagesFilterVoice struct{}
-
-func (*InputMessagesFilterVoice) CRC() uint32 {
-	return uint32(0x50f5c392)
-}
-
-func (*InputMessagesFilterVoice) ImplementsMessagesFilter() {}
-
-type InputMessagesFilterMusic struct{}
-
-func (*InputMessagesFilterMusic) CRC() uint32 {
-	return uint32(0x3751b49e)
-}
-
-func (*InputMessagesFilterMusic) ImplementsMessagesFilter() {}
-
-type InputMessagesFilterChatPhotos struct{}
-
-func (*InputMessagesFilterChatPhotos) CRC() uint32 {
-	return uint32(0x3a20ecb8)
-}
-
-func (*InputMessagesFilterChatPhotos) ImplementsMessagesFilter() {}
-
-type InputMessagesFilterPhoneCalls struct {
-	// flags position
-	Missed bool `tl:"flag:0,encoded_in_bitflags"`
-}
-
-func (*InputMessagesFilterPhoneCalls) CRC() uint32 {
-	return uint32(0x80c99768)
-}
-
-func (*InputMessagesFilterPhoneCalls) ImplementsMessagesFilter() {}
-
-type InputMessagesFilterRoundVoice struct{}
-
-func (*InputMessagesFilterRoundVoice) CRC() uint32 {
-	return uint32(0x7a7c17a4)
-}
-
-func (*InputMessagesFilterRoundVoice) ImplementsMessagesFilter() {}
-
-type InputMessagesFilterRoundVideo struct{}
-
-func (*InputMessagesFilterRoundVideo) CRC() uint32 {
-	return uint32(0xb549da53)
-}
-
-func (*InputMessagesFilterRoundVideo) ImplementsMessagesFilter() {}
-
-type InputMessagesFilterMyMentions struct{}
-
-func (*InputMessagesFilterMyMentions) CRC() uint32 {
-	return uint32(0xc1f8e69a)
-}
-
-func (*InputMessagesFilterMyMentions) ImplementsMessagesFilter() {}
-
-type InputMessagesFilterGeo struct{}
-
-func (*InputMessagesFilterGeo) CRC() uint32 {
-	return uint32(0xe7026d0d)
-}
-
-func (*InputMessagesFilterGeo) ImplementsMessagesFilter() {}
-
-type InputMessagesFilterContacts struct{}
-
-func (*InputMessagesFilterContacts) CRC() uint32 {
-	return uint32(0xe062db83)
-}
-
-func (*InputMessagesFilterContacts) ImplementsMessagesFilter() {}
-
-type NotifyPeer interface {
-	tl.Object
-	ImplementsNotifyPeer()
-}
-
-type NotifyPeerObj struct {
-	Peer Peer
-}
-
-func (*NotifyPeerObj) CRC() uint32 {
-	return uint32(0x9fd40bd8)
-}
-
-func (*NotifyPeerObj) ImplementsNotifyPeer() {}
-
-type NotifyUsers struct{}
-
-func (*NotifyUsers) CRC() uint32 {
-	return uint32(0xb4c83b4c)
-}
-
-func (*NotifyUsers) ImplementsNotifyPeer() {}
-
-type NotifyChats struct{}
-
-func (*NotifyChats) CRC() uint32 {
-	return uint32(0xc007cec3)
-}
-
-func (*NotifyChats) ImplementsNotifyPeer() {}
-
-type NotifyBroadcasts struct{}
-
-func (*NotifyBroadcasts) CRC() uint32 {
-	return uint32(0xd612e8ef)
-}
-
-func (*NotifyBroadcasts) ImplementsNotifyPeer() {}
-
-type PageBlock interface {
-	tl.Object
-	ImplementsPageBlock()
-}
-
-type PageBlockUnsupported struct{}
-
-func (*PageBlockUnsupported) CRC() uint32 {
-	return uint32(0x13567e8a)
-}
-
-func (*PageBlockUnsupported) ImplementsPageBlock() {}
-
-type PageBlockTitle struct {
-	Text RichText
-}
-
-func (*PageBlockTitle) CRC() uint32 {
-	return uint32(0x70abc3fd)
-}
-
-func (*PageBlockTitle) ImplementsPageBlock() {}
-
-type PageBlockSubtitle struct {
-	Text RichText
-}
-
-func (*PageBlockSubtitle) CRC() uint32 {
-	return uint32(0x8ffa9a1f)
-}
-
-func (*PageBlockSubtitle) ImplementsPageBlock() {}
-
-type PageBlockAuthorDate struct {
-	Author        RichText
-	PublishedDate int32
-}
-
-func (*PageBlockAuthorDate) CRC() uint32 {
-	return uint32(0xbaafe5e0)
-}
-
-func (*PageBlockAuthorDate) ImplementsPageBlock() {}
-
-type PageBlockHeader struct {
-	Text RichText
-}
-
-func (*PageBlockHeader) CRC() uint32 {
-	return uint32(0xbfd064ec)
-}
-
-func (*PageBlockHeader) ImplementsPageBlock() {}
-
-type PageBlockSubheader struct {
-	Text RichText
-}
-
-func (*PageBlockSubheader) CRC() uint32 {
-	return uint32(0xf12bb6e1)
-}
-
-func (*PageBlockSubheader) ImplementsPageBlock() {}
-
-type PageBlockParagraph struct {
-	Text RichText
-}
-
-func (*PageBlockParagraph) CRC() uint32 {
-	return uint32(0x467a0766)
-}
-
-func (*PageBlockParagraph) ImplementsPageBlock() {}
-
-type PageBlockPreformatted struct {
-	Text     RichText
-	Language string
-}
-
-func (*PageBlockPreformatted) CRC() uint32 {
-	return uint32(0xc070d93e)
-}
-
-func (*PageBlockPreformatted) ImplementsPageBlock() {}
-
-type PageBlockFooter struct {
-	Text RichText
-}
-
-func (*PageBlockFooter) CRC() uint32 {
-	return uint32(0x48870999)
-}
-
-func (*PageBlockFooter) ImplementsPageBlock() {}
-
-type PageBlockDivider struct{}
-
-func (*PageBlockDivider) CRC() uint32 {
-	return uint32(0xdb20b188)
-}
-
-func (*PageBlockDivider) ImplementsPageBlock() {}
-
-type PageBlockAnchor struct {
-	Name string
-}
-
-func (*PageBlockAnchor) CRC() uint32 {
-	return uint32(0xce0d37b0)
-}
-
-func (*PageBlockAnchor) ImplementsPageBlock() {}
-
-type PageBlockList struct {
-	Items []PageListItem
-}
-
-func (*PageBlockList) CRC() uint32 {
-	return uint32(0xe4e88011)
-}
-
-func (*PageBlockList) ImplementsPageBlock() {}
-
-type PageBlockBlockquote struct {
-	Text    RichText
-	Caption RichText
-}
-
-func (*PageBlockBlockquote) CRC() uint32 {
-	return uint32(0x263d7c26)
-}
-
-func (*PageBlockBlockquote) ImplementsPageBlock() {}
-
-type PageBlockPullquote struct {
-	Text    RichText
-	Caption RichText
-}
-
-func (*PageBlockPullquote) CRC() uint32 {
-	return uint32(0x4f4456d3)
-}
-
-func (*PageBlockPullquote) ImplementsPageBlock() {}
-
-type PageBlockPhoto struct {
-	// flags position
-	PhotoId   int64
-	Caption   *PageCaption
-	Url       string `tl:"flag:0"`
-	WebpageId int64  `tl:"flag:0"`
-}
-
-func (*PageBlockPhoto) CRC() uint32 {
-	return uint32(0x1759c560)
-}
-
-func (*PageBlockPhoto) ImplementsPageBlock() {}
-
-type PageBlockVideo struct {
-	// flags position
-	Autoplay bool `tl:"flag:0,encoded_in_bitflags"`
-	Loop     bool `tl:"flag:1,encoded_in_bitflags"`
-	VideoId  int64
-	Caption  *PageCaption
-}
-
-func (*PageBlockVideo) CRC() uint32 {
-	return uint32(0x7c8fe7b6)
-}
-
-func (*PageBlockVideo) ImplementsPageBlock() {}
-
-type PageBlockCover struct {
-	Cover PageBlock
-}
-
-func (*PageBlockCover) CRC() uint32 {
-	return uint32(0x39f23300)
-}
-
-func (*PageBlockCover) ImplementsPageBlock() {}
-
-type PageBlockEmbed struct {
-	// flags position
-	FullWidth      bool   `tl:"flag:0,encoded_in_bitflags"`
-	AllowScrolling bool   `tl:"flag:3,encoded_in_bitflags"`
-	Url            string `tl:"flag:1"`
-	Html           string `tl:"flag:2"`
-	PosterPhotoId  int64  `tl:"flag:4"`
-	W              int32  `tl:"flag:5"`
-	H              int32  `tl:"flag:5"`
-	Caption        *PageCaption
-}
-
-func (*PageBlockEmbed) CRC() uint32 {
-	return uint32(0xa8718dc5)
-}
-
-func (*PageBlockEmbed) ImplementsPageBlock() {}
-
-type PageBlockEmbedPost struct {
-	Url           string
-	WebpageId     int64
-	AuthorPhotoId int64
-	Author        string
-	Date          int32
-	Blocks        []PageBlock
-	Caption       *PageCaption
-}
-
-func (*PageBlockEmbedPost) CRC() uint32 {
-	return uint32(0xf259a80b)
-}
-
-func (*PageBlockEmbedPost) ImplementsPageBlock() {}
-
-type PageBlockCollage struct {
-	Items   []PageBlock
-	Caption *PageCaption
-}
-
-func (*PageBlockCollage) CRC() uint32 {
-	return uint32(0x65a0fa4d)
-}
-
-func (*PageBlockCollage) ImplementsPageBlock() {}
-
-type PageBlockSlideshow struct {
-	Items   []PageBlock
-	Caption *PageCaption
-}
-
-func (*PageBlockSlideshow) CRC() uint32 {
-	return uint32(0x31f9590)
-}
-
-func (*PageBlockSlideshow) ImplementsPageBlock() {}
-
-type PageBlockChannel struct {
-	Channel Chat
-}
-
-func (*PageBlockChannel) CRC() uint32 {
-	return uint32(0xef1751b5)
-}
-
-func (*PageBlockChannel) ImplementsPageBlock() {}
-
-type PageBlockAudio struct {
-	AudioId int64
-	Caption *PageCaption
-}
-
-func (*PageBlockAudio) CRC() uint32 {
-	return uint32(0x804361ea)
-}
-
-func (*PageBlockAudio) ImplementsPageBlock() {}
-
-type PageBlockKicker struct {
-	Text RichText
-}
-
-func (*PageBlockKicker) CRC() uint32 {
-	return uint32(0x1e148390)
-}
-
-func (*PageBlockKicker) ImplementsPageBlock() {}
-
-type PageBlockTable struct {
-	// flags position
-	Bordered bool `tl:"flag:0,encoded_in_bitflags"`
-	Striped  bool `tl:"flag:1,encoded_in_bitflags"`
-	Title    RichText
-	Rows     []*PageTableRow
-}
-
-func (*PageBlockTable) CRC() uint32 {
-	return uint32(0xbf4dea82)
-}
-
-func (*PageBlockTable) ImplementsPageBlock() {}
-
-type PageBlockOrderedList struct {
-	Items []PageListOrderedItem
-}
-
-func (*PageBlockOrderedList) CRC() uint32 {
-	return uint32(0x9a8ae1e1)
-}
-
-func (*PageBlockOrderedList) ImplementsPageBlock() {}
-
-type PageBlockDetails struct {
-	// flags position
-	Open   bool `tl:"flag:0,encoded_in_bitflags"`
-	Blocks []PageBlock
-	Title  RichText
-}
-
-func (*PageBlockDetails) CRC() uint32 {
-	return uint32(0x76768bed)
-}
-
-func (*PageBlockDetails) ImplementsPageBlock() {}
-
-type PageBlockRelatedArticles struct {
-	Title    RichText
-	Articles []*PageRelatedArticle
-}
-
-func (*PageBlockRelatedArticles) CRC() uint32 {
-	return uint32(0x16115a96)
-}
-
-func (*PageBlockRelatedArticles) ImplementsPageBlock() {}
-
-type PageBlockMap struct {
-	Geo     GeoPoint
-	Zoom    int32
-	W       int32
-	H       int32
-	Caption *PageCaption
-}
-
-func (*PageBlockMap) CRC() uint32 {
-	return uint32(0xa44f3ef6)
-}
-
-func (*PageBlockMap) ImplementsPageBlock() {}
-
-type PageListItem interface {
-	tl.Object
-	ImplementsPageListItem()
-}
-
-type PageListItemText struct {
-	Text RichText
-}
-
-func (*PageListItemText) CRC() uint32 {
-	return uint32(0xb92fb6cd)
-}
-
-func (*PageListItemText) ImplementsPageListItem() {}
-
-type PageListItemBlocks struct {
-	Blocks []PageBlock
-}
-
-func (*PageListItemBlocks) CRC() uint32 {
-	return uint32(0x25e073fc)
-}
-
-func (*PageListItemBlocks) ImplementsPageListItem() {}
-
-type PageListOrderedItem interface {
-	tl.Object
-	ImplementsPageListOrderedItem()
-}
-
-type PageListOrderedItemText struct {
-	Num  string
-	Text RichText
-}
-
-func (*PageListOrderedItemText) CRC() uint32 {
-	return uint32(0x5e068047)
-}
-
-func (*PageListOrderedItemText) ImplementsPageListOrderedItem() {}
-
-type PageListOrderedItemBlocks struct {
-	Num    string
-	Blocks []PageBlock
-}
-
-func (*PageListOrderedItemBlocks) CRC() uint32 {
-	return uint32(0x98dd8936)
-}
-
-func (*PageListOrderedItemBlocks) ImplementsPageListOrderedItem() {}
-
-type PasswordKdfAlgo interface {
-	tl.Object
-	ImplementsPasswordKdfAlgo()
-}
-
-type PasswordKdfAlgoUnknown struct{}
-
-func (*PasswordKdfAlgoUnknown) CRC() uint32 {
-	return uint32(0xd45ab096)
-}
-
-func (*PasswordKdfAlgoUnknown) ImplementsPasswordKdfAlgo() {}
-
-type PasswordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow struct {
-	Salt1 []byte
-	Salt2 []byte
-	G     int32
-	P     []byte
-}
-
-func (*PasswordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow) CRC() uint32 {
-	return uint32(0x3a912d4a)
-}
-
-func (*PasswordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow) ImplementsPasswordKdfAlgo() {
-}
-
-type Peer interface {
-	tl.Object
-	ImplementsPeer()
-}
-
-type PeerUser struct {
-	UserId int32
-}
-
-func (*PeerUser) CRC() uint32 {
-	return uint32(0x9db1bc6d)
-}
-
-func (*PeerUser) ImplementsPeer() {}
-
-type PeerChat struct {
-	ChatId int32
-}
-
-func (*PeerChat) CRC() uint32 {
-	return uint32(0xbad0e5bb)
-}
-
-func (*PeerChat) ImplementsPeer() {}
-
-type PeerChannel struct {
-	ChannelId int32
-}
-
-func (*PeerChannel) CRC() uint32 {
-	return uint32(0xbddde532)
-}
-
-func (*PeerChannel) ImplementsPeer() {}
-
-type PeerLocated interface {
-	tl.Object
-	ImplementsPeerLocated()
-}
-
-type PeerLocatedObj struct {
-	Peer     Peer
-	Expires  int32
-	Distance int32
-}
-
-func (*PeerLocatedObj) CRC() uint32 {
-	return uint32(0xca461b5d)
-}
-
-func (*PeerLocatedObj) ImplementsPeerLocated() {}
-
-type PeerSelfLocated struct {
-	Expires int32
-}
-
-func (*PeerSelfLocated) CRC() uint32 {
-	return uint32(0xf8ec284b)
-}
-
-func (*PeerSelfLocated) ImplementsPeerLocated() {}
-
-type PhoneCall interface {
-	tl.Object
-	ImplementsPhoneCall()
-}
-
-type PhoneCallEmpty struct {
-	Id int64
-}
-
-func (*PhoneCallEmpty) CRC() uint32 {
-	return uint32(0x5366c915)
-}
-
-func (*PhoneCallEmpty) ImplementsPhoneCall() {}
-
-type PhoneCallWaiting struct {
-	// flags position
-	Video         bool `tl:"flag:6,encoded_in_bitflags"`
-	Id            int64
-	AccessHash    int64
-	Date          int32
-	AdminId       int32
-	ParticipantId int32
-	Protocol      *PhoneCallProtocol
-	ReceiveDate   int32 `tl:"flag:0"`
-}
-
-func (*PhoneCallWaiting) CRC() uint32 {
-	return uint32(0x1b8f4ad1)
-}
-
-func (*PhoneCallWaiting) ImplementsPhoneCall() {}
-
-type PhoneCallRequested struct {
-	// flags position
-	Video         bool `tl:"flag:6,encoded_in_bitflags"`
-	Id            int64
-	AccessHash    int64
-	Date          int32
-	AdminId       int32
-	ParticipantId int32
-	GAHash        []byte
-	Protocol      *PhoneCallProtocol
-}
-
-func (*PhoneCallRequested) CRC() uint32 {
-	return uint32(0x87eabb53)
-}
-
-func (*PhoneCallRequested) ImplementsPhoneCall() {}
-
-type PhoneCallAccepted struct {
-	// flags position
-	Video         bool `tl:"flag:6,encoded_in_bitflags"`
-	Id            int64
-	AccessHash    int64
-	Date          int32
-	AdminId       int32
-	ParticipantId int32
-	GB            []byte
-	Protocol      *PhoneCallProtocol
-}
-
-func (*PhoneCallAccepted) CRC() uint32 {
-	return uint32(0x997c454a)
-}
-
-func (*PhoneCallAccepted) ImplementsPhoneCall() {}
-
-type PhoneCallObj struct {
-	// flags position
-	P2PAllowed     bool `tl:"flag:5,encoded_in_bitflags"`
-	Video          bool `tl:"flag:6,encoded_in_bitflags"`
-	Id             int64
-	AccessHash     int64
-	Date           int32
-	AdminId        int32
-	ParticipantId  int32
-	GAOrB          []byte
-	KeyFingerprint int64
-	Protocol       *PhoneCallProtocol
-	Connections    []PhoneConnection
-	StartDate      int32
-}
-
-func (*PhoneCallObj) CRC() uint32 {
-	return uint32(0x8742ae7f)
-}
-
-func (*PhoneCallObj) ImplementsPhoneCall() {}
-
-type PhoneCallDiscarded struct {
-	// flags position
-	NeedRating bool `tl:"flag:2,encoded_in_bitflags"`
-	NeedDebug  bool `tl:"flag:3,encoded_in_bitflags"`
-	Video      bool `tl:"flag:6,encoded_in_bitflags"`
-	Id         int64
-	Reason     PhoneCallDiscardReason `tl:"flag:0"`
-	Duration   int32                  `tl:"flag:1"`
-}
-
-func (*PhoneCallDiscarded) CRC() uint32 {
-	return uint32(0x50ca4de1)
-}
-
-func (*PhoneCallDiscarded) ImplementsPhoneCall() {}
-
-type PhoneConnection interface {
-	tl.Object
-	ImplementsPhoneConnection()
-}
-
-type PhoneConnectionObj struct {
-	Id      int64
-	Ip      string
-	Ipv6    string
-	Port    int32
-	PeerTag []byte
-}
-
-func (*PhoneConnectionObj) CRC() uint32 {
-	return uint32(0x9d4c17c0)
-}
-
-func (*PhoneConnectionObj) ImplementsPhoneConnection() {}
-
-type PhoneConnectionWebrtc struct {
-	// flags position
-	Turn     bool `tl:"flag:0,encoded_in_bitflags"`
-	Stun     bool `tl:"flag:1,encoded_in_bitflags"`
-	Id       int64
-	Ip       string
-	Ipv6     string
-	Port     int32
-	Username string
-	Password string
-}
-
-func (*PhoneConnectionWebrtc) CRC() uint32 {
-	return uint32(0x635fe375)
-}
-
-func (*PhoneConnectionWebrtc) ImplementsPhoneConnection() {}
-
-type Photo interface {
-	tl.Object
-	ImplementsPhoto()
-}
-
-type PhotoEmpty struct {
-	Id int64
-}
-
-func (*PhotoEmpty) CRC() uint32 {
-	return uint32(0x2331b22d)
-}
-
-func (*PhotoEmpty) ImplementsPhoto() {}
-
-type PhotoObj struct {
-	// flags position
-	HasStickers   bool `tl:"flag:0,encoded_in_bitflags"`
-	Id            int64
-	AccessHash    int64
-	FileReference []byte
-	Date          int32
-	Sizes         []PhotoSize
-	VideoSizes    []*VideoSize `tl:"flag:1"`
-	DcId          int32
-}
-
-func (*PhotoObj) CRC() uint32 {
-	return uint32(0xfb197a65)
-}
-
-func (*PhotoObj) ImplementsPhoto() {}
-
-type PhotoSize interface {
-	tl.Object
-	ImplementsPhotoSize()
-}
-
-type PhotoSizeEmpty struct {
-	Type string
-}
-
-func (*PhotoSizeEmpty) CRC() uint32 {
-	return uint32(0xe17e23c)
-}
-
-func (*PhotoSizeEmpty) ImplementsPhotoSize() {}
-
-type PhotoSizeObj struct {
-	Type     string
-	Location *FileLocation
-	W        int32
-	H        int32
-	Size     int32
-}
-
-func (*PhotoSizeObj) CRC() uint32 {
-	return uint32(0x77bfb61b)
-}
-
-func (*PhotoSizeObj) ImplementsPhotoSize() {}
-
-type PhotoCachedSize struct {
-	Type     string
-	Location *FileLocation
-	W        int32
-	H        int32
-	Bytes    []byte
-}
-
-func (*PhotoCachedSize) CRC() uint32 {
-	return uint32(0xe9a734fa)
-}
-
-func (*PhotoCachedSize) ImplementsPhotoSize() {}
-
-type PhotoStrippedSize struct {
-	Type  string
-	Bytes []byte
-}
-
-func (*PhotoStrippedSize) CRC() uint32 {
-	return uint32(0xe0b0bc2e)
-}
-
-func (*PhotoStrippedSize) ImplementsPhotoSize() {}
-
-type PrivacyRule interface {
-	tl.Object
-	ImplementsPrivacyRule()
-}
-
-type PrivacyValueAllowContacts struct{}
-
-func (*PrivacyValueAllowContacts) CRC() uint32 {
-	return uint32(0xfffe1bac)
-}
-
-func (*PrivacyValueAllowContacts) ImplementsPrivacyRule() {}
-
-type PrivacyValueAllowAll struct{}
-
-func (*PrivacyValueAllowAll) CRC() uint32 {
-	return uint32(0x65427b82)
-}
-
-func (*PrivacyValueAllowAll) ImplementsPrivacyRule() {}
-
-type PrivacyValueAllowUsers struct {
-	Users []int32
-}
-
-func (*PrivacyValueAllowUsers) CRC() uint32 {
-	return uint32(0x4d5bbe0c)
-}
-
-func (*PrivacyValueAllowUsers) ImplementsPrivacyRule() {}
-
-type PrivacyValueDisallowContacts struct{}
-
-func (*PrivacyValueDisallowContacts) CRC() uint32 {
-	return uint32(0xf888fa1a)
-}
-
-func (*PrivacyValueDisallowContacts) ImplementsPrivacyRule() {}
-
-type PrivacyValueDisallowAll struct{}
-
-func (*PrivacyValueDisallowAll) CRC() uint32 {
-	return uint32(0x8b73e763)
-}
-
-func (*PrivacyValueDisallowAll) ImplementsPrivacyRule() {}
-
-type PrivacyValueDisallowUsers struct {
-	Users []int32
-}
-
-func (*PrivacyValueDisallowUsers) CRC() uint32 {
-	return uint32(0xc7f49b7)
-}
-
-func (*PrivacyValueDisallowUsers) ImplementsPrivacyRule() {}
-
-type PrivacyValueAllowChatParticipants struct {
-	Chats []int32
-}
-
-func (*PrivacyValueAllowChatParticipants) CRC() uint32 {
-	return uint32(0x18be796b)
-}
-
-func (*PrivacyValueAllowChatParticipants) ImplementsPrivacyRule() {}
-
-type PrivacyValueDisallowChatParticipants struct {
-	Chats []int32
-}
-
-func (*PrivacyValueDisallowChatParticipants) CRC() uint32 {
-	return uint32(0xacae0690)
-}
-
-func (*PrivacyValueDisallowChatParticipants) ImplementsPrivacyRule() {}
-
-type RecentMeUrl interface {
-	tl.Object
-	ImplementsRecentMeUrl()
-}
-
-type RecentMeUrlUnknown struct {
-	Url string
-}
-
-func (*RecentMeUrlUnknown) CRC() uint32 {
-	return uint32(0x46e1d13d)
-}
-
-func (*RecentMeUrlUnknown) ImplementsRecentMeUrl() {}
-
-type RecentMeUrlUser struct {
-	Url    string
-	UserId int32
-}
-
-func (*RecentMeUrlUser) CRC() uint32 {
-	return uint32(0x8dbc3336)
-}
-
-func (*RecentMeUrlUser) ImplementsRecentMeUrl() {}
-
-type RecentMeUrlChat struct {
-	Url    string
-	ChatId int32
-}
-
-func (*RecentMeUrlChat) CRC() uint32 {
-	return uint32(0xa01b22f9)
-}
-
-func (*RecentMeUrlChat) ImplementsRecentMeUrl() {}
-
-type RecentMeUrlChatInvite struct {
-	Url        string
-	ChatInvite ChatInvite
-}
-
-func (*RecentMeUrlChatInvite) CRC() uint32 {
-	return uint32(0xeb49081d)
-}
-
-func (*RecentMeUrlChatInvite) ImplementsRecentMeUrl() {}
-
-type RecentMeUrlStickerSet struct {
-	Url string
-	Set StickerSetCovered
-}
-
-func (*RecentMeUrlStickerSet) CRC() uint32 {
-	return uint32(0xbc0a57dc)
-}
-
-func (*RecentMeUrlStickerSet) ImplementsRecentMeUrl() {}
-
-type ReplyMarkup interface {
-	tl.Object
-	ImplementsReplyMarkup()
-}
-
-type ReplyKeyboardHide struct {
-	// flags position
-	Selective bool `tl:"flag:2,encoded_in_bitflags"`
-}
-
-func (*ReplyKeyboardHide) CRC() uint32 {
-	return uint32(0xa03e5b85)
-}
-
-func (*ReplyKeyboardHide) ImplementsReplyMarkup() {}
-
-type ReplyKeyboardForceReply struct {
-	// flags position
-	SingleUse bool `tl:"flag:1,encoded_in_bitflags"`
-	Selective bool `tl:"flag:2,encoded_in_bitflags"`
-}
-
-func (*ReplyKeyboardForceReply) CRC() uint32 {
-	return uint32(0xf4108aa0)
-}
-
-func (*ReplyKeyboardForceReply) ImplementsReplyMarkup() {}
-
-type ReplyKeyboardMarkup struct {
-	// flags position
-	Resize    bool `tl:"flag:0,encoded_in_bitflags"`
-	SingleUse bool `tl:"flag:1,encoded_in_bitflags"`
-	Selective bool `tl:"flag:2,encoded_in_bitflags"`
-	Rows      []*KeyboardButtonRow
-}
-
-func (*ReplyKeyboardMarkup) CRC() uint32 {
-	return uint32(0x3502758c)
-}
-
-func (*ReplyKeyboardMarkup) ImplementsReplyMarkup() {}
-
-type ReplyInlineMarkup struct {
-	Rows []*KeyboardButtonRow
-}
-
-func (*ReplyInlineMarkup) CRC() uint32 {
-	return uint32(0x48a30254)
-}
-
-func (*ReplyInlineMarkup) ImplementsReplyMarkup() {}
-
-type ReportReason interface {
-	tl.Object
-	ImplementsReportReason()
-}
-
-type InputReportReasonSpam struct{}
-
-func (*InputReportReasonSpam) CRC() uint32 {
-	return uint32(0x58dbcab8)
-}
-
-func (*InputReportReasonSpam) ImplementsReportReason() {}
-
-type InputReportReasonViolence struct{}
-
-func (*InputReportReasonViolence) CRC() uint32 {
-	return uint32(0x1e22c78d)
-}
-
-func (*InputReportReasonViolence) ImplementsReportReason() {}
-
-type InputReportReasonPornography struct{}
-
-func (*InputReportReasonPornography) CRC() uint32 {
-	return uint32(0x2e59d922)
-}
-
-func (*InputReportReasonPornography) ImplementsReportReason() {}
-
-type InputReportReasonChildAbuse struct{}
-
-func (*InputReportReasonChildAbuse) CRC() uint32 {
-	return uint32(0xadf44ee3)
-}
-
-func (*InputReportReasonChildAbuse) ImplementsReportReason() {}
-
-type InputReportReasonOther struct {
-	Text string
-}
-
-func (*InputReportReasonOther) CRC() uint32 {
-	return uint32(0xe1746d0a)
-}
-
-func (*InputReportReasonOther) ImplementsReportReason() {}
-
-type InputReportReasonCopyright struct{}
-
-func (*InputReportReasonCopyright) CRC() uint32 {
-	return uint32(0x9b89f93a)
-}
-
-func (*InputReportReasonCopyright) ImplementsReportReason() {}
-
-type InputReportReasonGeoIrrelevant struct{}
-
-func (*InputReportReasonGeoIrrelevant) CRC() uint32 {
-	return uint32(0xdbd4feed)
-}
-
-func (*InputReportReasonGeoIrrelevant) ImplementsReportReason() {}
-
-type RichText interface {
-	tl.Object
-	ImplementsRichText()
-}
-
-type TextEmpty struct{}
-
-func (*TextEmpty) CRC() uint32 {
-	return uint32(0xdc3d824f)
-}
-
-func (*TextEmpty) ImplementsRichText() {}
-
-type TextPlain struct {
-	Text string
-}
-
-func (*TextPlain) CRC() uint32 {
-	return uint32(0x744694e0)
-}
-
-func (*TextPlain) ImplementsRichText() {}
-
-type TextBold struct {
-	Text RichText
-}
-
-func (*TextBold) CRC() uint32 {
-	return uint32(0x6724abc4)
-}
-
-func (*TextBold) ImplementsRichText() {}
-
-type TextItalic struct {
-	Text RichText
-}
-
-func (*TextItalic) CRC() uint32 {
-	return uint32(0xd912a59c)
-}
-
-func (*TextItalic) ImplementsRichText() {}
-
-type TextUnderline struct {
-	Text RichText
-}
-
-func (*TextUnderline) CRC() uint32 {
-	return uint32(0xc12622c4)
-}
-
-func (*TextUnderline) ImplementsRichText() {}
-
-type TextStrike struct {
-	Text RichText
-}
-
-func (*TextStrike) CRC() uint32 {
-	return uint32(0x9bf8bb95)
-}
-
-func (*TextStrike) ImplementsRichText() {}
-
-type TextFixed struct {
-	Text RichText
-}
-
-func (*TextFixed) CRC() uint32 {
-	return uint32(0x6c3f19b9)
-}
-
-func (*TextFixed) ImplementsRichText() {}
-
-type TextUrl struct {
-	Text      RichText
-	Url       string
-	WebpageId int64
-}
-
-func (*TextUrl) CRC() uint32 {
-	return uint32(0x3c2884c1)
-}
-
-func (*TextUrl) ImplementsRichText() {}
-
-type TextEmail struct {
-	Text  RichText
-	Email string
-}
-
-func (*TextEmail) CRC() uint32 {
-	return uint32(0xde5a0dd6)
-}
-
-func (*TextEmail) ImplementsRichText() {}
-
-type TextConcat struct {
-	Texts []RichText
-}
-
-func (*TextConcat) CRC() uint32 {
-	return uint32(0x7e6260d7)
-}
-
-func (*TextConcat) ImplementsRichText() {}
-
-type TextSubscript struct {
-	Text RichText
-}
-
-func (*TextSubscript) CRC() uint32 {
-	return uint32(0xed6a8504)
-}
-
-func (*TextSubscript) ImplementsRichText() {}
-
-type TextSuperscript struct {
-	Text RichText
-}
-
-func (*TextSuperscript) CRC() uint32 {
-	return uint32(0xc7fb5e01)
-}
-
-func (*TextSuperscript) ImplementsRichText() {}
-
-type TextMarked struct {
-	Text RichText
-}
-
-func (*TextMarked) CRC() uint32 {
-	return uint32(0x34b8621)
-}
-
-func (*TextMarked) ImplementsRichText() {}
-
-type TextPhone struct {
-	Text  RichText
-	Phone string
-}
-
-func (*TextPhone) CRC() uint32 {
-	return uint32(0x1ccb966a)
-}
-
-func (*TextPhone) ImplementsRichText() {}
-
-type TextImage struct {
-	DocumentId int64
-	W          int32
-	H          int32
-}
-
-func (*TextImage) CRC() uint32 {
-	return uint32(0x81ccf4f)
-}
-
-func (*TextImage) ImplementsRichText() {}
-
-type TextAnchor struct {
-	Text RichText
-	Name string
-}
-
-func (*TextAnchor) CRC() uint32 {
-	return uint32(0x35553762)
-}
-
-func (*TextAnchor) ImplementsRichText() {}
-
-type SecureFile interface {
-	tl.Object
-	ImplementsSecureFile()
-}
-
-type SecureFileEmpty struct{}
-
-func (*SecureFileEmpty) CRC() uint32 {
-	return uint32(0x64199744)
-}
-
-func (*SecureFileEmpty) ImplementsSecureFile() {}
-
-type SecureFileObj struct {
-	Id         int64
-	AccessHash int64
-	Size       int32
-	DcId       int32
-	Date       int32
-	FileHash   []byte
-	Secret     []byte
-}
-
-func (*SecureFileObj) CRC() uint32 {
-	return uint32(0xe0277a62)
-}
-
-func (*SecureFileObj) ImplementsSecureFile() {}
-
-type SecurePasswordKdfAlgo interface {
-	tl.Object
-	ImplementsSecurePasswordKdfAlgo()
-}
-
-type SecurePasswordKdfAlgoUnknown struct{}
-
-func (*SecurePasswordKdfAlgoUnknown) CRC() uint32 {
-	return uint32(0x4a8537)
-}
-
-func (*SecurePasswordKdfAlgoUnknown) ImplementsSecurePasswordKdfAlgo() {}
-
-type SecurePasswordKdfAlgoPBKDF2HMACSHA512iter100000 struct {
-	Salt []byte
-}
-
-func (*SecurePasswordKdfAlgoPBKDF2HMACSHA512iter100000) CRC() uint32 {
-	return uint32(0xbbf2dda0)
-}
-
-func (*SecurePasswordKdfAlgoPBKDF2HMACSHA512iter100000) ImplementsSecurePasswordKdfAlgo() {}
-
-type SecurePasswordKdfAlgoSHA512 struct {
-	Salt []byte
-}
-
-func (*SecurePasswordKdfAlgoSHA512) CRC() uint32 {
-	return uint32(0x86471d92)
-}
-
-func (*SecurePasswordKdfAlgoSHA512) ImplementsSecurePasswordKdfAlgo() {}
-
-type SecurePlainData interface {
-	tl.Object
-	ImplementsSecurePlainData()
-}
-
-type SecurePlainPhone struct {
-	Phone string
-}
-
-func (*SecurePlainPhone) CRC() uint32 {
-	return uint32(0x7d6099dd)
-}
-
-func (*SecurePlainPhone) ImplementsSecurePlainData() {}
-
-type SecurePlainEmail struct {
-	Email string
-}
-
-func (*SecurePlainEmail) CRC() uint32 {
-	return uint32(0x21ec5a5f)
-}
-
-func (*SecurePlainEmail) ImplementsSecurePlainData() {}
-
-type SecureRequiredType interface {
-	tl.Object
-	ImplementsSecureRequiredType()
-}
-
-type SecureRequiredTypeObj struct {
-	// flags position
-	NativeNames         bool `tl:"flag:0,encoded_in_bitflags"`
-	SelfieRequired      bool `tl:"flag:1,encoded_in_bitflags"`
-	TranslationRequired bool `tl:"flag:2,encoded_in_bitflags"`
-	Type                SecureValueType
-}
-
-func (*SecureRequiredTypeObj) CRC() uint32 {
-	return uint32(0x829d99da)
-}
-
-func (*SecureRequiredTypeObj) ImplementsSecureRequiredType() {}
-
-type SecureRequiredTypeOneOf struct {
-	Types []SecureRequiredType
-}
-
-func (*SecureRequiredTypeOneOf) CRC() uint32 {
-	return uint32(0x27477b4)
-}
-
-func (*SecureRequiredTypeOneOf) ImplementsSecureRequiredType() {}
-
-type SecureValueError interface {
-	tl.Object
-	ImplementsSecureValueError()
-}
-
-type SecureValueErrorData struct {
-	Type     SecureValueType
-	DataHash []byte
-	Field    string
-	Text     string
-}
-
-func (*SecureValueErrorData) CRC() uint32 {
-	return uint32(0xe8a40bd9)
-}
-
-func (*SecureValueErrorData) ImplementsSecureValueError() {}
-
-type SecureValueErrorFrontSide struct {
-	Type     SecureValueType
-	FileHash []byte
-	Text     string
-}
-
-func (*SecureValueErrorFrontSide) CRC() uint32 {
-	return uint32(0xbe3dfa)
-}
-
-func (*SecureValueErrorFrontSide) ImplementsSecureValueError() {}
-
-type SecureValueErrorReverseSide struct {
-	Type     SecureValueType
-	FileHash []byte
-	Text     string
-}
-
-func (*SecureValueErrorReverseSide) CRC() uint32 {
-	return uint32(0x868a2aa5)
-}
-
-func (*SecureValueErrorReverseSide) ImplementsSecureValueError() {}
-
-type SecureValueErrorSelfie struct {
-	Type     SecureValueType
-	FileHash []byte
-	Text     string
-}
-
-func (*SecureValueErrorSelfie) CRC() uint32 {
-	return uint32(0xe537ced6)
-}
-
-func (*SecureValueErrorSelfie) ImplementsSecureValueError() {}
-
-type SecureValueErrorFile struct {
-	Type     SecureValueType
-	FileHash []byte
-	Text     string
-}
-
-func (*SecureValueErrorFile) CRC() uint32 {
-	return uint32(0x7a700873)
-}
-
-func (*SecureValueErrorFile) ImplementsSecureValueError() {}
-
-type SecureValueErrorFiles struct {
-	Type     SecureValueType
-	FileHash [][]byte
-	Text     string
-}
-
-func (*SecureValueErrorFiles) CRC() uint32 {
-	return uint32(0x666220e9)
-}
-
-func (*SecureValueErrorFiles) ImplementsSecureValueError() {}
-
-type SecureValueErrorObj struct {
-	Type SecureValueType
-	Hash []byte
-	Text string
-}
-
-func (*SecureValueErrorObj) CRC() uint32 {
-	return uint32(0x869d758f)
-}
-
-func (*SecureValueErrorObj) ImplementsSecureValueError() {}
-
-type SecureValueErrorTranslationFile struct {
-	Type     SecureValueType
-	FileHash []byte
-	Text     string
-}
-
-func (*SecureValueErrorTranslationFile) CRC() uint32 {
-	return uint32(0xa1144770)
-}
-
-func (*SecureValueErrorTranslationFile) ImplementsSecureValueError() {}
-
-type SecureValueErrorTranslationFiles struct {
-	Type     SecureValueType
-	FileHash [][]byte
-	Text     string
-}
-
-func (*SecureValueErrorTranslationFiles) CRC() uint32 {
-	return uint32(0x34636dd8)
-}
-
-func (*SecureValueErrorTranslationFiles) ImplementsSecureValueError() {}
-
-type SendMessageAction interface {
-	tl.Object
-	ImplementsSendMessageAction()
-}
-
-type SendMessageTypingAction struct{}
-
-func (*SendMessageTypingAction) CRC() uint32 {
-	return uint32(0x16bf744e)
-}
-
-func (*SendMessageTypingAction) ImplementsSendMessageAction() {}
-
-type SendMessageCancelAction struct{}
-
-func (*SendMessageCancelAction) CRC() uint32 {
-	return uint32(0xfd5ec8f5)
-}
-
-func (*SendMessageCancelAction) ImplementsSendMessageAction() {}
-
-type SendMessageRecordVideoAction struct{}
-
-func (*SendMessageRecordVideoAction) CRC() uint32 {
-	return uint32(0xa187d66f)
-}
-
-func (*SendMessageRecordVideoAction) ImplementsSendMessageAction() {}
-
-type SendMessageUploadVideoAction struct {
-	Progress int32
-}
-
-func (*SendMessageUploadVideoAction) CRC() uint32 {
-	return uint32(0xe9763aec)
-}
-
-func (*SendMessageUploadVideoAction) ImplementsSendMessageAction() {}
-
-type SendMessageRecordAudioAction struct{}
-
-func (*SendMessageRecordAudioAction) CRC() uint32 {
-	return uint32(0xd52f73f7)
-}
-
-func (*SendMessageRecordAudioAction) ImplementsSendMessageAction() {}
-
-type SendMessageUploadAudioAction struct {
-	Progress int32
-}
-
-func (*SendMessageUploadAudioAction) CRC() uint32 {
-	return uint32(0xf351d7ab)
-}
-
-func (*SendMessageUploadAudioAction) ImplementsSendMessageAction() {}
-
-type SendMessageUploadPhotoAction struct {
-	Progress int32
-}
-
-func (*SendMessageUploadPhotoAction) CRC() uint32 {
-	return uint32(0xd1d34a26)
-}
-
-func (*SendMessageUploadPhotoAction) ImplementsSendMessageAction() {}
-
-type SendMessageUploadDocumentAction struct {
-	Progress int32
-}
-
-func (*SendMessageUploadDocumentAction) CRC() uint32 {
-	return uint32(0xaa0cd9e4)
-}
-
-func (*SendMessageUploadDocumentAction) ImplementsSendMessageAction() {}
-
-type SendMessageGeoLocationAction struct{}
-
-func (*SendMessageGeoLocationAction) CRC() uint32 {
-	return uint32(0x176f8ba1)
-}
-
-func (*SendMessageGeoLocationAction) ImplementsSendMessageAction() {}
-
-type SendMessageChooseContactAction struct{}
-
-func (*SendMessageChooseContactAction) CRC() uint32 {
-	return uint32(0x628cbc6f)
-}
-
-func (*SendMessageChooseContactAction) ImplementsSendMessageAction() {}
-
-type SendMessageGamePlayAction struct{}
-
-func (*SendMessageGamePlayAction) CRC() uint32 {
-	return uint32(0xdd6a8f48)
-}
-
-func (*SendMessageGamePlayAction) ImplementsSendMessageAction() {}
-
-type SendMessageRecordRoundAction struct{}
-
-func (*SendMessageRecordRoundAction) CRC() uint32 {
-	return uint32(0x88f27fbc)
-}
-
-func (*SendMessageRecordRoundAction) ImplementsSendMessageAction() {}
-
-type SendMessageUploadRoundAction struct {
-	Progress int32
-}
-
-func (*SendMessageUploadRoundAction) CRC() uint32 {
-	return uint32(0x243e1c66)
-}
-
-func (*SendMessageUploadRoundAction) ImplementsSendMessageAction() {}
-
-type StatsGraph interface {
-	tl.Object
-	ImplementsStatsGraph()
-}
-
-type StatsGraphAsync struct {
-	Token string
-}
-
-func (*StatsGraphAsync) CRC() uint32 {
-	return uint32(0x4a27eb2d)
-}
-
-func (*StatsGraphAsync) ImplementsStatsGraph() {}
-
-type StatsGraphError struct {
-	Error string
-}
-
-func (*StatsGraphError) CRC() uint32 {
-	return uint32(0xbedc9822)
-}
-
-func (*StatsGraphError) ImplementsStatsGraph() {}
-
-type StatsGraphObj struct {
-	// flags position
-	Json      *DataJSON
-	ZoomToken string `tl:"flag:0"`
-}
-
-func (*StatsGraphObj) CRC() uint32 {
-	return uint32(0x8ea464b6)
-}
-
-func (*StatsGraphObj) ImplementsStatsGraph() {}
-
-type StickerSetCovered interface {
-	tl.Object
-	ImplementsStickerSetCovered()
-}
-
-type StickerSetCoveredObj struct {
-	Set   *StickerSet
-	Cover Document
-}
-
-func (*StickerSetCoveredObj) CRC() uint32 {
-	return uint32(0x6410a5d2)
-}
-
-func (*StickerSetCoveredObj) ImplementsStickerSetCovered() {}
-
-type StickerSetMultiCovered struct {
-	Set    *StickerSet
-	Covers []Document
-}
-
-func (*StickerSetMultiCovered) CRC() uint32 {
-	return uint32(0x3407e51b)
-}
-
-func (*StickerSetMultiCovered) ImplementsStickerSetCovered() {}
-
-type Update interface {
-	tl.Object
-	ImplementsUpdate()
-}
-
-type UpdateNewMessage struct {
-	Message  Message
-	Pts      int32
-	PtsCount int32
-}
-
-func (*UpdateNewMessage) CRC() uint32 {
-	return uint32(0x1f2b0afd)
-}
-
-func (*UpdateNewMessage) ImplementsUpdate() {}
-
-type UpdateMessageID struct {
-	Id       int32
-	RandomId int64
-}
-
-func (*UpdateMessageID) CRC() uint32 {
-	return uint32(0x4e90bfd6)
-}
-
-func (*UpdateMessageID) ImplementsUpdate() {}
-
-type UpdateDeleteMessages struct {
-	Messages []int32
-	Pts      int32
-	PtsCount int32
-}
-
-func (*UpdateDeleteMessages) CRC() uint32 {
-	return uint32(0xa20db0e5)
-}
-
-func (*UpdateDeleteMessages) ImplementsUpdate() {}
-
-type UpdateUserTyping struct {
-	UserId int32
-	Action SendMessageAction
-}
-
-func (*UpdateUserTyping) CRC() uint32 {
-	return uint32(0x5c486927)
-}
-
-func (*UpdateUserTyping) ImplementsUpdate() {}
-
-type UpdateChatUserTyping struct {
-	ChatId int32
-	UserId int32
-	Action SendMessageAction
-}
-
-func (*UpdateChatUserTyping) CRC() uint32 {
-	return uint32(0x9a65ea1f)
-}
-
-func (*UpdateChatUserTyping) ImplementsUpdate() {}
-
-type UpdateChatParticipants struct {
-	Participants ChatParticipants
-}
-
-func (*UpdateChatParticipants) CRC() uint32 {
-	return uint32(0x7761198)
-}
-
-func (*UpdateChatParticipants) ImplementsUpdate() {}
-
-type UpdateUserStatus struct {
-	UserId int32
-	Status UserStatus
-}
-
-func (*UpdateUserStatus) CRC() uint32 {
-	return uint32(0x1bfbd823)
-}
-
-func (*UpdateUserStatus) ImplementsUpdate() {}
-
-type UpdateUserName struct {
-	UserId    int32
-	FirstName string
-	LastName  string
-	Username  string
-}
-
-func (*UpdateUserName) CRC() uint32 {
-	return uint32(0xa7332b73)
-}
-
-func (*UpdateUserName) ImplementsUpdate() {}
-
-type UpdateUserPhoto struct {
-	UserId   int32
-	Date     int32
-	Photo    UserProfilePhoto
-	Previous bool
-}
-
-func (*UpdateUserPhoto) CRC() uint32 {
-	return uint32(0x95313b0c)
-}
-
-func (*UpdateUserPhoto) ImplementsUpdate() {}
-
-type UpdateNewEncryptedMessage struct {
-	Message EncryptedMessage
-	Qts     int32
-}
-
-func (*UpdateNewEncryptedMessage) CRC() uint32 {
-	return uint32(0x12bcbd9a)
-}
-
-func (*UpdateNewEncryptedMessage) ImplementsUpdate() {}
-
-type UpdateEncryptedChatTyping struct {
-	ChatId int32
-}
-
-func (*UpdateEncryptedChatTyping) CRC() uint32 {
-	return uint32(0x1710f156)
-}
-
-func (*UpdateEncryptedChatTyping) ImplementsUpdate() {}
-
-type UpdateEncryption struct {
-	Chat EncryptedChat
-	Date int32
-}
-
-func (*UpdateEncryption) CRC() uint32 {
-	return uint32(0xb4a2e88d)
-}
-
-func (*UpdateEncryption) ImplementsUpdate() {}
-
-type UpdateEncryptedMessagesRead struct {
-	ChatId  int32
-	MaxDate int32
-	Date    int32
-}
-
-func (*UpdateEncryptedMessagesRead) CRC() uint32 {
-	return uint32(0x38fe25b7)
-}
-
-func (*UpdateEncryptedMessagesRead) ImplementsUpdate() {}
-
-type UpdateChatParticipantAdd struct {
-	ChatId    int32
-	UserId    int32
-	InviterId int32
-	Date      int32
-	Version   int32
-}
-
-func (*UpdateChatParticipantAdd) CRC() uint32 {
-	return uint32(0xea4b0e5c)
-}
-
-func (*UpdateChatParticipantAdd) ImplementsUpdate() {}
-
-type UpdateChatParticipantDelete struct {
-	ChatId  int32
-	UserId  int32
-	Version int32
-}
-
-func (*UpdateChatParticipantDelete) CRC() uint32 {
-	return uint32(0x6e5f8c22)
-}
-
-func (*UpdateChatParticipantDelete) ImplementsUpdate() {}
-
-type UpdateDcOptions struct {
-	DcOptions []*DcOption
-}
-
-func (*UpdateDcOptions) CRC() uint32 {
-	return uint32(0x8e5e9873)
-}
-
-func (*UpdateDcOptions) ImplementsUpdate() {}
-
-type UpdateUserBlocked struct {
-	UserId  int32
-	Blocked bool
-}
-
-func (*UpdateUserBlocked) CRC() uint32 {
-	return uint32(0x80ece81a)
-}
-
-func (*UpdateUserBlocked) ImplementsUpdate() {}
-
-type UpdateNotifySettings struct {
-	Peer           NotifyPeer
-	NotifySettings *PeerNotifySettings
-}
-
-func (*UpdateNotifySettings) CRC() uint32 {
-	return uint32(0xbec268ef)
-}
-
-func (*UpdateNotifySettings) ImplementsUpdate() {}
-
-type UpdateServiceNotification struct {
-	// flags position
-	Popup     bool  `tl:"flag:0,encoded_in_bitflags"`
-	InboxDate int32 `tl:"flag:1"`
-	Type      string
-	Message   string
-	Media     MessageMedia
-	Entities  []MessageEntity
-}
-
-func (*UpdateServiceNotification) CRC() uint32 {
-	return uint32(0xebe46819)
-}
-
-func (*UpdateServiceNotification) ImplementsUpdate() {}
-
-type UpdatePrivacy struct {
-	Key   PrivacyKey
-	Rules []PrivacyRule
-}
-
-func (*UpdatePrivacy) CRC() uint32 {
-	return uint32(0xee3b272a)
-}
-
-func (*UpdatePrivacy) ImplementsUpdate() {}
-
-type UpdateUserPhone struct {
-	UserId int32
-	Phone  string
-}
-
-func (*UpdateUserPhone) CRC() uint32 {
-	return uint32(0x12b9417b)
-}
-
-func (*UpdateUserPhone) ImplementsUpdate() {}
-
-type UpdateReadHistoryInbox struct {
-	// flags position
-	FolderId         int32 `tl:"flag:0"`
-	Peer             Peer
-	MaxId            int32
-	StillUnreadCount int32
-	Pts              int32
-	PtsCount         int32
-}
-
-func (*UpdateReadHistoryInbox) CRC() uint32 {
-	return uint32(0x9c974fdf)
-}
-
-func (*UpdateReadHistoryInbox) ImplementsUpdate() {}
-
-type UpdateReadHistoryOutbox struct {
-	Peer     Peer
-	MaxId    int32
-	Pts      int32
-	PtsCount int32
-}
-
-func (*UpdateReadHistoryOutbox) CRC() uint32 {
-	return uint32(0x2f2f21bf)
-}
-
-func (*UpdateReadHistoryOutbox) ImplementsUpdate() {}
-
-type UpdateWebPage struct {
-	Webpage  WebPage
-	Pts      int32
-	PtsCount int32
-}
-
-func (*UpdateWebPage) CRC() uint32 {
-	return uint32(0x7f891213)
-}
-
-func (*UpdateWebPage) ImplementsUpdate() {}
-
-type UpdateReadMessagesContents struct {
-	Messages []int32
-	Pts      int32
-	PtsCount int32
-}
-
-func (*UpdateReadMessagesContents) CRC() uint32 {
-	return uint32(0x68c13933)
-}
-
-func (*UpdateReadMessagesContents) ImplementsUpdate() {}
-
-type UpdateChannelTooLong struct {
-	// flags position
-	ChannelId int32
-	Pts       int32 `tl:"flag:0"`
-}
-
-func (*UpdateChannelTooLong) CRC() uint32 {
-	return uint32(0xeb0467fb)
-}
-
-func (*UpdateChannelTooLong) ImplementsUpdate() {}
-
-type UpdateChannel struct {
-	ChannelId int32
-}
-
-func (*UpdateChannel) CRC() uint32 {
-	return uint32(0xb6d45656)
-}
-
-func (*UpdateChannel) ImplementsUpdate() {}
-
-type UpdateNewChannelMessage struct {
-	Message  Message
-	Pts      int32
-	PtsCount int32
-}
-
-func (*UpdateNewChannelMessage) CRC() uint32 {
-	return uint32(0x62ba04d9)
-}
-
-func (*UpdateNewChannelMessage) ImplementsUpdate() {}
-
-type UpdateReadChannelInbox struct {
-	// flags position
-	FolderId         int32 `tl:"flag:0"`
-	ChannelId        int32
-	MaxId            int32
-	StillUnreadCount int32
-	Pts              int32
-}
-
-func (*UpdateReadChannelInbox) CRC() uint32 {
-	return uint32(0x330b5424)
-}
-
-func (*UpdateReadChannelInbox) ImplementsUpdate() {}
-
-type UpdateDeleteChannelMessages struct {
-	ChannelId int32
-	Messages  []int32
-	Pts       int32
-	PtsCount  int32
-}
-
-func (*UpdateDeleteChannelMessages) CRC() uint32 {
-	return uint32(0xc37521c9)
-}
-
-func (*UpdateDeleteChannelMessages) ImplementsUpdate() {}
-
-type UpdateChannelMessageViews struct {
-	ChannelId int32
-	Id        int32
-	Views     int32
-}
-
-func (*UpdateChannelMessageViews) CRC() uint32 {
-	return uint32(0x98a12b4b)
-}
-
-func (*UpdateChannelMessageViews) ImplementsUpdate() {}
-
-type UpdateChatParticipantAdmin struct {
-	ChatId  int32
-	UserId  int32
-	IsAdmin bool
-	Version int32
-}
-
-func (*UpdateChatParticipantAdmin) CRC() uint32 {
-	return uint32(0xb6901959)
-}
-
-func (*UpdateChatParticipantAdmin) ImplementsUpdate() {}
-
-type UpdateNewStickerSet struct {
-	Stickerset *MessagesStickerSet
-}
-
-func (*UpdateNewStickerSet) CRC() uint32 {
-	return uint32(0x688a30aa)
-}
-
-func (*UpdateNewStickerSet) ImplementsUpdate() {}
-
-type UpdateStickerSetsOrder struct {
-	// flags position
-	Masks bool `tl:"flag:0,encoded_in_bitflags"`
-	Order []int64
-}
-
-func (*UpdateStickerSetsOrder) CRC() uint32 {
-	return uint32(0xbb2d201)
-}
-
-func (*UpdateStickerSetsOrder) ImplementsUpdate() {}
-
-type UpdateStickerSets struct{}
-
-func (*UpdateStickerSets) CRC() uint32 {
-	return uint32(0x43ae3dec)
-}
-
-func (*UpdateStickerSets) ImplementsUpdate() {}
-
-type UpdateSavedGifs struct{}
-
-func (*UpdateSavedGifs) CRC() uint32 {
-	return uint32(0x9375341e)
-}
-
-func (*UpdateSavedGifs) ImplementsUpdate() {}
-
-type UpdateBotInlineQuery struct {
-	// flags position
-	QueryId int64
-	UserId  int32
-	Query   string
-	Geo     GeoPoint `tl:"flag:0"`
-	Offset  string
-}
-
-func (*UpdateBotInlineQuery) CRC() uint32 {
-	return uint32(0x54826690)
-}
-
-func (*UpdateBotInlineQuery) ImplementsUpdate() {}
-
-type UpdateBotInlineSend struct {
-	// flags position
-	UserId int32
-	Query  string
-	Geo    GeoPoint `tl:"flag:0"`
-	Id     string
-	MsgId  *InputBotInlineMessageID `tl:"flag:1"`
-}
-
-func (*UpdateBotInlineSend) CRC() uint32 {
-	return uint32(0xe48f964)
-}
-
-func (*UpdateBotInlineSend) ImplementsUpdate() {}
-
-type UpdateEditChannelMessage struct {
-	Message  Message
-	Pts      int32
-	PtsCount int32
-}
-
-func (*UpdateEditChannelMessage) CRC() uint32 {
-	return uint32(0x1b3f4df7)
-}
-
-func (*UpdateEditChannelMessage) ImplementsUpdate() {}
-
-type UpdateChannelPinnedMessage struct {
-	ChannelId int32
-	Id        int32
-}
-
-func (*UpdateChannelPinnedMessage) CRC() uint32 {
-	return uint32(0x98592475)
-}
-
-func (*UpdateChannelPinnedMessage) ImplementsUpdate() {}
-
-type UpdateBotCallbackQuery struct {
-	// flags position
-	QueryId       int64
-	UserId        int32
-	Peer          Peer
-	MsgId         int32
-	ChatInstance  int64
-	Data          []byte `tl:"flag:0"`
-	GameShortName string `tl:"flag:1"`
-}
-
-func (*UpdateBotCallbackQuery) CRC() uint32 {
-	return uint32(0xe73547e1)
-}
-
-func (*UpdateBotCallbackQuery) ImplementsUpdate() {}
-
-type UpdateEditMessage struct {
-	Message  Message
-	Pts      int32
-	PtsCount int32
-}
-
-func (*UpdateEditMessage) CRC() uint32 {
-	return uint32(0xe40370a3)
-}
-
-func (*UpdateEditMessage) ImplementsUpdate() {}
-
-type UpdateInlineBotCallbackQuery struct {
-	// flags position
-	QueryId       int64
-	UserId        int32
-	MsgId         *InputBotInlineMessageID
-	ChatInstance  int64
-	Data          []byte `tl:"flag:0"`
-	GameShortName string `tl:"flag:1"`
-}
-
-func (*UpdateInlineBotCallbackQuery) CRC() uint32 {
-	return uint32(0xf9d27a5a)
-}
-
-func (*UpdateInlineBotCallbackQuery) ImplementsUpdate() {}
-
-type UpdateReadChannelOutbox struct {
-	ChannelId int32
-	MaxId     int32
-}
-
-func (*UpdateReadChannelOutbox) CRC() uint32 {
-	return uint32(0x25d6c9c7)
-}
-
-func (*UpdateReadChannelOutbox) ImplementsUpdate() {}
-
-type UpdateDraftMessage struct {
-	Peer  Peer
-	Draft DraftMessage
-}
-
-func (*UpdateDraftMessage) CRC() uint32 {
-	return uint32(0xee2bb969)
-}
-
-func (*UpdateDraftMessage) ImplementsUpdate() {}
-
-type UpdateReadFeaturedStickers struct{}
-
-func (*UpdateReadFeaturedStickers) CRC() uint32 {
-	return uint32(0x571d2742)
-}
-
-func (*UpdateReadFeaturedStickers) ImplementsUpdate() {}
-
-type UpdateRecentStickers struct{}
-
-func (*UpdateRecentStickers) CRC() uint32 {
-	return uint32(0x9a422c20)
-}
-
-func (*UpdateRecentStickers) ImplementsUpdate() {}
-
-type UpdateConfig struct{}
-
-func (*UpdateConfig) CRC() uint32 {
-	return uint32(0xa229dd06)
-}
-
-func (*UpdateConfig) ImplementsUpdate() {}
-
-type UpdatePtsChanged struct{}
-
-func (*UpdatePtsChanged) CRC() uint32 {
-	return uint32(0x3354678f)
-}
-
-func (*UpdatePtsChanged) ImplementsUpdate() {}
-
-type UpdateChannelWebPage struct {
-	ChannelId int32
-	Webpage   WebPage
-	Pts       int32
-	PtsCount  int32
-}
-
-func (*UpdateChannelWebPage) CRC() uint32 {
-	return uint32(0x40771900)
-}
-
-func (*UpdateChannelWebPage) ImplementsUpdate() {}
-
-type UpdateDialogPinned struct {
-	// flags position
-	Pinned   bool  `tl:"flag:0,encoded_in_bitflags"`
-	FolderId int32 `tl:"flag:1"`
-	Peer     DialogPeer
-}
-
-func (*UpdateDialogPinned) CRC() uint32 {
-	return uint32(0x6e6fe51c)
-}
-
-func (*UpdateDialogPinned) ImplementsUpdate() {}
-
-type UpdatePinnedDialogs struct {
-	// flags position
-	FolderId int32        `tl:"flag:1"`
-	Order    []DialogPeer `tl:"flag:0"`
-}
-
-func (*UpdatePinnedDialogs) CRC() uint32 {
-	return uint32(0xfa0f3ca2)
-}
-
-func (*UpdatePinnedDialogs) ImplementsUpdate() {}
-
-type UpdateBotWebhookJSON struct {
-	Data *DataJSON
-}
-
-func (*UpdateBotWebhookJSON) CRC() uint32 {
-	return uint32(0x8317c0c3)
-}
-
-func (*UpdateBotWebhookJSON) ImplementsUpdate() {}
-
-type UpdateBotWebhookJSONQuery struct {
-	QueryId int64
-	Data    *DataJSON
-	Timeout int32
-}
-
-func (*UpdateBotWebhookJSONQuery) CRC() uint32 {
-	return uint32(0x9b9240a6)
-}
-
-func (*UpdateBotWebhookJSONQuery) ImplementsUpdate() {}
-
-type UpdateBotShippingQuery struct {
-	QueryId         int64
-	UserId          int32
-	Payload         []byte
-	ShippingAddress *PostAddress
-}
-
-func (*UpdateBotShippingQuery) CRC() uint32 {
-	return uint32(0xe0cdc940)
-}
-
-func (*UpdateBotShippingQuery) ImplementsUpdate() {}
-
-type UpdateBotPrecheckoutQuery struct {
-	// flags position
-	QueryId          int64
-	UserId           int32
-	Payload          []byte
-	Info             *PaymentRequestedInfo `tl:"flag:0"`
-	ShippingOptionId string                `tl:"flag:1"`
-	Currency         string
-	TotalAmount      int64
-}
-
-func (*UpdateBotPrecheckoutQuery) CRC() uint32 {
-	return uint32(0x5d2f3aa9)
-}
-
-func (*UpdateBotPrecheckoutQuery) ImplementsUpdate() {}
-
-type UpdatePhoneCall struct {
-	PhoneCall PhoneCall
-}
-
-func (*UpdatePhoneCall) CRC() uint32 {
-	return uint32(0xab0f6b1e)
-}
-
-func (*UpdatePhoneCall) ImplementsUpdate() {}
-
-type UpdateLangPackTooLong struct {
-	LangCode string
-}
-
-func (*UpdateLangPackTooLong) CRC() uint32 {
-	return uint32(0x46560264)
-}
-
-func (*UpdateLangPackTooLong) ImplementsUpdate() {}
-
-type UpdateLangPack struct {
-	Difference *LangPackDifference
-}
-
-func (*UpdateLangPack) CRC() uint32 {
-	return uint32(0x56022f4d)
-}
-
-func (*UpdateLangPack) ImplementsUpdate() {}
-
-type UpdateFavedStickers struct{}
-
-func (*UpdateFavedStickers) CRC() uint32 {
-	return uint32(0xe511996d)
-}
-
-func (*UpdateFavedStickers) ImplementsUpdate() {}
-
-type UpdateChannelReadMessagesContents struct {
-	ChannelId int32
-	Messages  []int32
-}
-
-func (*UpdateChannelReadMessagesContents) CRC() uint32 {
-	return uint32(0x89893b45)
-}
-
-func (*UpdateChannelReadMessagesContents) ImplementsUpdate() {}
-
-type UpdateContactsReset struct{}
-
-func (*UpdateContactsReset) CRC() uint32 {
-	return uint32(0x7084a7be)
-}
-
-func (*UpdateContactsReset) ImplementsUpdate() {}
-
-type UpdateChannelAvailableMessages struct {
-	ChannelId      int32
-	AvailableMinId int32
-}
-
-func (*UpdateChannelAvailableMessages) CRC() uint32 {
-	return uint32(0x70db6837)
-}
-
-func (*UpdateChannelAvailableMessages) ImplementsUpdate() {}
-
-type UpdateDialogUnreadMark struct {
-	// flags position
-	Unread bool `tl:"flag:0,encoded_in_bitflags"`
-	Peer   DialogPeer
-}
-
-func (*UpdateDialogUnreadMark) CRC() uint32 {
-	return uint32(0xe16459c3)
-}
-
-func (*UpdateDialogUnreadMark) ImplementsUpdate() {}
-
-type UpdateUserPinnedMessage struct {
-	UserId int32
-	Id     int32
-}
-
-func (*UpdateUserPinnedMessage) CRC() uint32 {
-	return uint32(0x4c43da18)
-}
-
-func (*UpdateUserPinnedMessage) ImplementsUpdate() {}
-
-type UpdateChatPinnedMessage struct {
-	ChatId  int32
-	Id      int32
-	Version int32
-}
-
-func (*UpdateChatPinnedMessage) CRC() uint32 {
-	return uint32(0xe10db349)
-}
-
-func (*UpdateChatPinnedMessage) ImplementsUpdate() {}
-
-type UpdateMessagePoll struct {
-	// flags position
-	PollId  int64
-	Poll    *Poll `tl:"flag:0"`
-	Results *PollResults
-}
-
-func (*UpdateMessagePoll) CRC() uint32 {
-	return uint32(0xaca1657b)
-}
-
-func (*UpdateMessagePoll) ImplementsUpdate() {}
-
-type UpdateChatDefaultBannedRights struct {
-	Peer                Peer
-	DefaultBannedRights *ChatBannedRights
-	Version             int32
-}
-
-func (*UpdateChatDefaultBannedRights) CRC() uint32 {
-	return uint32(0x54c01850)
-}
-
-func (*UpdateChatDefaultBannedRights) ImplementsUpdate() {}
-
-type UpdateFolderPeers struct {
-	FolderPeers []*FolderPeer
-	Pts         int32
-	PtsCount    int32
-}
-
-func (*UpdateFolderPeers) CRC() uint32 {
-	return uint32(0x19360dc0)
-}
-
-func (*UpdateFolderPeers) ImplementsUpdate() {}
-
-type UpdatePeerSettings struct {
-	Peer     Peer
-	Settings *PeerSettings
-}
-
-func (*UpdatePeerSettings) CRC() uint32 {
-	return uint32(0x6a7e7366)
-}
-
-func (*UpdatePeerSettings) ImplementsUpdate() {}
-
-type UpdatePeerLocated struct {
-	Peers []PeerLocated
-}
-
-func (*UpdatePeerLocated) CRC() uint32 {
-	return uint32(0xb4afcfb0)
-}
-
-func (*UpdatePeerLocated) ImplementsUpdate() {}
-
-type UpdateNewScheduledMessage struct {
-	Message Message
-}
-
-func (*UpdateNewScheduledMessage) CRC() uint32 {
-	return uint32(0x39a51dfb)
-}
-
-func (*UpdateNewScheduledMessage) ImplementsUpdate() {}
-
-type UpdateDeleteScheduledMessages struct {
-	Peer     Peer
-	Messages []int32
-}
-
-func (*UpdateDeleteScheduledMessages) CRC() uint32 {
-	return uint32(0x90866cee)
-}
-
-func (*UpdateDeleteScheduledMessages) ImplementsUpdate() {}
-
-type UpdateTheme struct {
-	Theme *Theme
-}
-
-func (*UpdateTheme) CRC() uint32 {
-	return uint32(0x8216fba3)
-}
-
-func (*UpdateTheme) ImplementsUpdate() {}
-
-type UpdateGeoLiveViewed struct {
-	Peer  Peer
-	MsgId int32
-}
-
-func (*UpdateGeoLiveViewed) CRC() uint32 {
-	return uint32(0x871fb939)
-}
-
-func (*UpdateGeoLiveViewed) ImplementsUpdate() {}
-
-type UpdateLoginToken struct{}
-
-func (*UpdateLoginToken) CRC() uint32 {
-	return uint32(0x564fe691)
-}
-
-func (*UpdateLoginToken) ImplementsUpdate() {}
-
-type UpdateMessagePollVote struct {
-	PollId  int64
-	UserId  int32
-	Options [][]byte
-}
-
-func (*UpdateMessagePollVote) CRC() uint32 {
-	return uint32(0x42f88f2c)
-}
-
-func (*UpdateMessagePollVote) ImplementsUpdate() {}
-
-type UpdateDialogFilter struct {
-	// flags position
-	Id     int32
-	Filter *DialogFilter `tl:"flag:0"`
-}
-
-func (*UpdateDialogFilter) CRC() uint32 {
-	return uint32(0x26ffde7d)
-}
-
-func (*UpdateDialogFilter) ImplementsUpdate() {}
-
-type UpdateDialogFilterOrder struct {
-	Order []int32
-}
-
-func (*UpdateDialogFilterOrder) CRC() uint32 {
-	return uint32(0xa5d72105)
-}
-
-func (*UpdateDialogFilterOrder) ImplementsUpdate() {}
-
-type UpdateDialogFilters struct{}
-
-func (*UpdateDialogFilters) CRC() uint32 {
-	return uint32(0x3504914f)
-}
-
-func (*UpdateDialogFilters) ImplementsUpdate() {}
-
-type UpdatePhoneCallSignalingData struct {
-	PhoneCallId int64
-	Data        []byte
-}
-
-func (*UpdatePhoneCallSignalingData) CRC() uint32 {
-	return uint32(0x2661bf09)
-}
-
-func (*UpdatePhoneCallSignalingData) ImplementsUpdate() {}
-
-type UpdateChannelParticipant struct {
-	// flags position
-	ChannelId       int32
-	Date            int32
-	UserId          int32
-	PrevParticipant ChannelParticipant `tl:"flag:0"`
-	NewParticipant  ChannelParticipant `tl:"flag:1"`
-	Qts             int32
-}
-
-func (*UpdateChannelParticipant) CRC() uint32 {
-	return uint32(0x65d2b464)
-}
-
-func (*UpdateChannelParticipant) ImplementsUpdate() {}
-
-type Updates interface {
-	tl.Object
-	ImplementsUpdates()
-}
-
-type UpdatesTooLong struct{}
-
-func (*UpdatesTooLong) CRC() uint32 {
-	return uint32(0xe317af7e)
-}
-
-func (*UpdatesTooLong) ImplementsUpdates() {}
-
-type UpdateShortMessage struct {
-	// flags position
-	Out          bool `tl:"flag:1,encoded_in_bitflags"`
-	Mentioned    bool `tl:"flag:4,encoded_in_bitflags"`
-	MediaUnread  bool `tl:"flag:5,encoded_in_bitflags"`
-	Silent       bool `tl:"flag:13,encoded_in_bitflags"`
-	Id           int32
-	UserId       int32
-	Message      string
-	Pts          int32
-	PtsCount     int32
-	Date         int32
-	FwdFrom      *MessageFwdHeader `tl:"flag:2"`
-	ViaBotId     int32             `tl:"flag:11"`
-	ReplyToMsgId int32             `tl:"flag:3"`
-	Entities     []MessageEntity   `tl:"flag:7"`
-}
-
-func (*UpdateShortMessage) CRC() uint32 {
-	return uint32(0x914fbf11)
-}
-
-func (*UpdateShortMessage) ImplementsUpdates() {}
-
-type UpdateShortChatMessage struct {
-	// flags position
-	Out          bool `tl:"flag:1,encoded_in_bitflags"`
-	Mentioned    bool `tl:"flag:4,encoded_in_bitflags"`
-	MediaUnread  bool `tl:"flag:5,encoded_in_bitflags"`
-	Silent       bool `tl:"flag:13,encoded_in_bitflags"`
-	Id           int32
-	FromId       int32
-	ChatId       int32
-	Message      string
-	Pts          int32
-	PtsCount     int32
-	Date         int32
-	FwdFrom      *MessageFwdHeader `tl:"flag:2"`
-	ViaBotId     int32             `tl:"flag:11"`
-	ReplyToMsgId int32             `tl:"flag:3"`
-	Entities     []MessageEntity   `tl:"flag:7"`
-}
-
-func (*UpdateShortChatMessage) CRC() uint32 {
-	return uint32(0x16812688)
-}
-
-func (*UpdateShortChatMessage) ImplementsUpdates() {}
-
-type UpdateShort struct {
-	Update Update
-	Date   int32
-}
-
-func (*UpdateShort) CRC() uint32 {
-	return uint32(0x78d4dec1)
-}
-
-func (*UpdateShort) ImplementsUpdates() {}
-
-type UpdatesCombined struct {
-	Updates  []Update
-	Users    []User
-	Chats    []Chat
-	Date     int32
-	SeqStart int32
-	Seq      int32
-}
-
-func (*UpdatesCombined) CRC() uint32 {
-	return uint32(0x725b04c3)
-}
-
-func (*UpdatesCombined) ImplementsUpdates() {}
-
-type UpdatesObj struct {
-	Updates []Update
-	Users   []User
-	Chats   []Chat
-	Date    int32
-	Seq     int32
-}
-
-func (*UpdatesObj) CRC() uint32 {
-	return uint32(0x74ae4240)
-}
-
-func (*UpdatesObj) ImplementsUpdates() {}
-
-type UpdateShortSentMessage struct {
-	// flags position
-	Out      bool `tl:"flag:1,encoded_in_bitflags"`
-	Id       int32
-	Pts      int32
-	PtsCount int32
-	Date     int32
-	Media    MessageMedia    `tl:"flag:9"`
-	Entities []MessageEntity `tl:"flag:7"`
-}
-
-func (*UpdateShortSentMessage) CRC() uint32 {
-	return uint32(0x11f1331c)
-}
-
-func (*UpdateShortSentMessage) ImplementsUpdates() {}
-
-type UrlAuthResult interface {
-	tl.Object
-	ImplementsUrlAuthResult()
-}
-
-type UrlAuthResultRequest struct {
-	// flags position
-	RequestWriteAccess bool `tl:"flag:0,encoded_in_bitflags"`
-	Bot                User
-	Domain             string
-}
-
-func (*UrlAuthResultRequest) CRC() uint32 {
-	return uint32(0x92d33a0e)
-}
-
-func (*UrlAuthResultRequest) ImplementsUrlAuthResult() {}
-
-type UrlAuthResultAccepted struct {
-	Url string
-}
-
-func (*UrlAuthResultAccepted) CRC() uint32 {
-	return uint32(0x8f8c0e4e)
-}
-
-func (*UrlAuthResultAccepted) ImplementsUrlAuthResult() {}
-
-type UrlAuthResultDefault struct{}
-
-func (*UrlAuthResultDefault) CRC() uint32 {
-	return uint32(0xa9d6db1f)
-}
-
-func (*UrlAuthResultDefault) ImplementsUrlAuthResult() {}
-
-type User interface {
-	tl.Object
-	ImplementsUser()
-}
-
-type UserEmpty struct {
-	Id int32
-}
-
-func (*UserEmpty) CRC() uint32 {
-	return uint32(0x200250ba)
-}
-
-func (*UserEmpty) ImplementsUser() {}
-
-type UserObj struct {
-	// flags position
-	Self                 bool `tl:"flag:10,encoded_in_bitflags"`
-	Contact              bool `tl:"flag:11,encoded_in_bitflags"`
-	MutualContact        bool `tl:"flag:12,encoded_in_bitflags"`
-	Deleted              bool `tl:"flag:13,encoded_in_bitflags"`
-	Bot                  bool `tl:"flag:14,encoded_in_bitflags"`
-	BotChatHistory       bool `tl:"flag:15,encoded_in_bitflags"`
-	BotNochats           bool `tl:"flag:16,encoded_in_bitflags"`
-	Verified             bool `tl:"flag:17,encoded_in_bitflags"`
-	Restricted           bool `tl:"flag:18,encoded_in_bitflags"`
-	Min                  bool `tl:"flag:20,encoded_in_bitflags"`
-	BotInlineGeo         bool `tl:"flag:21,encoded_in_bitflags"`
-	Support              bool `tl:"flag:23,encoded_in_bitflags"`
-	Scam                 bool `tl:"flag:24,encoded_in_bitflags"`
-	ApplyMinPhoto        bool `tl:"flag:25,encoded_in_bitflags"`
-	Id                   int32
-	AccessHash           int64                `tl:"flag:0"`
-	FirstName            string               `tl:"flag:1"`
-	LastName             string               `tl:"flag:2"`
-	Username             string               `tl:"flag:3"`
-	Phone                string               `tl:"flag:4"`
-	Photo                UserProfilePhoto     `tl:"flag:5"`
-	Status               UserStatus           `tl:"flag:6"`
-	BotInfoVersion       int32                `tl:"flag:14"`
-	RestrictionReason    []*RestrictionReason `tl:"flag:18"`
-	BotInlinePlaceholder string               `tl:"flag:19"`
-	LangCode             string               `tl:"flag:22"`
-}
-
-func (*UserObj) CRC() uint32 {
-	return uint32(0x938458c1)
-}
-
-func (*UserObj) ImplementsUser() {}
-
-type UserProfilePhoto interface {
-	tl.Object
-	ImplementsUserProfilePhoto()
-}
-
-type UserProfilePhotoEmpty struct{}
-
-func (*UserProfilePhotoEmpty) CRC() uint32 {
-	return uint32(0x4f11bae1)
-}
-
-func (*UserProfilePhotoEmpty) ImplementsUserProfilePhoto() {}
-
-type UserProfilePhotoObj struct {
-	// flags position
-	HasVideo   bool `tl:"flag:0,encoded_in_bitflags"`
-	PhotoId    int64
-	PhotoSmall *FileLocation
-	PhotoBig   *FileLocation
-	DcId       int32
-}
-
-func (*UserProfilePhotoObj) CRC() uint32 {
-	return uint32(0x69d3ab26)
-}
-
-func (*UserProfilePhotoObj) ImplementsUserProfilePhoto() {}
-
-type UserStatus interface {
-	tl.Object
-	ImplementsUserStatus()
-}
-
-type UserStatusEmpty struct{}
-
-func (*UserStatusEmpty) CRC() uint32 {
-	return uint32(0x9d05049)
-}
-
-func (*UserStatusEmpty) ImplementsUserStatus() {}
-
-type UserStatusOnline struct {
-	Expires int32
-}
-
-func (*UserStatusOnline) CRC() uint32 {
-	return uint32(0xedb93949)
-}
-
-func (*UserStatusOnline) ImplementsUserStatus() {}
-
-type UserStatusOffline struct {
-	WasOnline int32
-}
-
-func (*UserStatusOffline) CRC() uint32 {
-	return uint32(0x8c703f)
-}
-
-func (*UserStatusOffline) ImplementsUserStatus() {}
-
-type UserStatusRecently struct{}
-
-func (*UserStatusRecently) CRC() uint32 {
-	return uint32(0xe26f42f1)
-}
-
-func (*UserStatusRecently) ImplementsUserStatus() {}
-
-type UserStatusLastWeek struct{}
-
-func (*UserStatusLastWeek) CRC() uint32 {
-	return uint32(0x7bf09fc)
-}
-
-func (*UserStatusLastWeek) ImplementsUserStatus() {}
-
-type UserStatusLastMonth struct{}
-
-func (*UserStatusLastMonth) CRC() uint32 {
-	return uint32(0x77ebc742)
-}
-
-func (*UserStatusLastMonth) ImplementsUserStatus() {}
-
-type WallPaper interface {
-	tl.Object
-	ImplementsWallPaper()
-}
-
-type WallPaperObj struct {
-	Id int64
-	// flags position
-	Creator    bool `tl:"flag:0,encoded_in_bitflags"`
-	Default    bool `tl:"flag:1,encoded_in_bitflags"`
-	Pattern    bool `tl:"flag:3,encoded_in_bitflags"`
-	Dark       bool `tl:"flag:4,encoded_in_bitflags"`
-	AccessHash int64
-	Slug       string
-	Document   Document
-	Settings   *WallPaperSettings `tl:"flag:2"`
-}
-
-func (*WallPaperObj) CRC() uint32 {
-	return uint32(0xa437c3ed)
-}
-
-func (*WallPaperObj) ImplementsWallPaper() {}
-
-type WallPaperNoFile struct {
-	// flags position
-	Default  bool               `tl:"flag:1,encoded_in_bitflags"`
-	Dark     bool               `tl:"flag:4,encoded_in_bitflags"`
-	Settings *WallPaperSettings `tl:"flag:2"`
-}
-
-func (*WallPaperNoFile) CRC() uint32 {
-	return uint32(0x8af40b25)
-}
-
-func (*WallPaperNoFile) ImplementsWallPaper() {}
-
-type WebDocument interface {
-	tl.Object
-	ImplementsWebDocument()
-}
-
-type WebDocumentObj struct {
-	Url        string
-	AccessHash int64
-	Size       int32
-	MimeType   string
-	Attributes []DocumentAttribute
-}
-
-func (*WebDocumentObj) CRC() uint32 {
-	return uint32(0x1c570ed1)
-}
-
-func (*WebDocumentObj) ImplementsWebDocument() {}
-
-type WebDocumentNoProxy struct {
-	Url        string
-	Size       int32
-	MimeType   string
-	Attributes []DocumentAttribute
-}
-
-func (*WebDocumentNoProxy) CRC() uint32 {
-	return uint32(0xf9c8bcc6)
-}
-
-func (*WebDocumentNoProxy) ImplementsWebDocument() {}
-
-type WebPage interface {
-	tl.Object
-	ImplementsWebPage()
-}
-
-type WebPageEmpty struct {
-	Id int64
-}
-
-func (*WebPageEmpty) CRC() uint32 {
-	return uint32(0xeb1477e8)
-}
-
-func (*WebPageEmpty) ImplementsWebPage() {}
-
-type WebPagePending struct {
-	Id   int64
-	Date int32
-}
-
-func (*WebPagePending) CRC() uint32 {
-	return uint32(0xc586da1c)
-}
-
-func (*WebPagePending) ImplementsWebPage() {}
-
-type WebPageObj struct {
-	// flags position
-	Id          int64
-	Url         string
-	DisplayUrl  string
-	Hash        int32
-	Type        string              `tl:"flag:0"`
-	SiteName    string              `tl:"flag:1"`
-	Title       string              `tl:"flag:2"`
-	Description string              `tl:"flag:3"`
-	Photo       Photo               `tl:"flag:4"`
-	EmbedUrl    string              `tl:"flag:5"`
-	EmbedType   string              `tl:"flag:5"`
-	EmbedWidth  int32               `tl:"flag:6"`
-	EmbedHeight int32               `tl:"flag:6"`
-	Duration    int32               `tl:"flag:7"`
-	Author      string              `tl:"flag:8"`
-	Document    Document            `tl:"flag:9"`
-	CachedPage  *Page               `tl:"flag:10"`
-	Attributes  []*WebPageAttribute `tl:"flag:12"`
-}
-
-func (*WebPageObj) CRC() uint32 {
-	return uint32(0xe89c45b2)
-}
-
-func (*WebPageObj) ImplementsWebPage() {}
-
-type WebPageNotModified struct {
-	// flags position
-	CachedPageViews int32 `tl:"flag:0"`
-}
-
-func (*WebPageNotModified) CRC() uint32 {
-	return uint32(0x7311ca11)
-}
-
-func (*WebPageNotModified) ImplementsWebPage() {}
-
-type AccountThemes interface {
-	tl.Object
-	ImplementsAccountThemes()
-}
-
-type AccountThemesNotModified struct{}
-
-func (*AccountThemesNotModified) CRC() uint32 {
-	return uint32(0xf41eb622)
-}
-
-func (*AccountThemesNotModified) ImplementsAccountThemes() {}
-
-type AccountThemesObj struct {
-	Hash   int32
-	Themes []*Theme
-}
-
-func (*AccountThemesObj) CRC() uint32 {
-	return uint32(0x7f676421)
-}
-
-func (*AccountThemesObj) ImplementsAccountThemes() {}
-
-type AccountWallPapers interface {
-	tl.Object
-	ImplementsAccountWallPapers()
-}
-
-type AccountWallPapersNotModified struct{}
-
-func (*AccountWallPapersNotModified) CRC() uint32 {
-	return uint32(0x1c199183)
-}
-
-func (*AccountWallPapersNotModified) ImplementsAccountWallPapers() {}
-
-type AccountWallPapersObj struct {
-	Hash       int32
-	Wallpapers []WallPaper
-}
-
-func (*AccountWallPapersObj) CRC() uint32 {
-	return uint32(0x702b65a9)
-}
-
-func (*AccountWallPapersObj) ImplementsAccountWallPapers() {}
-
-type AuthAuthorization interface {
-	tl.Object
-	ImplementsAuthAuthorization()
-}
-
-type AuthAuthorizationObj struct {
-	// flags position
-	TmpSessions int32 `tl:"flag:0"`
-	User        User
-}
-
-func (*AuthAuthorizationObj) CRC() uint32 {
-	return uint32(0xcd050916)
-}
-
-func (*AuthAuthorizationObj) ImplementsAuthAuthorization() {}
-
-type AuthAuthorizationSignUpRequired struct {
-	// flags position
-	TermsOfService *HelpTermsOfService `tl:"flag:0"`
-}
-
-func (*AuthAuthorizationSignUpRequired) CRC() uint32 {
-	return uint32(0x44747e9a)
-}
-
-func (*AuthAuthorizationSignUpRequired) ImplementsAuthAuthorization() {}
-
-type AuthLoginToken interface {
-	tl.Object
-	ImplementsAuthLoginToken()
-}
-
-type AuthLoginTokenObj struct {
-	Expires int32
-	Token   []byte
-}
-
-func (*AuthLoginTokenObj) CRC() uint32 {
-	return uint32(0x629f1980)
-}
-
-func (*AuthLoginTokenObj) ImplementsAuthLoginToken() {}
-
-type AuthLoginTokenMigrateTo struct {
-	DcId  int32
-	Token []byte
-}
-
-func (*AuthLoginTokenMigrateTo) CRC() uint32 {
-	return uint32(0x68e9916)
-}
-
-func (*AuthLoginTokenMigrateTo) ImplementsAuthLoginToken() {}
-
-type AuthLoginTokenSuccess struct {
-	Authorization AuthAuthorization
-}
-
-func (*AuthLoginTokenSuccess) CRC() uint32 {
-	return uint32(0x390d5c5e)
-}
-
-func (*AuthLoginTokenSuccess) ImplementsAuthLoginToken() {}
-
-type AuthSentCodeType interface {
-	tl.Object
-	ImplementsAuthSentCodeType()
-}
-
-type AuthSentCodeTypeApp struct {
-	Length int32
-}
-
-func (*AuthSentCodeTypeApp) CRC() uint32 {
-	return uint32(0x3dbb5986)
-}
-
-func (*AuthSentCodeTypeApp) ImplementsAuthSentCodeType() {}
-
-type AuthSentCodeTypeSms struct {
-	Length int32
-}
-
-func (*AuthSentCodeTypeSms) CRC() uint32 {
-	return uint32(0xc000bba2)
-}
-
-func (*AuthSentCodeTypeSms) ImplementsAuthSentCodeType() {}
-
-type AuthSentCodeTypeCall struct {
-	Length int32
-}
-
-func (*AuthSentCodeTypeCall) CRC() uint32 {
-	return uint32(0x5353e5a7)
-}
-
-func (*AuthSentCodeTypeCall) ImplementsAuthSentCodeType() {}
-
-type AuthSentCodeTypeFlashCall struct {
-	Pattern string
-}
-
-func (*AuthSentCodeTypeFlashCall) CRC() uint32 {
-	return uint32(0xab03c6d9)
-}
-
-func (*AuthSentCodeTypeFlashCall) ImplementsAuthSentCodeType() {}
-
-type ChannelsChannelParticipants interface {
-	tl.Object
-	ImplementsChannelsChannelParticipants()
-}
-
-type ChannelsChannelParticipantsObj struct {
-	Count        int32
-	Participants []ChannelParticipant
-	Users        []User
-}
-
-func (*ChannelsChannelParticipantsObj) CRC() uint32 {
-	return uint32(0xf56ee2a8)
-}
-
-func (*ChannelsChannelParticipantsObj) ImplementsChannelsChannelParticipants() {}
-
-type ChannelsChannelParticipantsNotModified struct{}
-
-func (*ChannelsChannelParticipantsNotModified) CRC() uint32 {
-	return uint32(0xf0173fe9)
-}
-
-func (*ChannelsChannelParticipantsNotModified) ImplementsChannelsChannelParticipants() {}
-
-type ContactsBlocked interface {
-	tl.Object
-	ImplementsContactsBlocked()
-}
-
-type ContactsBlockedObj struct {
-	Blocked []*ContactBlocked
-	Users   []User
-}
-
-func (*ContactsBlockedObj) CRC() uint32 {
-	return uint32(0x1c138d15)
-}
-
-func (*ContactsBlockedObj) ImplementsContactsBlocked() {}
-
-type ContactsBlockedSlice struct {
-	Count   int32
-	Blocked []*ContactBlocked
-	Users   []User
-}
-
-func (*ContactsBlockedSlice) CRC() uint32 {
-	return uint32(0x900802a1)
-}
-
-func (*ContactsBlockedSlice) ImplementsContactsBlocked() {}
-
-type ContactsContacts interface {
-	tl.Object
-	ImplementsContactsContacts()
-}
-
-type ContactsContactsNotModified struct{}
-
-func (*ContactsContactsNotModified) CRC() uint32 {
-	return uint32(0xb74ba9d2)
-}
-
-func (*ContactsContactsNotModified) ImplementsContactsContacts() {}
-
-type ContactsContactsObj struct {
-	Contacts   []*Contact
-	SavedCount int32
-	Users      []User
-}
-
-func (*ContactsContactsObj) CRC() uint32 {
-	return uint32(0xeae87e42)
-}
-
-func (*ContactsContactsObj) ImplementsContactsContacts() {}
-
-type ContactsTopPeers interface {
-	tl.Object
-	ImplementsContactsTopPeers()
-}
-
-type ContactsTopPeersNotModified struct{}
-
-func (*ContactsTopPeersNotModified) CRC() uint32 {
-	return uint32(0xde266ef5)
-}
-
-func (*ContactsTopPeersNotModified) ImplementsContactsTopPeers() {}
-
-type ContactsTopPeersObj struct {
-	Categories []*TopPeerCategoryPeers
-	Chats      []Chat
-	Users      []User
-}
-
-func (*ContactsTopPeersObj) CRC() uint32 {
-	return uint32(0x70b772a8)
-}
-
-func (*ContactsTopPeersObj) ImplementsContactsTopPeers() {}
-
-type ContactsTopPeersDisabled struct{}
-
-func (*ContactsTopPeersDisabled) CRC() uint32 {
-	return uint32(0xb52c939d)
-}
-
-func (*ContactsTopPeersDisabled) ImplementsContactsTopPeers() {}
-
-type HelpAppUpdate interface {
-	tl.Object
-	ImplementsHelpAppUpdate()
-}
-
-type HelpAppUpdateObj struct {
-	// flags position
-	CanNotSkip bool `tl:"flag:0,encoded_in_bitflags"`
-	Id         int32
-	Version    string
-	Text       string
-	Entities   []MessageEntity
-	Document   Document `tl:"flag:1"`
-	Url        string   `tl:"flag:2"`
-}
-
-func (*HelpAppUpdateObj) CRC() uint32 {
-	return uint32(0x1da7158f)
-}
-
-func (*HelpAppUpdateObj) ImplementsHelpAppUpdate() {}
-
-type HelpNoAppUpdate struct{}
-
-func (*HelpNoAppUpdate) CRC() uint32 {
-	return uint32(0xc45a6536)
-}
-
-func (*HelpNoAppUpdate) ImplementsHelpAppUpdate() {}
 
 type HelpDeepLinkInfo interface {
-	tl.Object
+	serialize.TL
 	ImplementsHelpDeepLinkInfo()
 }
 
@@ -6939,11 +922,20 @@ func (*HelpDeepLinkInfoEmpty) CRC() uint32 {
 
 func (*HelpDeepLinkInfoEmpty) ImplementsHelpDeepLinkInfo() {}
 
+func (e *HelpDeepLinkInfoEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
 type HelpDeepLinkInfoObj struct {
-	// flags position
-	UpdateApp bool `tl:"flag:0,encoded_in_bitflags"`
-	Message   string
-	Entities  []MessageEntity `tl:"flag:1"`
+	__flagsPosition struct{}        // flags param position `validate:"required"`
+	UpdateApp       bool            `flag:"0,encoded_in_bitflags"`
+	Message         string          `validate:"required"`
+	Entities        []MessageEntity `flag:"1"`
 }
 
 func (*HelpDeepLinkInfoObj) CRC() uint32 {
@@ -6952,37 +944,643 @@ func (*HelpDeepLinkInfoObj) CRC() uint32 {
 
 func (*HelpDeepLinkInfoObj) ImplementsHelpDeepLinkInfo() {}
 
-type HelpPassportConfig interface {
-	tl.Object
-	ImplementsHelpPassportConfig()
+func (e *HelpDeepLinkInfoObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.UpdateApp) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Entities) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.UpdateApp) {
+	}
+	buf.PutString(e.Message)
+	if !zero.IsZeroVal(e.Entities) {
+		buf.PutVector(e.Entities)
+	}
+	return buf.Result()
 }
 
-type HelpPassportConfigNotModified struct{}
-
-func (*HelpPassportConfigNotModified) CRC() uint32 {
-	return uint32(0xbfb9f457)
+type BotInlineMessage interface {
+	serialize.TL
+	ImplementsBotInlineMessage()
 }
 
-func (*HelpPassportConfigNotModified) ImplementsHelpPassportConfig() {}
-
-type HelpPassportConfigObj struct {
-	Hash           int32
-	CountriesLangs *DataJSON
+type BotInlineMessageMediaAuto struct {
+	__flagsPosition struct{}        // flags param position `validate:"required"`
+	Message         string          `validate:"required"`
+	Entities        []MessageEntity `flag:"1"`
+	ReplyMarkup     ReplyMarkup     `flag:"2"`
 }
 
-func (*HelpPassportConfigObj) CRC() uint32 {
-	return uint32(0xa098d6af)
+func (*BotInlineMessageMediaAuto) CRC() uint32 {
+	return uint32(0x764cf810)
 }
 
-func (*HelpPassportConfigObj) ImplementsHelpPassportConfig() {}
+func (*BotInlineMessageMediaAuto) ImplementsBotInlineMessage() {}
+
+func (e *BotInlineMessageMediaAuto) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Entities) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutString(e.Message)
+	if !zero.IsZeroVal(e.Entities) {
+		buf.PutVector(e.Entities)
+	}
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		buf.PutRawBytes(e.ReplyMarkup.Encode())
+	}
+	return buf.Result()
+}
+
+type BotInlineMessageText struct {
+	__flagsPosition struct{}        // flags param position `validate:"required"`
+	NoWebpage       bool            `flag:"0,encoded_in_bitflags"`
+	Message         string          `validate:"required"`
+	Entities        []MessageEntity `flag:"1"`
+	ReplyMarkup     ReplyMarkup     `flag:"2"`
+}
+
+func (*BotInlineMessageText) CRC() uint32 {
+	return uint32(0x8c7f65e2)
+}
+
+func (*BotInlineMessageText) ImplementsBotInlineMessage() {}
+
+func (e *BotInlineMessageText) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.NoWebpage) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Entities) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.NoWebpage) {
+	}
+	buf.PutString(e.Message)
+	if !zero.IsZeroVal(e.Entities) {
+		buf.PutVector(e.Entities)
+	}
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		buf.PutRawBytes(e.ReplyMarkup.Encode())
+	}
+	return buf.Result()
+}
+
+type BotInlineMessageMediaGeo struct {
+	__flagsPosition struct{}    // flags param position `validate:"required"`
+	Geo             GeoPoint    `validate:"required"`
+	Period          int32       `validate:"required"`
+	ReplyMarkup     ReplyMarkup `flag:"2"`
+}
+
+func (*BotInlineMessageMediaGeo) CRC() uint32 {
+	return uint32(0xb722de65)
+}
+
+func (*BotInlineMessageMediaGeo) ImplementsBotInlineMessage() {}
+
+func (e *BotInlineMessageMediaGeo) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutRawBytes(e.Geo.Encode())
+	buf.PutInt(e.Period)
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		buf.PutRawBytes(e.ReplyMarkup.Encode())
+	}
+	return buf.Result()
+}
+
+type BotInlineMessageMediaVenue struct {
+	__flagsPosition struct{}    // flags param position `validate:"required"`
+	Geo             GeoPoint    `validate:"required"`
+	Title           string      `validate:"required"`
+	Address         string      `validate:"required"`
+	Provider        string      `validate:"required"`
+	VenueId         string      `validate:"required"`
+	VenueType       string      `validate:"required"`
+	ReplyMarkup     ReplyMarkup `flag:"2"`
+}
+
+func (*BotInlineMessageMediaVenue) CRC() uint32 {
+	return uint32(0x8a86659c)
+}
+
+func (*BotInlineMessageMediaVenue) ImplementsBotInlineMessage() {}
+
+func (e *BotInlineMessageMediaVenue) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutRawBytes(e.Geo.Encode())
+	buf.PutString(e.Title)
+	buf.PutString(e.Address)
+	buf.PutString(e.Provider)
+	buf.PutString(e.VenueId)
+	buf.PutString(e.VenueType)
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		buf.PutRawBytes(e.ReplyMarkup.Encode())
+	}
+	return buf.Result()
+}
+
+type BotInlineMessageMediaContact struct {
+	__flagsPosition struct{}    // flags param position `validate:"required"`
+	PhoneNumber     string      `validate:"required"`
+	FirstName       string      `validate:"required"`
+	LastName        string      `validate:"required"`
+	Vcard           string      `validate:"required"`
+	ReplyMarkup     ReplyMarkup `flag:"2"`
+}
+
+func (*BotInlineMessageMediaContact) CRC() uint32 {
+	return uint32(0x18d1cdc2)
+}
+
+func (*BotInlineMessageMediaContact) ImplementsBotInlineMessage() {}
+
+func (e *BotInlineMessageMediaContact) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutString(e.PhoneNumber)
+	buf.PutString(e.FirstName)
+	buf.PutString(e.LastName)
+	buf.PutString(e.Vcard)
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		buf.PutRawBytes(e.ReplyMarkup.Encode())
+	}
+	return buf.Result()
+}
+
+type DialogPeer interface {
+	serialize.TL
+	ImplementsDialogPeer()
+}
+
+type DialogPeerObj struct {
+	Peer Peer `validate:"required"`
+}
+
+func (*DialogPeerObj) CRC() uint32 {
+	return uint32(0xe56dbf05)
+}
+
+func (*DialogPeerObj) ImplementsDialogPeer() {}
+
+func (e *DialogPeerObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Peer.Encode())
+	return buf.Result()
+}
+
+type DialogPeerFolder struct {
+	FolderId int32 `validate:"required"`
+}
+
+func (*DialogPeerFolder) CRC() uint32 {
+	return uint32(0x514519e2)
+}
+
+func (*DialogPeerFolder) ImplementsDialogPeer() {}
+
+func (e *DialogPeerFolder) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.FolderId)
+	return buf.Result()
+}
+
+type InputGame interface {
+	serialize.TL
+	ImplementsInputGame()
+}
+
+type InputGameID struct {
+	Id         int64 `validate:"required"`
+	AccessHash int64 `validate:"required"`
+}
+
+func (*InputGameID) CRC() uint32 {
+	return uint32(0x32c3e77)
+}
+
+func (*InputGameID) ImplementsInputGame() {}
+
+func (e *InputGameID) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutLong(e.AccessHash)
+	return buf.Result()
+}
+
+type InputGameShortName struct {
+	BotId     InputUser `validate:"required"`
+	ShortName string    `validate:"required"`
+}
+
+func (*InputGameShortName) CRC() uint32 {
+	return uint32(0xc331e80a)
+}
+
+func (*InputGameShortName) ImplementsInputGame() {}
+
+func (e *InputGameShortName) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.BotId.Encode())
+	buf.PutString(e.ShortName)
+	return buf.Result()
+}
+
+type InputWallPaper interface {
+	serialize.TL
+	ImplementsInputWallPaper()
+}
+
+type InputWallPaperObj struct {
+	Id         int64 `validate:"required"`
+	AccessHash int64 `validate:"required"`
+}
+
+func (*InputWallPaperObj) CRC() uint32 {
+	return uint32(0xe630b979)
+}
+
+func (*InputWallPaperObj) ImplementsInputWallPaper() {}
+
+func (e *InputWallPaperObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutLong(e.AccessHash)
+	return buf.Result()
+}
+
+type InputWallPaperSlug struct {
+	Slug string `validate:"required"`
+}
+
+func (*InputWallPaperSlug) CRC() uint32 {
+	return uint32(0x72091c80)
+}
+
+func (*InputWallPaperSlug) ImplementsInputWallPaper() {}
+
+func (e *InputWallPaperSlug) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Slug)
+	return buf.Result()
+}
+
+type InputWallPaperNoFile struct{}
+
+func (*InputWallPaperNoFile) CRC() uint32 {
+	return uint32(0x8427bbac)
+}
+
+func (*InputWallPaperNoFile) ImplementsInputWallPaper() {}
+
+func (e *InputWallPaperNoFile) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type EncryptedMessage interface {
+	serialize.TL
+	ImplementsEncryptedMessage()
+}
+
+type EncryptedMessageObj struct {
+	RandomId int64         `validate:"required"`
+	ChatId   int32         `validate:"required"`
+	Date     int32         `validate:"required"`
+	Bytes    []byte        `validate:"required"`
+	File     EncryptedFile `validate:"required"`
+}
+
+func (*EncryptedMessageObj) CRC() uint32 {
+	return uint32(0xed18c118)
+}
+
+func (*EncryptedMessageObj) ImplementsEncryptedMessage() {}
+
+func (e *EncryptedMessageObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.RandomId)
+	buf.PutInt(e.ChatId)
+	buf.PutInt(e.Date)
+	buf.PutMessage(e.Bytes)
+	buf.PutRawBytes(e.File.Encode())
+	return buf.Result()
+}
+
+type EncryptedMessageService struct {
+	RandomId int64  `validate:"required"`
+	ChatId   int32  `validate:"required"`
+	Date     int32  `validate:"required"`
+	Bytes    []byte `validate:"required"`
+}
+
+func (*EncryptedMessageService) CRC() uint32 {
+	return uint32(0x23734b06)
+}
+
+func (*EncryptedMessageService) ImplementsEncryptedMessage() {}
+
+func (e *EncryptedMessageService) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.RandomId)
+	buf.PutInt(e.ChatId)
+	buf.PutInt(e.Date)
+	buf.PutMessage(e.Bytes)
+	return buf.Result()
+}
+
+type SecureFile interface {
+	serialize.TL
+	ImplementsSecureFile()
+}
+
+type SecureFileEmpty struct{}
+
+func (*SecureFileEmpty) CRC() uint32 {
+	return uint32(0x64199744)
+}
+
+func (*SecureFileEmpty) ImplementsSecureFile() {}
+
+func (e *SecureFileEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type SecureFileObj struct {
+	Id         int64  `validate:"required"`
+	AccessHash int64  `validate:"required"`
+	Size       int32  `validate:"required"`
+	DcId       int32  `validate:"required"`
+	Date       int32  `validate:"required"`
+	FileHash   []byte `validate:"required"`
+	Secret     []byte `validate:"required"`
+}
+
+func (*SecureFileObj) CRC() uint32 {
+	return uint32(0xe0277a62)
+}
+
+func (*SecureFileObj) ImplementsSecureFile() {}
+
+func (e *SecureFileObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutLong(e.AccessHash)
+	buf.PutInt(e.Size)
+	buf.PutInt(e.DcId)
+	buf.PutInt(e.Date)
+	buf.PutMessage(e.FileHash)
+	buf.PutMessage(e.Secret)
+	return buf.Result()
+}
+
+type MessagesFeaturedStickers interface {
+	serialize.TL
+	ImplementsMessagesFeaturedStickers()
+}
+
+type MessagesFeaturedStickersNotModified struct {
+	Count int32 `validate:"required"`
+}
+
+func (*MessagesFeaturedStickersNotModified) CRC() uint32 {
+	return uint32(0xc6dc0c66)
+}
+
+func (*MessagesFeaturedStickersNotModified) ImplementsMessagesFeaturedStickers() {}
+
+func (e *MessagesFeaturedStickersNotModified) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Count)
+	return buf.Result()
+}
+
+type MessagesFeaturedStickersObj struct {
+	Hash   int32               `validate:"required"`
+	Count  int32               `validate:"required"`
+	Sets   []StickerSetCovered `validate:"required"`
+	Unread []int64             `validate:"required"`
+}
+
+func (*MessagesFeaturedStickersObj) CRC() uint32 {
+	return uint32(0xb6abc341)
+}
+
+func (*MessagesFeaturedStickersObj) ImplementsMessagesFeaturedStickers() {}
+
+func (e *MessagesFeaturedStickersObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Hash)
+	buf.PutInt(e.Count)
+	buf.PutVector(e.Sets)
+	buf.PutVector(e.Unread)
+	return buf.Result()
+}
+
+type MessagesSentEncryptedMessage interface {
+	serialize.TL
+	ImplementsMessagesSentEncryptedMessage()
+}
+
+type MessagesSentEncryptedMessageObj struct {
+	Date int32 `validate:"required"`
+}
+
+func (*MessagesSentEncryptedMessageObj) CRC() uint32 {
+	return uint32(0x560f8935)
+}
+
+func (*MessagesSentEncryptedMessageObj) ImplementsMessagesSentEncryptedMessage() {}
+
+func (e *MessagesSentEncryptedMessageObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Date)
+	return buf.Result()
+}
+
+type MessagesSentEncryptedFile struct {
+	Date int32         `validate:"required"`
+	File EncryptedFile `validate:"required"`
+}
+
+func (*MessagesSentEncryptedFile) CRC() uint32 {
+	return uint32(0x9493ff32)
+}
+
+func (*MessagesSentEncryptedFile) ImplementsMessagesSentEncryptedMessage() {}
+
+func (e *MessagesSentEncryptedFile) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Date)
+	buf.PutRawBytes(e.File.Encode())
+	return buf.Result()
+}
+
+type InputStickeredMedia interface {
+	serialize.TL
+	ImplementsInputStickeredMedia()
+}
+
+type InputStickeredMediaPhoto struct {
+	Id InputPhoto `validate:"required"`
+}
+
+func (*InputStickeredMediaPhoto) CRC() uint32 {
+	return uint32(0x4a992157)
+}
+
+func (*InputStickeredMediaPhoto) ImplementsInputStickeredMedia() {}
+
+func (e *InputStickeredMediaPhoto) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Id.Encode())
+	return buf.Result()
+}
+
+type InputStickeredMediaDocument struct {
+	Id InputDocument `validate:"required"`
+}
+
+func (*InputStickeredMediaDocument) CRC() uint32 {
+	return uint32(0x438865b)
+}
+
+func (*InputStickeredMediaDocument) ImplementsInputStickeredMedia() {}
+
+func (e *InputStickeredMediaDocument) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Id.Encode())
+	return buf.Result()
+}
 
 type HelpPromoData interface {
-	tl.Object
+	serialize.TL
 	ImplementsHelpPromoData()
 }
 
 type HelpPromoDataEmpty struct {
-	Expires int32
+	Expires int32 `validate:"required"`
 }
 
 func (*HelpPromoDataEmpty) CRC() uint32 {
@@ -6991,15 +1589,25 @@ func (*HelpPromoDataEmpty) CRC() uint32 {
 
 func (*HelpPromoDataEmpty) ImplementsHelpPromoData() {}
 
+func (e *HelpPromoDataEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Expires)
+	return buf.Result()
+}
+
 type HelpPromoDataObj struct {
-	// flags position
-	Proxy      bool `tl:"flag:0,encoded_in_bitflags"`
-	Expires    int32
-	Peer       Peer
-	Chats      []Chat
-	Users      []User
-	PsaType    string `tl:"flag:1"`
-	PsaMessage string `tl:"flag:2"`
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	Proxy           bool     `flag:"0,encoded_in_bitflags"`
+	Expires         int32    `validate:"required"`
+	Peer            Peer     `validate:"required"`
+	Chats           []Chat   `validate:"required"`
+	Users           []User   `validate:"required"`
+	PsaType         string   `flag:"1"`
+	PsaMessage      string   `flag:"2"`
 }
 
 func (*HelpPromoDataObj) CRC() uint32 {
@@ -7008,34 +1616,577 @@ func (*HelpPromoDataObj) CRC() uint32 {
 
 func (*HelpPromoDataObj) ImplementsHelpPromoData() {}
 
-type HelpTermsOfServiceUpdate interface {
-	tl.Object
-	ImplementsHelpTermsOfServiceUpdate()
+func (e *HelpPromoDataObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Proxy) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.PsaType) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.PsaMessage) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Proxy) {
+	}
+	buf.PutInt(e.Expires)
+	buf.PutRawBytes(e.Peer.Encode())
+	buf.PutVector(e.Chats)
+	buf.PutVector(e.Users)
+	if !zero.IsZeroVal(e.PsaType) {
+		buf.PutString(e.PsaType)
+	}
+	if !zero.IsZeroVal(e.PsaMessage) {
+		buf.PutString(e.PsaMessage)
+	}
+	return buf.Result()
 }
 
-type HelpTermsOfServiceUpdateEmpty struct {
-	Expires int32
+type User interface {
+	serialize.TL
+	ImplementsUser()
 }
 
-func (*HelpTermsOfServiceUpdateEmpty) CRC() uint32 {
-	return uint32(0xe3309f7f)
+type UserEmpty struct {
+	Id int32 `validate:"required"`
 }
 
-func (*HelpTermsOfServiceUpdateEmpty) ImplementsHelpTermsOfServiceUpdate() {}
-
-type HelpTermsOfServiceUpdateObj struct {
-	Expires        int32
-	TermsOfService *HelpTermsOfService
+func (*UserEmpty) CRC() uint32 {
+	return uint32(0x200250ba)
 }
 
-func (*HelpTermsOfServiceUpdateObj) CRC() uint32 {
-	return uint32(0x28ecf961)
+func (*UserEmpty) ImplementsUser() {}
+
+func (e *UserEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Id)
+	return buf.Result()
 }
 
-func (*HelpTermsOfServiceUpdateObj) ImplementsHelpTermsOfServiceUpdate() {}
+type UserObj struct {
+	__flagsPosition      struct{}             // flags param position `validate:"required"`
+	Self                 bool                 `flag:"10,encoded_in_bitflags"`
+	Contact              bool                 `flag:"11,encoded_in_bitflags"`
+	MutualContact        bool                 `flag:"12,encoded_in_bitflags"`
+	Deleted              bool                 `flag:"13,encoded_in_bitflags"`
+	Bot                  bool                 `flag:"14,encoded_in_bitflags"`
+	BotChatHistory       bool                 `flag:"15,encoded_in_bitflags"`
+	BotNochats           bool                 `flag:"16,encoded_in_bitflags"`
+	Verified             bool                 `flag:"17,encoded_in_bitflags"`
+	Restricted           bool                 `flag:"18,encoded_in_bitflags"`
+	Min                  bool                 `flag:"20,encoded_in_bitflags"`
+	BotInlineGeo         bool                 `flag:"21,encoded_in_bitflags"`
+	Support              bool                 `flag:"23,encoded_in_bitflags"`
+	Scam                 bool                 `flag:"24,encoded_in_bitflags"`
+	ApplyMinPhoto        bool                 `flag:"25,encoded_in_bitflags"`
+	Id                   int32                `validate:"required"`
+	AccessHash           int64                `flag:"0"`
+	FirstName            string               `flag:"1"`
+	LastName             string               `flag:"2"`
+	Username             string               `flag:"3"`
+	Phone                string               `flag:"4"`
+	Photo                UserProfilePhoto     `flag:"5"`
+	Status               UserStatus           `flag:"6"`
+	BotInfoVersion       int32                `flag:"14"`
+	RestrictionReason    []*RestrictionReason `flag:"18"`
+	BotInlinePlaceholder string               `flag:"19"`
+	LangCode             string               `flag:"22"`
+}
+
+func (*UserObj) CRC() uint32 {
+	return uint32(0x938458c1)
+}
+
+func (*UserObj) ImplementsUser() {}
+
+func (e *UserObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.AccessHash) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.FirstName) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.LastName) {
+		flag |= 1 << 2
+	}
+	if !zero.IsZeroVal(e.Username) {
+		flag |= 1 << 3
+	}
+	if !zero.IsZeroVal(e.Phone) {
+		flag |= 1 << 4
+	}
+	if !zero.IsZeroVal(e.Photo) {
+		flag |= 1 << 5
+	}
+	if !zero.IsZeroVal(e.Status) {
+		flag |= 1 << 6
+	}
+	if !zero.IsZeroVal(e.Self) {
+		flag |= 1 << 10
+	}
+	if !zero.IsZeroVal(e.Contact) {
+		flag |= 1 << 11
+	}
+	if !zero.IsZeroVal(e.MutualContact) {
+		flag |= 1 << 12
+	}
+	if !zero.IsZeroVal(e.Deleted) {
+		flag |= 1 << 13
+	}
+	if !zero.IsZeroVal(e.Bot) || !zero.IsZeroVal(e.BotInfoVersion) {
+		flag |= 1 << 14
+	}
+	if !zero.IsZeroVal(e.BotChatHistory) {
+		flag |= 1 << 15
+	}
+	if !zero.IsZeroVal(e.BotNochats) {
+		flag |= 1 << 16
+	}
+	if !zero.IsZeroVal(e.Verified) {
+		flag |= 1 << 17
+	}
+	if !zero.IsZeroVal(e.Restricted) || !zero.IsZeroVal(e.RestrictionReason) {
+		flag |= 1 << 18
+	}
+	if !zero.IsZeroVal(e.BotInlinePlaceholder) {
+		flag |= 1 << 19
+	}
+	if !zero.IsZeroVal(e.Min) {
+		flag |= 1 << 20
+	}
+	if !zero.IsZeroVal(e.BotInlineGeo) {
+		flag |= 1 << 21
+	}
+	if !zero.IsZeroVal(e.LangCode) {
+		flag |= 1 << 22
+	}
+	if !zero.IsZeroVal(e.Support) {
+		flag |= 1 << 23
+	}
+	if !zero.IsZeroVal(e.Scam) {
+		flag |= 1 << 24
+	}
+	if !zero.IsZeroVal(e.ApplyMinPhoto) {
+		flag |= 1 << 25
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Self) {
+	}
+	if !zero.IsZeroVal(e.Contact) {
+	}
+	if !zero.IsZeroVal(e.MutualContact) {
+	}
+	if !zero.IsZeroVal(e.Deleted) {
+	}
+	if !zero.IsZeroVal(e.Bot) {
+	}
+	if !zero.IsZeroVal(e.BotChatHistory) {
+	}
+	if !zero.IsZeroVal(e.BotNochats) {
+	}
+	if !zero.IsZeroVal(e.Verified) {
+	}
+	if !zero.IsZeroVal(e.Restricted) {
+	}
+	if !zero.IsZeroVal(e.Min) {
+	}
+	if !zero.IsZeroVal(e.BotInlineGeo) {
+	}
+	if !zero.IsZeroVal(e.Support) {
+	}
+	if !zero.IsZeroVal(e.Scam) {
+	}
+	if !zero.IsZeroVal(e.ApplyMinPhoto) {
+	}
+	buf.PutInt(e.Id)
+	if !zero.IsZeroVal(e.AccessHash) {
+		buf.PutLong(e.AccessHash)
+	}
+	if !zero.IsZeroVal(e.FirstName) {
+		buf.PutString(e.FirstName)
+	}
+	if !zero.IsZeroVal(e.LastName) {
+		buf.PutString(e.LastName)
+	}
+	if !zero.IsZeroVal(e.Username) {
+		buf.PutString(e.Username)
+	}
+	if !zero.IsZeroVal(e.Phone) {
+		buf.PutString(e.Phone)
+	}
+	if !zero.IsZeroVal(e.Photo) {
+		buf.PutRawBytes(e.Photo.Encode())
+	}
+	if !zero.IsZeroVal(e.Status) {
+		buf.PutRawBytes(e.Status.Encode())
+	}
+	if !zero.IsZeroVal(e.BotInfoVersion) {
+		buf.PutInt(e.BotInfoVersion)
+	}
+	if !zero.IsZeroVal(e.RestrictionReason) {
+		buf.PutVector(e.RestrictionReason)
+	}
+	if !zero.IsZeroVal(e.BotInlinePlaceholder) {
+		buf.PutString(e.BotInlinePlaceholder)
+	}
+	if !zero.IsZeroVal(e.LangCode) {
+		buf.PutString(e.LangCode)
+	}
+	return buf.Result()
+}
+
+type MessagesFilter interface {
+	serialize.TL
+	ImplementsMessagesFilter()
+}
+
+type InputMessagesFilterEmpty struct{}
+
+func (*InputMessagesFilterEmpty) CRC() uint32 {
+	return uint32(0x57e2f66c)
+}
+
+func (*InputMessagesFilterEmpty) ImplementsMessagesFilter() {}
+
+func (e *InputMessagesFilterEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputMessagesFilterPhotos struct{}
+
+func (*InputMessagesFilterPhotos) CRC() uint32 {
+	return uint32(0x9609a51c)
+}
+
+func (*InputMessagesFilterPhotos) ImplementsMessagesFilter() {}
+
+func (e *InputMessagesFilterPhotos) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputMessagesFilterVideo struct{}
+
+func (*InputMessagesFilterVideo) CRC() uint32 {
+	return uint32(0x9fc00e65)
+}
+
+func (*InputMessagesFilterVideo) ImplementsMessagesFilter() {}
+
+func (e *InputMessagesFilterVideo) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputMessagesFilterPhotoVideo struct{}
+
+func (*InputMessagesFilterPhotoVideo) CRC() uint32 {
+	return uint32(0x56e9f0e4)
+}
+
+func (*InputMessagesFilterPhotoVideo) ImplementsMessagesFilter() {}
+
+func (e *InputMessagesFilterPhotoVideo) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputMessagesFilterDocument struct{}
+
+func (*InputMessagesFilterDocument) CRC() uint32 {
+	return uint32(0x9eddf188)
+}
+
+func (*InputMessagesFilterDocument) ImplementsMessagesFilter() {}
+
+func (e *InputMessagesFilterDocument) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputMessagesFilterUrl struct{}
+
+func (*InputMessagesFilterUrl) CRC() uint32 {
+	return uint32(0x7ef0dd87)
+}
+
+func (*InputMessagesFilterUrl) ImplementsMessagesFilter() {}
+
+func (e *InputMessagesFilterUrl) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputMessagesFilterGif struct{}
+
+func (*InputMessagesFilterGif) CRC() uint32 {
+	return uint32(0xffc86587)
+}
+
+func (*InputMessagesFilterGif) ImplementsMessagesFilter() {}
+
+func (e *InputMessagesFilterGif) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputMessagesFilterVoice struct{}
+
+func (*InputMessagesFilterVoice) CRC() uint32 {
+	return uint32(0x50f5c392)
+}
+
+func (*InputMessagesFilterVoice) ImplementsMessagesFilter() {}
+
+func (e *InputMessagesFilterVoice) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputMessagesFilterMusic struct{}
+
+func (*InputMessagesFilterMusic) CRC() uint32 {
+	return uint32(0x3751b49e)
+}
+
+func (*InputMessagesFilterMusic) ImplementsMessagesFilter() {}
+
+func (e *InputMessagesFilterMusic) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputMessagesFilterChatPhotos struct{}
+
+func (*InputMessagesFilterChatPhotos) CRC() uint32 {
+	return uint32(0x3a20ecb8)
+}
+
+func (*InputMessagesFilterChatPhotos) ImplementsMessagesFilter() {}
+
+func (e *InputMessagesFilterChatPhotos) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputMessagesFilterPhoneCalls struct {
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	Missed          bool     `flag:"0,encoded_in_bitflags"`
+}
+
+func (*InputMessagesFilterPhoneCalls) CRC() uint32 {
+	return uint32(0x80c99768)
+}
+
+func (*InputMessagesFilterPhoneCalls) ImplementsMessagesFilter() {}
+
+func (e *InputMessagesFilterPhoneCalls) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Missed) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Missed) {
+	}
+	return buf.Result()
+}
+
+type InputMessagesFilterRoundVoice struct{}
+
+func (*InputMessagesFilterRoundVoice) CRC() uint32 {
+	return uint32(0x7a7c17a4)
+}
+
+func (*InputMessagesFilterRoundVoice) ImplementsMessagesFilter() {}
+
+func (e *InputMessagesFilterRoundVoice) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputMessagesFilterRoundVideo struct{}
+
+func (*InputMessagesFilterRoundVideo) CRC() uint32 {
+	return uint32(0xb549da53)
+}
+
+func (*InputMessagesFilterRoundVideo) ImplementsMessagesFilter() {}
+
+func (e *InputMessagesFilterRoundVideo) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputMessagesFilterMyMentions struct{}
+
+func (*InputMessagesFilterMyMentions) CRC() uint32 {
+	return uint32(0xc1f8e69a)
+}
+
+func (*InputMessagesFilterMyMentions) ImplementsMessagesFilter() {}
+
+func (e *InputMessagesFilterMyMentions) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputMessagesFilterGeo struct{}
+
+func (*InputMessagesFilterGeo) CRC() uint32 {
+	return uint32(0xe7026d0d)
+}
+
+func (*InputMessagesFilterGeo) ImplementsMessagesFilter() {}
+
+func (e *InputMessagesFilterGeo) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputMessagesFilterContacts struct{}
+
+func (*InputMessagesFilterContacts) CRC() uint32 {
+	return uint32(0xe062db83)
+}
+
+func (*InputMessagesFilterContacts) ImplementsMessagesFilter() {}
+
+func (e *InputMessagesFilterContacts) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type MessagesChats interface {
+	serialize.TL
+	ImplementsMessagesChats()
+}
+
+type MessagesChatsObj struct {
+	Chats []Chat `validate:"required"`
+}
+
+func (*MessagesChatsObj) CRC() uint32 {
+	return uint32(0x64ff9fd5)
+}
+
+func (*MessagesChatsObj) ImplementsMessagesChats() {}
+
+func (e *MessagesChatsObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Chats)
+	return buf.Result()
+}
+
+type MessagesChatsSlice struct {
+	Count int32  `validate:"required"`
+	Chats []Chat `validate:"required"`
+}
+
+func (*MessagesChatsSlice) CRC() uint32 {
+	return uint32(0x9cd81144)
+}
+
+func (*MessagesChatsSlice) ImplementsMessagesChats() {}
+
+func (e *MessagesChatsSlice) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Count)
+	buf.PutVector(e.Chats)
+	return buf.Result()
+}
 
 type HelpUserInfo interface {
-	tl.Object
+	serialize.TL
 	ImplementsHelpUserInfo()
 }
 
@@ -7047,11 +2198,20 @@ func (*HelpUserInfoEmpty) CRC() uint32 {
 
 func (*HelpUserInfoEmpty) ImplementsHelpUserInfo() {}
 
+func (e *HelpUserInfoEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
 type HelpUserInfoObj struct {
-	Message  string
-	Entities []MessageEntity
-	Author   string
-	Date     int32
+	Message  string          `validate:"required"`
+	Entities []MessageEntity `validate:"required"`
+	Author   string          `validate:"required"`
+	Date     int32           `validate:"required"`
 }
 
 func (*HelpUserInfoObj) CRC() uint32 {
@@ -7060,340 +2220,1563 @@ func (*HelpUserInfoObj) CRC() uint32 {
 
 func (*HelpUserInfoObj) ImplementsHelpUserInfo() {}
 
-type MessagesAllStickers interface {
-	tl.Object
-	ImplementsMessagesAllStickers()
+func (e *HelpUserInfoObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Message)
+	buf.PutVector(e.Entities)
+	buf.PutString(e.Author)
+	buf.PutInt(e.Date)
+	return buf.Result()
 }
 
-type MessagesAllStickersNotModified struct{}
-
-func (*MessagesAllStickersNotModified) CRC() uint32 {
-	return uint32(0xe86602c3)
+type IpPort interface {
+	serialize.TL
+	ImplementsIpPort()
 }
 
-func (*MessagesAllStickersNotModified) ImplementsMessagesAllStickers() {}
-
-type MessagesAllStickersObj struct {
-	Hash int32
-	Sets []*StickerSet
+type IpPortObj struct {
+	Ipv4 int32 `validate:"required"`
+	Port int32 `validate:"required"`
 }
 
-func (*MessagesAllStickersObj) CRC() uint32 {
-	return uint32(0xedfd405f)
+func (*IpPortObj) CRC() uint32 {
+	return uint32(0xd433ad73)
 }
 
-func (*MessagesAllStickersObj) ImplementsMessagesAllStickers() {}
+func (*IpPortObj) ImplementsIpPort() {}
 
-type MessagesChats interface {
-	tl.Object
-	ImplementsMessagesChats()
+func (e *IpPortObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Ipv4)
+	buf.PutInt(e.Port)
+	return buf.Result()
 }
 
-type MessagesChatsObj struct {
-	Chats []Chat
+type IpPortSecret struct {
+	Ipv4   int32  `validate:"required"`
+	Port   int32  `validate:"required"`
+	Secret []byte `validate:"required"`
 }
 
-func (*MessagesChatsObj) CRC() uint32 {
-	return uint32(0x64ff9fd5)
+func (*IpPortSecret) CRC() uint32 {
+	return uint32(0x37982646)
 }
 
-func (*MessagesChatsObj) ImplementsMessagesChats() {}
+func (*IpPortSecret) ImplementsIpPort() {}
 
-type MessagesChatsSlice struct {
-	Count int32
-	Chats []Chat
+func (e *IpPortSecret) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Ipv4)
+	buf.PutInt(e.Port)
+	buf.PutMessage(e.Secret)
+	return buf.Result()
 }
 
-func (*MessagesChatsSlice) CRC() uint32 {
-	return uint32(0x9cd81144)
+type UploadCdnFile interface {
+	serialize.TL
+	ImplementsUploadCdnFile()
 }
 
-func (*MessagesChatsSlice) ImplementsMessagesChats() {}
-
-type MessagesDhConfig interface {
-	tl.Object
-	ImplementsMessagesDhConfig()
+type UploadCdnFileReuploadNeeded struct {
+	RequestToken []byte `validate:"required"`
 }
 
-type MessagesDhConfigNotModified struct {
-	Random []byte
+func (*UploadCdnFileReuploadNeeded) CRC() uint32 {
+	return uint32(0xeea8e46e)
 }
 
-func (*MessagesDhConfigNotModified) CRC() uint32 {
-	return uint32(0xc0e24635)
+func (*UploadCdnFileReuploadNeeded) ImplementsUploadCdnFile() {}
+
+func (e *UploadCdnFileReuploadNeeded) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutMessage(e.RequestToken)
+	return buf.Result()
 }
 
-func (*MessagesDhConfigNotModified) ImplementsMessagesDhConfig() {}
-
-type MessagesDhConfigObj struct {
-	G       int32
-	P       []byte
-	Version int32
-	Random  []byte
+type UploadCdnFileObj struct {
+	Bytes []byte `validate:"required"`
 }
 
-func (*MessagesDhConfigObj) CRC() uint32 {
-	return uint32(0x2c221edd)
+func (*UploadCdnFileObj) CRC() uint32 {
+	return uint32(0xa99fca4f)
 }
 
-func (*MessagesDhConfigObj) ImplementsMessagesDhConfig() {}
+func (*UploadCdnFileObj) ImplementsUploadCdnFile() {}
 
-type MessagesDialogs interface {
-	tl.Object
-	ImplementsMessagesDialogs()
+func (e *UploadCdnFileObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutMessage(e.Bytes)
+	return buf.Result()
 }
 
-type MessagesDialogsObj struct {
-	Dialogs  []Dialog
-	Messages []Message
-	Chats    []Chat
-	Users    []User
+type SecureValueError interface {
+	serialize.TL
+	ImplementsSecureValueError()
 }
 
-func (*MessagesDialogsObj) CRC() uint32 {
-	return uint32(0x15ba6c40)
+type SecureValueErrorData struct {
+	Type     SecureValueType `validate:"required"`
+	DataHash []byte          `validate:"required"`
+	Field    string          `validate:"required"`
+	Text     string          `validate:"required"`
 }
 
-func (*MessagesDialogsObj) ImplementsMessagesDialogs() {}
-
-type MessagesDialogsSlice struct {
-	Count    int32
-	Dialogs  []Dialog
-	Messages []Message
-	Chats    []Chat
-	Users    []User
+func (*SecureValueErrorData) CRC() uint32 {
+	return uint32(0xe8a40bd9)
 }
 
-func (*MessagesDialogsSlice) CRC() uint32 {
-	return uint32(0x71e094f3)
+func (*SecureValueErrorData) ImplementsSecureValueError() {}
+
+func (e *SecureValueErrorData) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Type.Encode())
+	buf.PutMessage(e.DataHash)
+	buf.PutString(e.Field)
+	buf.PutString(e.Text)
+	return buf.Result()
 }
 
-func (*MessagesDialogsSlice) ImplementsMessagesDialogs() {}
-
-type MessagesDialogsNotModified struct {
-	Count int32
+type SecureValueErrorFrontSide struct {
+	Type     SecureValueType `validate:"required"`
+	FileHash []byte          `validate:"required"`
+	Text     string          `validate:"required"`
 }
 
-func (*MessagesDialogsNotModified) CRC() uint32 {
-	return uint32(0xf0e3e596)
+func (*SecureValueErrorFrontSide) CRC() uint32 {
+	return uint32(0xbe3dfa)
 }
 
-func (*MessagesDialogsNotModified) ImplementsMessagesDialogs() {}
+func (*SecureValueErrorFrontSide) ImplementsSecureValueError() {}
 
-type MessagesFavedStickers interface {
-	tl.Object
-	ImplementsMessagesFavedStickers()
+func (e *SecureValueErrorFrontSide) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Type.Encode())
+	buf.PutMessage(e.FileHash)
+	buf.PutString(e.Text)
+	return buf.Result()
 }
 
-type MessagesFavedStickersNotModified struct{}
-
-func (*MessagesFavedStickersNotModified) CRC() uint32 {
-	return uint32(0x9e8fa6d3)
+type SecureValueErrorReverseSide struct {
+	Type     SecureValueType `validate:"required"`
+	FileHash []byte          `validate:"required"`
+	Text     string          `validate:"required"`
 }
 
-func (*MessagesFavedStickersNotModified) ImplementsMessagesFavedStickers() {}
-
-type MessagesFavedStickersObj struct {
-	Hash     int32
-	Packs    []*StickerPack
-	Stickers []Document
+func (*SecureValueErrorReverseSide) CRC() uint32 {
+	return uint32(0x868a2aa5)
 }
 
-func (*MessagesFavedStickersObj) CRC() uint32 {
-	return uint32(0xf37f2f16)
+func (*SecureValueErrorReverseSide) ImplementsSecureValueError() {}
+
+func (e *SecureValueErrorReverseSide) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Type.Encode())
+	buf.PutMessage(e.FileHash)
+	buf.PutString(e.Text)
+	return buf.Result()
 }
 
-func (*MessagesFavedStickersObj) ImplementsMessagesFavedStickers() {}
-
-type MessagesFeaturedStickers interface {
-	tl.Object
-	ImplementsMessagesFeaturedStickers()
+type SecureValueErrorSelfie struct {
+	Type     SecureValueType `validate:"required"`
+	FileHash []byte          `validate:"required"`
+	Text     string          `validate:"required"`
 }
 
-type MessagesFeaturedStickersNotModified struct {
-	Count int32
+func (*SecureValueErrorSelfie) CRC() uint32 {
+	return uint32(0xe537ced6)
 }
 
-func (*MessagesFeaturedStickersNotModified) CRC() uint32 {
-	return uint32(0xc6dc0c66)
+func (*SecureValueErrorSelfie) ImplementsSecureValueError() {}
+
+func (e *SecureValueErrorSelfie) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Type.Encode())
+	buf.PutMessage(e.FileHash)
+	buf.PutString(e.Text)
+	return buf.Result()
 }
 
-func (*MessagesFeaturedStickersNotModified) ImplementsMessagesFeaturedStickers() {}
-
-type MessagesFeaturedStickersObj struct {
-	Hash   int32
-	Count  int32
-	Sets   []StickerSetCovered
-	Unread []int64
+type SecureValueErrorFile struct {
+	Type     SecureValueType `validate:"required"`
+	FileHash []byte          `validate:"required"`
+	Text     string          `validate:"required"`
 }
 
-func (*MessagesFeaturedStickersObj) CRC() uint32 {
-	return uint32(0xb6abc341)
+func (*SecureValueErrorFile) CRC() uint32 {
+	return uint32(0x7a700873)
 }
 
-func (*MessagesFeaturedStickersObj) ImplementsMessagesFeaturedStickers() {}
+func (*SecureValueErrorFile) ImplementsSecureValueError() {}
 
-type MessagesFoundStickerSets interface {
-	tl.Object
-	ImplementsMessagesFoundStickerSets()
+func (e *SecureValueErrorFile) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Type.Encode())
+	buf.PutMessage(e.FileHash)
+	buf.PutString(e.Text)
+	return buf.Result()
 }
 
-type MessagesFoundStickerSetsNotModified struct{}
-
-func (*MessagesFoundStickerSetsNotModified) CRC() uint32 {
-	return uint32(0xd54b65d)
+type SecureValueErrorFiles struct {
+	Type     SecureValueType `validate:"required"`
+	FileHash [][]byte        `validate:"required"`
+	Text     string          `validate:"required"`
 }
 
-func (*MessagesFoundStickerSetsNotModified) ImplementsMessagesFoundStickerSets() {}
-
-type MessagesFoundStickerSetsObj struct {
-	Hash int32
-	Sets []StickerSetCovered
+func (*SecureValueErrorFiles) CRC() uint32 {
+	return uint32(0x666220e9)
 }
 
-func (*MessagesFoundStickerSetsObj) CRC() uint32 {
-	return uint32(0x5108d648)
+func (*SecureValueErrorFiles) ImplementsSecureValueError() {}
+
+func (e *SecureValueErrorFiles) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Type.Encode())
+	buf.PutVector(e.FileHash)
+	buf.PutString(e.Text)
+	return buf.Result()
 }
 
-func (*MessagesFoundStickerSetsObj) ImplementsMessagesFoundStickerSets() {}
-
-type MessagesMessages interface {
-	tl.Object
-	ImplementsMessagesMessages()
+type SecureValueErrorObj struct {
+	Type SecureValueType `validate:"required"`
+	Hash []byte          `validate:"required"`
+	Text string          `validate:"required"`
 }
 
-type MessagesMessagesObj struct {
-	Messages []Message
-	Chats    []Chat
-	Users    []User
+func (*SecureValueErrorObj) CRC() uint32 {
+	return uint32(0x869d758f)
 }
 
-func (*MessagesMessagesObj) CRC() uint32 {
-	return uint32(0x8c718e87)
+func (*SecureValueErrorObj) ImplementsSecureValueError() {}
+
+func (e *SecureValueErrorObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Type.Encode())
+	buf.PutMessage(e.Hash)
+	buf.PutString(e.Text)
+	return buf.Result()
 }
 
-func (*MessagesMessagesObj) ImplementsMessagesMessages() {}
-
-type MessagesMessagesSlice struct {
-	// flags position
-	Inexact  bool `tl:"flag:1,encoded_in_bitflags"`
-	Count    int32
-	NextRate int32 `tl:"flag:0"`
-	Messages []Message
-	Chats    []Chat
-	Users    []User
+type SecureValueErrorTranslationFile struct {
+	Type     SecureValueType `validate:"required"`
+	FileHash []byte          `validate:"required"`
+	Text     string          `validate:"required"`
 }
 
-func (*MessagesMessagesSlice) CRC() uint32 {
-	return uint32(0xc8edce1e)
+func (*SecureValueErrorTranslationFile) CRC() uint32 {
+	return uint32(0xa1144770)
 }
 
-func (*MessagesMessagesSlice) ImplementsMessagesMessages() {}
+func (*SecureValueErrorTranslationFile) ImplementsSecureValueError() {}
 
-type MessagesChannelMessages struct {
-	// flags position
-	Inexact  bool `tl:"flag:1,encoded_in_bitflags"`
-	Pts      int32
-	Count    int32
-	Messages []Message
-	Chats    []Chat
-	Users    []User
+func (e *SecureValueErrorTranslationFile) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Type.Encode())
+	buf.PutMessage(e.FileHash)
+	buf.PutString(e.Text)
+	return buf.Result()
 }
 
-func (*MessagesChannelMessages) CRC() uint32 {
-	return uint32(0x99262e37)
+type SecureValueErrorTranslationFiles struct {
+	Type     SecureValueType `validate:"required"`
+	FileHash [][]byte        `validate:"required"`
+	Text     string          `validate:"required"`
 }
 
-func (*MessagesChannelMessages) ImplementsMessagesMessages() {}
-
-type MessagesMessagesNotModified struct {
-	Count int32
+func (*SecureValueErrorTranslationFiles) CRC() uint32 {
+	return uint32(0x34636dd8)
 }
 
-func (*MessagesMessagesNotModified) CRC() uint32 {
-	return uint32(0x74535f21)
+func (*SecureValueErrorTranslationFiles) ImplementsSecureValueError() {}
+
+func (e *SecureValueErrorTranslationFiles) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Type.Encode())
+	buf.PutVector(e.FileHash)
+	buf.PutString(e.Text)
+	return buf.Result()
 }
 
-func (*MessagesMessagesNotModified) ImplementsMessagesMessages() {}
-
-type MessagesRecentStickers interface {
-	tl.Object
-	ImplementsMessagesRecentStickers()
+type ContactsBlocked interface {
+	serialize.TL
+	ImplementsContactsBlocked()
 }
 
-type MessagesRecentStickersNotModified struct{}
-
-func (*MessagesRecentStickersNotModified) CRC() uint32 {
-	return uint32(0xb17f890)
+type ContactsBlockedObj struct {
+	Blocked []*ContactBlocked `validate:"required"`
+	Users   []User            `validate:"required"`
 }
 
-func (*MessagesRecentStickersNotModified) ImplementsMessagesRecentStickers() {}
-
-type MessagesRecentStickersObj struct {
-	Hash     int32
-	Packs    []*StickerPack
-	Stickers []Document
-	Dates    []int32
+func (*ContactsBlockedObj) CRC() uint32 {
+	return uint32(0x1c138d15)
 }
 
-func (*MessagesRecentStickersObj) CRC() uint32 {
-	return uint32(0x22f3afb3)
+func (*ContactsBlockedObj) ImplementsContactsBlocked() {}
+
+func (e *ContactsBlockedObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Blocked)
+	buf.PutVector(e.Users)
+	return buf.Result()
 }
 
-func (*MessagesRecentStickersObj) ImplementsMessagesRecentStickers() {}
-
-type MessagesSavedGifs interface {
-	tl.Object
-	ImplementsMessagesSavedGifs()
+type ContactsBlockedSlice struct {
+	Count   int32             `validate:"required"`
+	Blocked []*ContactBlocked `validate:"required"`
+	Users   []User            `validate:"required"`
 }
 
-type MessagesSavedGifsNotModified struct{}
-
-func (*MessagesSavedGifsNotModified) CRC() uint32 {
-	return uint32(0xe8025ca2)
+func (*ContactsBlockedSlice) CRC() uint32 {
+	return uint32(0x900802a1)
 }
 
-func (*MessagesSavedGifsNotModified) ImplementsMessagesSavedGifs() {}
+func (*ContactsBlockedSlice) ImplementsContactsBlocked() {}
 
-type MessagesSavedGifsObj struct {
-	Hash int32
-	Gifs []Document
+func (e *ContactsBlockedSlice) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Count)
+	buf.PutVector(e.Blocked)
+	buf.PutVector(e.Users)
+	return buf.Result()
 }
 
-func (*MessagesSavedGifsObj) CRC() uint32 {
-	return uint32(0x2e0709a5)
+type SendMessageAction interface {
+	serialize.TL
+	ImplementsSendMessageAction()
 }
 
-func (*MessagesSavedGifsObj) ImplementsMessagesSavedGifs() {}
+type SendMessageTypingAction struct{}
 
-type MessagesSentEncryptedMessage interface {
-	tl.Object
-	ImplementsMessagesSentEncryptedMessage()
+func (*SendMessageTypingAction) CRC() uint32 {
+	return uint32(0x16bf744e)
 }
 
-type MessagesSentEncryptedMessageObj struct {
-	Date int32
+func (*SendMessageTypingAction) ImplementsSendMessageAction() {}
+
+func (e *SendMessageTypingAction) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
 }
 
-func (*MessagesSentEncryptedMessageObj) CRC() uint32 {
-	return uint32(0x560f8935)
+type SendMessageCancelAction struct{}
+
+func (*SendMessageCancelAction) CRC() uint32 {
+	return uint32(0xfd5ec8f5)
 }
 
-func (*MessagesSentEncryptedMessageObj) ImplementsMessagesSentEncryptedMessage() {}
+func (*SendMessageCancelAction) ImplementsSendMessageAction() {}
 
-type MessagesSentEncryptedFile struct {
-	Date int32
-	File EncryptedFile
+func (e *SendMessageCancelAction) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
 }
 
-func (*MessagesSentEncryptedFile) CRC() uint32 {
-	return uint32(0x9493ff32)
+type SendMessageRecordVideoAction struct{}
+
+func (*SendMessageRecordVideoAction) CRC() uint32 {
+	return uint32(0xa187d66f)
 }
 
-func (*MessagesSentEncryptedFile) ImplementsMessagesSentEncryptedMessage() {}
+func (*SendMessageRecordVideoAction) ImplementsSendMessageAction() {}
+
+func (e *SendMessageRecordVideoAction) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type SendMessageUploadVideoAction struct {
+	Progress int32 `validate:"required"`
+}
+
+func (*SendMessageUploadVideoAction) CRC() uint32 {
+	return uint32(0xe9763aec)
+}
+
+func (*SendMessageUploadVideoAction) ImplementsSendMessageAction() {}
+
+func (e *SendMessageUploadVideoAction) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Progress)
+	return buf.Result()
+}
+
+type SendMessageRecordAudioAction struct{}
+
+func (*SendMessageRecordAudioAction) CRC() uint32 {
+	return uint32(0xd52f73f7)
+}
+
+func (*SendMessageRecordAudioAction) ImplementsSendMessageAction() {}
+
+func (e *SendMessageRecordAudioAction) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type SendMessageUploadAudioAction struct {
+	Progress int32 `validate:"required"`
+}
+
+func (*SendMessageUploadAudioAction) CRC() uint32 {
+	return uint32(0xf351d7ab)
+}
+
+func (*SendMessageUploadAudioAction) ImplementsSendMessageAction() {}
+
+func (e *SendMessageUploadAudioAction) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Progress)
+	return buf.Result()
+}
+
+type SendMessageUploadPhotoAction struct {
+	Progress int32 `validate:"required"`
+}
+
+func (*SendMessageUploadPhotoAction) CRC() uint32 {
+	return uint32(0xd1d34a26)
+}
+
+func (*SendMessageUploadPhotoAction) ImplementsSendMessageAction() {}
+
+func (e *SendMessageUploadPhotoAction) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Progress)
+	return buf.Result()
+}
+
+type SendMessageUploadDocumentAction struct {
+	Progress int32 `validate:"required"`
+}
+
+func (*SendMessageUploadDocumentAction) CRC() uint32 {
+	return uint32(0xaa0cd9e4)
+}
+
+func (*SendMessageUploadDocumentAction) ImplementsSendMessageAction() {}
+
+func (e *SendMessageUploadDocumentAction) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Progress)
+	return buf.Result()
+}
+
+type SendMessageGeoLocationAction struct{}
+
+func (*SendMessageGeoLocationAction) CRC() uint32 {
+	return uint32(0x176f8ba1)
+}
+
+func (*SendMessageGeoLocationAction) ImplementsSendMessageAction() {}
+
+func (e *SendMessageGeoLocationAction) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type SendMessageChooseContactAction struct{}
+
+func (*SendMessageChooseContactAction) CRC() uint32 {
+	return uint32(0x628cbc6f)
+}
+
+func (*SendMessageChooseContactAction) ImplementsSendMessageAction() {}
+
+func (e *SendMessageChooseContactAction) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type SendMessageGamePlayAction struct{}
+
+func (*SendMessageGamePlayAction) CRC() uint32 {
+	return uint32(0xdd6a8f48)
+}
+
+func (*SendMessageGamePlayAction) ImplementsSendMessageAction() {}
+
+func (e *SendMessageGamePlayAction) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type SendMessageRecordRoundAction struct{}
+
+func (*SendMessageRecordRoundAction) CRC() uint32 {
+	return uint32(0x88f27fbc)
+}
+
+func (*SendMessageRecordRoundAction) ImplementsSendMessageAction() {}
+
+func (e *SendMessageRecordRoundAction) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type SendMessageUploadRoundAction struct {
+	Progress int32 `validate:"required"`
+}
+
+func (*SendMessageUploadRoundAction) CRC() uint32 {
+	return uint32(0x243e1c66)
+}
+
+func (*SendMessageUploadRoundAction) ImplementsSendMessageAction() {}
+
+func (e *SendMessageUploadRoundAction) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Progress)
+	return buf.Result()
+}
+
+type Message interface {
+	serialize.TL
+	ImplementsMessage()
+}
+
+type MessageEmpty struct {
+	Id int32 `validate:"required"`
+}
+
+func (*MessageEmpty) CRC() uint32 {
+	return uint32(0x83e5de54)
+}
+
+func (*MessageEmpty) ImplementsMessage() {}
+
+func (e *MessageEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Id)
+	return buf.Result()
+}
+
+type MessageObj struct {
+	__flagsPosition   struct{}             // flags param position `validate:"required"`
+	Out               bool                 `flag:"1,encoded_in_bitflags"`
+	Mentioned         bool                 `flag:"4,encoded_in_bitflags"`
+	MediaUnread       bool                 `flag:"5,encoded_in_bitflags"`
+	Silent            bool                 `flag:"13,encoded_in_bitflags"`
+	Post              bool                 `flag:"14,encoded_in_bitflags"`
+	FromScheduled     bool                 `flag:"18,encoded_in_bitflags"`
+	Legacy            bool                 `flag:"19,encoded_in_bitflags"`
+	EditHide          bool                 `flag:"21,encoded_in_bitflags"`
+	Id                int32                `validate:"required"`
+	FromId            int32                `flag:"8"`
+	ToId              Peer                 `validate:"required"`
+	FwdFrom           *MessageFwdHeader    `flag:"2"`
+	ViaBotId          int32                `flag:"11"`
+	ReplyToMsgId      int32                `flag:"3"`
+	Date              int32                `validate:"required"`
+	Message           string               `validate:"required"`
+	Media             MessageMedia         `flag:"9"`
+	ReplyMarkup       ReplyMarkup          `flag:"6"`
+	Entities          []MessageEntity      `flag:"7"`
+	Views             int32                `flag:"10"`
+	EditDate          int32                `flag:"15"`
+	PostAuthor        string               `flag:"16"`
+	GroupedId         int64                `flag:"17"`
+	RestrictionReason []*RestrictionReason `flag:"22"`
+}
+
+func (*MessageObj) CRC() uint32 {
+	return uint32(0x452c0e65)
+}
+
+func (*MessageObj) ImplementsMessage() {}
+
+func (e *MessageObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Out) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.FwdFrom) {
+		flag |= 1 << 2
+	}
+	if !zero.IsZeroVal(e.ReplyToMsgId) {
+		flag |= 1 << 3
+	}
+	if !zero.IsZeroVal(e.Mentioned) {
+		flag |= 1 << 4
+	}
+	if !zero.IsZeroVal(e.MediaUnread) {
+		flag |= 1 << 5
+	}
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		flag |= 1 << 6
+	}
+	if !zero.IsZeroVal(e.Entities) {
+		flag |= 1 << 7
+	}
+	if !zero.IsZeroVal(e.FromId) {
+		flag |= 1 << 8
+	}
+	if !zero.IsZeroVal(e.Media) {
+		flag |= 1 << 9
+	}
+	if !zero.IsZeroVal(e.Views) {
+		flag |= 1 << 10
+	}
+	if !zero.IsZeroVal(e.ViaBotId) {
+		flag |= 1 << 11
+	}
+	if !zero.IsZeroVal(e.Silent) {
+		flag |= 1 << 13
+	}
+	if !zero.IsZeroVal(e.Post) {
+		flag |= 1 << 14
+	}
+	if !zero.IsZeroVal(e.EditDate) {
+		flag |= 1 << 15
+	}
+	if !zero.IsZeroVal(e.PostAuthor) {
+		flag |= 1 << 16
+	}
+	if !zero.IsZeroVal(e.GroupedId) {
+		flag |= 1 << 17
+	}
+	if !zero.IsZeroVal(e.FromScheduled) {
+		flag |= 1 << 18
+	}
+	if !zero.IsZeroVal(e.Legacy) {
+		flag |= 1 << 19
+	}
+	if !zero.IsZeroVal(e.EditHide) {
+		flag |= 1 << 21
+	}
+	if !zero.IsZeroVal(e.RestrictionReason) {
+		flag |= 1 << 22
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Out) {
+	}
+	if !zero.IsZeroVal(e.Mentioned) {
+	}
+	if !zero.IsZeroVal(e.MediaUnread) {
+	}
+	if !zero.IsZeroVal(e.Silent) {
+	}
+	if !zero.IsZeroVal(e.Post) {
+	}
+	if !zero.IsZeroVal(e.FromScheduled) {
+	}
+	if !zero.IsZeroVal(e.Legacy) {
+	}
+	if !zero.IsZeroVal(e.EditHide) {
+	}
+	buf.PutInt(e.Id)
+	if !zero.IsZeroVal(e.FromId) {
+		buf.PutInt(e.FromId)
+	}
+	buf.PutRawBytes(e.ToId.Encode())
+	if !zero.IsZeroVal(e.FwdFrom) {
+		buf.PutRawBytes(e.FwdFrom.Encode())
+	}
+	if !zero.IsZeroVal(e.ViaBotId) {
+		buf.PutInt(e.ViaBotId)
+	}
+	if !zero.IsZeroVal(e.ReplyToMsgId) {
+		buf.PutInt(e.ReplyToMsgId)
+	}
+	buf.PutInt(e.Date)
+	buf.PutString(e.Message)
+	if !zero.IsZeroVal(e.Media) {
+		buf.PutRawBytes(e.Media.Encode())
+	}
+	if !zero.IsZeroVal(e.ReplyMarkup) {
+		buf.PutRawBytes(e.ReplyMarkup.Encode())
+	}
+	if !zero.IsZeroVal(e.Entities) {
+		buf.PutVector(e.Entities)
+	}
+	if !zero.IsZeroVal(e.Views) {
+		buf.PutInt(e.Views)
+	}
+	if !zero.IsZeroVal(e.EditDate) {
+		buf.PutInt(e.EditDate)
+	}
+	if !zero.IsZeroVal(e.PostAuthor) {
+		buf.PutString(e.PostAuthor)
+	}
+	if !zero.IsZeroVal(e.GroupedId) {
+		buf.PutLong(e.GroupedId)
+	}
+	if !zero.IsZeroVal(e.RestrictionReason) {
+		buf.PutVector(e.RestrictionReason)
+	}
+	return buf.Result()
+}
+
+type MessageService struct {
+	__flagsPosition struct{}      // flags param position `validate:"required"`
+	Out             bool          `flag:"1,encoded_in_bitflags"`
+	Mentioned       bool          `flag:"4,encoded_in_bitflags"`
+	MediaUnread     bool          `flag:"5,encoded_in_bitflags"`
+	Silent          bool          `flag:"13,encoded_in_bitflags"`
+	Post            bool          `flag:"14,encoded_in_bitflags"`
+	Legacy          bool          `flag:"19,encoded_in_bitflags"`
+	Id              int32         `validate:"required"`
+	FromId          int32         `flag:"8"`
+	ToId            Peer          `validate:"required"`
+	ReplyToMsgId    int32         `flag:"3"`
+	Date            int32         `validate:"required"`
+	Action          MessageAction `validate:"required"`
+}
+
+func (*MessageService) CRC() uint32 {
+	return uint32(0x9e19a1f6)
+}
+
+func (*MessageService) ImplementsMessage() {}
+
+func (e *MessageService) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Out) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.ReplyToMsgId) {
+		flag |= 1 << 3
+	}
+	if !zero.IsZeroVal(e.Mentioned) {
+		flag |= 1 << 4
+	}
+	if !zero.IsZeroVal(e.MediaUnread) {
+		flag |= 1 << 5
+	}
+	if !zero.IsZeroVal(e.FromId) {
+		flag |= 1 << 8
+	}
+	if !zero.IsZeroVal(e.Silent) {
+		flag |= 1 << 13
+	}
+	if !zero.IsZeroVal(e.Post) {
+		flag |= 1 << 14
+	}
+	if !zero.IsZeroVal(e.Legacy) {
+		flag |= 1 << 19
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Out) {
+	}
+	if !zero.IsZeroVal(e.Mentioned) {
+	}
+	if !zero.IsZeroVal(e.MediaUnread) {
+	}
+	if !zero.IsZeroVal(e.Silent) {
+	}
+	if !zero.IsZeroVal(e.Post) {
+	}
+	if !zero.IsZeroVal(e.Legacy) {
+	}
+	buf.PutInt(e.Id)
+	if !zero.IsZeroVal(e.FromId) {
+		buf.PutInt(e.FromId)
+	}
+	buf.PutRawBytes(e.ToId.Encode())
+	if !zero.IsZeroVal(e.ReplyToMsgId) {
+		buf.PutInt(e.ReplyToMsgId)
+	}
+	buf.PutInt(e.Date)
+	buf.PutRawBytes(e.Action.Encode())
+	return buf.Result()
+}
+
+type BotInlineResult interface {
+	serialize.TL
+	ImplementsBotInlineResult()
+}
+
+type BotInlineResultObj struct {
+	__flagsPosition struct{}         // flags param position `validate:"required"`
+	Id              string           `validate:"required"`
+	Type            string           `validate:"required"`
+	Title           string           `flag:"1"`
+	Description     string           `flag:"2"`
+	Url             string           `flag:"3"`
+	Thumb           WebDocument      `flag:"4"`
+	Content         WebDocument      `flag:"5"`
+	SendMessage     BotInlineMessage `validate:"required"`
+}
+
+func (*BotInlineResultObj) CRC() uint32 {
+	return uint32(0x11965f3a)
+}
+
+func (*BotInlineResultObj) ImplementsBotInlineResult() {}
+
+func (e *BotInlineResultObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Title) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.Description) {
+		flag |= 1 << 2
+	}
+	if !zero.IsZeroVal(e.Url) {
+		flag |= 1 << 3
+	}
+	if !zero.IsZeroVal(e.Thumb) {
+		flag |= 1 << 4
+	}
+	if !zero.IsZeroVal(e.Content) {
+		flag |= 1 << 5
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutString(e.Id)
+	buf.PutString(e.Type)
+	if !zero.IsZeroVal(e.Title) {
+		buf.PutString(e.Title)
+	}
+	if !zero.IsZeroVal(e.Description) {
+		buf.PutString(e.Description)
+	}
+	if !zero.IsZeroVal(e.Url) {
+		buf.PutString(e.Url)
+	}
+	if !zero.IsZeroVal(e.Thumb) {
+		buf.PutRawBytes(e.Thumb.Encode())
+	}
+	if !zero.IsZeroVal(e.Content) {
+		buf.PutRawBytes(e.Content.Encode())
+	}
+	buf.PutRawBytes(e.SendMessage.Encode())
+	return buf.Result()
+}
+
+type BotInlineMediaResult struct {
+	__flagsPosition struct{}         // flags param position `validate:"required"`
+	Id              string           `validate:"required"`
+	Type            string           `validate:"required"`
+	Photo           Photo            `flag:"0"`
+	Document        Document         `flag:"1"`
+	Title           string           `flag:"2"`
+	Description     string           `flag:"3"`
+	SendMessage     BotInlineMessage `validate:"required"`
+}
+
+func (*BotInlineMediaResult) CRC() uint32 {
+	return uint32(0x17db940b)
+}
+
+func (*BotInlineMediaResult) ImplementsBotInlineResult() {}
+
+func (e *BotInlineMediaResult) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Photo) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Document) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.Title) {
+		flag |= 1 << 2
+	}
+	if !zero.IsZeroVal(e.Description) {
+		flag |= 1 << 3
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutString(e.Id)
+	buf.PutString(e.Type)
+	if !zero.IsZeroVal(e.Photo) {
+		buf.PutRawBytes(e.Photo.Encode())
+	}
+	if !zero.IsZeroVal(e.Document) {
+		buf.PutRawBytes(e.Document.Encode())
+	}
+	if !zero.IsZeroVal(e.Title) {
+		buf.PutString(e.Title)
+	}
+	if !zero.IsZeroVal(e.Description) {
+		buf.PutString(e.Description)
+	}
+	buf.PutRawBytes(e.SendMessage.Encode())
+	return buf.Result()
+}
+
+type AuthLoginToken interface {
+	serialize.TL
+	ImplementsAuthLoginToken()
+}
+
+type AuthLoginTokenObj struct {
+	Expires int32  `validate:"required"`
+	Token   []byte `validate:"required"`
+}
+
+func (*AuthLoginTokenObj) CRC() uint32 {
+	return uint32(0x629f1980)
+}
+
+func (*AuthLoginTokenObj) ImplementsAuthLoginToken() {}
+
+func (e *AuthLoginTokenObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Expires)
+	buf.PutMessage(e.Token)
+	return buf.Result()
+}
+
+type AuthLoginTokenMigrateTo struct {
+	DcId  int32  `validate:"required"`
+	Token []byte `validate:"required"`
+}
+
+func (*AuthLoginTokenMigrateTo) CRC() uint32 {
+	return uint32(0x68e9916)
+}
+
+func (*AuthLoginTokenMigrateTo) ImplementsAuthLoginToken() {}
+
+func (e *AuthLoginTokenMigrateTo) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.DcId)
+	buf.PutMessage(e.Token)
+	return buf.Result()
+}
+
+type AuthLoginTokenSuccess struct {
+	Authorization AuthAuthorization `validate:"required"`
+}
+
+func (*AuthLoginTokenSuccess) CRC() uint32 {
+	return uint32(0x390d5c5e)
+}
+
+func (*AuthLoginTokenSuccess) ImplementsAuthLoginToken() {}
+
+func (e *AuthLoginTokenSuccess) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Authorization.Encode())
+	return buf.Result()
+}
+
+type InputGeoPoint interface {
+	serialize.TL
+	ImplementsInputGeoPoint()
+}
+
+type InputGeoPointEmpty struct{}
+
+func (*InputGeoPointEmpty) CRC() uint32 {
+	return uint32(0xe4c123d6)
+}
+
+func (*InputGeoPointEmpty) ImplementsInputGeoPoint() {}
+
+func (e *InputGeoPointEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputGeoPointObj struct {
+	Lat  float64 `validate:"required"`
+	Long float64 `validate:"required"`
+}
+
+func (*InputGeoPointObj) CRC() uint32 {
+	return uint32(0xf3b7acc9)
+}
+
+func (*InputGeoPointObj) ImplementsInputGeoPoint() {}
+
+func (e *InputGeoPointObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutDouble(e.Lat)
+	buf.PutDouble(e.Long)
+	return buf.Result()
+}
+
+type MessageEntity interface {
+	serialize.TL
+	ImplementsMessageEntity()
+}
+
+type MessageEntityUnknown struct {
+	Offset int32 `validate:"required"`
+	Length int32 `validate:"required"`
+}
+
+func (*MessageEntityUnknown) CRC() uint32 {
+	return uint32(0xbb92ba95)
+}
+
+func (*MessageEntityUnknown) ImplementsMessageEntity() {}
+
+func (e *MessageEntityUnknown) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Offset)
+	buf.PutInt(e.Length)
+	return buf.Result()
+}
+
+type MessageEntityMention struct {
+	Offset int32 `validate:"required"`
+	Length int32 `validate:"required"`
+}
+
+func (*MessageEntityMention) CRC() uint32 {
+	return uint32(0xfa04579d)
+}
+
+func (*MessageEntityMention) ImplementsMessageEntity() {}
+
+func (e *MessageEntityMention) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Offset)
+	buf.PutInt(e.Length)
+	return buf.Result()
+}
+
+type MessageEntityHashtag struct {
+	Offset int32 `validate:"required"`
+	Length int32 `validate:"required"`
+}
+
+func (*MessageEntityHashtag) CRC() uint32 {
+	return uint32(0x6f635b0d)
+}
+
+func (*MessageEntityHashtag) ImplementsMessageEntity() {}
+
+func (e *MessageEntityHashtag) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Offset)
+	buf.PutInt(e.Length)
+	return buf.Result()
+}
+
+type MessageEntityBotCommand struct {
+	Offset int32 `validate:"required"`
+	Length int32 `validate:"required"`
+}
+
+func (*MessageEntityBotCommand) CRC() uint32 {
+	return uint32(0x6cef8ac7)
+}
+
+func (*MessageEntityBotCommand) ImplementsMessageEntity() {}
+
+func (e *MessageEntityBotCommand) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Offset)
+	buf.PutInt(e.Length)
+	return buf.Result()
+}
+
+type MessageEntityUrl struct {
+	Offset int32 `validate:"required"`
+	Length int32 `validate:"required"`
+}
+
+func (*MessageEntityUrl) CRC() uint32 {
+	return uint32(0x6ed02538)
+}
+
+func (*MessageEntityUrl) ImplementsMessageEntity() {}
+
+func (e *MessageEntityUrl) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Offset)
+	buf.PutInt(e.Length)
+	return buf.Result()
+}
+
+type MessageEntityEmail struct {
+	Offset int32 `validate:"required"`
+	Length int32 `validate:"required"`
+}
+
+func (*MessageEntityEmail) CRC() uint32 {
+	return uint32(0x64e475c2)
+}
+
+func (*MessageEntityEmail) ImplementsMessageEntity() {}
+
+func (e *MessageEntityEmail) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Offset)
+	buf.PutInt(e.Length)
+	return buf.Result()
+}
+
+type MessageEntityBold struct {
+	Offset int32 `validate:"required"`
+	Length int32 `validate:"required"`
+}
+
+func (*MessageEntityBold) CRC() uint32 {
+	return uint32(0xbd610bc9)
+}
+
+func (*MessageEntityBold) ImplementsMessageEntity() {}
+
+func (e *MessageEntityBold) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Offset)
+	buf.PutInt(e.Length)
+	return buf.Result()
+}
+
+type MessageEntityItalic struct {
+	Offset int32 `validate:"required"`
+	Length int32 `validate:"required"`
+}
+
+func (*MessageEntityItalic) CRC() uint32 {
+	return uint32(0x826f8b60)
+}
+
+func (*MessageEntityItalic) ImplementsMessageEntity() {}
+
+func (e *MessageEntityItalic) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Offset)
+	buf.PutInt(e.Length)
+	return buf.Result()
+}
+
+type MessageEntityCode struct {
+	Offset int32 `validate:"required"`
+	Length int32 `validate:"required"`
+}
+
+func (*MessageEntityCode) CRC() uint32 {
+	return uint32(0x28a20571)
+}
+
+func (*MessageEntityCode) ImplementsMessageEntity() {}
+
+func (e *MessageEntityCode) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Offset)
+	buf.PutInt(e.Length)
+	return buf.Result()
+}
+
+type MessageEntityPre struct {
+	Offset   int32  `validate:"required"`
+	Length   int32  `validate:"required"`
+	Language string `validate:"required"`
+}
+
+func (*MessageEntityPre) CRC() uint32 {
+	return uint32(0x73924be0)
+}
+
+func (*MessageEntityPre) ImplementsMessageEntity() {}
+
+func (e *MessageEntityPre) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Offset)
+	buf.PutInt(e.Length)
+	buf.PutString(e.Language)
+	return buf.Result()
+}
+
+type MessageEntityTextUrl struct {
+	Offset int32  `validate:"required"`
+	Length int32  `validate:"required"`
+	Url    string `validate:"required"`
+}
+
+func (*MessageEntityTextUrl) CRC() uint32 {
+	return uint32(0x76a6d327)
+}
+
+func (*MessageEntityTextUrl) ImplementsMessageEntity() {}
+
+func (e *MessageEntityTextUrl) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Offset)
+	buf.PutInt(e.Length)
+	buf.PutString(e.Url)
+	return buf.Result()
+}
+
+type MessageEntityMentionName struct {
+	Offset int32 `validate:"required"`
+	Length int32 `validate:"required"`
+	UserId int32 `validate:"required"`
+}
+
+func (*MessageEntityMentionName) CRC() uint32 {
+	return uint32(0x352dca58)
+}
+
+func (*MessageEntityMentionName) ImplementsMessageEntity() {}
+
+func (e *MessageEntityMentionName) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Offset)
+	buf.PutInt(e.Length)
+	buf.PutInt(e.UserId)
+	return buf.Result()
+}
+
+type InputMessageEntityMentionName struct {
+	Offset int32     `validate:"required"`
+	Length int32     `validate:"required"`
+	UserId InputUser `validate:"required"`
+}
+
+func (*InputMessageEntityMentionName) CRC() uint32 {
+	return uint32(0x208e68c9)
+}
+
+func (*InputMessageEntityMentionName) ImplementsMessageEntity() {}
+
+func (e *InputMessageEntityMentionName) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Offset)
+	buf.PutInt(e.Length)
+	buf.PutRawBytes(e.UserId.Encode())
+	return buf.Result()
+}
+
+type MessageEntityPhone struct {
+	Offset int32 `validate:"required"`
+	Length int32 `validate:"required"`
+}
+
+func (*MessageEntityPhone) CRC() uint32 {
+	return uint32(0x9b69e34b)
+}
+
+func (*MessageEntityPhone) ImplementsMessageEntity() {}
+
+func (e *MessageEntityPhone) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Offset)
+	buf.PutInt(e.Length)
+	return buf.Result()
+}
+
+type MessageEntityCashtag struct {
+	Offset int32 `validate:"required"`
+	Length int32 `validate:"required"`
+}
+
+func (*MessageEntityCashtag) CRC() uint32 {
+	return uint32(0x4c4e743f)
+}
+
+func (*MessageEntityCashtag) ImplementsMessageEntity() {}
+
+func (e *MessageEntityCashtag) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Offset)
+	buf.PutInt(e.Length)
+	return buf.Result()
+}
+
+type MessageEntityUnderline struct {
+	Offset int32 `validate:"required"`
+	Length int32 `validate:"required"`
+}
+
+func (*MessageEntityUnderline) CRC() uint32 {
+	return uint32(0x9c4e7e8b)
+}
+
+func (*MessageEntityUnderline) ImplementsMessageEntity() {}
+
+func (e *MessageEntityUnderline) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Offset)
+	buf.PutInt(e.Length)
+	return buf.Result()
+}
+
+type MessageEntityStrike struct {
+	Offset int32 `validate:"required"`
+	Length int32 `validate:"required"`
+}
+
+func (*MessageEntityStrike) CRC() uint32 {
+	return uint32(0xbf0693d4)
+}
+
+func (*MessageEntityStrike) ImplementsMessageEntity() {}
+
+func (e *MessageEntityStrike) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Offset)
+	buf.PutInt(e.Length)
+	return buf.Result()
+}
+
+type MessageEntityBlockquote struct {
+	Offset int32 `validate:"required"`
+	Length int32 `validate:"required"`
+}
+
+func (*MessageEntityBlockquote) CRC() uint32 {
+	return uint32(0x20df5d0)
+}
+
+func (*MessageEntityBlockquote) ImplementsMessageEntity() {}
+
+func (e *MessageEntityBlockquote) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Offset)
+	buf.PutInt(e.Length)
+	return buf.Result()
+}
+
+type MessageEntityBankCard struct {
+	Offset int32 `validate:"required"`
+	Length int32 `validate:"required"`
+}
+
+func (*MessageEntityBankCard) CRC() uint32 {
+	return uint32(0x761e6af4)
+}
+
+func (*MessageEntityBankCard) ImplementsMessageEntity() {}
+
+func (e *MessageEntityBankCard) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Offset)
+	buf.PutInt(e.Length)
+	return buf.Result()
+}
 
 type MessagesStickerSetInstallResult interface {
-	tl.Object
+	serialize.TL
 	ImplementsMessagesStickerSetInstallResult()
 }
 
@@ -7405,8 +3788,17 @@ func (*MessagesStickerSetInstallResultSuccess) CRC() uint32 {
 
 func (*MessagesStickerSetInstallResultSuccess) ImplementsMessagesStickerSetInstallResult() {}
 
+func (e *MessagesStickerSetInstallResultSuccess) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
 type MessagesStickerSetInstallResultArchive struct {
-	Sets []StickerSetCovered
+	Sets []StickerSetCovered `validate:"required"`
 }
 
 func (*MessagesStickerSetInstallResultArchive) CRC() uint32 {
@@ -7415,8 +3807,329 @@ func (*MessagesStickerSetInstallResultArchive) CRC() uint32 {
 
 func (*MessagesStickerSetInstallResultArchive) ImplementsMessagesStickerSetInstallResult() {}
 
+func (e *MessagesStickerSetInstallResultArchive) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Sets)
+	return buf.Result()
+}
+
+type HelpAppUpdate interface {
+	serialize.TL
+	ImplementsHelpAppUpdate()
+}
+
+type HelpAppUpdateObj struct {
+	__flagsPosition struct{}        // flags param position `validate:"required"`
+	CanNotSkip      bool            `flag:"0,encoded_in_bitflags"`
+	Id              int32           `validate:"required"`
+	Version         string          `validate:"required"`
+	Text            string          `validate:"required"`
+	Entities        []MessageEntity `validate:"required"`
+	Document        Document        `flag:"1"`
+	Url             string          `flag:"2"`
+}
+
+func (*HelpAppUpdateObj) CRC() uint32 {
+	return uint32(0x1da7158f)
+}
+
+func (*HelpAppUpdateObj) ImplementsHelpAppUpdate() {}
+
+func (e *HelpAppUpdateObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.CanNotSkip) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Document) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.Url) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.CanNotSkip) {
+	}
+	buf.PutInt(e.Id)
+	buf.PutString(e.Version)
+	buf.PutString(e.Text)
+	buf.PutVector(e.Entities)
+	if !zero.IsZeroVal(e.Document) {
+		buf.PutRawBytes(e.Document.Encode())
+	}
+	if !zero.IsZeroVal(e.Url) {
+		buf.PutString(e.Url)
+	}
+	return buf.Result()
+}
+
+type HelpNoAppUpdate struct{}
+
+func (*HelpNoAppUpdate) CRC() uint32 {
+	return uint32(0xc45a6536)
+}
+
+func (*HelpNoAppUpdate) ImplementsHelpAppUpdate() {}
+
+func (e *HelpNoAppUpdate) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type MessagesAllStickers interface {
+	serialize.TL
+	ImplementsMessagesAllStickers()
+}
+
+type MessagesAllStickersNotModified struct{}
+
+func (*MessagesAllStickersNotModified) CRC() uint32 {
+	return uint32(0xe86602c3)
+}
+
+func (*MessagesAllStickersNotModified) ImplementsMessagesAllStickers() {}
+
+func (e *MessagesAllStickersNotModified) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type MessagesAllStickersObj struct {
+	Hash int32         `validate:"required"`
+	Sets []*StickerSet `validate:"required"`
+}
+
+func (*MessagesAllStickersObj) CRC() uint32 {
+	return uint32(0xedfd405f)
+}
+
+func (*MessagesAllStickersObj) ImplementsMessagesAllStickers() {}
+
+func (e *MessagesAllStickersObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Hash)
+	buf.PutVector(e.Sets)
+	return buf.Result()
+}
+
+type InputDialogPeer interface {
+	serialize.TL
+	ImplementsInputDialogPeer()
+}
+
+type InputDialogPeerObj struct {
+	Peer InputPeer `validate:"required"`
+}
+
+func (*InputDialogPeerObj) CRC() uint32 {
+	return uint32(0xfcaafeb7)
+}
+
+func (*InputDialogPeerObj) ImplementsInputDialogPeer() {}
+
+func (e *InputDialogPeerObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Peer.Encode())
+	return buf.Result()
+}
+
+type InputDialogPeerFolder struct {
+	FolderId int32 `validate:"required"`
+}
+
+func (*InputDialogPeerFolder) CRC() uint32 {
+	return uint32(0x64600527)
+}
+
+func (*InputDialogPeerFolder) ImplementsInputDialogPeer() {}
+
+func (e *InputDialogPeerFolder) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.FolderId)
+	return buf.Result()
+}
+
+type InputDocument interface {
+	serialize.TL
+	ImplementsInputDocument()
+}
+
+type InputDocumentEmpty struct{}
+
+func (*InputDocumentEmpty) CRC() uint32 {
+	return uint32(0x72f0eaae)
+}
+
+func (*InputDocumentEmpty) ImplementsInputDocument() {}
+
+func (e *InputDocumentEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputDocumentObj struct {
+	Id            int64  `validate:"required"`
+	AccessHash    int64  `validate:"required"`
+	FileReference []byte `validate:"required"`
+}
+
+func (*InputDocumentObj) CRC() uint32 {
+	return uint32(0x1abfb575)
+}
+
+func (*InputDocumentObj) ImplementsInputDocument() {}
+
+func (e *InputDocumentObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutLong(e.AccessHash)
+	buf.PutMessage(e.FileReference)
+	return buf.Result()
+}
+
+type WallPaper interface {
+	serialize.TL
+	ImplementsWallPaper()
+}
+
+type WallPaperObj struct {
+	Id              int64              `validate:"required"`
+	__flagsPosition struct{}           // flags param position `validate:"required"`
+	Creator         bool               `flag:"0,encoded_in_bitflags"`
+	Default         bool               `flag:"1,encoded_in_bitflags"`
+	Pattern         bool               `flag:"3,encoded_in_bitflags"`
+	Dark            bool               `flag:"4,encoded_in_bitflags"`
+	AccessHash      int64              `validate:"required"`
+	Slug            string             `validate:"required"`
+	Document        Document           `validate:"required"`
+	Settings        *WallPaperSettings `flag:"2"`
+}
+
+func (*WallPaperObj) CRC() uint32 {
+	return uint32(0xa437c3ed)
+}
+
+func (*WallPaperObj) ImplementsWallPaper() {}
+
+func (e *WallPaperObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Creator) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Default) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.Settings) {
+		flag |= 1 << 2
+	}
+	if !zero.IsZeroVal(e.Pattern) {
+		flag |= 1 << 3
+	}
+	if !zero.IsZeroVal(e.Dark) {
+		flag |= 1 << 4
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Creator) {
+	}
+	if !zero.IsZeroVal(e.Default) {
+	}
+	if !zero.IsZeroVal(e.Pattern) {
+	}
+	if !zero.IsZeroVal(e.Dark) {
+	}
+	buf.PutLong(e.AccessHash)
+	buf.PutString(e.Slug)
+	buf.PutRawBytes(e.Document.Encode())
+	if !zero.IsZeroVal(e.Settings) {
+		buf.PutRawBytes(e.Settings.Encode())
+	}
+	return buf.Result()
+}
+
+type WallPaperNoFile struct {
+	__flagsPosition struct{}           // flags param position `validate:"required"`
+	Default         bool               `flag:"1,encoded_in_bitflags"`
+	Dark            bool               `flag:"4,encoded_in_bitflags"`
+	Settings        *WallPaperSettings `flag:"2"`
+}
+
+func (*WallPaperNoFile) CRC() uint32 {
+	return uint32(0x8af40b25)
+}
+
+func (*WallPaperNoFile) ImplementsWallPaper() {}
+
+func (e *WallPaperNoFile) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Default) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.Settings) {
+		flag |= 1 << 2
+	}
+	if !zero.IsZeroVal(e.Dark) {
+		flag |= 1 << 4
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Default) {
+	}
+	if !zero.IsZeroVal(e.Dark) {
+	}
+	if !zero.IsZeroVal(e.Settings) {
+		buf.PutRawBytes(e.Settings.Encode())
+	}
+	return buf.Result()
+}
+
 type MessagesStickers interface {
-	tl.Object
+	serialize.TL
 	ImplementsMessagesStickers()
 }
 
@@ -7428,9 +4141,18 @@ func (*MessagesStickersNotModified) CRC() uint32 {
 
 func (*MessagesStickersNotModified) ImplementsMessagesStickers() {}
 
+func (e *MessagesStickersNotModified) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
 type MessagesStickersObj struct {
-	Hash     int32
-	Stickers []Document
+	Hash     int32      `validate:"required"`
+	Stickers []Document `validate:"required"`
 }
 
 func (*MessagesStickersObj) CRC() uint32 {
@@ -7439,200 +4161,2094 @@ func (*MessagesStickersObj) CRC() uint32 {
 
 func (*MessagesStickersObj) ImplementsMessagesStickers() {}
 
-type PaymentsPaymentResult interface {
-	tl.Object
-	ImplementsPaymentsPaymentResult()
+func (e *MessagesStickersObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Hash)
+	buf.PutVector(e.Stickers)
+	return buf.Result()
 }
 
-type PaymentsPaymentResultObj struct {
-	Updates Updates
+type AccountThemes interface {
+	serialize.TL
+	ImplementsAccountThemes()
 }
 
-func (*PaymentsPaymentResultObj) CRC() uint32 {
-	return uint32(0x4e5f810d)
+type AccountThemesNotModified struct{}
+
+func (*AccountThemesNotModified) CRC() uint32 {
+	return uint32(0xf41eb622)
 }
 
-func (*PaymentsPaymentResultObj) ImplementsPaymentsPaymentResult() {}
+func (*AccountThemesNotModified) ImplementsAccountThemes() {}
 
-type PaymentsPaymentVerificationNeeded struct {
-	Url string
+func (e *AccountThemesNotModified) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
 }
 
-func (*PaymentsPaymentVerificationNeeded) CRC() uint32 {
-	return uint32(0xd8411139)
+type AccountThemesObj struct {
+	Hash   int32    `validate:"required"`
+	Themes []*Theme `validate:"required"`
 }
 
-func (*PaymentsPaymentVerificationNeeded) ImplementsPaymentsPaymentResult() {}
-
-type PhotosPhotos interface {
-	tl.Object
-	ImplementsPhotosPhotos()
+func (*AccountThemesObj) CRC() uint32 {
+	return uint32(0x7f676421)
 }
 
-type PhotosPhotosObj struct {
-	Photos []Photo
-	Users  []User
+func (*AccountThemesObj) ImplementsAccountThemes() {}
+
+func (e *AccountThemesObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Hash)
+	buf.PutVector(e.Themes)
+	return buf.Result()
 }
 
-func (*PhotosPhotosObj) CRC() uint32 {
-	return uint32(0x8dca6aa5)
+type SecureRequiredType interface {
+	serialize.TL
+	ImplementsSecureRequiredType()
 }
 
-func (*PhotosPhotosObj) ImplementsPhotosPhotos() {}
-
-type PhotosPhotosSlice struct {
-	Count  int32
-	Photos []Photo
-	Users  []User
+type SecureRequiredTypeObj struct {
+	__flagsPosition     struct{}        // flags param position `validate:"required"`
+	NativeNames         bool            `flag:"0,encoded_in_bitflags"`
+	SelfieRequired      bool            `flag:"1,encoded_in_bitflags"`
+	TranslationRequired bool            `flag:"2,encoded_in_bitflags"`
+	Type                SecureValueType `validate:"required"`
 }
 
-func (*PhotosPhotosSlice) CRC() uint32 {
-	return uint32(0x15051f54)
+func (*SecureRequiredTypeObj) CRC() uint32 {
+	return uint32(0x829d99da)
 }
 
-func (*PhotosPhotosSlice) ImplementsPhotosPhotos() {}
+func (*SecureRequiredTypeObj) ImplementsSecureRequiredType() {}
 
-type UpdatesChannelDifference interface {
-	tl.Object
-	ImplementsUpdatesChannelDifference()
+func (e *SecureRequiredTypeObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.NativeNames) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.SelfieRequired) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.TranslationRequired) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.NativeNames) {
+	}
+	if !zero.IsZeroVal(e.SelfieRequired) {
+	}
+	if !zero.IsZeroVal(e.TranslationRequired) {
+	}
+	buf.PutRawBytes(e.Type.Encode())
+	return buf.Result()
 }
 
-type UpdatesChannelDifferenceEmpty struct {
-	// flags position
-	Final   bool `tl:"flag:0,encoded_in_bitflags"`
-	Pts     int32
-	Timeout int32 `tl:"flag:1"`
+type SecureRequiredTypeOneOf struct {
+	Types []SecureRequiredType `validate:"required"`
 }
 
-func (*UpdatesChannelDifferenceEmpty) CRC() uint32 {
-	return uint32(0x3e11affb)
+func (*SecureRequiredTypeOneOf) CRC() uint32 {
+	return uint32(0x27477b4)
 }
 
-func (*UpdatesChannelDifferenceEmpty) ImplementsUpdatesChannelDifference() {}
+func (*SecureRequiredTypeOneOf) ImplementsSecureRequiredType() {}
 
-type UpdatesChannelDifferenceTooLong struct {
-	// flags position
-	Final    bool  `tl:"flag:0,encoded_in_bitflags"`
-	Timeout  int32 `tl:"flag:1"`
-	Dialog   Dialog
-	Messages []Message
-	Chats    []Chat
-	Users    []User
+func (e *SecureRequiredTypeOneOf) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Types)
+	return buf.Result()
 }
 
-func (*UpdatesChannelDifferenceTooLong) CRC() uint32 {
-	return uint32(0xa4bcc6fe)
+type ChatParticipant interface {
+	serialize.TL
+	ImplementsChatParticipant()
 }
 
-func (*UpdatesChannelDifferenceTooLong) ImplementsUpdatesChannelDifference() {}
-
-type UpdatesChannelDifferenceObj struct {
-	// flags position
-	Final        bool `tl:"flag:0,encoded_in_bitflags"`
-	Pts          int32
-	Timeout      int32 `tl:"flag:1"`
-	NewMessages  []Message
-	OtherUpdates []Update
-	Chats        []Chat
-	Users        []User
+type ChatParticipantObj struct {
+	UserId    int32 `validate:"required"`
+	InviterId int32 `validate:"required"`
+	Date      int32 `validate:"required"`
 }
 
-func (*UpdatesChannelDifferenceObj) CRC() uint32 {
-	return uint32(0x2064674e)
+func (*ChatParticipantObj) CRC() uint32 {
+	return uint32(0xc8d7493e)
 }
 
-func (*UpdatesChannelDifferenceObj) ImplementsUpdatesChannelDifference() {}
+func (*ChatParticipantObj) ImplementsChatParticipant() {}
 
-type UpdatesDifference interface {
-	tl.Object
-	ImplementsUpdatesDifference()
+func (e *ChatParticipantObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.UserId)
+	buf.PutInt(e.InviterId)
+	buf.PutInt(e.Date)
+	return buf.Result()
 }
 
-type UpdatesDifferenceEmpty struct {
-	Date int32
-	Seq  int32
+type ChatParticipantCreator struct {
+	UserId int32 `validate:"required"`
 }
 
-func (*UpdatesDifferenceEmpty) CRC() uint32 {
-	return uint32(0x5d75a138)
+func (*ChatParticipantCreator) CRC() uint32 {
+	return uint32(0xda13538a)
 }
 
-func (*UpdatesDifferenceEmpty) ImplementsUpdatesDifference() {}
+func (*ChatParticipantCreator) ImplementsChatParticipant() {}
 
-type UpdatesDifferenceObj struct {
-	NewMessages          []Message
-	NewEncryptedMessages []EncryptedMessage
-	OtherUpdates         []Update
-	Chats                []Chat
-	Users                []User
-	State                *UpdatesState
+func (e *ChatParticipantCreator) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.UserId)
+	return buf.Result()
 }
 
-func (*UpdatesDifferenceObj) CRC() uint32 {
-	return uint32(0xf49ca0)
+type ChatParticipantAdmin struct {
+	UserId    int32 `validate:"required"`
+	InviterId int32 `validate:"required"`
+	Date      int32 `validate:"required"`
 }
 
-func (*UpdatesDifferenceObj) ImplementsUpdatesDifference() {}
-
-type UpdatesDifferenceSlice struct {
-	NewMessages          []Message
-	NewEncryptedMessages []EncryptedMessage
-	OtherUpdates         []Update
-	Chats                []Chat
-	Users                []User
-	IntermediateState    *UpdatesState
+func (*ChatParticipantAdmin) CRC() uint32 {
+	return uint32(0xe2d6e436)
 }
 
-func (*UpdatesDifferenceSlice) CRC() uint32 {
-	return uint32(0xa8fb1981)
+func (*ChatParticipantAdmin) ImplementsChatParticipant() {}
+
+func (e *ChatParticipantAdmin) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.UserId)
+	buf.PutInt(e.InviterId)
+	buf.PutInt(e.Date)
+	return buf.Result()
 }
 
-func (*UpdatesDifferenceSlice) ImplementsUpdatesDifference() {}
-
-type UpdatesDifferenceTooLong struct {
-	Pts int32
+type HelpPassportConfig interface {
+	serialize.TL
+	ImplementsHelpPassportConfig()
 }
 
-func (*UpdatesDifferenceTooLong) CRC() uint32 {
-	return uint32(0x4afe8f6d)
+type HelpPassportConfigNotModified struct{}
+
+func (*HelpPassportConfigNotModified) CRC() uint32 {
+	return uint32(0xbfb9f457)
 }
 
-func (*UpdatesDifferenceTooLong) ImplementsUpdatesDifference() {}
+func (*HelpPassportConfigNotModified) ImplementsHelpPassportConfig() {}
 
-type UploadCdnFile interface {
-	tl.Object
-	ImplementsUploadCdnFile()
+func (e *HelpPassportConfigNotModified) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
 }
 
-type UploadCdnFileReuploadNeeded struct {
-	RequestToken []byte
+type HelpPassportConfigObj struct {
+	Hash           int32     `validate:"required"`
+	CountriesLangs *DataJSON `validate:"required"`
 }
 
-func (*UploadCdnFileReuploadNeeded) CRC() uint32 {
-	return uint32(0xeea8e46e)
+func (*HelpPassportConfigObj) CRC() uint32 {
+	return uint32(0xa098d6af)
 }
 
-func (*UploadCdnFileReuploadNeeded) ImplementsUploadCdnFile() {}
+func (*HelpPassportConfigObj) ImplementsHelpPassportConfig() {}
 
-type UploadCdnFileObj struct {
-	Bytes []byte
+func (e *HelpPassportConfigObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Hash)
+	buf.PutRawBytes(e.CountriesLangs.Encode())
+	return buf.Result()
 }
 
-func (*UploadCdnFileObj) CRC() uint32 {
-	return uint32(0xa99fca4f)
+type InputMedia interface {
+	serialize.TL
+	ImplementsInputMedia()
 }
 
-func (*UploadCdnFileObj) ImplementsUploadCdnFile() {}
+type InputMediaEmpty struct{}
+
+func (*InputMediaEmpty) CRC() uint32 {
+	return uint32(0x9664f57f)
+}
+
+func (*InputMediaEmpty) ImplementsInputMedia() {}
+
+func (e *InputMediaEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputMediaUploadedPhoto struct {
+	__flagsPosition struct{}        // flags param position `validate:"required"`
+	File            InputFile       `validate:"required"`
+	Stickers        []InputDocument `flag:"0"`
+	TtlSeconds      int32           `flag:"1"`
+}
+
+func (*InputMediaUploadedPhoto) CRC() uint32 {
+	return uint32(0x1e287d04)
+}
+
+func (*InputMediaUploadedPhoto) ImplementsInputMedia() {}
+
+func (e *InputMediaUploadedPhoto) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Stickers) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.TtlSeconds) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutRawBytes(e.File.Encode())
+	if !zero.IsZeroVal(e.Stickers) {
+		buf.PutVector(e.Stickers)
+	}
+	if !zero.IsZeroVal(e.TtlSeconds) {
+		buf.PutInt(e.TtlSeconds)
+	}
+	return buf.Result()
+}
+
+type InputMediaPhoto struct {
+	__flagsPosition struct{}   // flags param position `validate:"required"`
+	Id              InputPhoto `validate:"required"`
+	TtlSeconds      int32      `flag:"0"`
+}
+
+func (*InputMediaPhoto) CRC() uint32 {
+	return uint32(0xb3ba0635)
+}
+
+func (*InputMediaPhoto) ImplementsInputMedia() {}
+
+func (e *InputMediaPhoto) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.TtlSeconds) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutRawBytes(e.Id.Encode())
+	if !zero.IsZeroVal(e.TtlSeconds) {
+		buf.PutInt(e.TtlSeconds)
+	}
+	return buf.Result()
+}
+
+type InputMediaGeoPoint struct {
+	GeoPoint InputGeoPoint `validate:"required"`
+}
+
+func (*InputMediaGeoPoint) CRC() uint32 {
+	return uint32(0xf9c44144)
+}
+
+func (*InputMediaGeoPoint) ImplementsInputMedia() {}
+
+func (e *InputMediaGeoPoint) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.GeoPoint.Encode())
+	return buf.Result()
+}
+
+type InputMediaContact struct {
+	PhoneNumber string `validate:"required"`
+	FirstName   string `validate:"required"`
+	LastName    string `validate:"required"`
+	Vcard       string `validate:"required"`
+}
+
+func (*InputMediaContact) CRC() uint32 {
+	return uint32(0xf8ab7dfb)
+}
+
+func (*InputMediaContact) ImplementsInputMedia() {}
+
+func (e *InputMediaContact) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.PhoneNumber)
+	buf.PutString(e.FirstName)
+	buf.PutString(e.LastName)
+	buf.PutString(e.Vcard)
+	return buf.Result()
+}
+
+type InputMediaUploadedDocument struct {
+	__flagsPosition struct{}            // flags param position `validate:"required"`
+	NosoundVideo    bool                `flag:"3,encoded_in_bitflags"`
+	ForceFile       bool                `flag:"4,encoded_in_bitflags"`
+	File            InputFile           `validate:"required"`
+	Thumb           InputFile           `flag:"2"`
+	MimeType        string              `validate:"required"`
+	Attributes      []DocumentAttribute `validate:"required"`
+	Stickers        []InputDocument     `flag:"0"`
+	TtlSeconds      int32               `flag:"1"`
+}
+
+func (*InputMediaUploadedDocument) CRC() uint32 {
+	return uint32(0x5b38c6c1)
+}
+
+func (*InputMediaUploadedDocument) ImplementsInputMedia() {}
+
+func (e *InputMediaUploadedDocument) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Stickers) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.TtlSeconds) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.Thumb) {
+		flag |= 1 << 2
+	}
+	if !zero.IsZeroVal(e.NosoundVideo) {
+		flag |= 1 << 3
+	}
+	if !zero.IsZeroVal(e.ForceFile) {
+		flag |= 1 << 4
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.NosoundVideo) {
+	}
+	if !zero.IsZeroVal(e.ForceFile) {
+	}
+	buf.PutRawBytes(e.File.Encode())
+	if !zero.IsZeroVal(e.Thumb) {
+		buf.PutRawBytes(e.Thumb.Encode())
+	}
+	buf.PutString(e.MimeType)
+	buf.PutVector(e.Attributes)
+	if !zero.IsZeroVal(e.Stickers) {
+		buf.PutVector(e.Stickers)
+	}
+	if !zero.IsZeroVal(e.TtlSeconds) {
+		buf.PutInt(e.TtlSeconds)
+	}
+	return buf.Result()
+}
+
+type InputMediaDocument struct {
+	__flagsPosition struct{}      // flags param position `validate:"required"`
+	Id              InputDocument `validate:"required"`
+	TtlSeconds      int32         `flag:"0"`
+}
+
+func (*InputMediaDocument) CRC() uint32 {
+	return uint32(0x23ab23d2)
+}
+
+func (*InputMediaDocument) ImplementsInputMedia() {}
+
+func (e *InputMediaDocument) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.TtlSeconds) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutRawBytes(e.Id.Encode())
+	if !zero.IsZeroVal(e.TtlSeconds) {
+		buf.PutInt(e.TtlSeconds)
+	}
+	return buf.Result()
+}
+
+type InputMediaVenue struct {
+	GeoPoint  InputGeoPoint `validate:"required"`
+	Title     string        `validate:"required"`
+	Address   string        `validate:"required"`
+	Provider  string        `validate:"required"`
+	VenueId   string        `validate:"required"`
+	VenueType string        `validate:"required"`
+}
+
+func (*InputMediaVenue) CRC() uint32 {
+	return uint32(0xc13d1c11)
+}
+
+func (*InputMediaVenue) ImplementsInputMedia() {}
+
+func (e *InputMediaVenue) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.GeoPoint.Encode())
+	buf.PutString(e.Title)
+	buf.PutString(e.Address)
+	buf.PutString(e.Provider)
+	buf.PutString(e.VenueId)
+	buf.PutString(e.VenueType)
+	return buf.Result()
+}
+
+type InputMediaPhotoExternal struct {
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	Url             string   `validate:"required"`
+	TtlSeconds      int32    `flag:"0"`
+}
+
+func (*InputMediaPhotoExternal) CRC() uint32 {
+	return uint32(0xe5bbfe1a)
+}
+
+func (*InputMediaPhotoExternal) ImplementsInputMedia() {}
+
+func (e *InputMediaPhotoExternal) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.TtlSeconds) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutString(e.Url)
+	if !zero.IsZeroVal(e.TtlSeconds) {
+		buf.PutInt(e.TtlSeconds)
+	}
+	return buf.Result()
+}
+
+type InputMediaDocumentExternal struct {
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	Url             string   `validate:"required"`
+	TtlSeconds      int32    `flag:"0"`
+}
+
+func (*InputMediaDocumentExternal) CRC() uint32 {
+	return uint32(0xfb52dc99)
+}
+
+func (*InputMediaDocumentExternal) ImplementsInputMedia() {}
+
+func (e *InputMediaDocumentExternal) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.TtlSeconds) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutString(e.Url)
+	if !zero.IsZeroVal(e.TtlSeconds) {
+		buf.PutInt(e.TtlSeconds)
+	}
+	return buf.Result()
+}
+
+type InputMediaGame struct {
+	Id InputGame `validate:"required"`
+}
+
+func (*InputMediaGame) CRC() uint32 {
+	return uint32(0xd33f43f3)
+}
+
+func (*InputMediaGame) ImplementsInputMedia() {}
+
+func (e *InputMediaGame) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Id.Encode())
+	return buf.Result()
+}
+
+type InputMediaInvoice struct {
+	__flagsPosition struct{}          // flags param position `validate:"required"`
+	Title           string            `validate:"required"`
+	Description     string            `validate:"required"`
+	Photo           *InputWebDocument `flag:"0"`
+	Invoice         *Invoice          `validate:"required"`
+	Payload         []byte            `validate:"required"`
+	Provider        string            `validate:"required"`
+	ProviderData    *DataJSON         `validate:"required"`
+	StartParam      string            `validate:"required"`
+}
+
+func (*InputMediaInvoice) CRC() uint32 {
+	return uint32(0xf4e096c3)
+}
+
+func (*InputMediaInvoice) ImplementsInputMedia() {}
+
+func (e *InputMediaInvoice) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Photo) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutString(e.Title)
+	buf.PutString(e.Description)
+	if !zero.IsZeroVal(e.Photo) {
+		buf.PutRawBytes(e.Photo.Encode())
+	}
+	buf.PutRawBytes(e.Invoice.Encode())
+	buf.PutMessage(e.Payload)
+	buf.PutString(e.Provider)
+	buf.PutRawBytes(e.ProviderData.Encode())
+	buf.PutString(e.StartParam)
+	return buf.Result()
+}
+
+type InputMediaGeoLive struct {
+	__flagsPosition struct{}      // flags param position `validate:"required"`
+	Stopped         bool          `flag:"0,encoded_in_bitflags"`
+	GeoPoint        InputGeoPoint `validate:"required"`
+	Period          int32         `flag:"1"`
+}
+
+func (*InputMediaGeoLive) CRC() uint32 {
+	return uint32(0xce4e82fd)
+}
+
+func (*InputMediaGeoLive) ImplementsInputMedia() {}
+
+func (e *InputMediaGeoLive) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Stopped) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Period) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Stopped) {
+	}
+	buf.PutRawBytes(e.GeoPoint.Encode())
+	if !zero.IsZeroVal(e.Period) {
+		buf.PutInt(e.Period)
+	}
+	return buf.Result()
+}
+
+type InputMediaPoll struct {
+	__flagsPosition  struct{}        // flags param position `validate:"required"`
+	Poll             *Poll           `validate:"required"`
+	CorrectAnswers   [][]byte        `flag:"0"`
+	Solution         string          `flag:"1"`
+	SolutionEntities []MessageEntity `flag:"1"`
+}
+
+func (*InputMediaPoll) CRC() uint32 {
+	return uint32(0xf94e5f1)
+}
+
+func (*InputMediaPoll) ImplementsInputMedia() {}
+
+func (e *InputMediaPoll) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.CorrectAnswers) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Solution) || !zero.IsZeroVal(e.SolutionEntities) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutRawBytes(e.Poll.Encode())
+	if !zero.IsZeroVal(e.CorrectAnswers) {
+		buf.PutVector(e.CorrectAnswers)
+	}
+	if !zero.IsZeroVal(e.Solution) {
+		buf.PutString(e.Solution)
+	}
+	if !zero.IsZeroVal(e.SolutionEntities) {
+		buf.PutVector(e.SolutionEntities)
+	}
+	return buf.Result()
+}
+
+type InputMediaDice struct {
+	Emoticon string `validate:"required"`
+}
+
+func (*InputMediaDice) CRC() uint32 {
+	return uint32(0xe66fbf7b)
+}
+
+func (*InputMediaDice) ImplementsInputMedia() {}
+
+func (e *InputMediaDice) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Emoticon)
+	return buf.Result()
+}
+
+type MessagesMessages interface {
+	serialize.TL
+	ImplementsMessagesMessages()
+}
+
+type MessagesMessagesObj struct {
+	Messages []Message `validate:"required"`
+	Chats    []Chat    `validate:"required"`
+	Users    []User    `validate:"required"`
+}
+
+func (*MessagesMessagesObj) CRC() uint32 {
+	return uint32(0x8c718e87)
+}
+
+func (*MessagesMessagesObj) ImplementsMessagesMessages() {}
+
+func (e *MessagesMessagesObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Messages)
+	buf.PutVector(e.Chats)
+	buf.PutVector(e.Users)
+	return buf.Result()
+}
+
+type MessagesMessagesSlice struct {
+	__flagsPosition struct{}  // flags param position `validate:"required"`
+	Inexact         bool      `flag:"1,encoded_in_bitflags"`
+	Count           int32     `validate:"required"`
+	NextRate        int32     `flag:"0"`
+	Messages        []Message `validate:"required"`
+	Chats           []Chat    `validate:"required"`
+	Users           []User    `validate:"required"`
+}
+
+func (*MessagesMessagesSlice) CRC() uint32 {
+	return uint32(0xc8edce1e)
+}
+
+func (*MessagesMessagesSlice) ImplementsMessagesMessages() {}
+
+func (e *MessagesMessagesSlice) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.NextRate) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Inexact) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Inexact) {
+	}
+	buf.PutInt(e.Count)
+	if !zero.IsZeroVal(e.NextRate) {
+		buf.PutInt(e.NextRate)
+	}
+	buf.PutVector(e.Messages)
+	buf.PutVector(e.Chats)
+	buf.PutVector(e.Users)
+	return buf.Result()
+}
+
+type MessagesChannelMessages struct {
+	__flagsPosition struct{}  // flags param position `validate:"required"`
+	Inexact         bool      `flag:"1,encoded_in_bitflags"`
+	Pts             int32     `validate:"required"`
+	Count           int32     `validate:"required"`
+	Messages        []Message `validate:"required"`
+	Chats           []Chat    `validate:"required"`
+	Users           []User    `validate:"required"`
+}
+
+func (*MessagesChannelMessages) CRC() uint32 {
+	return uint32(0x99262e37)
+}
+
+func (*MessagesChannelMessages) ImplementsMessagesMessages() {}
+
+func (e *MessagesChannelMessages) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Inexact) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Inexact) {
+	}
+	buf.PutInt(e.Pts)
+	buf.PutInt(e.Count)
+	buf.PutVector(e.Messages)
+	buf.PutVector(e.Chats)
+	buf.PutVector(e.Users)
+	return buf.Result()
+}
+
+type MessagesMessagesNotModified struct {
+	Count int32 `validate:"required"`
+}
+
+func (*MessagesMessagesNotModified) CRC() uint32 {
+	return uint32(0x74535f21)
+}
+
+func (*MessagesMessagesNotModified) ImplementsMessagesMessages() {}
+
+func (e *MessagesMessagesNotModified) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Count)
+	return buf.Result()
+}
+
+type InputCheckPasswordSRP interface {
+	serialize.TL
+	ImplementsInputCheckPasswordSRP()
+}
+
+type InputCheckPasswordEmpty struct{}
+
+func (*InputCheckPasswordEmpty) CRC() uint32 {
+	return uint32(0x9880f658)
+}
+
+func (*InputCheckPasswordEmpty) ImplementsInputCheckPasswordSRP() {}
+
+func (e *InputCheckPasswordEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputCheckPasswordSRPObj struct {
+	SrpId int64  `validate:"required"`
+	A     []byte `validate:"required"`
+	M1    []byte `validate:"required"`
+}
+
+func (*InputCheckPasswordSRPObj) CRC() uint32 {
+	return uint32(0xd27ff082)
+}
+
+func (*InputCheckPasswordSRPObj) ImplementsInputCheckPasswordSRP() {}
+
+func (e *InputCheckPasswordSRPObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.SrpId)
+	buf.PutMessage(e.A)
+	buf.PutMessage(e.M1)
+	return buf.Result()
+}
+
+type InputPhoto interface {
+	serialize.TL
+	ImplementsInputPhoto()
+}
+
+type InputPhotoEmpty struct{}
+
+func (*InputPhotoEmpty) CRC() uint32 {
+	return uint32(0x1cd7bf0d)
+}
+
+func (*InputPhotoEmpty) ImplementsInputPhoto() {}
+
+func (e *InputPhotoEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputPhotoObj struct {
+	Id            int64  `validate:"required"`
+	AccessHash    int64  `validate:"required"`
+	FileReference []byte `validate:"required"`
+}
+
+func (*InputPhotoObj) CRC() uint32 {
+	return uint32(0x3bb3b94a)
+}
+
+func (*InputPhotoObj) ImplementsInputPhoto() {}
+
+func (e *InputPhotoObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutLong(e.AccessHash)
+	buf.PutMessage(e.FileReference)
+	return buf.Result()
+}
+
+type UserProfilePhoto interface {
+	serialize.TL
+	ImplementsUserProfilePhoto()
+}
+
+type UserProfilePhotoEmpty struct{}
+
+func (*UserProfilePhotoEmpty) CRC() uint32 {
+	return uint32(0x4f11bae1)
+}
+
+func (*UserProfilePhotoEmpty) ImplementsUserProfilePhoto() {}
+
+func (e *UserProfilePhotoEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type UserProfilePhotoObj struct {
+	__flagsPosition struct{}      // flags param position `validate:"required"`
+	HasVideo        bool          `flag:"0,encoded_in_bitflags"`
+	PhotoId         int64         `validate:"required"`
+	PhotoSmall      *FileLocation `validate:"required"`
+	PhotoBig        *FileLocation `validate:"required"`
+	DcId            int32         `validate:"required"`
+}
+
+func (*UserProfilePhotoObj) CRC() uint32 {
+	return uint32(0x69d3ab26)
+}
+
+func (*UserProfilePhotoObj) ImplementsUserProfilePhoto() {}
+
+func (e *UserProfilePhotoObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.HasVideo) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.HasVideo) {
+	}
+	buf.PutLong(e.PhotoId)
+	buf.PutRawBytes(e.PhotoSmall.Encode())
+	buf.PutRawBytes(e.PhotoBig.Encode())
+	buf.PutInt(e.DcId)
+	return buf.Result()
+}
+
+type UserStatus interface {
+	serialize.TL
+	ImplementsUserStatus()
+}
+
+type UserStatusEmpty struct{}
+
+func (*UserStatusEmpty) CRC() uint32 {
+	return uint32(0x9d05049)
+}
+
+func (*UserStatusEmpty) ImplementsUserStatus() {}
+
+func (e *UserStatusEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type UserStatusOnline struct {
+	Expires int32 `validate:"required"`
+}
+
+func (*UserStatusOnline) CRC() uint32 {
+	return uint32(0xedb93949)
+}
+
+func (*UserStatusOnline) ImplementsUserStatus() {}
+
+func (e *UserStatusOnline) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Expires)
+	return buf.Result()
+}
+
+type UserStatusOffline struct {
+	WasOnline int32 `validate:"required"`
+}
+
+func (*UserStatusOffline) CRC() uint32 {
+	return uint32(0x8c703f)
+}
+
+func (*UserStatusOffline) ImplementsUserStatus() {}
+
+func (e *UserStatusOffline) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.WasOnline)
+	return buf.Result()
+}
+
+type UserStatusRecently struct{}
+
+func (*UserStatusRecently) CRC() uint32 {
+	return uint32(0xe26f42f1)
+}
+
+func (*UserStatusRecently) ImplementsUserStatus() {}
+
+func (e *UserStatusRecently) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type UserStatusLastWeek struct{}
+
+func (*UserStatusLastWeek) CRC() uint32 {
+	return uint32(0x7bf09fc)
+}
+
+func (*UserStatusLastWeek) ImplementsUserStatus() {}
+
+func (e *UserStatusLastWeek) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type UserStatusLastMonth struct{}
+
+func (*UserStatusLastMonth) CRC() uint32 {
+	return uint32(0x77ebc742)
+}
+
+func (*UserStatusLastMonth) ImplementsUserStatus() {}
+
+func (e *UserStatusLastMonth) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type PhoneCall interface {
+	serialize.TL
+	ImplementsPhoneCall()
+}
+
+type PhoneCallEmpty struct {
+	Id int64 `validate:"required"`
+}
+
+func (*PhoneCallEmpty) CRC() uint32 {
+	return uint32(0x5366c915)
+}
+
+func (*PhoneCallEmpty) ImplementsPhoneCall() {}
+
+func (e *PhoneCallEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	return buf.Result()
+}
+
+type PhoneCallWaiting struct {
+	__flagsPosition struct{}           // flags param position `validate:"required"`
+	Video           bool               `flag:"6,encoded_in_bitflags"`
+	Id              int64              `validate:"required"`
+	AccessHash      int64              `validate:"required"`
+	Date            int32              `validate:"required"`
+	AdminId         int32              `validate:"required"`
+	ParticipantId   int32              `validate:"required"`
+	Protocol        *PhoneCallProtocol `validate:"required"`
+	ReceiveDate     int32              `flag:"0"`
+}
+
+func (*PhoneCallWaiting) CRC() uint32 {
+	return uint32(0x1b8f4ad1)
+}
+
+func (*PhoneCallWaiting) ImplementsPhoneCall() {}
+
+func (e *PhoneCallWaiting) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.ReceiveDate) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Video) {
+		flag |= 1 << 6
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Video) {
+	}
+	buf.PutLong(e.Id)
+	buf.PutLong(e.AccessHash)
+	buf.PutInt(e.Date)
+	buf.PutInt(e.AdminId)
+	buf.PutInt(e.ParticipantId)
+	buf.PutRawBytes(e.Protocol.Encode())
+	if !zero.IsZeroVal(e.ReceiveDate) {
+		buf.PutInt(e.ReceiveDate)
+	}
+	return buf.Result()
+}
+
+type PhoneCallRequested struct {
+	__flagsPosition struct{}           // flags param position `validate:"required"`
+	Video           bool               `flag:"6,encoded_in_bitflags"`
+	Id              int64              `validate:"required"`
+	AccessHash      int64              `validate:"required"`
+	Date            int32              `validate:"required"`
+	AdminId         int32              `validate:"required"`
+	ParticipantId   int32              `validate:"required"`
+	GAHash          []byte             `validate:"required"`
+	Protocol        *PhoneCallProtocol `validate:"required"`
+}
+
+func (*PhoneCallRequested) CRC() uint32 {
+	return uint32(0x87eabb53)
+}
+
+func (*PhoneCallRequested) ImplementsPhoneCall() {}
+
+func (e *PhoneCallRequested) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Video) {
+		flag |= 1 << 6
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Video) {
+	}
+	buf.PutLong(e.Id)
+	buf.PutLong(e.AccessHash)
+	buf.PutInt(e.Date)
+	buf.PutInt(e.AdminId)
+	buf.PutInt(e.ParticipantId)
+	buf.PutMessage(e.GAHash)
+	buf.PutRawBytes(e.Protocol.Encode())
+	return buf.Result()
+}
+
+type PhoneCallAccepted struct {
+	__flagsPosition struct{}           // flags param position `validate:"required"`
+	Video           bool               `flag:"6,encoded_in_bitflags"`
+	Id              int64              `validate:"required"`
+	AccessHash      int64              `validate:"required"`
+	Date            int32              `validate:"required"`
+	AdminId         int32              `validate:"required"`
+	ParticipantId   int32              `validate:"required"`
+	GB              []byte             `validate:"required"`
+	Protocol        *PhoneCallProtocol `validate:"required"`
+}
+
+func (*PhoneCallAccepted) CRC() uint32 {
+	return uint32(0x997c454a)
+}
+
+func (*PhoneCallAccepted) ImplementsPhoneCall() {}
+
+func (e *PhoneCallAccepted) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Video) {
+		flag |= 1 << 6
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Video) {
+	}
+	buf.PutLong(e.Id)
+	buf.PutLong(e.AccessHash)
+	buf.PutInt(e.Date)
+	buf.PutInt(e.AdminId)
+	buf.PutInt(e.ParticipantId)
+	buf.PutMessage(e.GB)
+	buf.PutRawBytes(e.Protocol.Encode())
+	return buf.Result()
+}
+
+type PhoneCallObj struct {
+	__flagsPosition struct{}           // flags param position `validate:"required"`
+	P2PAllowed      bool               `flag:"5,encoded_in_bitflags"`
+	Video           bool               `flag:"6,encoded_in_bitflags"`
+	Id              int64              `validate:"required"`
+	AccessHash      int64              `validate:"required"`
+	Date            int32              `validate:"required"`
+	AdminId         int32              `validate:"required"`
+	ParticipantId   int32              `validate:"required"`
+	GAOrB           []byte             `validate:"required"`
+	KeyFingerprint  int64              `validate:"required"`
+	Protocol        *PhoneCallProtocol `validate:"required"`
+	Connections     []PhoneConnection  `validate:"required"`
+	StartDate       int32              `validate:"required"`
+}
+
+func (*PhoneCallObj) CRC() uint32 {
+	return uint32(0x8742ae7f)
+}
+
+func (*PhoneCallObj) ImplementsPhoneCall() {}
+
+func (e *PhoneCallObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.P2PAllowed) {
+		flag |= 1 << 5
+	}
+	if !zero.IsZeroVal(e.Video) {
+		flag |= 1 << 6
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.P2PAllowed) {
+	}
+	if !zero.IsZeroVal(e.Video) {
+	}
+	buf.PutLong(e.Id)
+	buf.PutLong(e.AccessHash)
+	buf.PutInt(e.Date)
+	buf.PutInt(e.AdminId)
+	buf.PutInt(e.ParticipantId)
+	buf.PutMessage(e.GAOrB)
+	buf.PutLong(e.KeyFingerprint)
+	buf.PutRawBytes(e.Protocol.Encode())
+	buf.PutVector(e.Connections)
+	buf.PutInt(e.StartDate)
+	return buf.Result()
+}
+
+type PhoneCallDiscarded struct {
+	__flagsPosition struct{}               // flags param position `validate:"required"`
+	NeedRating      bool                   `flag:"2,encoded_in_bitflags"`
+	NeedDebug       bool                   `flag:"3,encoded_in_bitflags"`
+	Video           bool                   `flag:"6,encoded_in_bitflags"`
+	Id              int64                  `validate:"required"`
+	Reason          PhoneCallDiscardReason `flag:"0"`
+	Duration        int32                  `flag:"1"`
+}
+
+func (*PhoneCallDiscarded) CRC() uint32 {
+	return uint32(0x50ca4de1)
+}
+
+func (*PhoneCallDiscarded) ImplementsPhoneCall() {}
+
+func (e *PhoneCallDiscarded) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Reason) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Duration) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.NeedRating) {
+		flag |= 1 << 2
+	}
+	if !zero.IsZeroVal(e.NeedDebug) {
+		flag |= 1 << 3
+	}
+	if !zero.IsZeroVal(e.Video) {
+		flag |= 1 << 6
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.NeedRating) {
+	}
+	if !zero.IsZeroVal(e.NeedDebug) {
+	}
+	if !zero.IsZeroVal(e.Video) {
+	}
+	buf.PutLong(e.Id)
+	if !zero.IsZeroVal(e.Reason) {
+		buf.PutRawBytes(e.Reason.Encode())
+	}
+	if !zero.IsZeroVal(e.Duration) {
+		buf.PutInt(e.Duration)
+	}
+	return buf.Result()
+}
+
+type MessagesFoundStickerSets interface {
+	serialize.TL
+	ImplementsMessagesFoundStickerSets()
+}
+
+type MessagesFoundStickerSetsNotModified struct{}
+
+func (*MessagesFoundStickerSetsNotModified) CRC() uint32 {
+	return uint32(0xd54b65d)
+}
+
+func (*MessagesFoundStickerSetsNotModified) ImplementsMessagesFoundStickerSets() {}
+
+func (e *MessagesFoundStickerSetsNotModified) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type MessagesFoundStickerSetsObj struct {
+	Hash int32               `validate:"required"`
+	Sets []StickerSetCovered `validate:"required"`
+}
+
+func (*MessagesFoundStickerSetsObj) CRC() uint32 {
+	return uint32(0x5108d648)
+}
+
+func (*MessagesFoundStickerSetsObj) ImplementsMessagesFoundStickerSets() {}
+
+func (e *MessagesFoundStickerSetsObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Hash)
+	buf.PutVector(e.Sets)
+	return buf.Result()
+}
+
+type LangPackString interface {
+	serialize.TL
+	ImplementsLangPackString()
+}
+
+type LangPackStringObj struct {
+	Key   string `validate:"required"`
+	Value string `validate:"required"`
+}
+
+func (*LangPackStringObj) CRC() uint32 {
+	return uint32(0xcad181f6)
+}
+
+func (*LangPackStringObj) ImplementsLangPackString() {}
+
+func (e *LangPackStringObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Key)
+	buf.PutString(e.Value)
+	return buf.Result()
+}
+
+type LangPackStringPluralized struct {
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	Key             string   `validate:"required"`
+	ZeroValue       string   `flag:"0"`
+	OneValue        string   `flag:"1"`
+	TwoValue        string   `flag:"2"`
+	FewValue        string   `flag:"3"`
+	ManyValue       string   `flag:"4"`
+	OtherValue      string   `validate:"required"`
+}
+
+func (*LangPackStringPluralized) CRC() uint32 {
+	return uint32(0x6c47ac9f)
+}
+
+func (*LangPackStringPluralized) ImplementsLangPackString() {}
+
+func (e *LangPackStringPluralized) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.ZeroValue) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.OneValue) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.TwoValue) {
+		flag |= 1 << 2
+	}
+	if !zero.IsZeroVal(e.FewValue) {
+		flag |= 1 << 3
+	}
+	if !zero.IsZeroVal(e.ManyValue) {
+		flag |= 1 << 4
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutString(e.Key)
+	if !zero.IsZeroVal(e.ZeroValue) {
+		buf.PutString(e.ZeroValue)
+	}
+	if !zero.IsZeroVal(e.OneValue) {
+		buf.PutString(e.OneValue)
+	}
+	if !zero.IsZeroVal(e.TwoValue) {
+		buf.PutString(e.TwoValue)
+	}
+	if !zero.IsZeroVal(e.FewValue) {
+		buf.PutString(e.FewValue)
+	}
+	if !zero.IsZeroVal(e.ManyValue) {
+		buf.PutString(e.ManyValue)
+	}
+	buf.PutString(e.OtherValue)
+	return buf.Result()
+}
+
+type LangPackStringDeleted struct {
+	Key string `validate:"required"`
+}
+
+func (*LangPackStringDeleted) CRC() uint32 {
+	return uint32(0x2979eeb2)
+}
+
+func (*LangPackStringDeleted) ImplementsLangPackString() {}
+
+func (e *LangPackStringDeleted) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Key)
+	return buf.Result()
+}
+
+type ChatFull interface {
+	serialize.TL
+	ImplementsChatFull()
+}
+
+type ChatFullObj struct {
+	__flagsPosition struct{}            // flags param position `validate:"required"`
+	CanSetUsername  bool                `flag:"7,encoded_in_bitflags"`
+	HasScheduled    bool                `flag:"8,encoded_in_bitflags"`
+	Id              int32               `validate:"required"`
+	About           string              `validate:"required"`
+	Participants    ChatParticipants    `validate:"required"`
+	ChatPhoto       Photo               `flag:"2"`
+	NotifySettings  *PeerNotifySettings `validate:"required"`
+	ExportedInvite  ExportedChatInvite  `validate:"required"`
+	BotInfo         []*BotInfo          `flag:"3"`
+	PinnedMsgId     int32               `flag:"6"`
+	FolderId        int32               `flag:"11"`
+}
+
+func (*ChatFullObj) CRC() uint32 {
+	return uint32(0x1b7c9db3)
+}
+
+func (*ChatFullObj) ImplementsChatFull() {}
+
+func (e *ChatFullObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.ChatPhoto) {
+		flag |= 1 << 2
+	}
+	if !zero.IsZeroVal(e.BotInfo) {
+		flag |= 1 << 3
+	}
+	if !zero.IsZeroVal(e.PinnedMsgId) {
+		flag |= 1 << 6
+	}
+	if !zero.IsZeroVal(e.CanSetUsername) {
+		flag |= 1 << 7
+	}
+	if !zero.IsZeroVal(e.HasScheduled) {
+		flag |= 1 << 8
+	}
+	if !zero.IsZeroVal(e.FolderId) {
+		flag |= 1 << 11
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.CanSetUsername) {
+	}
+	if !zero.IsZeroVal(e.HasScheduled) {
+	}
+	buf.PutInt(e.Id)
+	buf.PutString(e.About)
+	buf.PutRawBytes(e.Participants.Encode())
+	if !zero.IsZeroVal(e.ChatPhoto) {
+		buf.PutRawBytes(e.ChatPhoto.Encode())
+	}
+	buf.PutRawBytes(e.NotifySettings.Encode())
+	buf.PutRawBytes(e.ExportedInvite.Encode())
+	if !zero.IsZeroVal(e.BotInfo) {
+		buf.PutVector(e.BotInfo)
+	}
+	if !zero.IsZeroVal(e.PinnedMsgId) {
+		buf.PutInt(e.PinnedMsgId)
+	}
+	if !zero.IsZeroVal(e.FolderId) {
+		buf.PutInt(e.FolderId)
+	}
+	return buf.Result()
+}
+
+type ChannelFull struct {
+	__flagsPosition      struct{}            // flags param position `validate:"required"`
+	CanViewParticipants  bool                `flag:"3,encoded_in_bitflags"`
+	CanSetUsername       bool                `flag:"6,encoded_in_bitflags"`
+	CanSetStickers       bool                `flag:"7,encoded_in_bitflags"`
+	HiddenPrehistory     bool                `flag:"10,encoded_in_bitflags"`
+	CanSetLocation       bool                `flag:"16,encoded_in_bitflags"`
+	HasScheduled         bool                `flag:"19,encoded_in_bitflags"`
+	CanViewStats         bool                `flag:"20,encoded_in_bitflags"`
+	Id                   int32               `validate:"required"`
+	About                string              `validate:"required"`
+	ParticipantsCount    int32               `flag:"0"`
+	AdminsCount          int32               `flag:"1"`
+	KickedCount          int32               `flag:"2"`
+	BannedCount          int32               `flag:"2"`
+	OnlineCount          int32               `flag:"13"`
+	ReadInboxMaxId       int32               `validate:"required"`
+	ReadOutboxMaxId      int32               `validate:"required"`
+	UnreadCount          int32               `validate:"required"`
+	ChatPhoto            Photo               `validate:"required"`
+	NotifySettings       *PeerNotifySettings `validate:"required"`
+	ExportedInvite       ExportedChatInvite  `validate:"required"`
+	BotInfo              []*BotInfo          `validate:"required"`
+	MigratedFromChatId   int32               `flag:"4"`
+	MigratedFromMaxId    int32               `flag:"4"`
+	PinnedMsgId          int32               `flag:"5"`
+	Stickerset           *StickerSet         `flag:"8"`
+	AvailableMinId       int32               `flag:"9"`
+	FolderId             int32               `flag:"11"`
+	LinkedChatId         int32               `flag:"14"`
+	Location             ChannelLocation     `flag:"15"`
+	SlowmodeSeconds      int32               `flag:"17"`
+	SlowmodeNextSendDate int32               `flag:"18"`
+	StatsDc              int32               `flag:"12"`
+	Pts                  int32               `validate:"required"`
+}
+
+func (*ChannelFull) CRC() uint32 {
+	return uint32(0xf0e6672a)
+}
+
+func (*ChannelFull) ImplementsChatFull() {}
+
+func (e *ChannelFull) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.ParticipantsCount) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.AdminsCount) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.KickedCount) || !zero.IsZeroVal(e.BannedCount) {
+		flag |= 1 << 2
+	}
+	if !zero.IsZeroVal(e.CanViewParticipants) {
+		flag |= 1 << 3
+	}
+	if !zero.IsZeroVal(e.MigratedFromChatId) || !zero.IsZeroVal(e.MigratedFromMaxId) {
+		flag |= 1 << 4
+	}
+	if !zero.IsZeroVal(e.PinnedMsgId) {
+		flag |= 1 << 5
+	}
+	if !zero.IsZeroVal(e.CanSetUsername) {
+		flag |= 1 << 6
+	}
+	if !zero.IsZeroVal(e.CanSetStickers) {
+		flag |= 1 << 7
+	}
+	if !zero.IsZeroVal(e.Stickerset) {
+		flag |= 1 << 8
+	}
+	if !zero.IsZeroVal(e.AvailableMinId) {
+		flag |= 1 << 9
+	}
+	if !zero.IsZeroVal(e.HiddenPrehistory) {
+		flag |= 1 << 10
+	}
+	if !zero.IsZeroVal(e.FolderId) {
+		flag |= 1 << 11
+	}
+	if !zero.IsZeroVal(e.StatsDc) {
+		flag |= 1 << 12
+	}
+	if !zero.IsZeroVal(e.OnlineCount) {
+		flag |= 1 << 13
+	}
+	if !zero.IsZeroVal(e.LinkedChatId) {
+		flag |= 1 << 14
+	}
+	if !zero.IsZeroVal(e.Location) {
+		flag |= 1 << 15
+	}
+	if !zero.IsZeroVal(e.CanSetLocation) {
+		flag |= 1 << 16
+	}
+	if !zero.IsZeroVal(e.SlowmodeSeconds) {
+		flag |= 1 << 17
+	}
+	if !zero.IsZeroVal(e.SlowmodeNextSendDate) {
+		flag |= 1 << 18
+	}
+	if !zero.IsZeroVal(e.HasScheduled) {
+		flag |= 1 << 19
+	}
+	if !zero.IsZeroVal(e.CanViewStats) {
+		flag |= 1 << 20
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.CanViewParticipants) {
+	}
+	if !zero.IsZeroVal(e.CanSetUsername) {
+	}
+	if !zero.IsZeroVal(e.CanSetStickers) {
+	}
+	if !zero.IsZeroVal(e.HiddenPrehistory) {
+	}
+	if !zero.IsZeroVal(e.CanSetLocation) {
+	}
+	if !zero.IsZeroVal(e.HasScheduled) {
+	}
+	if !zero.IsZeroVal(e.CanViewStats) {
+	}
+	buf.PutInt(e.Id)
+	buf.PutString(e.About)
+	if !zero.IsZeroVal(e.ParticipantsCount) {
+		buf.PutInt(e.ParticipantsCount)
+	}
+	if !zero.IsZeroVal(e.AdminsCount) {
+		buf.PutInt(e.AdminsCount)
+	}
+	if !zero.IsZeroVal(e.KickedCount) {
+		buf.PutInt(e.KickedCount)
+	}
+	if !zero.IsZeroVal(e.BannedCount) {
+		buf.PutInt(e.BannedCount)
+	}
+	if !zero.IsZeroVal(e.OnlineCount) {
+		buf.PutInt(e.OnlineCount)
+	}
+	buf.PutInt(e.ReadInboxMaxId)
+	buf.PutInt(e.ReadOutboxMaxId)
+	buf.PutInt(e.UnreadCount)
+	buf.PutRawBytes(e.ChatPhoto.Encode())
+	buf.PutRawBytes(e.NotifySettings.Encode())
+	buf.PutRawBytes(e.ExportedInvite.Encode())
+	buf.PutVector(e.BotInfo)
+	if !zero.IsZeroVal(e.MigratedFromChatId) {
+		buf.PutInt(e.MigratedFromChatId)
+	}
+	if !zero.IsZeroVal(e.MigratedFromMaxId) {
+		buf.PutInt(e.MigratedFromMaxId)
+	}
+	if !zero.IsZeroVal(e.PinnedMsgId) {
+		buf.PutInt(e.PinnedMsgId)
+	}
+	if !zero.IsZeroVal(e.Stickerset) {
+		buf.PutRawBytes(e.Stickerset.Encode())
+	}
+	if !zero.IsZeroVal(e.AvailableMinId) {
+		buf.PutInt(e.AvailableMinId)
+	}
+	if !zero.IsZeroVal(e.FolderId) {
+		buf.PutInt(e.FolderId)
+	}
+	if !zero.IsZeroVal(e.LinkedChatId) {
+		buf.PutInt(e.LinkedChatId)
+	}
+	if !zero.IsZeroVal(e.Location) {
+		buf.PutRawBytes(e.Location.Encode())
+	}
+	if !zero.IsZeroVal(e.SlowmodeSeconds) {
+		buf.PutInt(e.SlowmodeSeconds)
+	}
+	if !zero.IsZeroVal(e.SlowmodeNextSendDate) {
+		buf.PutInt(e.SlowmodeNextSendDate)
+	}
+	if !zero.IsZeroVal(e.StatsDc) {
+		buf.PutInt(e.StatsDc)
+	}
+	buf.PutInt(e.Pts)
+	return buf.Result()
+}
+
+type InputPaymentCredentials interface {
+	serialize.TL
+	ImplementsInputPaymentCredentials()
+}
+
+type InputPaymentCredentialsSaved struct {
+	Id          string `validate:"required"`
+	TmpPassword []byte `validate:"required"`
+}
+
+func (*InputPaymentCredentialsSaved) CRC() uint32 {
+	return uint32(0xc10eb2cf)
+}
+
+func (*InputPaymentCredentialsSaved) ImplementsInputPaymentCredentials() {}
+
+func (e *InputPaymentCredentialsSaved) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Id)
+	buf.PutMessage(e.TmpPassword)
+	return buf.Result()
+}
+
+type InputPaymentCredentialsObj struct {
+	__flagsPosition struct{}  // flags param position `validate:"required"`
+	Save            bool      `flag:"0,encoded_in_bitflags"`
+	Data            *DataJSON `validate:"required"`
+}
+
+func (*InputPaymentCredentialsObj) CRC() uint32 {
+	return uint32(0x3417d728)
+}
+
+func (*InputPaymentCredentialsObj) ImplementsInputPaymentCredentials() {}
+
+func (e *InputPaymentCredentialsObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Save) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Save) {
+	}
+	buf.PutRawBytes(e.Data.Encode())
+	return buf.Result()
+}
+
+type InputPaymentCredentialsApplePay struct {
+	PaymentData *DataJSON `validate:"required"`
+}
+
+func (*InputPaymentCredentialsApplePay) CRC() uint32 {
+	return uint32(0xaa1c39f)
+}
+
+func (*InputPaymentCredentialsApplePay) ImplementsInputPaymentCredentials() {}
+
+func (e *InputPaymentCredentialsApplePay) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.PaymentData.Encode())
+	return buf.Result()
+}
+
+type InputPaymentCredentialsAndroidPay struct {
+	PaymentToken        *DataJSON `validate:"required"`
+	GoogleTransactionId string    `validate:"required"`
+}
+
+func (*InputPaymentCredentialsAndroidPay) CRC() uint32 {
+	return uint32(0xca05d50e)
+}
+
+func (*InputPaymentCredentialsAndroidPay) ImplementsInputPaymentCredentials() {}
+
+func (e *InputPaymentCredentialsAndroidPay) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.PaymentToken.Encode())
+	buf.PutString(e.GoogleTransactionId)
+	return buf.Result()
+}
+
+type PrivacyRule interface {
+	serialize.TL
+	ImplementsPrivacyRule()
+}
+
+type PrivacyValueAllowContacts struct{}
+
+func (*PrivacyValueAllowContacts) CRC() uint32 {
+	return uint32(0xfffe1bac)
+}
+
+func (*PrivacyValueAllowContacts) ImplementsPrivacyRule() {}
+
+func (e *PrivacyValueAllowContacts) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type PrivacyValueAllowAll struct{}
+
+func (*PrivacyValueAllowAll) CRC() uint32 {
+	return uint32(0x65427b82)
+}
+
+func (*PrivacyValueAllowAll) ImplementsPrivacyRule() {}
+
+func (e *PrivacyValueAllowAll) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type PrivacyValueAllowUsers struct {
+	Users []int32 `validate:"required"`
+}
+
+func (*PrivacyValueAllowUsers) CRC() uint32 {
+	return uint32(0x4d5bbe0c)
+}
+
+func (*PrivacyValueAllowUsers) ImplementsPrivacyRule() {}
+
+func (e *PrivacyValueAllowUsers) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Users)
+	return buf.Result()
+}
+
+type PrivacyValueDisallowContacts struct{}
+
+func (*PrivacyValueDisallowContacts) CRC() uint32 {
+	return uint32(0xf888fa1a)
+}
+
+func (*PrivacyValueDisallowContacts) ImplementsPrivacyRule() {}
+
+func (e *PrivacyValueDisallowContacts) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type PrivacyValueDisallowAll struct{}
+
+func (*PrivacyValueDisallowAll) CRC() uint32 {
+	return uint32(0x8b73e763)
+}
+
+func (*PrivacyValueDisallowAll) ImplementsPrivacyRule() {}
+
+func (e *PrivacyValueDisallowAll) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type PrivacyValueDisallowUsers struct {
+	Users []int32 `validate:"required"`
+}
+
+func (*PrivacyValueDisallowUsers) CRC() uint32 {
+	return uint32(0xc7f49b7)
+}
+
+func (*PrivacyValueDisallowUsers) ImplementsPrivacyRule() {}
+
+func (e *PrivacyValueDisallowUsers) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Users)
+	return buf.Result()
+}
+
+type PrivacyValueAllowChatParticipants struct {
+	Chats []int32 `validate:"required"`
+}
+
+func (*PrivacyValueAllowChatParticipants) CRC() uint32 {
+	return uint32(0x18be796b)
+}
+
+func (*PrivacyValueAllowChatParticipants) ImplementsPrivacyRule() {}
+
+func (e *PrivacyValueAllowChatParticipants) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Chats)
+	return buf.Result()
+}
+
+type PrivacyValueDisallowChatParticipants struct {
+	Chats []int32 `validate:"required"`
+}
+
+func (*PrivacyValueDisallowChatParticipants) CRC() uint32 {
+	return uint32(0xacae0690)
+}
+
+func (*PrivacyValueDisallowChatParticipants) ImplementsPrivacyRule() {}
+
+func (e *PrivacyValueDisallowChatParticipants) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Chats)
+	return buf.Result()
+}
+
+type EmojiKeyword interface {
+	serialize.TL
+	ImplementsEmojiKeyword()
+}
+
+type EmojiKeywordObj struct {
+	Keyword   string   `validate:"required"`
+	Emoticons []string `validate:"required"`
+}
+
+func (*EmojiKeywordObj) CRC() uint32 {
+	return uint32(0xd5b3b9f9)
+}
+
+func (*EmojiKeywordObj) ImplementsEmojiKeyword() {}
+
+func (e *EmojiKeywordObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Keyword)
+	buf.PutVector(e.Emoticons)
+	return buf.Result()
+}
+
+type EmojiKeywordDeleted struct {
+	Keyword   string   `validate:"required"`
+	Emoticons []string `validate:"required"`
+}
+
+func (*EmojiKeywordDeleted) CRC() uint32 {
+	return uint32(0x236df622)
+}
+
+func (*EmojiKeywordDeleted) ImplementsEmojiKeyword() {}
+
+func (e *EmojiKeywordDeleted) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Keyword)
+	buf.PutVector(e.Emoticons)
+	return buf.Result()
+}
 
 type UploadFile interface {
-	tl.Object
+	serialize.TL
 	ImplementsUploadFile()
 }
 
 type UploadFileObj struct {
-	Type  StorageFileType
-	Mtime int32
-	Bytes []byte
+	Type  StorageFileType `validate:"required"`
+	Mtime int32           `validate:"required"`
+	Bytes []byte          `validate:"required"`
 }
 
 func (*UploadFileObj) CRC() uint32 {
@@ -7641,12 +6257,24 @@ func (*UploadFileObj) CRC() uint32 {
 
 func (*UploadFileObj) ImplementsUploadFile() {}
 
+func (e *UploadFileObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Type.Encode())
+	buf.PutInt(e.Mtime)
+	buf.PutMessage(e.Bytes)
+	return buf.Result()
+}
+
 type UploadFileCdnRedirect struct {
-	DcId          int32
-	FileToken     []byte
-	EncryptionKey []byte
-	EncryptionIv  []byte
-	FileHashes    []*FileHash
+	DcId          int32       `validate:"required"`
+	FileToken     []byte      `validate:"required"`
+	EncryptionKey []byte      `validate:"required"`
+	EncryptionIv  []byte      `validate:"required"`
+	FileHashes    []*FileHash `validate:"required"`
 }
 
 func (*UploadFileCdnRedirect) CRC() uint32 {
@@ -7654,3 +6282,10212 @@ func (*UploadFileCdnRedirect) CRC() uint32 {
 }
 
 func (*UploadFileCdnRedirect) ImplementsUploadFile() {}
+
+func (e *UploadFileCdnRedirect) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.DcId)
+	buf.PutMessage(e.FileToken)
+	buf.PutMessage(e.EncryptionKey)
+	buf.PutMessage(e.EncryptionIv)
+	buf.PutVector(e.FileHashes)
+	return buf.Result()
+}
+
+type InputMessage interface {
+	serialize.TL
+	ImplementsInputMessage()
+}
+
+type InputMessageID struct {
+	Id int32 `validate:"required"`
+}
+
+func (*InputMessageID) CRC() uint32 {
+	return uint32(0xa676a322)
+}
+
+func (*InputMessageID) ImplementsInputMessage() {}
+
+func (e *InputMessageID) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Id)
+	return buf.Result()
+}
+
+type InputMessageReplyTo struct {
+	Id int32 `validate:"required"`
+}
+
+func (*InputMessageReplyTo) CRC() uint32 {
+	return uint32(0xbad88395)
+}
+
+func (*InputMessageReplyTo) ImplementsInputMessage() {}
+
+func (e *InputMessageReplyTo) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Id)
+	return buf.Result()
+}
+
+type InputMessagePinned struct{}
+
+func (*InputMessagePinned) CRC() uint32 {
+	return uint32(0x86872538)
+}
+
+func (*InputMessagePinned) ImplementsInputMessage() {}
+
+func (e *InputMessagePinned) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type PhoneConnection interface {
+	serialize.TL
+	ImplementsPhoneConnection()
+}
+
+type PhoneConnectionObj struct {
+	Id      int64  `validate:"required"`
+	Ip      string `validate:"required"`
+	Ipv6    string `validate:"required"`
+	Port    int32  `validate:"required"`
+	PeerTag []byte `validate:"required"`
+}
+
+func (*PhoneConnectionObj) CRC() uint32 {
+	return uint32(0x9d4c17c0)
+}
+
+func (*PhoneConnectionObj) ImplementsPhoneConnection() {}
+
+func (e *PhoneConnectionObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutString(e.Ip)
+	buf.PutString(e.Ipv6)
+	buf.PutInt(e.Port)
+	buf.PutMessage(e.PeerTag)
+	return buf.Result()
+}
+
+type PhoneConnectionWebrtc struct {
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	Turn            bool     `flag:"0,encoded_in_bitflags"`
+	Stun            bool     `flag:"1,encoded_in_bitflags"`
+	Id              int64    `validate:"required"`
+	Ip              string   `validate:"required"`
+	Ipv6            string   `validate:"required"`
+	Port            int32    `validate:"required"`
+	Username        string   `validate:"required"`
+	Password        string   `validate:"required"`
+}
+
+func (*PhoneConnectionWebrtc) CRC() uint32 {
+	return uint32(0x635fe375)
+}
+
+func (*PhoneConnectionWebrtc) ImplementsPhoneConnection() {}
+
+func (e *PhoneConnectionWebrtc) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Turn) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Stun) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Turn) {
+	}
+	if !zero.IsZeroVal(e.Stun) {
+	}
+	buf.PutLong(e.Id)
+	buf.PutString(e.Ip)
+	buf.PutString(e.Ipv6)
+	buf.PutInt(e.Port)
+	buf.PutString(e.Username)
+	buf.PutString(e.Password)
+	return buf.Result()
+}
+
+type UpdatesDifference interface {
+	serialize.TL
+	ImplementsUpdatesDifference()
+}
+
+type UpdatesDifferenceEmpty struct {
+	Date int32 `validate:"required"`
+	Seq  int32 `validate:"required"`
+}
+
+func (*UpdatesDifferenceEmpty) CRC() uint32 {
+	return uint32(0x5d75a138)
+}
+
+func (*UpdatesDifferenceEmpty) ImplementsUpdatesDifference() {}
+
+func (e *UpdatesDifferenceEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Date)
+	buf.PutInt(e.Seq)
+	return buf.Result()
+}
+
+type UpdatesDifferenceObj struct {
+	NewMessages          []Message          `validate:"required"`
+	NewEncryptedMessages []EncryptedMessage `validate:"required"`
+	OtherUpdates         []Update           `validate:"required"`
+	Chats                []Chat             `validate:"required"`
+	Users                []User             `validate:"required"`
+	State                *UpdatesState      `validate:"required"`
+}
+
+func (*UpdatesDifferenceObj) CRC() uint32 {
+	return uint32(0xf49ca0)
+}
+
+func (*UpdatesDifferenceObj) ImplementsUpdatesDifference() {}
+
+func (e *UpdatesDifferenceObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.NewMessages)
+	buf.PutVector(e.NewEncryptedMessages)
+	buf.PutVector(e.OtherUpdates)
+	buf.PutVector(e.Chats)
+	buf.PutVector(e.Users)
+	buf.PutRawBytes(e.State.Encode())
+	return buf.Result()
+}
+
+type UpdatesDifferenceSlice struct {
+	NewMessages          []Message          `validate:"required"`
+	NewEncryptedMessages []EncryptedMessage `validate:"required"`
+	OtherUpdates         []Update           `validate:"required"`
+	Chats                []Chat             `validate:"required"`
+	Users                []User             `validate:"required"`
+	IntermediateState    *UpdatesState      `validate:"required"`
+}
+
+func (*UpdatesDifferenceSlice) CRC() uint32 {
+	return uint32(0xa8fb1981)
+}
+
+func (*UpdatesDifferenceSlice) ImplementsUpdatesDifference() {}
+
+func (e *UpdatesDifferenceSlice) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.NewMessages)
+	buf.PutVector(e.NewEncryptedMessages)
+	buf.PutVector(e.OtherUpdates)
+	buf.PutVector(e.Chats)
+	buf.PutVector(e.Users)
+	buf.PutRawBytes(e.IntermediateState.Encode())
+	return buf.Result()
+}
+
+type UpdatesDifferenceTooLong struct {
+	Pts int32 `validate:"required"`
+}
+
+func (*UpdatesDifferenceTooLong) CRC() uint32 {
+	return uint32(0x4afe8f6d)
+}
+
+func (*UpdatesDifferenceTooLong) ImplementsUpdatesDifference() {}
+
+func (e *UpdatesDifferenceTooLong) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Pts)
+	return buf.Result()
+}
+
+type InputUser interface {
+	serialize.TL
+	ImplementsInputUser()
+}
+
+type InputUserEmpty struct{}
+
+func (*InputUserEmpty) CRC() uint32 {
+	return uint32(0xb98886cf)
+}
+
+func (*InputUserEmpty) ImplementsInputUser() {}
+
+func (e *InputUserEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputUserSelf struct{}
+
+func (*InputUserSelf) CRC() uint32 {
+	return uint32(0xf7c1b13f)
+}
+
+func (*InputUserSelf) ImplementsInputUser() {}
+
+func (e *InputUserSelf) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputUserObj struct {
+	UserId     int32 `validate:"required"`
+	AccessHash int64 `validate:"required"`
+}
+
+func (*InputUserObj) CRC() uint32 {
+	return uint32(0xd8292816)
+}
+
+func (*InputUserObj) ImplementsInputUser() {}
+
+func (e *InputUserObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.UserId)
+	buf.PutLong(e.AccessHash)
+	return buf.Result()
+}
+
+type InputUserFromMessage struct {
+	Peer   InputPeer `validate:"required"`
+	MsgId  int32     `validate:"required"`
+	UserId int32     `validate:"required"`
+}
+
+func (*InputUserFromMessage) CRC() uint32 {
+	return uint32(0x2d117597)
+}
+
+func (*InputUserFromMessage) ImplementsInputUser() {}
+
+func (e *InputUserFromMessage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Peer.Encode())
+	buf.PutInt(e.MsgId)
+	buf.PutInt(e.UserId)
+	return buf.Result()
+}
+
+type InputNotifyPeer interface {
+	serialize.TL
+	ImplementsInputNotifyPeer()
+}
+
+type InputNotifyPeerObj struct {
+	Peer InputPeer `validate:"required"`
+}
+
+func (*InputNotifyPeerObj) CRC() uint32 {
+	return uint32(0xb8bc5b0c)
+}
+
+func (*InputNotifyPeerObj) ImplementsInputNotifyPeer() {}
+
+func (e *InputNotifyPeerObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Peer.Encode())
+	return buf.Result()
+}
+
+type InputNotifyUsers struct{}
+
+func (*InputNotifyUsers) CRC() uint32 {
+	return uint32(0x193b4417)
+}
+
+func (*InputNotifyUsers) ImplementsInputNotifyPeer() {}
+
+func (e *InputNotifyUsers) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputNotifyChats struct{}
+
+func (*InputNotifyChats) CRC() uint32 {
+	return uint32(0x4a95e84e)
+}
+
+func (*InputNotifyChats) ImplementsInputNotifyPeer() {}
+
+func (e *InputNotifyChats) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputNotifyBroadcasts struct{}
+
+func (*InputNotifyBroadcasts) CRC() uint32 {
+	return uint32(0xb1db7c7e)
+}
+
+func (*InputNotifyBroadcasts) ImplementsInputNotifyPeer() {}
+
+func (e *InputNotifyBroadcasts) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type ChannelParticipant interface {
+	serialize.TL
+	ImplementsChannelParticipant()
+}
+
+type ChannelParticipantObj struct {
+	UserId int32 `validate:"required"`
+	Date   int32 `validate:"required"`
+}
+
+func (*ChannelParticipantObj) CRC() uint32 {
+	return uint32(0x15ebac1d)
+}
+
+func (*ChannelParticipantObj) ImplementsChannelParticipant() {}
+
+func (e *ChannelParticipantObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.UserId)
+	buf.PutInt(e.Date)
+	return buf.Result()
+}
+
+type ChannelParticipantSelf struct {
+	UserId    int32 `validate:"required"`
+	InviterId int32 `validate:"required"`
+	Date      int32 `validate:"required"`
+}
+
+func (*ChannelParticipantSelf) CRC() uint32 {
+	return uint32(0xa3289a6d)
+}
+
+func (*ChannelParticipantSelf) ImplementsChannelParticipant() {}
+
+func (e *ChannelParticipantSelf) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.UserId)
+	buf.PutInt(e.InviterId)
+	buf.PutInt(e.Date)
+	return buf.Result()
+}
+
+type ChannelParticipantCreator struct {
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	UserId          int32    `validate:"required"`
+	Rank            string   `flag:"0"`
+}
+
+func (*ChannelParticipantCreator) CRC() uint32 {
+	return uint32(0x808d15a4)
+}
+
+func (*ChannelParticipantCreator) ImplementsChannelParticipant() {}
+
+func (e *ChannelParticipantCreator) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Rank) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutInt(e.UserId)
+	if !zero.IsZeroVal(e.Rank) {
+		buf.PutString(e.Rank)
+	}
+	return buf.Result()
+}
+
+type ChannelParticipantAdmin struct {
+	__flagsPosition struct{}         // flags param position `validate:"required"`
+	CanEdit         bool             `flag:"0,encoded_in_bitflags"`
+	Self            bool             `flag:"1,encoded_in_bitflags"`
+	UserId          int32            `validate:"required"`
+	InviterId       int32            `flag:"1"`
+	PromotedBy      int32            `validate:"required"`
+	Date            int32            `validate:"required"`
+	AdminRights     *ChatAdminRights `validate:"required"`
+	Rank            string           `flag:"2"`
+}
+
+func (*ChannelParticipantAdmin) CRC() uint32 {
+	return uint32(0xccbebbaf)
+}
+
+func (*ChannelParticipantAdmin) ImplementsChannelParticipant() {}
+
+func (e *ChannelParticipantAdmin) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.CanEdit) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Self) || !zero.IsZeroVal(e.InviterId) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.Rank) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.CanEdit) {
+	}
+	if !zero.IsZeroVal(e.Self) {
+	}
+	buf.PutInt(e.UserId)
+	if !zero.IsZeroVal(e.InviterId) {
+		buf.PutInt(e.InviterId)
+	}
+	buf.PutInt(e.PromotedBy)
+	buf.PutInt(e.Date)
+	buf.PutRawBytes(e.AdminRights.Encode())
+	if !zero.IsZeroVal(e.Rank) {
+		buf.PutString(e.Rank)
+	}
+	return buf.Result()
+}
+
+type ChannelParticipantBanned struct {
+	__flagsPosition struct{}          // flags param position `validate:"required"`
+	Left            bool              `flag:"0,encoded_in_bitflags"`
+	UserId          int32             `validate:"required"`
+	KickedBy        int32             `validate:"required"`
+	Date            int32             `validate:"required"`
+	BannedRights    *ChatBannedRights `validate:"required"`
+}
+
+func (*ChannelParticipantBanned) CRC() uint32 {
+	return uint32(0x1c0facaf)
+}
+
+func (*ChannelParticipantBanned) ImplementsChannelParticipant() {}
+
+func (e *ChannelParticipantBanned) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Left) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Left) {
+	}
+	buf.PutInt(e.UserId)
+	buf.PutInt(e.KickedBy)
+	buf.PutInt(e.Date)
+	buf.PutRawBytes(e.BannedRights.Encode())
+	return buf.Result()
+}
+
+type DraftMessage interface {
+	serialize.TL
+	ImplementsDraftMessage()
+}
+
+type DraftMessageEmpty struct {
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	Date            int32    `flag:"0"`
+}
+
+func (*DraftMessageEmpty) CRC() uint32 {
+	return uint32(0x1b0c841a)
+}
+
+func (*DraftMessageEmpty) ImplementsDraftMessage() {}
+
+func (e *DraftMessageEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Date) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Date) {
+		buf.PutInt(e.Date)
+	}
+	return buf.Result()
+}
+
+type DraftMessageObj struct {
+	__flagsPosition struct{}        // flags param position `validate:"required"`
+	NoWebpage       bool            `flag:"1,encoded_in_bitflags"`
+	ReplyToMsgId    int32           `flag:"0"`
+	Message         string          `validate:"required"`
+	Entities        []MessageEntity `flag:"3"`
+	Date            int32           `validate:"required"`
+}
+
+func (*DraftMessageObj) CRC() uint32 {
+	return uint32(0xfd8e711f)
+}
+
+func (*DraftMessageObj) ImplementsDraftMessage() {}
+
+func (e *DraftMessageObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.ReplyToMsgId) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.NoWebpage) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.Entities) {
+		flag |= 1 << 3
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.NoWebpage) {
+	}
+	if !zero.IsZeroVal(e.ReplyToMsgId) {
+		buf.PutInt(e.ReplyToMsgId)
+	}
+	buf.PutString(e.Message)
+	if !zero.IsZeroVal(e.Entities) {
+		buf.PutVector(e.Entities)
+	}
+	buf.PutInt(e.Date)
+	return buf.Result()
+}
+
+type Peer interface {
+	serialize.TL
+	ImplementsPeer()
+}
+
+type PeerUser struct {
+	UserId int32 `validate:"required"`
+}
+
+func (*PeerUser) CRC() uint32 {
+	return uint32(0x9db1bc6d)
+}
+
+func (*PeerUser) ImplementsPeer() {}
+
+func (e *PeerUser) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.UserId)
+	return buf.Result()
+}
+
+type PeerChat struct {
+	ChatId int32 `validate:"required"`
+}
+
+func (*PeerChat) CRC() uint32 {
+	return uint32(0xbad0e5bb)
+}
+
+func (*PeerChat) ImplementsPeer() {}
+
+func (e *PeerChat) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.ChatId)
+	return buf.Result()
+}
+
+type PeerChannel struct {
+	ChannelId int32 `validate:"required"`
+}
+
+func (*PeerChannel) CRC() uint32 {
+	return uint32(0xbddde532)
+}
+
+func (*PeerChannel) ImplementsPeer() {}
+
+func (e *PeerChannel) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.ChannelId)
+	return buf.Result()
+}
+
+type MessagesRecentStickers interface {
+	serialize.TL
+	ImplementsMessagesRecentStickers()
+}
+
+type MessagesRecentStickersNotModified struct{}
+
+func (*MessagesRecentStickersNotModified) CRC() uint32 {
+	return uint32(0xb17f890)
+}
+
+func (*MessagesRecentStickersNotModified) ImplementsMessagesRecentStickers() {}
+
+func (e *MessagesRecentStickersNotModified) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type MessagesRecentStickersObj struct {
+	Hash     int32          `validate:"required"`
+	Packs    []*StickerPack `validate:"required"`
+	Stickers []Document     `validate:"required"`
+	Dates    []int32        `validate:"required"`
+}
+
+func (*MessagesRecentStickersObj) CRC() uint32 {
+	return uint32(0x22f3afb3)
+}
+
+func (*MessagesRecentStickersObj) ImplementsMessagesRecentStickers() {}
+
+func (e *MessagesRecentStickersObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Hash)
+	buf.PutVector(e.Packs)
+	buf.PutVector(e.Stickers)
+	buf.PutVector(e.Dates)
+	return buf.Result()
+}
+
+type ContactsContacts interface {
+	serialize.TL
+	ImplementsContactsContacts()
+}
+
+type ContactsContactsNotModified struct{}
+
+func (*ContactsContactsNotModified) CRC() uint32 {
+	return uint32(0xb74ba9d2)
+}
+
+func (*ContactsContactsNotModified) ImplementsContactsContacts() {}
+
+func (e *ContactsContactsNotModified) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type ContactsContactsObj struct {
+	Contacts   []*Contact `validate:"required"`
+	SavedCount int32      `validate:"required"`
+	Users      []User     `validate:"required"`
+}
+
+func (*ContactsContactsObj) CRC() uint32 {
+	return uint32(0xeae87e42)
+}
+
+func (*ContactsContactsObj) ImplementsContactsContacts() {}
+
+func (e *ContactsContactsObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Contacts)
+	buf.PutInt(e.SavedCount)
+	buf.PutVector(e.Users)
+	return buf.Result()
+}
+
+type InputEncryptedFile interface {
+	serialize.TL
+	ImplementsInputEncryptedFile()
+}
+
+type InputEncryptedFileEmpty struct{}
+
+func (*InputEncryptedFileEmpty) CRC() uint32 {
+	return uint32(0x1837c364)
+}
+
+func (*InputEncryptedFileEmpty) ImplementsInputEncryptedFile() {}
+
+func (e *InputEncryptedFileEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputEncryptedFileUploaded struct {
+	Id             int64  `validate:"required"`
+	Parts          int32  `validate:"required"`
+	Md5Checksum    string `validate:"required"`
+	KeyFingerprint int32  `validate:"required"`
+}
+
+func (*InputEncryptedFileUploaded) CRC() uint32 {
+	return uint32(0x64bd0306)
+}
+
+func (*InputEncryptedFileUploaded) ImplementsInputEncryptedFile() {}
+
+func (e *InputEncryptedFileUploaded) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutInt(e.Parts)
+	buf.PutString(e.Md5Checksum)
+	buf.PutInt(e.KeyFingerprint)
+	return buf.Result()
+}
+
+type InputEncryptedFileObj struct {
+	Id         int64 `validate:"required"`
+	AccessHash int64 `validate:"required"`
+}
+
+func (*InputEncryptedFileObj) CRC() uint32 {
+	return uint32(0x5a17b5e5)
+}
+
+func (*InputEncryptedFileObj) ImplementsInputEncryptedFile() {}
+
+func (e *InputEncryptedFileObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutLong(e.AccessHash)
+	return buf.Result()
+}
+
+type InputEncryptedFileBigUploaded struct {
+	Id             int64 `validate:"required"`
+	Parts          int32 `validate:"required"`
+	KeyFingerprint int32 `validate:"required"`
+}
+
+func (*InputEncryptedFileBigUploaded) CRC() uint32 {
+	return uint32(0x2dc173c8)
+}
+
+func (*InputEncryptedFileBigUploaded) ImplementsInputEncryptedFile() {}
+
+func (e *InputEncryptedFileBigUploaded) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutInt(e.Parts)
+	buf.PutInt(e.KeyFingerprint)
+	return buf.Result()
+}
+
+type GeoPoint interface {
+	serialize.TL
+	ImplementsGeoPoint()
+}
+
+type GeoPointEmpty struct{}
+
+func (*GeoPointEmpty) CRC() uint32 {
+	return uint32(0x1117dd5f)
+}
+
+func (*GeoPointEmpty) ImplementsGeoPoint() {}
+
+func (e *GeoPointEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type GeoPointObj struct {
+	Long       float64 `validate:"required"`
+	Lat        float64 `validate:"required"`
+	AccessHash int64   `validate:"required"`
+}
+
+func (*GeoPointObj) CRC() uint32 {
+	return uint32(0x296f104)
+}
+
+func (*GeoPointObj) ImplementsGeoPoint() {}
+
+func (e *GeoPointObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutDouble(e.Long)
+	buf.PutDouble(e.Lat)
+	buf.PutLong(e.AccessHash)
+	return buf.Result()
+}
+
+type DocumentAttribute interface {
+	serialize.TL
+	ImplementsDocumentAttribute()
+}
+
+type DocumentAttributeImageSize struct {
+	W int32 `validate:"required"`
+	H int32 `validate:"required"`
+}
+
+func (*DocumentAttributeImageSize) CRC() uint32 {
+	return uint32(0x6c37c15c)
+}
+
+func (*DocumentAttributeImageSize) ImplementsDocumentAttribute() {}
+
+func (e *DocumentAttributeImageSize) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.W)
+	buf.PutInt(e.H)
+	return buf.Result()
+}
+
+type DocumentAttributeAnimated struct{}
+
+func (*DocumentAttributeAnimated) CRC() uint32 {
+	return uint32(0x11b58939)
+}
+
+func (*DocumentAttributeAnimated) ImplementsDocumentAttribute() {}
+
+func (e *DocumentAttributeAnimated) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type DocumentAttributeSticker struct {
+	__flagsPosition struct{}        // flags param position `validate:"required"`
+	Mask            bool            `flag:"1,encoded_in_bitflags"`
+	Alt             string          `validate:"required"`
+	Stickerset      InputStickerSet `validate:"required"`
+	MaskCoords      *MaskCoords     `flag:"0"`
+}
+
+func (*DocumentAttributeSticker) CRC() uint32 {
+	return uint32(0x6319d612)
+}
+
+func (*DocumentAttributeSticker) ImplementsDocumentAttribute() {}
+
+func (e *DocumentAttributeSticker) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.MaskCoords) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Mask) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Mask) {
+	}
+	buf.PutString(e.Alt)
+	buf.PutRawBytes(e.Stickerset.Encode())
+	if !zero.IsZeroVal(e.MaskCoords) {
+		buf.PutRawBytes(e.MaskCoords.Encode())
+	}
+	return buf.Result()
+}
+
+type DocumentAttributeVideo struct {
+	__flagsPosition   struct{} // flags param position `validate:"required"`
+	RoundMessage      bool     `flag:"0,encoded_in_bitflags"`
+	SupportsStreaming bool     `flag:"1,encoded_in_bitflags"`
+	Duration          int32    `validate:"required"`
+	W                 int32    `validate:"required"`
+	H                 int32    `validate:"required"`
+}
+
+func (*DocumentAttributeVideo) CRC() uint32 {
+	return uint32(0xef02ce6)
+}
+
+func (*DocumentAttributeVideo) ImplementsDocumentAttribute() {}
+
+func (e *DocumentAttributeVideo) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.RoundMessage) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.SupportsStreaming) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.RoundMessage) {
+	}
+	if !zero.IsZeroVal(e.SupportsStreaming) {
+	}
+	buf.PutInt(e.Duration)
+	buf.PutInt(e.W)
+	buf.PutInt(e.H)
+	return buf.Result()
+}
+
+type DocumentAttributeAudio struct {
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	Voice           bool     `flag:"10,encoded_in_bitflags"`
+	Duration        int32    `validate:"required"`
+	Title           string   `flag:"0"`
+	Performer       string   `flag:"1"`
+	Waveform        []byte   `flag:"2"`
+}
+
+func (*DocumentAttributeAudio) CRC() uint32 {
+	return uint32(0x9852f9c6)
+}
+
+func (*DocumentAttributeAudio) ImplementsDocumentAttribute() {}
+
+func (e *DocumentAttributeAudio) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Title) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Performer) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.Waveform) {
+		flag |= 1 << 2
+	}
+	if !zero.IsZeroVal(e.Voice) {
+		flag |= 1 << 10
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Voice) {
+	}
+	buf.PutInt(e.Duration)
+	if !zero.IsZeroVal(e.Title) {
+		buf.PutString(e.Title)
+	}
+	if !zero.IsZeroVal(e.Performer) {
+		buf.PutString(e.Performer)
+	}
+	if !zero.IsZeroVal(e.Waveform) {
+		buf.PutMessage(e.Waveform)
+	}
+	return buf.Result()
+}
+
+type DocumentAttributeFilename struct {
+	FileName string `validate:"required"`
+}
+
+func (*DocumentAttributeFilename) CRC() uint32 {
+	return uint32(0x15590068)
+}
+
+func (*DocumentAttributeFilename) ImplementsDocumentAttribute() {}
+
+func (e *DocumentAttributeFilename) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.FileName)
+	return buf.Result()
+}
+
+type DocumentAttributeHasStickers struct{}
+
+func (*DocumentAttributeHasStickers) CRC() uint32 {
+	return uint32(0x9801d2f7)
+}
+
+func (*DocumentAttributeHasStickers) ImplementsDocumentAttribute() {}
+
+func (e *DocumentAttributeHasStickers) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputStickerSet interface {
+	serialize.TL
+	ImplementsInputStickerSet()
+}
+
+type InputStickerSetEmpty struct{}
+
+func (*InputStickerSetEmpty) CRC() uint32 {
+	return uint32(0xffb62b95)
+}
+
+func (*InputStickerSetEmpty) ImplementsInputStickerSet() {}
+
+func (e *InputStickerSetEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputStickerSetID struct {
+	Id         int64 `validate:"required"`
+	AccessHash int64 `validate:"required"`
+}
+
+func (*InputStickerSetID) CRC() uint32 {
+	return uint32(0x9de7a269)
+}
+
+func (*InputStickerSetID) ImplementsInputStickerSet() {}
+
+func (e *InputStickerSetID) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutLong(e.AccessHash)
+	return buf.Result()
+}
+
+type InputStickerSetShortName struct {
+	ShortName string `validate:"required"`
+}
+
+func (*InputStickerSetShortName) CRC() uint32 {
+	return uint32(0x861cc8a0)
+}
+
+func (*InputStickerSetShortName) ImplementsInputStickerSet() {}
+
+func (e *InputStickerSetShortName) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.ShortName)
+	return buf.Result()
+}
+
+type InputStickerSetAnimatedEmoji struct{}
+
+func (*InputStickerSetAnimatedEmoji) CRC() uint32 {
+	return uint32(0x28703c8)
+}
+
+func (*InputStickerSetAnimatedEmoji) ImplementsInputStickerSet() {}
+
+func (e *InputStickerSetAnimatedEmoji) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputStickerSetDice struct {
+	Emoticon string `validate:"required"`
+}
+
+func (*InputStickerSetDice) CRC() uint32 {
+	return uint32(0xe67f520e)
+}
+
+func (*InputStickerSetDice) ImplementsInputStickerSet() {}
+
+func (e *InputStickerSetDice) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Emoticon)
+	return buf.Result()
+}
+
+type MessagesSavedGifs interface {
+	serialize.TL
+	ImplementsMessagesSavedGifs()
+}
+
+type MessagesSavedGifsNotModified struct{}
+
+func (*MessagesSavedGifsNotModified) CRC() uint32 {
+	return uint32(0xe8025ca2)
+}
+
+func (*MessagesSavedGifsNotModified) ImplementsMessagesSavedGifs() {}
+
+func (e *MessagesSavedGifsNotModified) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type MessagesSavedGifsObj struct {
+	Hash int32      `validate:"required"`
+	Gifs []Document `validate:"required"`
+}
+
+func (*MessagesSavedGifsObj) CRC() uint32 {
+	return uint32(0x2e0709a5)
+}
+
+func (*MessagesSavedGifsObj) ImplementsMessagesSavedGifs() {}
+
+func (e *MessagesSavedGifsObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Hash)
+	buf.PutVector(e.Gifs)
+	return buf.Result()
+}
+
+type MessagesDialogs interface {
+	serialize.TL
+	ImplementsMessagesDialogs()
+}
+
+type MessagesDialogsObj struct {
+	Dialogs  []Dialog  `validate:"required"`
+	Messages []Message `validate:"required"`
+	Chats    []Chat    `validate:"required"`
+	Users    []User    `validate:"required"`
+}
+
+func (*MessagesDialogsObj) CRC() uint32 {
+	return uint32(0x15ba6c40)
+}
+
+func (*MessagesDialogsObj) ImplementsMessagesDialogs() {}
+
+func (e *MessagesDialogsObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Dialogs)
+	buf.PutVector(e.Messages)
+	buf.PutVector(e.Chats)
+	buf.PutVector(e.Users)
+	return buf.Result()
+}
+
+type MessagesDialogsSlice struct {
+	Count    int32     `validate:"required"`
+	Dialogs  []Dialog  `validate:"required"`
+	Messages []Message `validate:"required"`
+	Chats    []Chat    `validate:"required"`
+	Users    []User    `validate:"required"`
+}
+
+func (*MessagesDialogsSlice) CRC() uint32 {
+	return uint32(0x71e094f3)
+}
+
+func (*MessagesDialogsSlice) ImplementsMessagesDialogs() {}
+
+func (e *MessagesDialogsSlice) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Count)
+	buf.PutVector(e.Dialogs)
+	buf.PutVector(e.Messages)
+	buf.PutVector(e.Chats)
+	buf.PutVector(e.Users)
+	return buf.Result()
+}
+
+type MessagesDialogsNotModified struct {
+	Count int32 `validate:"required"`
+}
+
+func (*MessagesDialogsNotModified) CRC() uint32 {
+	return uint32(0xf0e3e596)
+}
+
+func (*MessagesDialogsNotModified) ImplementsMessagesDialogs() {}
+
+func (e *MessagesDialogsNotModified) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Count)
+	return buf.Result()
+}
+
+type MessageAction interface {
+	serialize.TL
+	ImplementsMessageAction()
+}
+
+type MessageActionEmpty struct{}
+
+func (*MessageActionEmpty) CRC() uint32 {
+	return uint32(0xb6aef7b0)
+}
+
+func (*MessageActionEmpty) ImplementsMessageAction() {}
+
+func (e *MessageActionEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type MessageActionChatCreate struct {
+	Title string  `validate:"required"`
+	Users []int32 `validate:"required"`
+}
+
+func (*MessageActionChatCreate) CRC() uint32 {
+	return uint32(0xa6638b9a)
+}
+
+func (*MessageActionChatCreate) ImplementsMessageAction() {}
+
+func (e *MessageActionChatCreate) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Title)
+	buf.PutVector(e.Users)
+	return buf.Result()
+}
+
+type MessageActionChatEditTitle struct {
+	Title string `validate:"required"`
+}
+
+func (*MessageActionChatEditTitle) CRC() uint32 {
+	return uint32(0xb5a1ce5a)
+}
+
+func (*MessageActionChatEditTitle) ImplementsMessageAction() {}
+
+func (e *MessageActionChatEditTitle) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Title)
+	return buf.Result()
+}
+
+type MessageActionChatEditPhoto struct {
+	Photo Photo `validate:"required"`
+}
+
+func (*MessageActionChatEditPhoto) CRC() uint32 {
+	return uint32(0x7fcb13a8)
+}
+
+func (*MessageActionChatEditPhoto) ImplementsMessageAction() {}
+
+func (e *MessageActionChatEditPhoto) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Photo.Encode())
+	return buf.Result()
+}
+
+type MessageActionChatDeletePhoto struct{}
+
+func (*MessageActionChatDeletePhoto) CRC() uint32 {
+	return uint32(0x95e3fbef)
+}
+
+func (*MessageActionChatDeletePhoto) ImplementsMessageAction() {}
+
+func (e *MessageActionChatDeletePhoto) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type MessageActionChatAddUser struct {
+	Users []int32 `validate:"required"`
+}
+
+func (*MessageActionChatAddUser) CRC() uint32 {
+	return uint32(0x488a7337)
+}
+
+func (*MessageActionChatAddUser) ImplementsMessageAction() {}
+
+func (e *MessageActionChatAddUser) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Users)
+	return buf.Result()
+}
+
+type MessageActionChatDeleteUser struct {
+	UserId int32 `validate:"required"`
+}
+
+func (*MessageActionChatDeleteUser) CRC() uint32 {
+	return uint32(0xb2ae9b0c)
+}
+
+func (*MessageActionChatDeleteUser) ImplementsMessageAction() {}
+
+func (e *MessageActionChatDeleteUser) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.UserId)
+	return buf.Result()
+}
+
+type MessageActionChatJoinedByLink struct {
+	InviterId int32 `validate:"required"`
+}
+
+func (*MessageActionChatJoinedByLink) CRC() uint32 {
+	return uint32(0xf89cf5e8)
+}
+
+func (*MessageActionChatJoinedByLink) ImplementsMessageAction() {}
+
+func (e *MessageActionChatJoinedByLink) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.InviterId)
+	return buf.Result()
+}
+
+type MessageActionChannelCreate struct {
+	Title string `validate:"required"`
+}
+
+func (*MessageActionChannelCreate) CRC() uint32 {
+	return uint32(0x95d2ac92)
+}
+
+func (*MessageActionChannelCreate) ImplementsMessageAction() {}
+
+func (e *MessageActionChannelCreate) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Title)
+	return buf.Result()
+}
+
+type MessageActionChatMigrateTo struct {
+	ChannelId int32 `validate:"required"`
+}
+
+func (*MessageActionChatMigrateTo) CRC() uint32 {
+	return uint32(0x51bdb021)
+}
+
+func (*MessageActionChatMigrateTo) ImplementsMessageAction() {}
+
+func (e *MessageActionChatMigrateTo) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.ChannelId)
+	return buf.Result()
+}
+
+type MessageActionChannelMigrateFrom struct {
+	Title  string `validate:"required"`
+	ChatId int32  `validate:"required"`
+}
+
+func (*MessageActionChannelMigrateFrom) CRC() uint32 {
+	return uint32(0xb055eaee)
+}
+
+func (*MessageActionChannelMigrateFrom) ImplementsMessageAction() {}
+
+func (e *MessageActionChannelMigrateFrom) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Title)
+	buf.PutInt(e.ChatId)
+	return buf.Result()
+}
+
+type MessageActionPinMessage struct{}
+
+func (*MessageActionPinMessage) CRC() uint32 {
+	return uint32(0x94bd38ed)
+}
+
+func (*MessageActionPinMessage) ImplementsMessageAction() {}
+
+func (e *MessageActionPinMessage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type MessageActionHistoryClear struct{}
+
+func (*MessageActionHistoryClear) CRC() uint32 {
+	return uint32(0x9fbab604)
+}
+
+func (*MessageActionHistoryClear) ImplementsMessageAction() {}
+
+func (e *MessageActionHistoryClear) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type MessageActionGameScore struct {
+	GameId int64 `validate:"required"`
+	Score  int32 `validate:"required"`
+}
+
+func (*MessageActionGameScore) CRC() uint32 {
+	return uint32(0x92a72876)
+}
+
+func (*MessageActionGameScore) ImplementsMessageAction() {}
+
+func (e *MessageActionGameScore) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.GameId)
+	buf.PutInt(e.Score)
+	return buf.Result()
+}
+
+type MessageActionPaymentSentMe struct {
+	__flagsPosition  struct{}              // flags param position `validate:"required"`
+	Currency         string                `validate:"required"`
+	TotalAmount      int64                 `validate:"required"`
+	Payload          []byte                `validate:"required"`
+	Info             *PaymentRequestedInfo `flag:"0"`
+	ShippingOptionId string                `flag:"1"`
+	Charge           *PaymentCharge        `validate:"required"`
+}
+
+func (*MessageActionPaymentSentMe) CRC() uint32 {
+	return uint32(0x8f31b327)
+}
+
+func (*MessageActionPaymentSentMe) ImplementsMessageAction() {}
+
+func (e *MessageActionPaymentSentMe) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Info) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.ShippingOptionId) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutString(e.Currency)
+	buf.PutLong(e.TotalAmount)
+	buf.PutMessage(e.Payload)
+	if !zero.IsZeroVal(e.Info) {
+		buf.PutRawBytes(e.Info.Encode())
+	}
+	if !zero.IsZeroVal(e.ShippingOptionId) {
+		buf.PutString(e.ShippingOptionId)
+	}
+	buf.PutRawBytes(e.Charge.Encode())
+	return buf.Result()
+}
+
+type MessageActionPaymentSent struct {
+	Currency    string `validate:"required"`
+	TotalAmount int64  `validate:"required"`
+}
+
+func (*MessageActionPaymentSent) CRC() uint32 {
+	return uint32(0x40699cd0)
+}
+
+func (*MessageActionPaymentSent) ImplementsMessageAction() {}
+
+func (e *MessageActionPaymentSent) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Currency)
+	buf.PutLong(e.TotalAmount)
+	return buf.Result()
+}
+
+type MessageActionPhoneCall struct {
+	__flagsPosition struct{}               // flags param position `validate:"required"`
+	Video           bool                   `flag:"2,encoded_in_bitflags"`
+	CallId          int64                  `validate:"required"`
+	Reason          PhoneCallDiscardReason `flag:"0"`
+	Duration        int32                  `flag:"1"`
+}
+
+func (*MessageActionPhoneCall) CRC() uint32 {
+	return uint32(0x80e11a7f)
+}
+
+func (*MessageActionPhoneCall) ImplementsMessageAction() {}
+
+func (e *MessageActionPhoneCall) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Reason) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Duration) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.Video) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Video) {
+	}
+	buf.PutLong(e.CallId)
+	if !zero.IsZeroVal(e.Reason) {
+		buf.PutRawBytes(e.Reason.Encode())
+	}
+	if !zero.IsZeroVal(e.Duration) {
+		buf.PutInt(e.Duration)
+	}
+	return buf.Result()
+}
+
+type MessageActionScreenshotTaken struct{}
+
+func (*MessageActionScreenshotTaken) CRC() uint32 {
+	return uint32(0x4792929b)
+}
+
+func (*MessageActionScreenshotTaken) ImplementsMessageAction() {}
+
+func (e *MessageActionScreenshotTaken) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type MessageActionCustomAction struct {
+	Message string `validate:"required"`
+}
+
+func (*MessageActionCustomAction) CRC() uint32 {
+	return uint32(0xfae69f56)
+}
+
+func (*MessageActionCustomAction) ImplementsMessageAction() {}
+
+func (e *MessageActionCustomAction) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Message)
+	return buf.Result()
+}
+
+type MessageActionBotAllowed struct {
+	Domain string `validate:"required"`
+}
+
+func (*MessageActionBotAllowed) CRC() uint32 {
+	return uint32(0xabe9affe)
+}
+
+func (*MessageActionBotAllowed) ImplementsMessageAction() {}
+
+func (e *MessageActionBotAllowed) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Domain)
+	return buf.Result()
+}
+
+type MessageActionSecureValuesSentMe struct {
+	Values      []*SecureValue              `validate:"required"`
+	Credentials *SecureCredentialsEncrypted `validate:"required"`
+}
+
+func (*MessageActionSecureValuesSentMe) CRC() uint32 {
+	return uint32(0x1b287353)
+}
+
+func (*MessageActionSecureValuesSentMe) ImplementsMessageAction() {}
+
+func (e *MessageActionSecureValuesSentMe) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Values)
+	buf.PutRawBytes(e.Credentials.Encode())
+	return buf.Result()
+}
+
+type MessageActionSecureValuesSent struct {
+	Types []SecureValueType `validate:"required"`
+}
+
+func (*MessageActionSecureValuesSent) CRC() uint32 {
+	return uint32(0xd95c6154)
+}
+
+func (*MessageActionSecureValuesSent) ImplementsMessageAction() {}
+
+func (e *MessageActionSecureValuesSent) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Types)
+	return buf.Result()
+}
+
+type MessageActionContactSignUp struct{}
+
+func (*MessageActionContactSignUp) CRC() uint32 {
+	return uint32(0xf3f25f76)
+}
+
+func (*MessageActionContactSignUp) ImplementsMessageAction() {}
+
+func (e *MessageActionContactSignUp) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type UrlAuthResult interface {
+	serialize.TL
+	ImplementsUrlAuthResult()
+}
+
+type UrlAuthResultRequest struct {
+	__flagsPosition    struct{} // flags param position `validate:"required"`
+	RequestWriteAccess bool     `flag:"0,encoded_in_bitflags"`
+	Bot                User     `validate:"required"`
+	Domain             string   `validate:"required"`
+}
+
+func (*UrlAuthResultRequest) CRC() uint32 {
+	return uint32(0x92d33a0e)
+}
+
+func (*UrlAuthResultRequest) ImplementsUrlAuthResult() {}
+
+func (e *UrlAuthResultRequest) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.RequestWriteAccess) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.RequestWriteAccess) {
+	}
+	buf.PutRawBytes(e.Bot.Encode())
+	buf.PutString(e.Domain)
+	return buf.Result()
+}
+
+type UrlAuthResultAccepted struct {
+	Url string `validate:"required"`
+}
+
+func (*UrlAuthResultAccepted) CRC() uint32 {
+	return uint32(0x8f8c0e4e)
+}
+
+func (*UrlAuthResultAccepted) ImplementsUrlAuthResult() {}
+
+func (e *UrlAuthResultAccepted) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Url)
+	return buf.Result()
+}
+
+type UrlAuthResultDefault struct{}
+
+func (*UrlAuthResultDefault) CRC() uint32 {
+	return uint32(0xa9d6db1f)
+}
+
+func (*UrlAuthResultDefault) ImplementsUrlAuthResult() {}
+
+func (e *UrlAuthResultDefault) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type PageListOrderedItem interface {
+	serialize.TL
+	ImplementsPageListOrderedItem()
+}
+
+type PageListOrderedItemText struct {
+	Num  string   `validate:"required"`
+	Text RichText `validate:"required"`
+}
+
+func (*PageListOrderedItemText) CRC() uint32 {
+	return uint32(0x5e068047)
+}
+
+func (*PageListOrderedItemText) ImplementsPageListOrderedItem() {}
+
+func (e *PageListOrderedItemText) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Num)
+	buf.PutRawBytes(e.Text.Encode())
+	return buf.Result()
+}
+
+type PageListOrderedItemBlocks struct {
+	Num    string      `validate:"required"`
+	Blocks []PageBlock `validate:"required"`
+}
+
+func (*PageListOrderedItemBlocks) CRC() uint32 {
+	return uint32(0x98dd8936)
+}
+
+func (*PageListOrderedItemBlocks) ImplementsPageListOrderedItem() {}
+
+func (e *PageListOrderedItemBlocks) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Num)
+	buf.PutVector(e.Blocks)
+	return buf.Result()
+}
+
+type Dialog interface {
+	serialize.TL
+	ImplementsDialog()
+}
+
+type DialogObj struct {
+	__flagsPosition     struct{}            // flags param position `validate:"required"`
+	Pinned              bool                `flag:"2,encoded_in_bitflags"`
+	UnreadMark          bool                `flag:"3,encoded_in_bitflags"`
+	Peer                Peer                `validate:"required"`
+	TopMessage          int32               `validate:"required"`
+	ReadInboxMaxId      int32               `validate:"required"`
+	ReadOutboxMaxId     int32               `validate:"required"`
+	UnreadCount         int32               `validate:"required"`
+	UnreadMentionsCount int32               `validate:"required"`
+	NotifySettings      *PeerNotifySettings `validate:"required"`
+	Pts                 int32               `flag:"0"`
+	Draft               DraftMessage        `flag:"1"`
+	FolderId            int32               `flag:"4"`
+}
+
+func (*DialogObj) CRC() uint32 {
+	return uint32(0x2c171f72)
+}
+
+func (*DialogObj) ImplementsDialog() {}
+
+func (e *DialogObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Pts) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Draft) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.Pinned) {
+		flag |= 1 << 2
+	}
+	if !zero.IsZeroVal(e.UnreadMark) {
+		flag |= 1 << 3
+	}
+	if !zero.IsZeroVal(e.FolderId) {
+		flag |= 1 << 4
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Pinned) {
+	}
+	if !zero.IsZeroVal(e.UnreadMark) {
+	}
+	buf.PutRawBytes(e.Peer.Encode())
+	buf.PutInt(e.TopMessage)
+	buf.PutInt(e.ReadInboxMaxId)
+	buf.PutInt(e.ReadOutboxMaxId)
+	buf.PutInt(e.UnreadCount)
+	buf.PutInt(e.UnreadMentionsCount)
+	buf.PutRawBytes(e.NotifySettings.Encode())
+	if !zero.IsZeroVal(e.Pts) {
+		buf.PutInt(e.Pts)
+	}
+	if !zero.IsZeroVal(e.Draft) {
+		buf.PutRawBytes(e.Draft.Encode())
+	}
+	if !zero.IsZeroVal(e.FolderId) {
+		buf.PutInt(e.FolderId)
+	}
+	return buf.Result()
+}
+
+type DialogFolder struct {
+	__flagsPosition            struct{} // flags param position `validate:"required"`
+	Pinned                     bool     `flag:"2,encoded_in_bitflags"`
+	Folder                     *Folder  `validate:"required"`
+	Peer                       Peer     `validate:"required"`
+	TopMessage                 int32    `validate:"required"`
+	UnreadMutedPeersCount      int32    `validate:"required"`
+	UnreadUnmutedPeersCount    int32    `validate:"required"`
+	UnreadMutedMessagesCount   int32    `validate:"required"`
+	UnreadUnmutedMessagesCount int32    `validate:"required"`
+}
+
+func (*DialogFolder) CRC() uint32 {
+	return uint32(0x71bd134c)
+}
+
+func (*DialogFolder) ImplementsDialog() {}
+
+func (e *DialogFolder) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Pinned) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Pinned) {
+	}
+	buf.PutRawBytes(e.Folder.Encode())
+	buf.PutRawBytes(e.Peer.Encode())
+	buf.PutInt(e.TopMessage)
+	buf.PutInt(e.UnreadMutedPeersCount)
+	buf.PutInt(e.UnreadUnmutedPeersCount)
+	buf.PutInt(e.UnreadMutedMessagesCount)
+	buf.PutInt(e.UnreadUnmutedMessagesCount)
+	return buf.Result()
+}
+
+type Update interface {
+	serialize.TL
+	ImplementsUpdate()
+}
+
+type UpdateNewMessage struct {
+	Message  Message `validate:"required"`
+	Pts      int32   `validate:"required"`
+	PtsCount int32   `validate:"required"`
+}
+
+func (*UpdateNewMessage) CRC() uint32 {
+	return uint32(0x1f2b0afd)
+}
+
+func (*UpdateNewMessage) ImplementsUpdate() {}
+
+func (e *UpdateNewMessage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Message.Encode())
+	buf.PutInt(e.Pts)
+	buf.PutInt(e.PtsCount)
+	return buf.Result()
+}
+
+type UpdateMessageID struct {
+	Id       int32 `validate:"required"`
+	RandomId int64 `validate:"required"`
+}
+
+func (*UpdateMessageID) CRC() uint32 {
+	return uint32(0x4e90bfd6)
+}
+
+func (*UpdateMessageID) ImplementsUpdate() {}
+
+func (e *UpdateMessageID) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Id)
+	buf.PutLong(e.RandomId)
+	return buf.Result()
+}
+
+type UpdateDeleteMessages struct {
+	Messages []int32 `validate:"required"`
+	Pts      int32   `validate:"required"`
+	PtsCount int32   `validate:"required"`
+}
+
+func (*UpdateDeleteMessages) CRC() uint32 {
+	return uint32(0xa20db0e5)
+}
+
+func (*UpdateDeleteMessages) ImplementsUpdate() {}
+
+func (e *UpdateDeleteMessages) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Messages)
+	buf.PutInt(e.Pts)
+	buf.PutInt(e.PtsCount)
+	return buf.Result()
+}
+
+type UpdateUserTyping struct {
+	UserId int32             `validate:"required"`
+	Action SendMessageAction `validate:"required"`
+}
+
+func (*UpdateUserTyping) CRC() uint32 {
+	return uint32(0x5c486927)
+}
+
+func (*UpdateUserTyping) ImplementsUpdate() {}
+
+func (e *UpdateUserTyping) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.UserId)
+	buf.PutRawBytes(e.Action.Encode())
+	return buf.Result()
+}
+
+type UpdateChatUserTyping struct {
+	ChatId int32             `validate:"required"`
+	UserId int32             `validate:"required"`
+	Action SendMessageAction `validate:"required"`
+}
+
+func (*UpdateChatUserTyping) CRC() uint32 {
+	return uint32(0x9a65ea1f)
+}
+
+func (*UpdateChatUserTyping) ImplementsUpdate() {}
+
+func (e *UpdateChatUserTyping) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.ChatId)
+	buf.PutInt(e.UserId)
+	buf.PutRawBytes(e.Action.Encode())
+	return buf.Result()
+}
+
+type UpdateChatParticipants struct {
+	Participants ChatParticipants `validate:"required"`
+}
+
+func (*UpdateChatParticipants) CRC() uint32 {
+	return uint32(0x7761198)
+}
+
+func (*UpdateChatParticipants) ImplementsUpdate() {}
+
+func (e *UpdateChatParticipants) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Participants.Encode())
+	return buf.Result()
+}
+
+type UpdateUserStatus struct {
+	UserId int32      `validate:"required"`
+	Status UserStatus `validate:"required"`
+}
+
+func (*UpdateUserStatus) CRC() uint32 {
+	return uint32(0x1bfbd823)
+}
+
+func (*UpdateUserStatus) ImplementsUpdate() {}
+
+func (e *UpdateUserStatus) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.UserId)
+	buf.PutRawBytes(e.Status.Encode())
+	return buf.Result()
+}
+
+type UpdateUserName struct {
+	UserId    int32  `validate:"required"`
+	FirstName string `validate:"required"`
+	LastName  string `validate:"required"`
+	Username  string `validate:"required"`
+}
+
+func (*UpdateUserName) CRC() uint32 {
+	return uint32(0xa7332b73)
+}
+
+func (*UpdateUserName) ImplementsUpdate() {}
+
+func (e *UpdateUserName) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.UserId)
+	buf.PutString(e.FirstName)
+	buf.PutString(e.LastName)
+	buf.PutString(e.Username)
+	return buf.Result()
+}
+
+type UpdateUserPhoto struct {
+	UserId   int32            `validate:"required"`
+	Date     int32            `validate:"required"`
+	Photo    UserProfilePhoto `validate:"required"`
+	Previous bool             `validate:"required"`
+}
+
+func (*UpdateUserPhoto) CRC() uint32 {
+	return uint32(0x95313b0c)
+}
+
+func (*UpdateUserPhoto) ImplementsUpdate() {}
+
+func (e *UpdateUserPhoto) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.UserId)
+	buf.PutInt(e.Date)
+	buf.PutRawBytes(e.Photo.Encode())
+	buf.PutBool(e.Previous)
+	return buf.Result()
+}
+
+type UpdateNewEncryptedMessage struct {
+	Message EncryptedMessage `validate:"required"`
+	Qts     int32            `validate:"required"`
+}
+
+func (*UpdateNewEncryptedMessage) CRC() uint32 {
+	return uint32(0x12bcbd9a)
+}
+
+func (*UpdateNewEncryptedMessage) ImplementsUpdate() {}
+
+func (e *UpdateNewEncryptedMessage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Message.Encode())
+	buf.PutInt(e.Qts)
+	return buf.Result()
+}
+
+type UpdateEncryptedChatTyping struct {
+	ChatId int32 `validate:"required"`
+}
+
+func (*UpdateEncryptedChatTyping) CRC() uint32 {
+	return uint32(0x1710f156)
+}
+
+func (*UpdateEncryptedChatTyping) ImplementsUpdate() {}
+
+func (e *UpdateEncryptedChatTyping) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.ChatId)
+	return buf.Result()
+}
+
+type UpdateEncryption struct {
+	Chat EncryptedChat `validate:"required"`
+	Date int32         `validate:"required"`
+}
+
+func (*UpdateEncryption) CRC() uint32 {
+	return uint32(0xb4a2e88d)
+}
+
+func (*UpdateEncryption) ImplementsUpdate() {}
+
+func (e *UpdateEncryption) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Chat.Encode())
+	buf.PutInt(e.Date)
+	return buf.Result()
+}
+
+type UpdateEncryptedMessagesRead struct {
+	ChatId  int32 `validate:"required"`
+	MaxDate int32 `validate:"required"`
+	Date    int32 `validate:"required"`
+}
+
+func (*UpdateEncryptedMessagesRead) CRC() uint32 {
+	return uint32(0x38fe25b7)
+}
+
+func (*UpdateEncryptedMessagesRead) ImplementsUpdate() {}
+
+func (e *UpdateEncryptedMessagesRead) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.ChatId)
+	buf.PutInt(e.MaxDate)
+	buf.PutInt(e.Date)
+	return buf.Result()
+}
+
+type UpdateChatParticipantAdd struct {
+	ChatId    int32 `validate:"required"`
+	UserId    int32 `validate:"required"`
+	InviterId int32 `validate:"required"`
+	Date      int32 `validate:"required"`
+	Version   int32 `validate:"required"`
+}
+
+func (*UpdateChatParticipantAdd) CRC() uint32 {
+	return uint32(0xea4b0e5c)
+}
+
+func (*UpdateChatParticipantAdd) ImplementsUpdate() {}
+
+func (e *UpdateChatParticipantAdd) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.ChatId)
+	buf.PutInt(e.UserId)
+	buf.PutInt(e.InviterId)
+	buf.PutInt(e.Date)
+	buf.PutInt(e.Version)
+	return buf.Result()
+}
+
+type UpdateChatParticipantDelete struct {
+	ChatId  int32 `validate:"required"`
+	UserId  int32 `validate:"required"`
+	Version int32 `validate:"required"`
+}
+
+func (*UpdateChatParticipantDelete) CRC() uint32 {
+	return uint32(0x6e5f8c22)
+}
+
+func (*UpdateChatParticipantDelete) ImplementsUpdate() {}
+
+func (e *UpdateChatParticipantDelete) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.ChatId)
+	buf.PutInt(e.UserId)
+	buf.PutInt(e.Version)
+	return buf.Result()
+}
+
+type UpdateDcOptions struct {
+	DcOptions []*DcOption `validate:"required"`
+}
+
+func (*UpdateDcOptions) CRC() uint32 {
+	return uint32(0x8e5e9873)
+}
+
+func (*UpdateDcOptions) ImplementsUpdate() {}
+
+func (e *UpdateDcOptions) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.DcOptions)
+	return buf.Result()
+}
+
+type UpdateUserBlocked struct {
+	UserId  int32 `validate:"required"`
+	Blocked bool  `validate:"required"`
+}
+
+func (*UpdateUserBlocked) CRC() uint32 {
+	return uint32(0x80ece81a)
+}
+
+func (*UpdateUserBlocked) ImplementsUpdate() {}
+
+func (e *UpdateUserBlocked) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.UserId)
+	buf.PutBool(e.Blocked)
+	return buf.Result()
+}
+
+type UpdateNotifySettings struct {
+	Peer           NotifyPeer          `validate:"required"`
+	NotifySettings *PeerNotifySettings `validate:"required"`
+}
+
+func (*UpdateNotifySettings) CRC() uint32 {
+	return uint32(0xbec268ef)
+}
+
+func (*UpdateNotifySettings) ImplementsUpdate() {}
+
+func (e *UpdateNotifySettings) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Peer.Encode())
+	buf.PutRawBytes(e.NotifySettings.Encode())
+	return buf.Result()
+}
+
+type UpdateServiceNotification struct {
+	__flagsPosition struct{}        // flags param position `validate:"required"`
+	Popup           bool            `flag:"0,encoded_in_bitflags"`
+	InboxDate       int32           `flag:"1"`
+	Type            string          `validate:"required"`
+	Message         string          `validate:"required"`
+	Media           MessageMedia    `validate:"required"`
+	Entities        []MessageEntity `validate:"required"`
+}
+
+func (*UpdateServiceNotification) CRC() uint32 {
+	return uint32(0xebe46819)
+}
+
+func (*UpdateServiceNotification) ImplementsUpdate() {}
+
+func (e *UpdateServiceNotification) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Popup) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.InboxDate) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Popup) {
+	}
+	if !zero.IsZeroVal(e.InboxDate) {
+		buf.PutInt(e.InboxDate)
+	}
+	buf.PutString(e.Type)
+	buf.PutString(e.Message)
+	buf.PutRawBytes(e.Media.Encode())
+	buf.PutVector(e.Entities)
+	return buf.Result()
+}
+
+type UpdatePrivacy struct {
+	Key   PrivacyKey    `validate:"required"`
+	Rules []PrivacyRule `validate:"required"`
+}
+
+func (*UpdatePrivacy) CRC() uint32 {
+	return uint32(0xee3b272a)
+}
+
+func (*UpdatePrivacy) ImplementsUpdate() {}
+
+func (e *UpdatePrivacy) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Key.Encode())
+	buf.PutVector(e.Rules)
+	return buf.Result()
+}
+
+type UpdateUserPhone struct {
+	UserId int32  `validate:"required"`
+	Phone  string `validate:"required"`
+}
+
+func (*UpdateUserPhone) CRC() uint32 {
+	return uint32(0x12b9417b)
+}
+
+func (*UpdateUserPhone) ImplementsUpdate() {}
+
+func (e *UpdateUserPhone) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.UserId)
+	buf.PutString(e.Phone)
+	return buf.Result()
+}
+
+type UpdateReadHistoryInbox struct {
+	__flagsPosition  struct{} // flags param position `validate:"required"`
+	FolderId         int32    `flag:"0"`
+	Peer             Peer     `validate:"required"`
+	MaxId            int32    `validate:"required"`
+	StillUnreadCount int32    `validate:"required"`
+	Pts              int32    `validate:"required"`
+	PtsCount         int32    `validate:"required"`
+}
+
+func (*UpdateReadHistoryInbox) CRC() uint32 {
+	return uint32(0x9c974fdf)
+}
+
+func (*UpdateReadHistoryInbox) ImplementsUpdate() {}
+
+func (e *UpdateReadHistoryInbox) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.FolderId) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.FolderId) {
+		buf.PutInt(e.FolderId)
+	}
+	buf.PutRawBytes(e.Peer.Encode())
+	buf.PutInt(e.MaxId)
+	buf.PutInt(e.StillUnreadCount)
+	buf.PutInt(e.Pts)
+	buf.PutInt(e.PtsCount)
+	return buf.Result()
+}
+
+type UpdateReadHistoryOutbox struct {
+	Peer     Peer  `validate:"required"`
+	MaxId    int32 `validate:"required"`
+	Pts      int32 `validate:"required"`
+	PtsCount int32 `validate:"required"`
+}
+
+func (*UpdateReadHistoryOutbox) CRC() uint32 {
+	return uint32(0x2f2f21bf)
+}
+
+func (*UpdateReadHistoryOutbox) ImplementsUpdate() {}
+
+func (e *UpdateReadHistoryOutbox) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Peer.Encode())
+	buf.PutInt(e.MaxId)
+	buf.PutInt(e.Pts)
+	buf.PutInt(e.PtsCount)
+	return buf.Result()
+}
+
+type UpdateWebPage struct {
+	Webpage  WebPage `validate:"required"`
+	Pts      int32   `validate:"required"`
+	PtsCount int32   `validate:"required"`
+}
+
+func (*UpdateWebPage) CRC() uint32 {
+	return uint32(0x7f891213)
+}
+
+func (*UpdateWebPage) ImplementsUpdate() {}
+
+func (e *UpdateWebPage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Webpage.Encode())
+	buf.PutInt(e.Pts)
+	buf.PutInt(e.PtsCount)
+	return buf.Result()
+}
+
+type UpdateReadMessagesContents struct {
+	Messages []int32 `validate:"required"`
+	Pts      int32   `validate:"required"`
+	PtsCount int32   `validate:"required"`
+}
+
+func (*UpdateReadMessagesContents) CRC() uint32 {
+	return uint32(0x68c13933)
+}
+
+func (*UpdateReadMessagesContents) ImplementsUpdate() {}
+
+func (e *UpdateReadMessagesContents) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Messages)
+	buf.PutInt(e.Pts)
+	buf.PutInt(e.PtsCount)
+	return buf.Result()
+}
+
+type UpdateChannelTooLong struct {
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	ChannelId       int32    `validate:"required"`
+	Pts             int32    `flag:"0"`
+}
+
+func (*UpdateChannelTooLong) CRC() uint32 {
+	return uint32(0xeb0467fb)
+}
+
+func (*UpdateChannelTooLong) ImplementsUpdate() {}
+
+func (e *UpdateChannelTooLong) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Pts) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutInt(e.ChannelId)
+	if !zero.IsZeroVal(e.Pts) {
+		buf.PutInt(e.Pts)
+	}
+	return buf.Result()
+}
+
+type UpdateChannel struct {
+	ChannelId int32 `validate:"required"`
+}
+
+func (*UpdateChannel) CRC() uint32 {
+	return uint32(0xb6d45656)
+}
+
+func (*UpdateChannel) ImplementsUpdate() {}
+
+func (e *UpdateChannel) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.ChannelId)
+	return buf.Result()
+}
+
+type UpdateNewChannelMessage struct {
+	Message  Message `validate:"required"`
+	Pts      int32   `validate:"required"`
+	PtsCount int32   `validate:"required"`
+}
+
+func (*UpdateNewChannelMessage) CRC() uint32 {
+	return uint32(0x62ba04d9)
+}
+
+func (*UpdateNewChannelMessage) ImplementsUpdate() {}
+
+func (e *UpdateNewChannelMessage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Message.Encode())
+	buf.PutInt(e.Pts)
+	buf.PutInt(e.PtsCount)
+	return buf.Result()
+}
+
+type UpdateReadChannelInbox struct {
+	__flagsPosition  struct{} // flags param position `validate:"required"`
+	FolderId         int32    `flag:"0"`
+	ChannelId        int32    `validate:"required"`
+	MaxId            int32    `validate:"required"`
+	StillUnreadCount int32    `validate:"required"`
+	Pts              int32    `validate:"required"`
+}
+
+func (*UpdateReadChannelInbox) CRC() uint32 {
+	return uint32(0x330b5424)
+}
+
+func (*UpdateReadChannelInbox) ImplementsUpdate() {}
+
+func (e *UpdateReadChannelInbox) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.FolderId) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.FolderId) {
+		buf.PutInt(e.FolderId)
+	}
+	buf.PutInt(e.ChannelId)
+	buf.PutInt(e.MaxId)
+	buf.PutInt(e.StillUnreadCount)
+	buf.PutInt(e.Pts)
+	return buf.Result()
+}
+
+type UpdateDeleteChannelMessages struct {
+	ChannelId int32   `validate:"required"`
+	Messages  []int32 `validate:"required"`
+	Pts       int32   `validate:"required"`
+	PtsCount  int32   `validate:"required"`
+}
+
+func (*UpdateDeleteChannelMessages) CRC() uint32 {
+	return uint32(0xc37521c9)
+}
+
+func (*UpdateDeleteChannelMessages) ImplementsUpdate() {}
+
+func (e *UpdateDeleteChannelMessages) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.ChannelId)
+	buf.PutVector(e.Messages)
+	buf.PutInt(e.Pts)
+	buf.PutInt(e.PtsCount)
+	return buf.Result()
+}
+
+type UpdateChannelMessageViews struct {
+	ChannelId int32 `validate:"required"`
+	Id        int32 `validate:"required"`
+	Views     int32 `validate:"required"`
+}
+
+func (*UpdateChannelMessageViews) CRC() uint32 {
+	return uint32(0x98a12b4b)
+}
+
+func (*UpdateChannelMessageViews) ImplementsUpdate() {}
+
+func (e *UpdateChannelMessageViews) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.ChannelId)
+	buf.PutInt(e.Id)
+	buf.PutInt(e.Views)
+	return buf.Result()
+}
+
+type UpdateChatParticipantAdmin struct {
+	ChatId  int32 `validate:"required"`
+	UserId  int32 `validate:"required"`
+	IsAdmin bool  `validate:"required"`
+	Version int32 `validate:"required"`
+}
+
+func (*UpdateChatParticipantAdmin) CRC() uint32 {
+	return uint32(0xb6901959)
+}
+
+func (*UpdateChatParticipantAdmin) ImplementsUpdate() {}
+
+func (e *UpdateChatParticipantAdmin) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.ChatId)
+	buf.PutInt(e.UserId)
+	buf.PutBool(e.IsAdmin)
+	buf.PutInt(e.Version)
+	return buf.Result()
+}
+
+type UpdateNewStickerSet struct {
+	Stickerset *MessagesStickerSet `validate:"required"`
+}
+
+func (*UpdateNewStickerSet) CRC() uint32 {
+	return uint32(0x688a30aa)
+}
+
+func (*UpdateNewStickerSet) ImplementsUpdate() {}
+
+func (e *UpdateNewStickerSet) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Stickerset.Encode())
+	return buf.Result()
+}
+
+type UpdateStickerSetsOrder struct {
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	Masks           bool     `flag:"0,encoded_in_bitflags"`
+	Order           []int64  `validate:"required"`
+}
+
+func (*UpdateStickerSetsOrder) CRC() uint32 {
+	return uint32(0xbb2d201)
+}
+
+func (*UpdateStickerSetsOrder) ImplementsUpdate() {}
+
+func (e *UpdateStickerSetsOrder) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Masks) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Masks) {
+	}
+	buf.PutVector(e.Order)
+	return buf.Result()
+}
+
+type UpdateStickerSets struct{}
+
+func (*UpdateStickerSets) CRC() uint32 {
+	return uint32(0x43ae3dec)
+}
+
+func (*UpdateStickerSets) ImplementsUpdate() {}
+
+func (e *UpdateStickerSets) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type UpdateSavedGifs struct{}
+
+func (*UpdateSavedGifs) CRC() uint32 {
+	return uint32(0x9375341e)
+}
+
+func (*UpdateSavedGifs) ImplementsUpdate() {}
+
+func (e *UpdateSavedGifs) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type UpdateBotInlineQuery struct {
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	QueryId         int64    `validate:"required"`
+	UserId          int32    `validate:"required"`
+	Query           string   `validate:"required"`
+	Geo             GeoPoint `flag:"0"`
+	Offset          string   `validate:"required"`
+}
+
+func (*UpdateBotInlineQuery) CRC() uint32 {
+	return uint32(0x54826690)
+}
+
+func (*UpdateBotInlineQuery) ImplementsUpdate() {}
+
+func (e *UpdateBotInlineQuery) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Geo) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutLong(e.QueryId)
+	buf.PutInt(e.UserId)
+	buf.PutString(e.Query)
+	if !zero.IsZeroVal(e.Geo) {
+		buf.PutRawBytes(e.Geo.Encode())
+	}
+	buf.PutString(e.Offset)
+	return buf.Result()
+}
+
+type UpdateBotInlineSend struct {
+	__flagsPosition struct{}                 // flags param position `validate:"required"`
+	UserId          int32                    `validate:"required"`
+	Query           string                   `validate:"required"`
+	Geo             GeoPoint                 `flag:"0"`
+	Id              string                   `validate:"required"`
+	MsgId           *InputBotInlineMessageID `flag:"1"`
+}
+
+func (*UpdateBotInlineSend) CRC() uint32 {
+	return uint32(0xe48f964)
+}
+
+func (*UpdateBotInlineSend) ImplementsUpdate() {}
+
+func (e *UpdateBotInlineSend) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Geo) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.MsgId) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutInt(e.UserId)
+	buf.PutString(e.Query)
+	if !zero.IsZeroVal(e.Geo) {
+		buf.PutRawBytes(e.Geo.Encode())
+	}
+	buf.PutString(e.Id)
+	if !zero.IsZeroVal(e.MsgId) {
+		buf.PutRawBytes(e.MsgId.Encode())
+	}
+	return buf.Result()
+}
+
+type UpdateEditChannelMessage struct {
+	Message  Message `validate:"required"`
+	Pts      int32   `validate:"required"`
+	PtsCount int32   `validate:"required"`
+}
+
+func (*UpdateEditChannelMessage) CRC() uint32 {
+	return uint32(0x1b3f4df7)
+}
+
+func (*UpdateEditChannelMessage) ImplementsUpdate() {}
+
+func (e *UpdateEditChannelMessage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Message.Encode())
+	buf.PutInt(e.Pts)
+	buf.PutInt(e.PtsCount)
+	return buf.Result()
+}
+
+type UpdateChannelPinnedMessage struct {
+	ChannelId int32 `validate:"required"`
+	Id        int32 `validate:"required"`
+}
+
+func (*UpdateChannelPinnedMessage) CRC() uint32 {
+	return uint32(0x98592475)
+}
+
+func (*UpdateChannelPinnedMessage) ImplementsUpdate() {}
+
+func (e *UpdateChannelPinnedMessage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.ChannelId)
+	buf.PutInt(e.Id)
+	return buf.Result()
+}
+
+type UpdateBotCallbackQuery struct {
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	QueryId         int64    `validate:"required"`
+	UserId          int32    `validate:"required"`
+	Peer            Peer     `validate:"required"`
+	MsgId           int32    `validate:"required"`
+	ChatInstance    int64    `validate:"required"`
+	Data            []byte   `flag:"0"`
+	GameShortName   string   `flag:"1"`
+}
+
+func (*UpdateBotCallbackQuery) CRC() uint32 {
+	return uint32(0xe73547e1)
+}
+
+func (*UpdateBotCallbackQuery) ImplementsUpdate() {}
+
+func (e *UpdateBotCallbackQuery) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Data) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.GameShortName) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutLong(e.QueryId)
+	buf.PutInt(e.UserId)
+	buf.PutRawBytes(e.Peer.Encode())
+	buf.PutInt(e.MsgId)
+	buf.PutLong(e.ChatInstance)
+	if !zero.IsZeroVal(e.Data) {
+		buf.PutMessage(e.Data)
+	}
+	if !zero.IsZeroVal(e.GameShortName) {
+		buf.PutString(e.GameShortName)
+	}
+	return buf.Result()
+}
+
+type UpdateEditMessage struct {
+	Message  Message `validate:"required"`
+	Pts      int32   `validate:"required"`
+	PtsCount int32   `validate:"required"`
+}
+
+func (*UpdateEditMessage) CRC() uint32 {
+	return uint32(0xe40370a3)
+}
+
+func (*UpdateEditMessage) ImplementsUpdate() {}
+
+func (e *UpdateEditMessage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Message.Encode())
+	buf.PutInt(e.Pts)
+	buf.PutInt(e.PtsCount)
+	return buf.Result()
+}
+
+type UpdateInlineBotCallbackQuery struct {
+	__flagsPosition struct{}                 // flags param position `validate:"required"`
+	QueryId         int64                    `validate:"required"`
+	UserId          int32                    `validate:"required"`
+	MsgId           *InputBotInlineMessageID `validate:"required"`
+	ChatInstance    int64                    `validate:"required"`
+	Data            []byte                   `flag:"0"`
+	GameShortName   string                   `flag:"1"`
+}
+
+func (*UpdateInlineBotCallbackQuery) CRC() uint32 {
+	return uint32(0xf9d27a5a)
+}
+
+func (*UpdateInlineBotCallbackQuery) ImplementsUpdate() {}
+
+func (e *UpdateInlineBotCallbackQuery) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Data) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.GameShortName) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutLong(e.QueryId)
+	buf.PutInt(e.UserId)
+	buf.PutRawBytes(e.MsgId.Encode())
+	buf.PutLong(e.ChatInstance)
+	if !zero.IsZeroVal(e.Data) {
+		buf.PutMessage(e.Data)
+	}
+	if !zero.IsZeroVal(e.GameShortName) {
+		buf.PutString(e.GameShortName)
+	}
+	return buf.Result()
+}
+
+type UpdateReadChannelOutbox struct {
+	ChannelId int32 `validate:"required"`
+	MaxId     int32 `validate:"required"`
+}
+
+func (*UpdateReadChannelOutbox) CRC() uint32 {
+	return uint32(0x25d6c9c7)
+}
+
+func (*UpdateReadChannelOutbox) ImplementsUpdate() {}
+
+func (e *UpdateReadChannelOutbox) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.ChannelId)
+	buf.PutInt(e.MaxId)
+	return buf.Result()
+}
+
+type UpdateDraftMessage struct {
+	Peer  Peer         `validate:"required"`
+	Draft DraftMessage `validate:"required"`
+}
+
+func (*UpdateDraftMessage) CRC() uint32 {
+	return uint32(0xee2bb969)
+}
+
+func (*UpdateDraftMessage) ImplementsUpdate() {}
+
+func (e *UpdateDraftMessage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Peer.Encode())
+	buf.PutRawBytes(e.Draft.Encode())
+	return buf.Result()
+}
+
+type UpdateReadFeaturedStickers struct{}
+
+func (*UpdateReadFeaturedStickers) CRC() uint32 {
+	return uint32(0x571d2742)
+}
+
+func (*UpdateReadFeaturedStickers) ImplementsUpdate() {}
+
+func (e *UpdateReadFeaturedStickers) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type UpdateRecentStickers struct{}
+
+func (*UpdateRecentStickers) CRC() uint32 {
+	return uint32(0x9a422c20)
+}
+
+func (*UpdateRecentStickers) ImplementsUpdate() {}
+
+func (e *UpdateRecentStickers) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type UpdateConfig struct{}
+
+func (*UpdateConfig) CRC() uint32 {
+	return uint32(0xa229dd06)
+}
+
+func (*UpdateConfig) ImplementsUpdate() {}
+
+func (e *UpdateConfig) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type UpdatePtsChanged struct{}
+
+func (*UpdatePtsChanged) CRC() uint32 {
+	return uint32(0x3354678f)
+}
+
+func (*UpdatePtsChanged) ImplementsUpdate() {}
+
+func (e *UpdatePtsChanged) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type UpdateChannelWebPage struct {
+	ChannelId int32   `validate:"required"`
+	Webpage   WebPage `validate:"required"`
+	Pts       int32   `validate:"required"`
+	PtsCount  int32   `validate:"required"`
+}
+
+func (*UpdateChannelWebPage) CRC() uint32 {
+	return uint32(0x40771900)
+}
+
+func (*UpdateChannelWebPage) ImplementsUpdate() {}
+
+func (e *UpdateChannelWebPage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.ChannelId)
+	buf.PutRawBytes(e.Webpage.Encode())
+	buf.PutInt(e.Pts)
+	buf.PutInt(e.PtsCount)
+	return buf.Result()
+}
+
+type UpdateDialogPinned struct {
+	__flagsPosition struct{}   // flags param position `validate:"required"`
+	Pinned          bool       `flag:"0,encoded_in_bitflags"`
+	FolderId        int32      `flag:"1"`
+	Peer            DialogPeer `validate:"required"`
+}
+
+func (*UpdateDialogPinned) CRC() uint32 {
+	return uint32(0x6e6fe51c)
+}
+
+func (*UpdateDialogPinned) ImplementsUpdate() {}
+
+func (e *UpdateDialogPinned) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Pinned) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.FolderId) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Pinned) {
+	}
+	if !zero.IsZeroVal(e.FolderId) {
+		buf.PutInt(e.FolderId)
+	}
+	buf.PutRawBytes(e.Peer.Encode())
+	return buf.Result()
+}
+
+type UpdatePinnedDialogs struct {
+	__flagsPosition struct{}     // flags param position `validate:"required"`
+	FolderId        int32        `flag:"1"`
+	Order           []DialogPeer `flag:"0"`
+}
+
+func (*UpdatePinnedDialogs) CRC() uint32 {
+	return uint32(0xfa0f3ca2)
+}
+
+func (*UpdatePinnedDialogs) ImplementsUpdate() {}
+
+func (e *UpdatePinnedDialogs) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Order) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.FolderId) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.FolderId) {
+		buf.PutInt(e.FolderId)
+	}
+	if !zero.IsZeroVal(e.Order) {
+		buf.PutVector(e.Order)
+	}
+	return buf.Result()
+}
+
+type UpdateBotWebhookJSON struct {
+	Data *DataJSON `validate:"required"`
+}
+
+func (*UpdateBotWebhookJSON) CRC() uint32 {
+	return uint32(0x8317c0c3)
+}
+
+func (*UpdateBotWebhookJSON) ImplementsUpdate() {}
+
+func (e *UpdateBotWebhookJSON) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Data.Encode())
+	return buf.Result()
+}
+
+type UpdateBotWebhookJSONQuery struct {
+	QueryId int64     `validate:"required"`
+	Data    *DataJSON `validate:"required"`
+	Timeout int32     `validate:"required"`
+}
+
+func (*UpdateBotWebhookJSONQuery) CRC() uint32 {
+	return uint32(0x9b9240a6)
+}
+
+func (*UpdateBotWebhookJSONQuery) ImplementsUpdate() {}
+
+func (e *UpdateBotWebhookJSONQuery) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.QueryId)
+	buf.PutRawBytes(e.Data.Encode())
+	buf.PutInt(e.Timeout)
+	return buf.Result()
+}
+
+type UpdateBotShippingQuery struct {
+	QueryId         int64        `validate:"required"`
+	UserId          int32        `validate:"required"`
+	Payload         []byte       `validate:"required"`
+	ShippingAddress *PostAddress `validate:"required"`
+}
+
+func (*UpdateBotShippingQuery) CRC() uint32 {
+	return uint32(0xe0cdc940)
+}
+
+func (*UpdateBotShippingQuery) ImplementsUpdate() {}
+
+func (e *UpdateBotShippingQuery) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.QueryId)
+	buf.PutInt(e.UserId)
+	buf.PutMessage(e.Payload)
+	buf.PutRawBytes(e.ShippingAddress.Encode())
+	return buf.Result()
+}
+
+type UpdateBotPrecheckoutQuery struct {
+	__flagsPosition  struct{}              // flags param position `validate:"required"`
+	QueryId          int64                 `validate:"required"`
+	UserId           int32                 `validate:"required"`
+	Payload          []byte                `validate:"required"`
+	Info             *PaymentRequestedInfo `flag:"0"`
+	ShippingOptionId string                `flag:"1"`
+	Currency         string                `validate:"required"`
+	TotalAmount      int64                 `validate:"required"`
+}
+
+func (*UpdateBotPrecheckoutQuery) CRC() uint32 {
+	return uint32(0x5d2f3aa9)
+}
+
+func (*UpdateBotPrecheckoutQuery) ImplementsUpdate() {}
+
+func (e *UpdateBotPrecheckoutQuery) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Info) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.ShippingOptionId) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutLong(e.QueryId)
+	buf.PutInt(e.UserId)
+	buf.PutMessage(e.Payload)
+	if !zero.IsZeroVal(e.Info) {
+		buf.PutRawBytes(e.Info.Encode())
+	}
+	if !zero.IsZeroVal(e.ShippingOptionId) {
+		buf.PutString(e.ShippingOptionId)
+	}
+	buf.PutString(e.Currency)
+	buf.PutLong(e.TotalAmount)
+	return buf.Result()
+}
+
+type UpdatePhoneCall struct {
+	PhoneCall PhoneCall `validate:"required"`
+}
+
+func (*UpdatePhoneCall) CRC() uint32 {
+	return uint32(0xab0f6b1e)
+}
+
+func (*UpdatePhoneCall) ImplementsUpdate() {}
+
+func (e *UpdatePhoneCall) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.PhoneCall.Encode())
+	return buf.Result()
+}
+
+type UpdateLangPackTooLong struct {
+	LangCode string `validate:"required"`
+}
+
+func (*UpdateLangPackTooLong) CRC() uint32 {
+	return uint32(0x46560264)
+}
+
+func (*UpdateLangPackTooLong) ImplementsUpdate() {}
+
+func (e *UpdateLangPackTooLong) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.LangCode)
+	return buf.Result()
+}
+
+type UpdateLangPack struct {
+	Difference *LangPackDifference `validate:"required"`
+}
+
+func (*UpdateLangPack) CRC() uint32 {
+	return uint32(0x56022f4d)
+}
+
+func (*UpdateLangPack) ImplementsUpdate() {}
+
+func (e *UpdateLangPack) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Difference.Encode())
+	return buf.Result()
+}
+
+type UpdateFavedStickers struct{}
+
+func (*UpdateFavedStickers) CRC() uint32 {
+	return uint32(0xe511996d)
+}
+
+func (*UpdateFavedStickers) ImplementsUpdate() {}
+
+func (e *UpdateFavedStickers) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type UpdateChannelReadMessagesContents struct {
+	ChannelId int32   `validate:"required"`
+	Messages  []int32 `validate:"required"`
+}
+
+func (*UpdateChannelReadMessagesContents) CRC() uint32 {
+	return uint32(0x89893b45)
+}
+
+func (*UpdateChannelReadMessagesContents) ImplementsUpdate() {}
+
+func (e *UpdateChannelReadMessagesContents) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.ChannelId)
+	buf.PutVector(e.Messages)
+	return buf.Result()
+}
+
+type UpdateContactsReset struct{}
+
+func (*UpdateContactsReset) CRC() uint32 {
+	return uint32(0x7084a7be)
+}
+
+func (*UpdateContactsReset) ImplementsUpdate() {}
+
+func (e *UpdateContactsReset) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type UpdateChannelAvailableMessages struct {
+	ChannelId      int32 `validate:"required"`
+	AvailableMinId int32 `validate:"required"`
+}
+
+func (*UpdateChannelAvailableMessages) CRC() uint32 {
+	return uint32(0x70db6837)
+}
+
+func (*UpdateChannelAvailableMessages) ImplementsUpdate() {}
+
+func (e *UpdateChannelAvailableMessages) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.ChannelId)
+	buf.PutInt(e.AvailableMinId)
+	return buf.Result()
+}
+
+type UpdateDialogUnreadMark struct {
+	__flagsPosition struct{}   // flags param position `validate:"required"`
+	Unread          bool       `flag:"0,encoded_in_bitflags"`
+	Peer            DialogPeer `validate:"required"`
+}
+
+func (*UpdateDialogUnreadMark) CRC() uint32 {
+	return uint32(0xe16459c3)
+}
+
+func (*UpdateDialogUnreadMark) ImplementsUpdate() {}
+
+func (e *UpdateDialogUnreadMark) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Unread) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Unread) {
+	}
+	buf.PutRawBytes(e.Peer.Encode())
+	return buf.Result()
+}
+
+type UpdateUserPinnedMessage struct {
+	UserId int32 `validate:"required"`
+	Id     int32 `validate:"required"`
+}
+
+func (*UpdateUserPinnedMessage) CRC() uint32 {
+	return uint32(0x4c43da18)
+}
+
+func (*UpdateUserPinnedMessage) ImplementsUpdate() {}
+
+func (e *UpdateUserPinnedMessage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.UserId)
+	buf.PutInt(e.Id)
+	return buf.Result()
+}
+
+type UpdateChatPinnedMessage struct {
+	ChatId  int32 `validate:"required"`
+	Id      int32 `validate:"required"`
+	Version int32 `validate:"required"`
+}
+
+func (*UpdateChatPinnedMessage) CRC() uint32 {
+	return uint32(0xe10db349)
+}
+
+func (*UpdateChatPinnedMessage) ImplementsUpdate() {}
+
+func (e *UpdateChatPinnedMessage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.ChatId)
+	buf.PutInt(e.Id)
+	buf.PutInt(e.Version)
+	return buf.Result()
+}
+
+type UpdateMessagePoll struct {
+	__flagsPosition struct{}     // flags param position `validate:"required"`
+	PollId          int64        `validate:"required"`
+	Poll            *Poll        `flag:"0"`
+	Results         *PollResults `validate:"required"`
+}
+
+func (*UpdateMessagePoll) CRC() uint32 {
+	return uint32(0xaca1657b)
+}
+
+func (*UpdateMessagePoll) ImplementsUpdate() {}
+
+func (e *UpdateMessagePoll) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Poll) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutLong(e.PollId)
+	if !zero.IsZeroVal(e.Poll) {
+		buf.PutRawBytes(e.Poll.Encode())
+	}
+	buf.PutRawBytes(e.Results.Encode())
+	return buf.Result()
+}
+
+type UpdateChatDefaultBannedRights struct {
+	Peer                Peer              `validate:"required"`
+	DefaultBannedRights *ChatBannedRights `validate:"required"`
+	Version             int32             `validate:"required"`
+}
+
+func (*UpdateChatDefaultBannedRights) CRC() uint32 {
+	return uint32(0x54c01850)
+}
+
+func (*UpdateChatDefaultBannedRights) ImplementsUpdate() {}
+
+func (e *UpdateChatDefaultBannedRights) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Peer.Encode())
+	buf.PutRawBytes(e.DefaultBannedRights.Encode())
+	buf.PutInt(e.Version)
+	return buf.Result()
+}
+
+type UpdateFolderPeers struct {
+	FolderPeers []*FolderPeer `validate:"required"`
+	Pts         int32         `validate:"required"`
+	PtsCount    int32         `validate:"required"`
+}
+
+func (*UpdateFolderPeers) CRC() uint32 {
+	return uint32(0x19360dc0)
+}
+
+func (*UpdateFolderPeers) ImplementsUpdate() {}
+
+func (e *UpdateFolderPeers) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.FolderPeers)
+	buf.PutInt(e.Pts)
+	buf.PutInt(e.PtsCount)
+	return buf.Result()
+}
+
+type UpdatePeerSettings struct {
+	Peer     Peer          `validate:"required"`
+	Settings *PeerSettings `validate:"required"`
+}
+
+func (*UpdatePeerSettings) CRC() uint32 {
+	return uint32(0x6a7e7366)
+}
+
+func (*UpdatePeerSettings) ImplementsUpdate() {}
+
+func (e *UpdatePeerSettings) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Peer.Encode())
+	buf.PutRawBytes(e.Settings.Encode())
+	return buf.Result()
+}
+
+type UpdatePeerLocated struct {
+	Peers []PeerLocated `validate:"required"`
+}
+
+func (*UpdatePeerLocated) CRC() uint32 {
+	return uint32(0xb4afcfb0)
+}
+
+func (*UpdatePeerLocated) ImplementsUpdate() {}
+
+func (e *UpdatePeerLocated) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Peers)
+	return buf.Result()
+}
+
+type UpdateNewScheduledMessage struct {
+	Message Message `validate:"required"`
+}
+
+func (*UpdateNewScheduledMessage) CRC() uint32 {
+	return uint32(0x39a51dfb)
+}
+
+func (*UpdateNewScheduledMessage) ImplementsUpdate() {}
+
+func (e *UpdateNewScheduledMessage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Message.Encode())
+	return buf.Result()
+}
+
+type UpdateDeleteScheduledMessages struct {
+	Peer     Peer    `validate:"required"`
+	Messages []int32 `validate:"required"`
+}
+
+func (*UpdateDeleteScheduledMessages) CRC() uint32 {
+	return uint32(0x90866cee)
+}
+
+func (*UpdateDeleteScheduledMessages) ImplementsUpdate() {}
+
+func (e *UpdateDeleteScheduledMessages) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Peer.Encode())
+	buf.PutVector(e.Messages)
+	return buf.Result()
+}
+
+type UpdateTheme struct {
+	Theme *Theme `validate:"required"`
+}
+
+func (*UpdateTheme) CRC() uint32 {
+	return uint32(0x8216fba3)
+}
+
+func (*UpdateTheme) ImplementsUpdate() {}
+
+func (e *UpdateTheme) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Theme.Encode())
+	return buf.Result()
+}
+
+type UpdateGeoLiveViewed struct {
+	Peer  Peer  `validate:"required"`
+	MsgId int32 `validate:"required"`
+}
+
+func (*UpdateGeoLiveViewed) CRC() uint32 {
+	return uint32(0x871fb939)
+}
+
+func (*UpdateGeoLiveViewed) ImplementsUpdate() {}
+
+func (e *UpdateGeoLiveViewed) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Peer.Encode())
+	buf.PutInt(e.MsgId)
+	return buf.Result()
+}
+
+type UpdateLoginToken struct{}
+
+func (*UpdateLoginToken) CRC() uint32 {
+	return uint32(0x564fe691)
+}
+
+func (*UpdateLoginToken) ImplementsUpdate() {}
+
+func (e *UpdateLoginToken) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type UpdateMessagePollVote struct {
+	PollId  int64    `validate:"required"`
+	UserId  int32    `validate:"required"`
+	Options [][]byte `validate:"required"`
+}
+
+func (*UpdateMessagePollVote) CRC() uint32 {
+	return uint32(0x42f88f2c)
+}
+
+func (*UpdateMessagePollVote) ImplementsUpdate() {}
+
+func (e *UpdateMessagePollVote) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.PollId)
+	buf.PutInt(e.UserId)
+	buf.PutVector(e.Options)
+	return buf.Result()
+}
+
+type UpdateDialogFilter struct {
+	__flagsPosition struct{}      // flags param position `validate:"required"`
+	Id              int32         `validate:"required"`
+	Filter          *DialogFilter `flag:"0"`
+}
+
+func (*UpdateDialogFilter) CRC() uint32 {
+	return uint32(0x26ffde7d)
+}
+
+func (*UpdateDialogFilter) ImplementsUpdate() {}
+
+func (e *UpdateDialogFilter) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Filter) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutInt(e.Id)
+	if !zero.IsZeroVal(e.Filter) {
+		buf.PutRawBytes(e.Filter.Encode())
+	}
+	return buf.Result()
+}
+
+type UpdateDialogFilterOrder struct {
+	Order []int32 `validate:"required"`
+}
+
+func (*UpdateDialogFilterOrder) CRC() uint32 {
+	return uint32(0xa5d72105)
+}
+
+func (*UpdateDialogFilterOrder) ImplementsUpdate() {}
+
+func (e *UpdateDialogFilterOrder) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Order)
+	return buf.Result()
+}
+
+type UpdateDialogFilters struct{}
+
+func (*UpdateDialogFilters) CRC() uint32 {
+	return uint32(0x3504914f)
+}
+
+func (*UpdateDialogFilters) ImplementsUpdate() {}
+
+func (e *UpdateDialogFilters) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type UpdatePhoneCallSignalingData struct {
+	PhoneCallId int64  `validate:"required"`
+	Data        []byte `validate:"required"`
+}
+
+func (*UpdatePhoneCallSignalingData) CRC() uint32 {
+	return uint32(0x2661bf09)
+}
+
+func (*UpdatePhoneCallSignalingData) ImplementsUpdate() {}
+
+func (e *UpdatePhoneCallSignalingData) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.PhoneCallId)
+	buf.PutMessage(e.Data)
+	return buf.Result()
+}
+
+type UpdateChannelParticipant struct {
+	__flagsPosition struct{}           // flags param position `validate:"required"`
+	ChannelId       int32              `validate:"required"`
+	Date            int32              `validate:"required"`
+	UserId          int32              `validate:"required"`
+	PrevParticipant ChannelParticipant `flag:"0"`
+	NewParticipant  ChannelParticipant `flag:"1"`
+	Qts             int32              `validate:"required"`
+}
+
+func (*UpdateChannelParticipant) CRC() uint32 {
+	return uint32(0x65d2b464)
+}
+
+func (*UpdateChannelParticipant) ImplementsUpdate() {}
+
+func (e *UpdateChannelParticipant) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.PrevParticipant) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.NewParticipant) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutInt(e.ChannelId)
+	buf.PutInt(e.Date)
+	buf.PutInt(e.UserId)
+	if !zero.IsZeroVal(e.PrevParticipant) {
+		buf.PutRawBytes(e.PrevParticipant.Encode())
+	}
+	if !zero.IsZeroVal(e.NewParticipant) {
+		buf.PutRawBytes(e.NewParticipant.Encode())
+	}
+	buf.PutInt(e.Qts)
+	return buf.Result()
+}
+
+type NotifyPeer interface {
+	serialize.TL
+	ImplementsNotifyPeer()
+}
+
+type NotifyPeerObj struct {
+	Peer Peer `validate:"required"`
+}
+
+func (*NotifyPeerObj) CRC() uint32 {
+	return uint32(0x9fd40bd8)
+}
+
+func (*NotifyPeerObj) ImplementsNotifyPeer() {}
+
+func (e *NotifyPeerObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Peer.Encode())
+	return buf.Result()
+}
+
+type NotifyUsers struct{}
+
+func (*NotifyUsers) CRC() uint32 {
+	return uint32(0xb4c83b4c)
+}
+
+func (*NotifyUsers) ImplementsNotifyPeer() {}
+
+func (e *NotifyUsers) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type NotifyChats struct{}
+
+func (*NotifyChats) CRC() uint32 {
+	return uint32(0xc007cec3)
+}
+
+func (*NotifyChats) ImplementsNotifyPeer() {}
+
+func (e *NotifyChats) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type NotifyBroadcasts struct{}
+
+func (*NotifyBroadcasts) CRC() uint32 {
+	return uint32(0xd612e8ef)
+}
+
+func (*NotifyBroadcasts) ImplementsNotifyPeer() {}
+
+func (e *NotifyBroadcasts) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type ChannelsChannelParticipants interface {
+	serialize.TL
+	ImplementsChannelsChannelParticipants()
+}
+
+type ChannelsChannelParticipantsObj struct {
+	Count        int32                `validate:"required"`
+	Participants []ChannelParticipant `validate:"required"`
+	Users        []User               `validate:"required"`
+}
+
+func (*ChannelsChannelParticipantsObj) CRC() uint32 {
+	return uint32(0xf56ee2a8)
+}
+
+func (*ChannelsChannelParticipantsObj) ImplementsChannelsChannelParticipants() {}
+
+func (e *ChannelsChannelParticipantsObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Count)
+	buf.PutVector(e.Participants)
+	buf.PutVector(e.Users)
+	return buf.Result()
+}
+
+type ChannelsChannelParticipantsNotModified struct{}
+
+func (*ChannelsChannelParticipantsNotModified) CRC() uint32 {
+	return uint32(0xf0173fe9)
+}
+
+func (*ChannelsChannelParticipantsNotModified) ImplementsChannelsChannelParticipants() {}
+
+func (e *ChannelsChannelParticipantsNotModified) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type ContactsTopPeers interface {
+	serialize.TL
+	ImplementsContactsTopPeers()
+}
+
+type ContactsTopPeersNotModified struct{}
+
+func (*ContactsTopPeersNotModified) CRC() uint32 {
+	return uint32(0xde266ef5)
+}
+
+func (*ContactsTopPeersNotModified) ImplementsContactsTopPeers() {}
+
+func (e *ContactsTopPeersNotModified) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type ContactsTopPeersObj struct {
+	Categories []*TopPeerCategoryPeers `validate:"required"`
+	Chats      []Chat                  `validate:"required"`
+	Users      []User                  `validate:"required"`
+}
+
+func (*ContactsTopPeersObj) CRC() uint32 {
+	return uint32(0x70b772a8)
+}
+
+func (*ContactsTopPeersObj) ImplementsContactsTopPeers() {}
+
+func (e *ContactsTopPeersObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Categories)
+	buf.PutVector(e.Chats)
+	buf.PutVector(e.Users)
+	return buf.Result()
+}
+
+type ContactsTopPeersDisabled struct{}
+
+func (*ContactsTopPeersDisabled) CRC() uint32 {
+	return uint32(0xb52c939d)
+}
+
+func (*ContactsTopPeersDisabled) ImplementsContactsTopPeers() {}
+
+func (e *ContactsTopPeersDisabled) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type SecurePlainData interface {
+	serialize.TL
+	ImplementsSecurePlainData()
+}
+
+type SecurePlainPhone struct {
+	Phone string `validate:"required"`
+}
+
+func (*SecurePlainPhone) CRC() uint32 {
+	return uint32(0x7d6099dd)
+}
+
+func (*SecurePlainPhone) ImplementsSecurePlainData() {}
+
+func (e *SecurePlainPhone) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Phone)
+	return buf.Result()
+}
+
+type SecurePlainEmail struct {
+	Email string `validate:"required"`
+}
+
+func (*SecurePlainEmail) CRC() uint32 {
+	return uint32(0x21ec5a5f)
+}
+
+func (*SecurePlainEmail) ImplementsSecurePlainData() {}
+
+func (e *SecurePlainEmail) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Email)
+	return buf.Result()
+}
+
+type Chat interface {
+	serialize.TL
+	ImplementsChat()
+}
+
+type ChatEmpty struct {
+	Id int32 `validate:"required"`
+}
+
+func (*ChatEmpty) CRC() uint32 {
+	return uint32(0x9ba2d800)
+}
+
+func (*ChatEmpty) ImplementsChat() {}
+
+func (e *ChatEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Id)
+	return buf.Result()
+}
+
+type ChatObj struct {
+	__flagsPosition     struct{}          // flags param position `validate:"required"`
+	Creator             bool              `flag:"0,encoded_in_bitflags"`
+	Kicked              bool              `flag:"1,encoded_in_bitflags"`
+	Left                bool              `flag:"2,encoded_in_bitflags"`
+	Deactivated         bool              `flag:"5,encoded_in_bitflags"`
+	Id                  int32             `validate:"required"`
+	Title               string            `validate:"required"`
+	Photo               ChatPhoto         `validate:"required"`
+	ParticipantsCount   int32             `validate:"required"`
+	Date                int32             `validate:"required"`
+	Version             int32             `validate:"required"`
+	MigratedTo          InputChannel      `flag:"6"`
+	AdminRights         *ChatAdminRights  `flag:"14"`
+	DefaultBannedRights *ChatBannedRights `flag:"18"`
+}
+
+func (*ChatObj) CRC() uint32 {
+	return uint32(0x3bda1bde)
+}
+
+func (*ChatObj) ImplementsChat() {}
+
+func (e *ChatObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Creator) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Kicked) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.Left) {
+		flag |= 1 << 2
+	}
+	if !zero.IsZeroVal(e.Deactivated) {
+		flag |= 1 << 5
+	}
+	if !zero.IsZeroVal(e.MigratedTo) {
+		flag |= 1 << 6
+	}
+	if !zero.IsZeroVal(e.AdminRights) {
+		flag |= 1 << 14
+	}
+	if !zero.IsZeroVal(e.DefaultBannedRights) {
+		flag |= 1 << 18
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Creator) {
+	}
+	if !zero.IsZeroVal(e.Kicked) {
+	}
+	if !zero.IsZeroVal(e.Left) {
+	}
+	if !zero.IsZeroVal(e.Deactivated) {
+	}
+	buf.PutInt(e.Id)
+	buf.PutString(e.Title)
+	buf.PutRawBytes(e.Photo.Encode())
+	buf.PutInt(e.ParticipantsCount)
+	buf.PutInt(e.Date)
+	buf.PutInt(e.Version)
+	if !zero.IsZeroVal(e.MigratedTo) {
+		buf.PutRawBytes(e.MigratedTo.Encode())
+	}
+	if !zero.IsZeroVal(e.AdminRights) {
+		buf.PutRawBytes(e.AdminRights.Encode())
+	}
+	if !zero.IsZeroVal(e.DefaultBannedRights) {
+		buf.PutRawBytes(e.DefaultBannedRights.Encode())
+	}
+	return buf.Result()
+}
+
+type ChatForbidden struct {
+	Id    int32  `validate:"required"`
+	Title string `validate:"required"`
+}
+
+func (*ChatForbidden) CRC() uint32 {
+	return uint32(0x7328bdb)
+}
+
+func (*ChatForbidden) ImplementsChat() {}
+
+func (e *ChatForbidden) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Id)
+	buf.PutString(e.Title)
+	return buf.Result()
+}
+
+type Channel struct {
+	__flagsPosition     struct{}             // flags param position `validate:"required"`
+	Creator             bool                 `flag:"0,encoded_in_bitflags"`
+	Left                bool                 `flag:"2,encoded_in_bitflags"`
+	Broadcast           bool                 `flag:"5,encoded_in_bitflags"`
+	Verified            bool                 `flag:"7,encoded_in_bitflags"`
+	Megagroup           bool                 `flag:"8,encoded_in_bitflags"`
+	Restricted          bool                 `flag:"9,encoded_in_bitflags"`
+	Signatures          bool                 `flag:"11,encoded_in_bitflags"`
+	Min                 bool                 `flag:"12,encoded_in_bitflags"`
+	Scam                bool                 `flag:"19,encoded_in_bitflags"`
+	HasLink             bool                 `flag:"20,encoded_in_bitflags"`
+	HasGeo              bool                 `flag:"21,encoded_in_bitflags"`
+	SlowmodeEnabled     bool                 `flag:"22,encoded_in_bitflags"`
+	Id                  int32                `validate:"required"`
+	AccessHash          int64                `flag:"13"`
+	Title               string               `validate:"required"`
+	Username            string               `flag:"6"`
+	Photo               ChatPhoto            `validate:"required"`
+	Date                int32                `validate:"required"`
+	Version             int32                `validate:"required"`
+	RestrictionReason   []*RestrictionReason `flag:"9"`
+	AdminRights         *ChatAdminRights     `flag:"14"`
+	BannedRights        *ChatBannedRights    `flag:"15"`
+	DefaultBannedRights *ChatBannedRights    `flag:"18"`
+	ParticipantsCount   int32                `flag:"17"`
+}
+
+func (*Channel) CRC() uint32 {
+	return uint32(0xd31a961e)
+}
+
+func (*Channel) ImplementsChat() {}
+
+func (e *Channel) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Creator) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Left) {
+		flag |= 1 << 2
+	}
+	if !zero.IsZeroVal(e.Broadcast) {
+		flag |= 1 << 5
+	}
+	if !zero.IsZeroVal(e.Username) {
+		flag |= 1 << 6
+	}
+	if !zero.IsZeroVal(e.Verified) {
+		flag |= 1 << 7
+	}
+	if !zero.IsZeroVal(e.Megagroup) {
+		flag |= 1 << 8
+	}
+	if !zero.IsZeroVal(e.Restricted) || !zero.IsZeroVal(e.RestrictionReason) {
+		flag |= 1 << 9
+	}
+	if !zero.IsZeroVal(e.Signatures) {
+		flag |= 1 << 11
+	}
+	if !zero.IsZeroVal(e.Min) {
+		flag |= 1 << 12
+	}
+	if !zero.IsZeroVal(e.AccessHash) {
+		flag |= 1 << 13
+	}
+	if !zero.IsZeroVal(e.AdminRights) {
+		flag |= 1 << 14
+	}
+	if !zero.IsZeroVal(e.BannedRights) {
+		flag |= 1 << 15
+	}
+	if !zero.IsZeroVal(e.ParticipantsCount) {
+		flag |= 1 << 17
+	}
+	if !zero.IsZeroVal(e.DefaultBannedRights) {
+		flag |= 1 << 18
+	}
+	if !zero.IsZeroVal(e.Scam) {
+		flag |= 1 << 19
+	}
+	if !zero.IsZeroVal(e.HasLink) {
+		flag |= 1 << 20
+	}
+	if !zero.IsZeroVal(e.HasGeo) {
+		flag |= 1 << 21
+	}
+	if !zero.IsZeroVal(e.SlowmodeEnabled) {
+		flag |= 1 << 22
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Creator) {
+	}
+	if !zero.IsZeroVal(e.Left) {
+	}
+	if !zero.IsZeroVal(e.Broadcast) {
+	}
+	if !zero.IsZeroVal(e.Verified) {
+	}
+	if !zero.IsZeroVal(e.Megagroup) {
+	}
+	if !zero.IsZeroVal(e.Restricted) {
+	}
+	if !zero.IsZeroVal(e.Signatures) {
+	}
+	if !zero.IsZeroVal(e.Min) {
+	}
+	if !zero.IsZeroVal(e.Scam) {
+	}
+	if !zero.IsZeroVal(e.HasLink) {
+	}
+	if !zero.IsZeroVal(e.HasGeo) {
+	}
+	if !zero.IsZeroVal(e.SlowmodeEnabled) {
+	}
+	buf.PutInt(e.Id)
+	if !zero.IsZeroVal(e.AccessHash) {
+		buf.PutLong(e.AccessHash)
+	}
+	buf.PutString(e.Title)
+	if !zero.IsZeroVal(e.Username) {
+		buf.PutString(e.Username)
+	}
+	buf.PutRawBytes(e.Photo.Encode())
+	buf.PutInt(e.Date)
+	buf.PutInt(e.Version)
+	if !zero.IsZeroVal(e.RestrictionReason) {
+		buf.PutVector(e.RestrictionReason)
+	}
+	if !zero.IsZeroVal(e.AdminRights) {
+		buf.PutRawBytes(e.AdminRights.Encode())
+	}
+	if !zero.IsZeroVal(e.BannedRights) {
+		buf.PutRawBytes(e.BannedRights.Encode())
+	}
+	if !zero.IsZeroVal(e.DefaultBannedRights) {
+		buf.PutRawBytes(e.DefaultBannedRights.Encode())
+	}
+	if !zero.IsZeroVal(e.ParticipantsCount) {
+		buf.PutInt(e.ParticipantsCount)
+	}
+	return buf.Result()
+}
+
+type ChannelForbidden struct {
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	Broadcast       bool     `flag:"5,encoded_in_bitflags"`
+	Megagroup       bool     `flag:"8,encoded_in_bitflags"`
+	Id              int32    `validate:"required"`
+	AccessHash      int64    `validate:"required"`
+	Title           string   `validate:"required"`
+	UntilDate       int32    `flag:"16"`
+}
+
+func (*ChannelForbidden) CRC() uint32 {
+	return uint32(0x289da732)
+}
+
+func (*ChannelForbidden) ImplementsChat() {}
+
+func (e *ChannelForbidden) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Broadcast) {
+		flag |= 1 << 5
+	}
+	if !zero.IsZeroVal(e.Megagroup) {
+		flag |= 1 << 8
+	}
+	if !zero.IsZeroVal(e.UntilDate) {
+		flag |= 1 << 16
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Broadcast) {
+	}
+	if !zero.IsZeroVal(e.Megagroup) {
+	}
+	buf.PutInt(e.Id)
+	buf.PutLong(e.AccessHash)
+	buf.PutString(e.Title)
+	if !zero.IsZeroVal(e.UntilDate) {
+		buf.PutInt(e.UntilDate)
+	}
+	return buf.Result()
+}
+
+type ExportedChatInvite interface {
+	serialize.TL
+	ImplementsExportedChatInvite()
+}
+
+type ChatInviteEmpty struct{}
+
+func (*ChatInviteEmpty) CRC() uint32 {
+	return uint32(0x69df3769)
+}
+
+func (*ChatInviteEmpty) ImplementsExportedChatInvite() {}
+
+func (e *ChatInviteEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type ChatInviteExported struct {
+	Link string `validate:"required"`
+}
+
+func (*ChatInviteExported) CRC() uint32 {
+	return uint32(0xfc2e05bc)
+}
+
+func (*ChatInviteExported) ImplementsExportedChatInvite() {}
+
+func (e *ChatInviteExported) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Link)
+	return buf.Result()
+}
+
+type WebPage interface {
+	serialize.TL
+	ImplementsWebPage()
+}
+
+type WebPageEmpty struct {
+	Id int64 `validate:"required"`
+}
+
+func (*WebPageEmpty) CRC() uint32 {
+	return uint32(0xeb1477e8)
+}
+
+func (*WebPageEmpty) ImplementsWebPage() {}
+
+func (e *WebPageEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	return buf.Result()
+}
+
+type WebPagePending struct {
+	Id   int64 `validate:"required"`
+	Date int32 `validate:"required"`
+}
+
+func (*WebPagePending) CRC() uint32 {
+	return uint32(0xc586da1c)
+}
+
+func (*WebPagePending) ImplementsWebPage() {}
+
+func (e *WebPagePending) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutInt(e.Date)
+	return buf.Result()
+}
+
+type WebPageObj struct {
+	__flagsPosition struct{}            // flags param position `validate:"required"`
+	Id              int64               `validate:"required"`
+	Url             string              `validate:"required"`
+	DisplayUrl      string              `validate:"required"`
+	Hash            int32               `validate:"required"`
+	Type            string              `flag:"0"`
+	SiteName        string              `flag:"1"`
+	Title           string              `flag:"2"`
+	Description     string              `flag:"3"`
+	Photo           Photo               `flag:"4"`
+	EmbedUrl        string              `flag:"5"`
+	EmbedType       string              `flag:"5"`
+	EmbedWidth      int32               `flag:"6"`
+	EmbedHeight     int32               `flag:"6"`
+	Duration        int32               `flag:"7"`
+	Author          string              `flag:"8"`
+	Document        Document            `flag:"9"`
+	CachedPage      *Page               `flag:"10"`
+	Attributes      []*WebPageAttribute `flag:"12"`
+}
+
+func (*WebPageObj) CRC() uint32 {
+	return uint32(0xe89c45b2)
+}
+
+func (*WebPageObj) ImplementsWebPage() {}
+
+func (e *WebPageObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Type) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.SiteName) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.Title) {
+		flag |= 1 << 2
+	}
+	if !zero.IsZeroVal(e.Description) {
+		flag |= 1 << 3
+	}
+	if !zero.IsZeroVal(e.Photo) {
+		flag |= 1 << 4
+	}
+	if !zero.IsZeroVal(e.EmbedUrl) || !zero.IsZeroVal(e.EmbedType) {
+		flag |= 1 << 5
+	}
+	if !zero.IsZeroVal(e.EmbedWidth) || !zero.IsZeroVal(e.EmbedHeight) {
+		flag |= 1 << 6
+	}
+	if !zero.IsZeroVal(e.Duration) {
+		flag |= 1 << 7
+	}
+	if !zero.IsZeroVal(e.Author) {
+		flag |= 1 << 8
+	}
+	if !zero.IsZeroVal(e.Document) {
+		flag |= 1 << 9
+	}
+	if !zero.IsZeroVal(e.CachedPage) {
+		flag |= 1 << 10
+	}
+	if !zero.IsZeroVal(e.Attributes) {
+		flag |= 1 << 12
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutLong(e.Id)
+	buf.PutString(e.Url)
+	buf.PutString(e.DisplayUrl)
+	buf.PutInt(e.Hash)
+	if !zero.IsZeroVal(e.Type) {
+		buf.PutString(e.Type)
+	}
+	if !zero.IsZeroVal(e.SiteName) {
+		buf.PutString(e.SiteName)
+	}
+	if !zero.IsZeroVal(e.Title) {
+		buf.PutString(e.Title)
+	}
+	if !zero.IsZeroVal(e.Description) {
+		buf.PutString(e.Description)
+	}
+	if !zero.IsZeroVal(e.Photo) {
+		buf.PutRawBytes(e.Photo.Encode())
+	}
+	if !zero.IsZeroVal(e.EmbedUrl) {
+		buf.PutString(e.EmbedUrl)
+	}
+	if !zero.IsZeroVal(e.EmbedType) {
+		buf.PutString(e.EmbedType)
+	}
+	if !zero.IsZeroVal(e.EmbedWidth) {
+		buf.PutInt(e.EmbedWidth)
+	}
+	if !zero.IsZeroVal(e.EmbedHeight) {
+		buf.PutInt(e.EmbedHeight)
+	}
+	if !zero.IsZeroVal(e.Duration) {
+		buf.PutInt(e.Duration)
+	}
+	if !zero.IsZeroVal(e.Author) {
+		buf.PutString(e.Author)
+	}
+	if !zero.IsZeroVal(e.Document) {
+		buf.PutRawBytes(e.Document.Encode())
+	}
+	if !zero.IsZeroVal(e.CachedPage) {
+		buf.PutRawBytes(e.CachedPage.Encode())
+	}
+	if !zero.IsZeroVal(e.Attributes) {
+		buf.PutVector(e.Attributes)
+	}
+	return buf.Result()
+}
+
+type WebPageNotModified struct {
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	CachedPageViews int32    `flag:"0"`
+}
+
+func (*WebPageNotModified) CRC() uint32 {
+	return uint32(0x7311ca11)
+}
+
+func (*WebPageNotModified) ImplementsWebPage() {}
+
+func (e *WebPageNotModified) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.CachedPageViews) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.CachedPageViews) {
+		buf.PutInt(e.CachedPageViews)
+	}
+	return buf.Result()
+}
+
+type ChannelLocation interface {
+	serialize.TL
+	ImplementsChannelLocation()
+}
+
+type ChannelLocationEmpty struct{}
+
+func (*ChannelLocationEmpty) CRC() uint32 {
+	return uint32(0xbfb5ad8b)
+}
+
+func (*ChannelLocationEmpty) ImplementsChannelLocation() {}
+
+func (e *ChannelLocationEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type ChannelLocationObj struct {
+	GeoPoint GeoPoint `validate:"required"`
+	Address  string   `validate:"required"`
+}
+
+func (*ChannelLocationObj) CRC() uint32 {
+	return uint32(0x209b82db)
+}
+
+func (*ChannelLocationObj) ImplementsChannelLocation() {}
+
+func (e *ChannelLocationObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.GeoPoint.Encode())
+	buf.PutString(e.Address)
+	return buf.Result()
+}
+
+type InputPeer interface {
+	serialize.TL
+	ImplementsInputPeer()
+}
+
+type InputPeerEmpty struct{}
+
+func (*InputPeerEmpty) CRC() uint32 {
+	return uint32(0x7f3b18ea)
+}
+
+func (*InputPeerEmpty) ImplementsInputPeer() {}
+
+func (e *InputPeerEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputPeerSelf struct{}
+
+func (*InputPeerSelf) CRC() uint32 {
+	return uint32(0x7da07ec9)
+}
+
+func (*InputPeerSelf) ImplementsInputPeer() {}
+
+func (e *InputPeerSelf) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputPeerChat struct {
+	ChatId int32 `validate:"required"`
+}
+
+func (*InputPeerChat) CRC() uint32 {
+	return uint32(0x179be863)
+}
+
+func (*InputPeerChat) ImplementsInputPeer() {}
+
+func (e *InputPeerChat) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.ChatId)
+	return buf.Result()
+}
+
+type InputPeerUser struct {
+	UserId     int32 `validate:"required"`
+	AccessHash int64 `validate:"required"`
+}
+
+func (*InputPeerUser) CRC() uint32 {
+	return uint32(0x7b8e7de6)
+}
+
+func (*InputPeerUser) ImplementsInputPeer() {}
+
+func (e *InputPeerUser) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.UserId)
+	buf.PutLong(e.AccessHash)
+	return buf.Result()
+}
+
+type InputPeerChannel struct {
+	ChannelId  int32 `validate:"required"`
+	AccessHash int64 `validate:"required"`
+}
+
+func (*InputPeerChannel) CRC() uint32 {
+	return uint32(0x20adaef8)
+}
+
+func (*InputPeerChannel) ImplementsInputPeer() {}
+
+func (e *InputPeerChannel) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.ChannelId)
+	buf.PutLong(e.AccessHash)
+	return buf.Result()
+}
+
+type InputPeerUserFromMessage struct {
+	Peer   InputPeer `validate:"required"`
+	MsgId  int32     `validate:"required"`
+	UserId int32     `validate:"required"`
+}
+
+func (*InputPeerUserFromMessage) CRC() uint32 {
+	return uint32(0x17bae2e6)
+}
+
+func (*InputPeerUserFromMessage) ImplementsInputPeer() {}
+
+func (e *InputPeerUserFromMessage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Peer.Encode())
+	buf.PutInt(e.MsgId)
+	buf.PutInt(e.UserId)
+	return buf.Result()
+}
+
+type InputPeerChannelFromMessage struct {
+	Peer      InputPeer `validate:"required"`
+	MsgId     int32     `validate:"required"`
+	ChannelId int32     `validate:"required"`
+}
+
+func (*InputPeerChannelFromMessage) CRC() uint32 {
+	return uint32(0x9c95f7bb)
+}
+
+func (*InputPeerChannelFromMessage) ImplementsInputPeer() {}
+
+func (e *InputPeerChannelFromMessage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Peer.Encode())
+	buf.PutInt(e.MsgId)
+	buf.PutInt(e.ChannelId)
+	return buf.Result()
+}
+
+type InputTheme interface {
+	serialize.TL
+	ImplementsInputTheme()
+}
+
+type InputThemeObj struct {
+	Id         int64 `validate:"required"`
+	AccessHash int64 `validate:"required"`
+}
+
+func (*InputThemeObj) CRC() uint32 {
+	return uint32(0x3c5693e9)
+}
+
+func (*InputThemeObj) ImplementsInputTheme() {}
+
+func (e *InputThemeObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutLong(e.AccessHash)
+	return buf.Result()
+}
+
+type InputThemeSlug struct {
+	Slug string `validate:"required"`
+}
+
+func (*InputThemeSlug) CRC() uint32 {
+	return uint32(0xf5890df1)
+}
+
+func (*InputThemeSlug) ImplementsInputTheme() {}
+
+func (e *InputThemeSlug) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Slug)
+	return buf.Result()
+}
+
+type Photo interface {
+	serialize.TL
+	ImplementsPhoto()
+}
+
+type PhotoEmpty struct {
+	Id int64 `validate:"required"`
+}
+
+func (*PhotoEmpty) CRC() uint32 {
+	return uint32(0x2331b22d)
+}
+
+func (*PhotoEmpty) ImplementsPhoto() {}
+
+func (e *PhotoEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	return buf.Result()
+}
+
+type PhotoObj struct {
+	__flagsPosition struct{}     // flags param position `validate:"required"`
+	HasStickers     bool         `flag:"0,encoded_in_bitflags"`
+	Id              int64        `validate:"required"`
+	AccessHash      int64        `validate:"required"`
+	FileReference   []byte       `validate:"required"`
+	Date            int32        `validate:"required"`
+	Sizes           []PhotoSize  `validate:"required"`
+	VideoSizes      []*VideoSize `flag:"1"`
+	DcId            int32        `validate:"required"`
+}
+
+func (*PhotoObj) CRC() uint32 {
+	return uint32(0xfb197a65)
+}
+
+func (*PhotoObj) ImplementsPhoto() {}
+
+func (e *PhotoObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.HasStickers) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.VideoSizes) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.HasStickers) {
+	}
+	buf.PutLong(e.Id)
+	buf.PutLong(e.AccessHash)
+	buf.PutMessage(e.FileReference)
+	buf.PutInt(e.Date)
+	buf.PutVector(e.Sizes)
+	if !zero.IsZeroVal(e.VideoSizes) {
+		buf.PutVector(e.VideoSizes)
+	}
+	buf.PutInt(e.DcId)
+	return buf.Result()
+}
+
+type PasswordKdfAlgo interface {
+	serialize.TL
+	ImplementsPasswordKdfAlgo()
+}
+
+type PasswordKdfAlgoUnknown struct{}
+
+func (*PasswordKdfAlgoUnknown) CRC() uint32 {
+	return uint32(0xd45ab096)
+}
+
+func (*PasswordKdfAlgoUnknown) ImplementsPasswordKdfAlgo() {}
+
+func (e *PasswordKdfAlgoUnknown) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type PasswordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow struct {
+	Salt1 []byte `validate:"required"`
+	Salt2 []byte `validate:"required"`
+	G     int32  `validate:"required"`
+	P     []byte `validate:"required"`
+}
+
+func (*PasswordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow) CRC() uint32 {
+	return uint32(0x3a912d4a)
+}
+
+func (*PasswordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow) ImplementsPasswordKdfAlgo() {
+}
+
+func (e *PasswordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutMessage(e.Salt1)
+	buf.PutMessage(e.Salt2)
+	buf.PutInt(e.G)
+	buf.PutMessage(e.P)
+	return buf.Result()
+}
+
+type Document interface {
+	serialize.TL
+	ImplementsDocument()
+}
+
+type DocumentEmpty struct {
+	Id int64 `validate:"required"`
+}
+
+func (*DocumentEmpty) CRC() uint32 {
+	return uint32(0x36f8c871)
+}
+
+func (*DocumentEmpty) ImplementsDocument() {}
+
+func (e *DocumentEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	return buf.Result()
+}
+
+type DocumentObj struct {
+	__flagsPosition struct{}            // flags param position `validate:"required"`
+	Id              int64               `validate:"required"`
+	AccessHash      int64               `validate:"required"`
+	FileReference   []byte              `validate:"required"`
+	Date            int32               `validate:"required"`
+	MimeType        string              `validate:"required"`
+	Size            int32               `validate:"required"`
+	Thumbs          []PhotoSize         `flag:"0"`
+	VideoThumbs     []*VideoSize        `flag:"1"`
+	DcId            int32               `validate:"required"`
+	Attributes      []DocumentAttribute `validate:"required"`
+}
+
+func (*DocumentObj) CRC() uint32 {
+	return uint32(0x1e87342b)
+}
+
+func (*DocumentObj) ImplementsDocument() {}
+
+func (e *DocumentObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Thumbs) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.VideoThumbs) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutLong(e.Id)
+	buf.PutLong(e.AccessHash)
+	buf.PutMessage(e.FileReference)
+	buf.PutInt(e.Date)
+	buf.PutString(e.MimeType)
+	buf.PutInt(e.Size)
+	if !zero.IsZeroVal(e.Thumbs) {
+		buf.PutVector(e.Thumbs)
+	}
+	if !zero.IsZeroVal(e.VideoThumbs) {
+		buf.PutVector(e.VideoThumbs)
+	}
+	buf.PutInt(e.DcId)
+	buf.PutVector(e.Attributes)
+	return buf.Result()
+}
+
+type MessageUserVote interface {
+	serialize.TL
+	ImplementsMessageUserVote()
+}
+
+type MessageUserVoteObj struct {
+	UserId int32  `validate:"required"`
+	Option []byte `validate:"required"`
+	Date   int32  `validate:"required"`
+}
+
+func (*MessageUserVoteObj) CRC() uint32 {
+	return uint32(0xa28e5559)
+}
+
+func (*MessageUserVoteObj) ImplementsMessageUserVote() {}
+
+func (e *MessageUserVoteObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.UserId)
+	buf.PutMessage(e.Option)
+	buf.PutInt(e.Date)
+	return buf.Result()
+}
+
+type MessageUserVoteInputOption struct {
+	UserId int32 `validate:"required"`
+	Date   int32 `validate:"required"`
+}
+
+func (*MessageUserVoteInputOption) CRC() uint32 {
+	return uint32(0x36377430)
+}
+
+func (*MessageUserVoteInputOption) ImplementsMessageUserVote() {}
+
+func (e *MessageUserVoteInputOption) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.UserId)
+	buf.PutInt(e.Date)
+	return buf.Result()
+}
+
+type MessageUserVoteMultiple struct {
+	UserId  int32    `validate:"required"`
+	Options [][]byte `validate:"required"`
+	Date    int32    `validate:"required"`
+}
+
+func (*MessageUserVoteMultiple) CRC() uint32 {
+	return uint32(0xe8fe0de)
+}
+
+func (*MessageUserVoteMultiple) ImplementsMessageUserVote() {}
+
+func (e *MessageUserVoteMultiple) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.UserId)
+	buf.PutVector(e.Options)
+	buf.PutInt(e.Date)
+	return buf.Result()
+}
+
+type InputPrivacyRule interface {
+	serialize.TL
+	ImplementsInputPrivacyRule()
+}
+
+type InputPrivacyValueAllowContacts struct{}
+
+func (*InputPrivacyValueAllowContacts) CRC() uint32 {
+	return uint32(0xd09e07b)
+}
+
+func (*InputPrivacyValueAllowContacts) ImplementsInputPrivacyRule() {}
+
+func (e *InputPrivacyValueAllowContacts) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputPrivacyValueAllowAll struct{}
+
+func (*InputPrivacyValueAllowAll) CRC() uint32 {
+	return uint32(0x184b35ce)
+}
+
+func (*InputPrivacyValueAllowAll) ImplementsInputPrivacyRule() {}
+
+func (e *InputPrivacyValueAllowAll) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputPrivacyValueAllowUsers struct {
+	Users []InputUser `validate:"required"`
+}
+
+func (*InputPrivacyValueAllowUsers) CRC() uint32 {
+	return uint32(0x131cc67f)
+}
+
+func (*InputPrivacyValueAllowUsers) ImplementsInputPrivacyRule() {}
+
+func (e *InputPrivacyValueAllowUsers) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Users)
+	return buf.Result()
+}
+
+type InputPrivacyValueDisallowContacts struct{}
+
+func (*InputPrivacyValueDisallowContacts) CRC() uint32 {
+	return uint32(0xba52007)
+}
+
+func (*InputPrivacyValueDisallowContacts) ImplementsInputPrivacyRule() {}
+
+func (e *InputPrivacyValueDisallowContacts) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputPrivacyValueDisallowAll struct{}
+
+func (*InputPrivacyValueDisallowAll) CRC() uint32 {
+	return uint32(0xd66b66c9)
+}
+
+func (*InputPrivacyValueDisallowAll) ImplementsInputPrivacyRule() {}
+
+func (e *InputPrivacyValueDisallowAll) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputPrivacyValueDisallowUsers struct {
+	Users []InputUser `validate:"required"`
+}
+
+func (*InputPrivacyValueDisallowUsers) CRC() uint32 {
+	return uint32(0x90110467)
+}
+
+func (*InputPrivacyValueDisallowUsers) ImplementsInputPrivacyRule() {}
+
+func (e *InputPrivacyValueDisallowUsers) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Users)
+	return buf.Result()
+}
+
+type InputPrivacyValueAllowChatParticipants struct {
+	Chats []int32 `validate:"required"`
+}
+
+func (*InputPrivacyValueAllowChatParticipants) CRC() uint32 {
+	return uint32(0x4c81c1ba)
+}
+
+func (*InputPrivacyValueAllowChatParticipants) ImplementsInputPrivacyRule() {}
+
+func (e *InputPrivacyValueAllowChatParticipants) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Chats)
+	return buf.Result()
+}
+
+type InputPrivacyValueDisallowChatParticipants struct {
+	Chats []int32 `validate:"required"`
+}
+
+func (*InputPrivacyValueDisallowChatParticipants) CRC() uint32 {
+	return uint32(0xd82363af)
+}
+
+func (*InputPrivacyValueDisallowChatParticipants) ImplementsInputPrivacyRule() {}
+
+func (e *InputPrivacyValueDisallowChatParticipants) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Chats)
+	return buf.Result()
+}
+
+type ReportReason interface {
+	serialize.TL
+	ImplementsReportReason()
+}
+
+type InputReportReasonSpam struct{}
+
+func (*InputReportReasonSpam) CRC() uint32 {
+	return uint32(0x58dbcab8)
+}
+
+func (*InputReportReasonSpam) ImplementsReportReason() {}
+
+func (e *InputReportReasonSpam) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputReportReasonViolence struct{}
+
+func (*InputReportReasonViolence) CRC() uint32 {
+	return uint32(0x1e22c78d)
+}
+
+func (*InputReportReasonViolence) ImplementsReportReason() {}
+
+func (e *InputReportReasonViolence) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputReportReasonPornography struct{}
+
+func (*InputReportReasonPornography) CRC() uint32 {
+	return uint32(0x2e59d922)
+}
+
+func (*InputReportReasonPornography) ImplementsReportReason() {}
+
+func (e *InputReportReasonPornography) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputReportReasonChildAbuse struct{}
+
+func (*InputReportReasonChildAbuse) CRC() uint32 {
+	return uint32(0xadf44ee3)
+}
+
+func (*InputReportReasonChildAbuse) ImplementsReportReason() {}
+
+func (e *InputReportReasonChildAbuse) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputReportReasonOther struct {
+	Text string `validate:"required"`
+}
+
+func (*InputReportReasonOther) CRC() uint32 {
+	return uint32(0xe1746d0a)
+}
+
+func (*InputReportReasonOther) ImplementsReportReason() {}
+
+func (e *InputReportReasonOther) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Text)
+	return buf.Result()
+}
+
+type InputReportReasonCopyright struct{}
+
+func (*InputReportReasonCopyright) CRC() uint32 {
+	return uint32(0x9b89f93a)
+}
+
+func (*InputReportReasonCopyright) ImplementsReportReason() {}
+
+func (e *InputReportReasonCopyright) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputReportReasonGeoIrrelevant struct{}
+
+func (*InputReportReasonGeoIrrelevant) CRC() uint32 {
+	return uint32(0xdbd4feed)
+}
+
+func (*InputReportReasonGeoIrrelevant) ImplementsReportReason() {}
+
+func (e *InputReportReasonGeoIrrelevant) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type JSONValue interface {
+	serialize.TL
+	ImplementsJSONValue()
+}
+
+type JsonNull struct{}
+
+func (*JsonNull) CRC() uint32 {
+	return uint32(0x3f6d7b68)
+}
+
+func (*JsonNull) ImplementsJSONValue() {}
+
+func (e *JsonNull) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type JsonBool struct {
+	Value bool `validate:"required"`
+}
+
+func (*JsonBool) CRC() uint32 {
+	return uint32(0xc7345e6a)
+}
+
+func (*JsonBool) ImplementsJSONValue() {}
+
+func (e *JsonBool) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutBool(e.Value)
+	return buf.Result()
+}
+
+type JsonNumber struct {
+	Value float64 `validate:"required"`
+}
+
+func (*JsonNumber) CRC() uint32 {
+	return uint32(0x2be0dfa4)
+}
+
+func (*JsonNumber) ImplementsJSONValue() {}
+
+func (e *JsonNumber) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutDouble(e.Value)
+	return buf.Result()
+}
+
+type JsonString struct {
+	Value string `validate:"required"`
+}
+
+func (*JsonString) CRC() uint32 {
+	return uint32(0xb71e767a)
+}
+
+func (*JsonString) ImplementsJSONValue() {}
+
+func (e *JsonString) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Value)
+	return buf.Result()
+}
+
+type JsonArray struct {
+	Value []JSONValue `validate:"required"`
+}
+
+func (*JsonArray) CRC() uint32 {
+	return uint32(0xf7444763)
+}
+
+func (*JsonArray) ImplementsJSONValue() {}
+
+func (e *JsonArray) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Value)
+	return buf.Result()
+}
+
+type JsonObject struct {
+	Value []*JSONObjectValue `validate:"required"`
+}
+
+func (*JsonObject) CRC() uint32 {
+	return uint32(0x99c1d49d)
+}
+
+func (*JsonObject) ImplementsJSONValue() {}
+
+func (e *JsonObject) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Value)
+	return buf.Result()
+}
+
+type ChannelMessagesFilter interface {
+	serialize.TL
+	ImplementsChannelMessagesFilter()
+}
+
+type ChannelMessagesFilterEmpty struct{}
+
+func (*ChannelMessagesFilterEmpty) CRC() uint32 {
+	return uint32(0x94d42ee7)
+}
+
+func (*ChannelMessagesFilterEmpty) ImplementsChannelMessagesFilter() {}
+
+func (e *ChannelMessagesFilterEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type ChannelMessagesFilterObj struct {
+	__flagsPosition    struct{}        // flags param position `validate:"required"`
+	ExcludeNewMessages bool            `flag:"1,encoded_in_bitflags"`
+	Ranges             []*MessageRange `validate:"required"`
+}
+
+func (*ChannelMessagesFilterObj) CRC() uint32 {
+	return uint32(0xcd77d957)
+}
+
+func (*ChannelMessagesFilterObj) ImplementsChannelMessagesFilter() {}
+
+func (e *ChannelMessagesFilterObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.ExcludeNewMessages) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.ExcludeNewMessages) {
+	}
+	buf.PutVector(e.Ranges)
+	return buf.Result()
+}
+
+type AuthAuthorization interface {
+	serialize.TL
+	ImplementsAuthAuthorization()
+}
+
+type AuthAuthorizationObj struct {
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	TmpSessions     int32    `flag:"0"`
+	User            User     `validate:"required"`
+}
+
+func (*AuthAuthorizationObj) CRC() uint32 {
+	return uint32(0xcd050916)
+}
+
+func (*AuthAuthorizationObj) ImplementsAuthAuthorization() {}
+
+func (e *AuthAuthorizationObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.TmpSessions) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.TmpSessions) {
+		buf.PutInt(e.TmpSessions)
+	}
+	buf.PutRawBytes(e.User.Encode())
+	return buf.Result()
+}
+
+type AuthAuthorizationSignUpRequired struct {
+	__flagsPosition struct{}            // flags param position `validate:"required"`
+	TermsOfService  *HelpTermsOfService `flag:"0"`
+}
+
+func (*AuthAuthorizationSignUpRequired) CRC() uint32 {
+	return uint32(0x44747e9a)
+}
+
+func (*AuthAuthorizationSignUpRequired) ImplementsAuthAuthorization() {}
+
+func (e *AuthAuthorizationSignUpRequired) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.TermsOfService) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.TermsOfService) {
+		buf.PutRawBytes(e.TermsOfService.Encode())
+	}
+	return buf.Result()
+}
+
+type PhotosPhotos interface {
+	serialize.TL
+	ImplementsPhotosPhotos()
+}
+
+type PhotosPhotosObj struct {
+	Photos []Photo `validate:"required"`
+	Users  []User  `validate:"required"`
+}
+
+func (*PhotosPhotosObj) CRC() uint32 {
+	return uint32(0x8dca6aa5)
+}
+
+func (*PhotosPhotosObj) ImplementsPhotosPhotos() {}
+
+func (e *PhotosPhotosObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Photos)
+	buf.PutVector(e.Users)
+	return buf.Result()
+}
+
+type PhotosPhotosSlice struct {
+	Count  int32   `validate:"required"`
+	Photos []Photo `validate:"required"`
+	Users  []User  `validate:"required"`
+}
+
+func (*PhotosPhotosSlice) CRC() uint32 {
+	return uint32(0x15051f54)
+}
+
+func (*PhotosPhotosSlice) ImplementsPhotosPhotos() {}
+
+func (e *PhotosPhotosSlice) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Count)
+	buf.PutVector(e.Photos)
+	buf.PutVector(e.Users)
+	return buf.Result()
+}
+
+type PeerLocated interface {
+	serialize.TL
+	ImplementsPeerLocated()
+}
+
+type PeerLocatedObj struct {
+	Peer     Peer  `validate:"required"`
+	Expires  int32 `validate:"required"`
+	Distance int32 `validate:"required"`
+}
+
+func (*PeerLocatedObj) CRC() uint32 {
+	return uint32(0xca461b5d)
+}
+
+func (*PeerLocatedObj) ImplementsPeerLocated() {}
+
+func (e *PeerLocatedObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Peer.Encode())
+	buf.PutInt(e.Expires)
+	buf.PutInt(e.Distance)
+	return buf.Result()
+}
+
+type PeerSelfLocated struct {
+	Expires int32 `validate:"required"`
+}
+
+func (*PeerSelfLocated) CRC() uint32 {
+	return uint32(0xf8ec284b)
+}
+
+func (*PeerSelfLocated) ImplementsPeerLocated() {}
+
+func (e *PeerSelfLocated) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Expires)
+	return buf.Result()
+}
+
+type StatsGraph interface {
+	serialize.TL
+	ImplementsStatsGraph()
+}
+
+type StatsGraphAsync struct {
+	Token string `validate:"required"`
+}
+
+func (*StatsGraphAsync) CRC() uint32 {
+	return uint32(0x4a27eb2d)
+}
+
+func (*StatsGraphAsync) ImplementsStatsGraph() {}
+
+func (e *StatsGraphAsync) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Token)
+	return buf.Result()
+}
+
+type StatsGraphError struct {
+	Error string `validate:"required"`
+}
+
+func (*StatsGraphError) CRC() uint32 {
+	return uint32(0xbedc9822)
+}
+
+func (*StatsGraphError) ImplementsStatsGraph() {}
+
+func (e *StatsGraphError) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Error)
+	return buf.Result()
+}
+
+type StatsGraphObj struct {
+	__flagsPosition struct{}  // flags param position `validate:"required"`
+	Json            *DataJSON `validate:"required"`
+	ZoomToken       string    `flag:"0"`
+}
+
+func (*StatsGraphObj) CRC() uint32 {
+	return uint32(0x8ea464b6)
+}
+
+func (*StatsGraphObj) ImplementsStatsGraph() {}
+
+func (e *StatsGraphObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.ZoomToken) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutRawBytes(e.Json.Encode())
+	if !zero.IsZeroVal(e.ZoomToken) {
+		buf.PutString(e.ZoomToken)
+	}
+	return buf.Result()
+}
+
+type Updates interface {
+	serialize.TL
+	ImplementsUpdates()
+}
+
+type UpdatesTooLong struct{}
+
+func (*UpdatesTooLong) CRC() uint32 {
+	return uint32(0xe317af7e)
+}
+
+func (*UpdatesTooLong) ImplementsUpdates() {}
+
+func (e *UpdatesTooLong) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type UpdateShortMessage struct {
+	__flagsPosition struct{}          // flags param position `validate:"required"`
+	Out             bool              `flag:"1,encoded_in_bitflags"`
+	Mentioned       bool              `flag:"4,encoded_in_bitflags"`
+	MediaUnread     bool              `flag:"5,encoded_in_bitflags"`
+	Silent          bool              `flag:"13,encoded_in_bitflags"`
+	Id              int32             `validate:"required"`
+	UserId          int32             `validate:"required"`
+	Message         string            `validate:"required"`
+	Pts             int32             `validate:"required"`
+	PtsCount        int32             `validate:"required"`
+	Date            int32             `validate:"required"`
+	FwdFrom         *MessageFwdHeader `flag:"2"`
+	ViaBotId        int32             `flag:"11"`
+	ReplyToMsgId    int32             `flag:"3"`
+	Entities        []MessageEntity   `flag:"7"`
+}
+
+func (*UpdateShortMessage) CRC() uint32 {
+	return uint32(0x914fbf11)
+}
+
+func (*UpdateShortMessage) ImplementsUpdates() {}
+
+func (e *UpdateShortMessage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Out) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.FwdFrom) {
+		flag |= 1 << 2
+	}
+	if !zero.IsZeroVal(e.ReplyToMsgId) {
+		flag |= 1 << 3
+	}
+	if !zero.IsZeroVal(e.Mentioned) {
+		flag |= 1 << 4
+	}
+	if !zero.IsZeroVal(e.MediaUnread) {
+		flag |= 1 << 5
+	}
+	if !zero.IsZeroVal(e.Entities) {
+		flag |= 1 << 7
+	}
+	if !zero.IsZeroVal(e.ViaBotId) {
+		flag |= 1 << 11
+	}
+	if !zero.IsZeroVal(e.Silent) {
+		flag |= 1 << 13
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Out) {
+	}
+	if !zero.IsZeroVal(e.Mentioned) {
+	}
+	if !zero.IsZeroVal(e.MediaUnread) {
+	}
+	if !zero.IsZeroVal(e.Silent) {
+	}
+	buf.PutInt(e.Id)
+	buf.PutInt(e.UserId)
+	buf.PutString(e.Message)
+	buf.PutInt(e.Pts)
+	buf.PutInt(e.PtsCount)
+	buf.PutInt(e.Date)
+	if !zero.IsZeroVal(e.FwdFrom) {
+		buf.PutRawBytes(e.FwdFrom.Encode())
+	}
+	if !zero.IsZeroVal(e.ViaBotId) {
+		buf.PutInt(e.ViaBotId)
+	}
+	if !zero.IsZeroVal(e.ReplyToMsgId) {
+		buf.PutInt(e.ReplyToMsgId)
+	}
+	if !zero.IsZeroVal(e.Entities) {
+		buf.PutVector(e.Entities)
+	}
+	return buf.Result()
+}
+
+type UpdateShortChatMessage struct {
+	__flagsPosition struct{}          // flags param position `validate:"required"`
+	Out             bool              `flag:"1,encoded_in_bitflags"`
+	Mentioned       bool              `flag:"4,encoded_in_bitflags"`
+	MediaUnread     bool              `flag:"5,encoded_in_bitflags"`
+	Silent          bool              `flag:"13,encoded_in_bitflags"`
+	Id              int32             `validate:"required"`
+	FromId          int32             `validate:"required"`
+	ChatId          int32             `validate:"required"`
+	Message         string            `validate:"required"`
+	Pts             int32             `validate:"required"`
+	PtsCount        int32             `validate:"required"`
+	Date            int32             `validate:"required"`
+	FwdFrom         *MessageFwdHeader `flag:"2"`
+	ViaBotId        int32             `flag:"11"`
+	ReplyToMsgId    int32             `flag:"3"`
+	Entities        []MessageEntity   `flag:"7"`
+}
+
+func (*UpdateShortChatMessage) CRC() uint32 {
+	return uint32(0x16812688)
+}
+
+func (*UpdateShortChatMessage) ImplementsUpdates() {}
+
+func (e *UpdateShortChatMessage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Out) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.FwdFrom) {
+		flag |= 1 << 2
+	}
+	if !zero.IsZeroVal(e.ReplyToMsgId) {
+		flag |= 1 << 3
+	}
+	if !zero.IsZeroVal(e.Mentioned) {
+		flag |= 1 << 4
+	}
+	if !zero.IsZeroVal(e.MediaUnread) {
+		flag |= 1 << 5
+	}
+	if !zero.IsZeroVal(e.Entities) {
+		flag |= 1 << 7
+	}
+	if !zero.IsZeroVal(e.ViaBotId) {
+		flag |= 1 << 11
+	}
+	if !zero.IsZeroVal(e.Silent) {
+		flag |= 1 << 13
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Out) {
+	}
+	if !zero.IsZeroVal(e.Mentioned) {
+	}
+	if !zero.IsZeroVal(e.MediaUnread) {
+	}
+	if !zero.IsZeroVal(e.Silent) {
+	}
+	buf.PutInt(e.Id)
+	buf.PutInt(e.FromId)
+	buf.PutInt(e.ChatId)
+	buf.PutString(e.Message)
+	buf.PutInt(e.Pts)
+	buf.PutInt(e.PtsCount)
+	buf.PutInt(e.Date)
+	if !zero.IsZeroVal(e.FwdFrom) {
+		buf.PutRawBytes(e.FwdFrom.Encode())
+	}
+	if !zero.IsZeroVal(e.ViaBotId) {
+		buf.PutInt(e.ViaBotId)
+	}
+	if !zero.IsZeroVal(e.ReplyToMsgId) {
+		buf.PutInt(e.ReplyToMsgId)
+	}
+	if !zero.IsZeroVal(e.Entities) {
+		buf.PutVector(e.Entities)
+	}
+	return buf.Result()
+}
+
+type UpdateShort struct {
+	Update Update `validate:"required"`
+	Date   int32  `validate:"required"`
+}
+
+func (*UpdateShort) CRC() uint32 {
+	return uint32(0x78d4dec1)
+}
+
+func (*UpdateShort) ImplementsUpdates() {}
+
+func (e *UpdateShort) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Update.Encode())
+	buf.PutInt(e.Date)
+	return buf.Result()
+}
+
+type UpdatesCombined struct {
+	Updates  []Update `validate:"required"`
+	Users    []User   `validate:"required"`
+	Chats    []Chat   `validate:"required"`
+	Date     int32    `validate:"required"`
+	SeqStart int32    `validate:"required"`
+	Seq      int32    `validate:"required"`
+}
+
+func (*UpdatesCombined) CRC() uint32 {
+	return uint32(0x725b04c3)
+}
+
+func (*UpdatesCombined) ImplementsUpdates() {}
+
+func (e *UpdatesCombined) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Updates)
+	buf.PutVector(e.Users)
+	buf.PutVector(e.Chats)
+	buf.PutInt(e.Date)
+	buf.PutInt(e.SeqStart)
+	buf.PutInt(e.Seq)
+	return buf.Result()
+}
+
+type UpdatesObj struct {
+	Updates []Update `validate:"required"`
+	Users   []User   `validate:"required"`
+	Chats   []Chat   `validate:"required"`
+	Date    int32    `validate:"required"`
+	Seq     int32    `validate:"required"`
+}
+
+func (*UpdatesObj) CRC() uint32 {
+	return uint32(0x74ae4240)
+}
+
+func (*UpdatesObj) ImplementsUpdates() {}
+
+func (e *UpdatesObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Updates)
+	buf.PutVector(e.Users)
+	buf.PutVector(e.Chats)
+	buf.PutInt(e.Date)
+	buf.PutInt(e.Seq)
+	return buf.Result()
+}
+
+type UpdateShortSentMessage struct {
+	__flagsPosition struct{}        // flags param position `validate:"required"`
+	Out             bool            `flag:"1,encoded_in_bitflags"`
+	Id              int32           `validate:"required"`
+	Pts             int32           `validate:"required"`
+	PtsCount        int32           `validate:"required"`
+	Date            int32           `validate:"required"`
+	Media           MessageMedia    `flag:"9"`
+	Entities        []MessageEntity `flag:"7"`
+}
+
+func (*UpdateShortSentMessage) CRC() uint32 {
+	return uint32(0x11f1331c)
+}
+
+func (*UpdateShortSentMessage) ImplementsUpdates() {}
+
+func (e *UpdateShortSentMessage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Out) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.Entities) {
+		flag |= 1 << 7
+	}
+	if !zero.IsZeroVal(e.Media) {
+		flag |= 1 << 9
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Out) {
+	}
+	buf.PutInt(e.Id)
+	buf.PutInt(e.Pts)
+	buf.PutInt(e.PtsCount)
+	buf.PutInt(e.Date)
+	if !zero.IsZeroVal(e.Media) {
+		buf.PutRawBytes(e.Media.Encode())
+	}
+	if !zero.IsZeroVal(e.Entities) {
+		buf.PutVector(e.Entities)
+	}
+	return buf.Result()
+}
+
+type MessagesFavedStickers interface {
+	serialize.TL
+	ImplementsMessagesFavedStickers()
+}
+
+type MessagesFavedStickersNotModified struct{}
+
+func (*MessagesFavedStickersNotModified) CRC() uint32 {
+	return uint32(0x9e8fa6d3)
+}
+
+func (*MessagesFavedStickersNotModified) ImplementsMessagesFavedStickers() {}
+
+func (e *MessagesFavedStickersNotModified) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type MessagesFavedStickersObj struct {
+	Hash     int32          `validate:"required"`
+	Packs    []*StickerPack `validate:"required"`
+	Stickers []Document     `validate:"required"`
+}
+
+func (*MessagesFavedStickersObj) CRC() uint32 {
+	return uint32(0xf37f2f16)
+}
+
+func (*MessagesFavedStickersObj) ImplementsMessagesFavedStickers() {}
+
+func (e *MessagesFavedStickersObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Hash)
+	buf.PutVector(e.Packs)
+	buf.PutVector(e.Stickers)
+	return buf.Result()
+}
+
+type ChannelAdminLogEventAction interface {
+	serialize.TL
+	ImplementsChannelAdminLogEventAction()
+}
+
+type ChannelAdminLogEventActionChangeTitle struct {
+	PrevValue string `validate:"required"`
+	NewValue  string `validate:"required"`
+}
+
+func (*ChannelAdminLogEventActionChangeTitle) CRC() uint32 {
+	return uint32(0xe6dfb825)
+}
+
+func (*ChannelAdminLogEventActionChangeTitle) ImplementsChannelAdminLogEventAction() {}
+
+func (e *ChannelAdminLogEventActionChangeTitle) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.PrevValue)
+	buf.PutString(e.NewValue)
+	return buf.Result()
+}
+
+type ChannelAdminLogEventActionChangeAbout struct {
+	PrevValue string `validate:"required"`
+	NewValue  string `validate:"required"`
+}
+
+func (*ChannelAdminLogEventActionChangeAbout) CRC() uint32 {
+	return uint32(0x55188a2e)
+}
+
+func (*ChannelAdminLogEventActionChangeAbout) ImplementsChannelAdminLogEventAction() {}
+
+func (e *ChannelAdminLogEventActionChangeAbout) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.PrevValue)
+	buf.PutString(e.NewValue)
+	return buf.Result()
+}
+
+type ChannelAdminLogEventActionChangeUsername struct {
+	PrevValue string `validate:"required"`
+	NewValue  string `validate:"required"`
+}
+
+func (*ChannelAdminLogEventActionChangeUsername) CRC() uint32 {
+	return uint32(0x6a4afc38)
+}
+
+func (*ChannelAdminLogEventActionChangeUsername) ImplementsChannelAdminLogEventAction() {}
+
+func (e *ChannelAdminLogEventActionChangeUsername) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.PrevValue)
+	buf.PutString(e.NewValue)
+	return buf.Result()
+}
+
+type ChannelAdminLogEventActionChangePhoto struct {
+	PrevPhoto Photo `validate:"required"`
+	NewPhoto  Photo `validate:"required"`
+}
+
+func (*ChannelAdminLogEventActionChangePhoto) CRC() uint32 {
+	return uint32(0x434bd2af)
+}
+
+func (*ChannelAdminLogEventActionChangePhoto) ImplementsChannelAdminLogEventAction() {}
+
+func (e *ChannelAdminLogEventActionChangePhoto) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.PrevPhoto.Encode())
+	buf.PutRawBytes(e.NewPhoto.Encode())
+	return buf.Result()
+}
+
+type ChannelAdminLogEventActionToggleInvites struct {
+	NewValue bool `validate:"required"`
+}
+
+func (*ChannelAdminLogEventActionToggleInvites) CRC() uint32 {
+	return uint32(0x1b7907ae)
+}
+
+func (*ChannelAdminLogEventActionToggleInvites) ImplementsChannelAdminLogEventAction() {}
+
+func (e *ChannelAdminLogEventActionToggleInvites) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutBool(e.NewValue)
+	return buf.Result()
+}
+
+type ChannelAdminLogEventActionToggleSignatures struct {
+	NewValue bool `validate:"required"`
+}
+
+func (*ChannelAdminLogEventActionToggleSignatures) CRC() uint32 {
+	return uint32(0x26ae0971)
+}
+
+func (*ChannelAdminLogEventActionToggleSignatures) ImplementsChannelAdminLogEventAction() {}
+
+func (e *ChannelAdminLogEventActionToggleSignatures) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutBool(e.NewValue)
+	return buf.Result()
+}
+
+type ChannelAdminLogEventActionUpdatePinned struct {
+	Message Message `validate:"required"`
+}
+
+func (*ChannelAdminLogEventActionUpdatePinned) CRC() uint32 {
+	return uint32(0xe9e82c18)
+}
+
+func (*ChannelAdminLogEventActionUpdatePinned) ImplementsChannelAdminLogEventAction() {}
+
+func (e *ChannelAdminLogEventActionUpdatePinned) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Message.Encode())
+	return buf.Result()
+}
+
+type ChannelAdminLogEventActionEditMessage struct {
+	PrevMessage Message `validate:"required"`
+	NewMessage  Message `validate:"required"`
+}
+
+func (*ChannelAdminLogEventActionEditMessage) CRC() uint32 {
+	return uint32(0x709b2405)
+}
+
+func (*ChannelAdminLogEventActionEditMessage) ImplementsChannelAdminLogEventAction() {}
+
+func (e *ChannelAdminLogEventActionEditMessage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.PrevMessage.Encode())
+	buf.PutRawBytes(e.NewMessage.Encode())
+	return buf.Result()
+}
+
+type ChannelAdminLogEventActionDeleteMessage struct {
+	Message Message `validate:"required"`
+}
+
+func (*ChannelAdminLogEventActionDeleteMessage) CRC() uint32 {
+	return uint32(0x42e047bb)
+}
+
+func (*ChannelAdminLogEventActionDeleteMessage) ImplementsChannelAdminLogEventAction() {}
+
+func (e *ChannelAdminLogEventActionDeleteMessage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Message.Encode())
+	return buf.Result()
+}
+
+type ChannelAdminLogEventActionParticipantJoin struct{}
+
+func (*ChannelAdminLogEventActionParticipantJoin) CRC() uint32 {
+	return uint32(0x183040d3)
+}
+
+func (*ChannelAdminLogEventActionParticipantJoin) ImplementsChannelAdminLogEventAction() {}
+
+func (e *ChannelAdminLogEventActionParticipantJoin) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type ChannelAdminLogEventActionParticipantLeave struct{}
+
+func (*ChannelAdminLogEventActionParticipantLeave) CRC() uint32 {
+	return uint32(0xf89777f2)
+}
+
+func (*ChannelAdminLogEventActionParticipantLeave) ImplementsChannelAdminLogEventAction() {}
+
+func (e *ChannelAdminLogEventActionParticipantLeave) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type ChannelAdminLogEventActionParticipantInvite struct {
+	Participant ChannelParticipant `validate:"required"`
+}
+
+func (*ChannelAdminLogEventActionParticipantInvite) CRC() uint32 {
+	return uint32(0xe31c34d8)
+}
+
+func (*ChannelAdminLogEventActionParticipantInvite) ImplementsChannelAdminLogEventAction() {}
+
+func (e *ChannelAdminLogEventActionParticipantInvite) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Participant.Encode())
+	return buf.Result()
+}
+
+type ChannelAdminLogEventActionParticipantToggleBan struct {
+	PrevParticipant ChannelParticipant `validate:"required"`
+	NewParticipant  ChannelParticipant `validate:"required"`
+}
+
+func (*ChannelAdminLogEventActionParticipantToggleBan) CRC() uint32 {
+	return uint32(0xe6d83d7e)
+}
+
+func (*ChannelAdminLogEventActionParticipantToggleBan) ImplementsChannelAdminLogEventAction() {}
+
+func (e *ChannelAdminLogEventActionParticipantToggleBan) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.PrevParticipant.Encode())
+	buf.PutRawBytes(e.NewParticipant.Encode())
+	return buf.Result()
+}
+
+type ChannelAdminLogEventActionParticipantToggleAdmin struct {
+	PrevParticipant ChannelParticipant `validate:"required"`
+	NewParticipant  ChannelParticipant `validate:"required"`
+}
+
+func (*ChannelAdminLogEventActionParticipantToggleAdmin) CRC() uint32 {
+	return uint32(0xd5676710)
+}
+
+func (*ChannelAdminLogEventActionParticipantToggleAdmin) ImplementsChannelAdminLogEventAction() {}
+
+func (e *ChannelAdminLogEventActionParticipantToggleAdmin) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.PrevParticipant.Encode())
+	buf.PutRawBytes(e.NewParticipant.Encode())
+	return buf.Result()
+}
+
+type ChannelAdminLogEventActionChangeStickerSet struct {
+	PrevStickerset InputStickerSet `validate:"required"`
+	NewStickerset  InputStickerSet `validate:"required"`
+}
+
+func (*ChannelAdminLogEventActionChangeStickerSet) CRC() uint32 {
+	return uint32(0xb1c3caa7)
+}
+
+func (*ChannelAdminLogEventActionChangeStickerSet) ImplementsChannelAdminLogEventAction() {}
+
+func (e *ChannelAdminLogEventActionChangeStickerSet) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.PrevStickerset.Encode())
+	buf.PutRawBytes(e.NewStickerset.Encode())
+	return buf.Result()
+}
+
+type ChannelAdminLogEventActionTogglePreHistoryHidden struct {
+	NewValue bool `validate:"required"`
+}
+
+func (*ChannelAdminLogEventActionTogglePreHistoryHidden) CRC() uint32 {
+	return uint32(0x5f5c95f1)
+}
+
+func (*ChannelAdminLogEventActionTogglePreHistoryHidden) ImplementsChannelAdminLogEventAction() {}
+
+func (e *ChannelAdminLogEventActionTogglePreHistoryHidden) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutBool(e.NewValue)
+	return buf.Result()
+}
+
+type ChannelAdminLogEventActionDefaultBannedRights struct {
+	PrevBannedRights *ChatBannedRights `validate:"required"`
+	NewBannedRights  *ChatBannedRights `validate:"required"`
+}
+
+func (*ChannelAdminLogEventActionDefaultBannedRights) CRC() uint32 {
+	return uint32(0x2df5fc0a)
+}
+
+func (*ChannelAdminLogEventActionDefaultBannedRights) ImplementsChannelAdminLogEventAction() {}
+
+func (e *ChannelAdminLogEventActionDefaultBannedRights) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.PrevBannedRights.Encode())
+	buf.PutRawBytes(e.NewBannedRights.Encode())
+	return buf.Result()
+}
+
+type ChannelAdminLogEventActionStopPoll struct {
+	Message Message `validate:"required"`
+}
+
+func (*ChannelAdminLogEventActionStopPoll) CRC() uint32 {
+	return uint32(0x8f079643)
+}
+
+func (*ChannelAdminLogEventActionStopPoll) ImplementsChannelAdminLogEventAction() {}
+
+func (e *ChannelAdminLogEventActionStopPoll) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Message.Encode())
+	return buf.Result()
+}
+
+type ChannelAdminLogEventActionChangeLinkedChat struct {
+	PrevValue int32 `validate:"required"`
+	NewValue  int32 `validate:"required"`
+}
+
+func (*ChannelAdminLogEventActionChangeLinkedChat) CRC() uint32 {
+	return uint32(0xa26f881b)
+}
+
+func (*ChannelAdminLogEventActionChangeLinkedChat) ImplementsChannelAdminLogEventAction() {}
+
+func (e *ChannelAdminLogEventActionChangeLinkedChat) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.PrevValue)
+	buf.PutInt(e.NewValue)
+	return buf.Result()
+}
+
+type ChannelAdminLogEventActionChangeLocation struct {
+	PrevValue ChannelLocation `validate:"required"`
+	NewValue  ChannelLocation `validate:"required"`
+}
+
+func (*ChannelAdminLogEventActionChangeLocation) CRC() uint32 {
+	return uint32(0xe6b76ae)
+}
+
+func (*ChannelAdminLogEventActionChangeLocation) ImplementsChannelAdminLogEventAction() {}
+
+func (e *ChannelAdminLogEventActionChangeLocation) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.PrevValue.Encode())
+	buf.PutRawBytes(e.NewValue.Encode())
+	return buf.Result()
+}
+
+type ChannelAdminLogEventActionToggleSlowMode struct {
+	PrevValue int32 `validate:"required"`
+	NewValue  int32 `validate:"required"`
+}
+
+func (*ChannelAdminLogEventActionToggleSlowMode) CRC() uint32 {
+	return uint32(0x53909779)
+}
+
+func (*ChannelAdminLogEventActionToggleSlowMode) ImplementsChannelAdminLogEventAction() {}
+
+func (e *ChannelAdminLogEventActionToggleSlowMode) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.PrevValue)
+	buf.PutInt(e.NewValue)
+	return buf.Result()
+}
+
+type MessagesDhConfig interface {
+	serialize.TL
+	ImplementsMessagesDhConfig()
+}
+
+type MessagesDhConfigNotModified struct {
+	Random []byte `validate:"required"`
+}
+
+func (*MessagesDhConfigNotModified) CRC() uint32 {
+	return uint32(0xc0e24635)
+}
+
+func (*MessagesDhConfigNotModified) ImplementsMessagesDhConfig() {}
+
+func (e *MessagesDhConfigNotModified) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutMessage(e.Random)
+	return buf.Result()
+}
+
+type MessagesDhConfigObj struct {
+	G       int32  `validate:"required"`
+	P       []byte `validate:"required"`
+	Version int32  `validate:"required"`
+	Random  []byte `validate:"required"`
+}
+
+func (*MessagesDhConfigObj) CRC() uint32 {
+	return uint32(0x2c221edd)
+}
+
+func (*MessagesDhConfigObj) ImplementsMessagesDhConfig() {}
+
+func (e *MessagesDhConfigObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.G)
+	buf.PutMessage(e.P)
+	buf.PutInt(e.Version)
+	buf.PutMessage(e.Random)
+	return buf.Result()
+}
+
+type InputBotInlineResult interface {
+	serialize.TL
+	ImplementsInputBotInlineResult()
+}
+
+type InputBotInlineResultObj struct {
+	__flagsPosition struct{}              // flags param position `validate:"required"`
+	Id              string                `validate:"required"`
+	Type            string                `validate:"required"`
+	Title           string                `flag:"1"`
+	Description     string                `flag:"2"`
+	Url             string                `flag:"3"`
+	Thumb           *InputWebDocument     `flag:"4"`
+	Content         *InputWebDocument     `flag:"5"`
+	SendMessage     InputBotInlineMessage `validate:"required"`
+}
+
+func (*InputBotInlineResultObj) CRC() uint32 {
+	return uint32(0x88bf9319)
+}
+
+func (*InputBotInlineResultObj) ImplementsInputBotInlineResult() {}
+
+func (e *InputBotInlineResultObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Title) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.Description) {
+		flag |= 1 << 2
+	}
+	if !zero.IsZeroVal(e.Url) {
+		flag |= 1 << 3
+	}
+	if !zero.IsZeroVal(e.Thumb) {
+		flag |= 1 << 4
+	}
+	if !zero.IsZeroVal(e.Content) {
+		flag |= 1 << 5
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutString(e.Id)
+	buf.PutString(e.Type)
+	if !zero.IsZeroVal(e.Title) {
+		buf.PutString(e.Title)
+	}
+	if !zero.IsZeroVal(e.Description) {
+		buf.PutString(e.Description)
+	}
+	if !zero.IsZeroVal(e.Url) {
+		buf.PutString(e.Url)
+	}
+	if !zero.IsZeroVal(e.Thumb) {
+		buf.PutRawBytes(e.Thumb.Encode())
+	}
+	if !zero.IsZeroVal(e.Content) {
+		buf.PutRawBytes(e.Content.Encode())
+	}
+	buf.PutRawBytes(e.SendMessage.Encode())
+	return buf.Result()
+}
+
+type InputBotInlineResultPhoto struct {
+	Id          string                `validate:"required"`
+	Type        string                `validate:"required"`
+	Photo       InputPhoto            `validate:"required"`
+	SendMessage InputBotInlineMessage `validate:"required"`
+}
+
+func (*InputBotInlineResultPhoto) CRC() uint32 {
+	return uint32(0xa8d864a7)
+}
+
+func (*InputBotInlineResultPhoto) ImplementsInputBotInlineResult() {}
+
+func (e *InputBotInlineResultPhoto) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Id)
+	buf.PutString(e.Type)
+	buf.PutRawBytes(e.Photo.Encode())
+	buf.PutRawBytes(e.SendMessage.Encode())
+	return buf.Result()
+}
+
+type InputBotInlineResultDocument struct {
+	__flagsPosition struct{}              // flags param position `validate:"required"`
+	Id              string                `validate:"required"`
+	Type            string                `validate:"required"`
+	Title           string                `flag:"1"`
+	Description     string                `flag:"2"`
+	Document        InputDocument         `validate:"required"`
+	SendMessage     InputBotInlineMessage `validate:"required"`
+}
+
+func (*InputBotInlineResultDocument) CRC() uint32 {
+	return uint32(0xfff8fdc4)
+}
+
+func (*InputBotInlineResultDocument) ImplementsInputBotInlineResult() {}
+
+func (e *InputBotInlineResultDocument) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Title) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.Description) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutString(e.Id)
+	buf.PutString(e.Type)
+	if !zero.IsZeroVal(e.Title) {
+		buf.PutString(e.Title)
+	}
+	if !zero.IsZeroVal(e.Description) {
+		buf.PutString(e.Description)
+	}
+	buf.PutRawBytes(e.Document.Encode())
+	buf.PutRawBytes(e.SendMessage.Encode())
+	return buf.Result()
+}
+
+type InputBotInlineResultGame struct {
+	Id          string                `validate:"required"`
+	ShortName   string                `validate:"required"`
+	SendMessage InputBotInlineMessage `validate:"required"`
+}
+
+func (*InputBotInlineResultGame) CRC() uint32 {
+	return uint32(0x4fa417f2)
+}
+
+func (*InputBotInlineResultGame) ImplementsInputBotInlineResult() {}
+
+func (e *InputBotInlineResultGame) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Id)
+	buf.PutString(e.ShortName)
+	buf.PutRawBytes(e.SendMessage.Encode())
+	return buf.Result()
+}
+
+type StickerSetCovered interface {
+	serialize.TL
+	ImplementsStickerSetCovered()
+}
+
+type StickerSetCoveredObj struct {
+	Set   *StickerSet `validate:"required"`
+	Cover Document    `validate:"required"`
+}
+
+func (*StickerSetCoveredObj) CRC() uint32 {
+	return uint32(0x6410a5d2)
+}
+
+func (*StickerSetCoveredObj) ImplementsStickerSetCovered() {}
+
+func (e *StickerSetCoveredObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Set.Encode())
+	buf.PutRawBytes(e.Cover.Encode())
+	return buf.Result()
+}
+
+type StickerSetMultiCovered struct {
+	Set    *StickerSet `validate:"required"`
+	Covers []Document  `validate:"required"`
+}
+
+func (*StickerSetMultiCovered) CRC() uint32 {
+	return uint32(0x3407e51b)
+}
+
+func (*StickerSetMultiCovered) ImplementsStickerSetCovered() {}
+
+func (e *StickerSetMultiCovered) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Set.Encode())
+	buf.PutVector(e.Covers)
+	return buf.Result()
+}
+
+type PaymentsPaymentResult interface {
+	serialize.TL
+	ImplementsPaymentsPaymentResult()
+}
+
+type PaymentsPaymentResultObj struct {
+	Updates Updates `validate:"required"`
+}
+
+func (*PaymentsPaymentResultObj) CRC() uint32 {
+	return uint32(0x4e5f810d)
+}
+
+func (*PaymentsPaymentResultObj) ImplementsPaymentsPaymentResult() {}
+
+func (e *PaymentsPaymentResultObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Updates.Encode())
+	return buf.Result()
+}
+
+type PaymentsPaymentVerificationNeeded struct {
+	Url string `validate:"required"`
+}
+
+func (*PaymentsPaymentVerificationNeeded) CRC() uint32 {
+	return uint32(0xd8411139)
+}
+
+func (*PaymentsPaymentVerificationNeeded) ImplementsPaymentsPaymentResult() {}
+
+func (e *PaymentsPaymentVerificationNeeded) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Url)
+	return buf.Result()
+}
+
+type PageBlock interface {
+	serialize.TL
+	ImplementsPageBlock()
+}
+
+type PageBlockUnsupported struct{}
+
+func (*PageBlockUnsupported) CRC() uint32 {
+	return uint32(0x13567e8a)
+}
+
+func (*PageBlockUnsupported) ImplementsPageBlock() {}
+
+func (e *PageBlockUnsupported) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type PageBlockTitle struct {
+	Text RichText `validate:"required"`
+}
+
+func (*PageBlockTitle) CRC() uint32 {
+	return uint32(0x70abc3fd)
+}
+
+func (*PageBlockTitle) ImplementsPageBlock() {}
+
+func (e *PageBlockTitle) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	return buf.Result()
+}
+
+type PageBlockSubtitle struct {
+	Text RichText `validate:"required"`
+}
+
+func (*PageBlockSubtitle) CRC() uint32 {
+	return uint32(0x8ffa9a1f)
+}
+
+func (*PageBlockSubtitle) ImplementsPageBlock() {}
+
+func (e *PageBlockSubtitle) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	return buf.Result()
+}
+
+type PageBlockAuthorDate struct {
+	Author        RichText `validate:"required"`
+	PublishedDate int32    `validate:"required"`
+}
+
+func (*PageBlockAuthorDate) CRC() uint32 {
+	return uint32(0xbaafe5e0)
+}
+
+func (*PageBlockAuthorDate) ImplementsPageBlock() {}
+
+func (e *PageBlockAuthorDate) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Author.Encode())
+	buf.PutInt(e.PublishedDate)
+	return buf.Result()
+}
+
+type PageBlockHeader struct {
+	Text RichText `validate:"required"`
+}
+
+func (*PageBlockHeader) CRC() uint32 {
+	return uint32(0xbfd064ec)
+}
+
+func (*PageBlockHeader) ImplementsPageBlock() {}
+
+func (e *PageBlockHeader) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	return buf.Result()
+}
+
+type PageBlockSubheader struct {
+	Text RichText `validate:"required"`
+}
+
+func (*PageBlockSubheader) CRC() uint32 {
+	return uint32(0xf12bb6e1)
+}
+
+func (*PageBlockSubheader) ImplementsPageBlock() {}
+
+func (e *PageBlockSubheader) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	return buf.Result()
+}
+
+type PageBlockParagraph struct {
+	Text RichText `validate:"required"`
+}
+
+func (*PageBlockParagraph) CRC() uint32 {
+	return uint32(0x467a0766)
+}
+
+func (*PageBlockParagraph) ImplementsPageBlock() {}
+
+func (e *PageBlockParagraph) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	return buf.Result()
+}
+
+type PageBlockPreformatted struct {
+	Text     RichText `validate:"required"`
+	Language string   `validate:"required"`
+}
+
+func (*PageBlockPreformatted) CRC() uint32 {
+	return uint32(0xc070d93e)
+}
+
+func (*PageBlockPreformatted) ImplementsPageBlock() {}
+
+func (e *PageBlockPreformatted) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	buf.PutString(e.Language)
+	return buf.Result()
+}
+
+type PageBlockFooter struct {
+	Text RichText `validate:"required"`
+}
+
+func (*PageBlockFooter) CRC() uint32 {
+	return uint32(0x48870999)
+}
+
+func (*PageBlockFooter) ImplementsPageBlock() {}
+
+func (e *PageBlockFooter) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	return buf.Result()
+}
+
+type PageBlockDivider struct{}
+
+func (*PageBlockDivider) CRC() uint32 {
+	return uint32(0xdb20b188)
+}
+
+func (*PageBlockDivider) ImplementsPageBlock() {}
+
+func (e *PageBlockDivider) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type PageBlockAnchor struct {
+	Name string `validate:"required"`
+}
+
+func (*PageBlockAnchor) CRC() uint32 {
+	return uint32(0xce0d37b0)
+}
+
+func (*PageBlockAnchor) ImplementsPageBlock() {}
+
+func (e *PageBlockAnchor) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Name)
+	return buf.Result()
+}
+
+type PageBlockList struct {
+	Items []PageListItem `validate:"required"`
+}
+
+func (*PageBlockList) CRC() uint32 {
+	return uint32(0xe4e88011)
+}
+
+func (*PageBlockList) ImplementsPageBlock() {}
+
+func (e *PageBlockList) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Items)
+	return buf.Result()
+}
+
+type PageBlockBlockquote struct {
+	Text    RichText `validate:"required"`
+	Caption RichText `validate:"required"`
+}
+
+func (*PageBlockBlockquote) CRC() uint32 {
+	return uint32(0x263d7c26)
+}
+
+func (*PageBlockBlockquote) ImplementsPageBlock() {}
+
+func (e *PageBlockBlockquote) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	buf.PutRawBytes(e.Caption.Encode())
+	return buf.Result()
+}
+
+type PageBlockPullquote struct {
+	Text    RichText `validate:"required"`
+	Caption RichText `validate:"required"`
+}
+
+func (*PageBlockPullquote) CRC() uint32 {
+	return uint32(0x4f4456d3)
+}
+
+func (*PageBlockPullquote) ImplementsPageBlock() {}
+
+func (e *PageBlockPullquote) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	buf.PutRawBytes(e.Caption.Encode())
+	return buf.Result()
+}
+
+type PageBlockPhoto struct {
+	__flagsPosition struct{}     // flags param position `validate:"required"`
+	PhotoId         int64        `validate:"required"`
+	Caption         *PageCaption `validate:"required"`
+	Url             string       `flag:"0"`
+	WebpageId       int64        `flag:"0"`
+}
+
+func (*PageBlockPhoto) CRC() uint32 {
+	return uint32(0x1759c560)
+}
+
+func (*PageBlockPhoto) ImplementsPageBlock() {}
+
+func (e *PageBlockPhoto) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Url) || !zero.IsZeroVal(e.WebpageId) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutLong(e.PhotoId)
+	buf.PutRawBytes(e.Caption.Encode())
+	if !zero.IsZeroVal(e.Url) {
+		buf.PutString(e.Url)
+	}
+	if !zero.IsZeroVal(e.WebpageId) {
+		buf.PutLong(e.WebpageId)
+	}
+	return buf.Result()
+}
+
+type PageBlockVideo struct {
+	__flagsPosition struct{}     // flags param position `validate:"required"`
+	Autoplay        bool         `flag:"0,encoded_in_bitflags"`
+	Loop            bool         `flag:"1,encoded_in_bitflags"`
+	VideoId         int64        `validate:"required"`
+	Caption         *PageCaption `validate:"required"`
+}
+
+func (*PageBlockVideo) CRC() uint32 {
+	return uint32(0x7c8fe7b6)
+}
+
+func (*PageBlockVideo) ImplementsPageBlock() {}
+
+func (e *PageBlockVideo) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Autoplay) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Loop) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Autoplay) {
+	}
+	if !zero.IsZeroVal(e.Loop) {
+	}
+	buf.PutLong(e.VideoId)
+	buf.PutRawBytes(e.Caption.Encode())
+	return buf.Result()
+}
+
+type PageBlockCover struct {
+	Cover PageBlock `validate:"required"`
+}
+
+func (*PageBlockCover) CRC() uint32 {
+	return uint32(0x39f23300)
+}
+
+func (*PageBlockCover) ImplementsPageBlock() {}
+
+func (e *PageBlockCover) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Cover.Encode())
+	return buf.Result()
+}
+
+type PageBlockEmbed struct {
+	__flagsPosition struct{}     // flags param position `validate:"required"`
+	FullWidth       bool         `flag:"0,encoded_in_bitflags"`
+	AllowScrolling  bool         `flag:"3,encoded_in_bitflags"`
+	Url             string       `flag:"1"`
+	Html            string       `flag:"2"`
+	PosterPhotoId   int64        `flag:"4"`
+	W               int32        `flag:"5"`
+	H               int32        `flag:"5"`
+	Caption         *PageCaption `validate:"required"`
+}
+
+func (*PageBlockEmbed) CRC() uint32 {
+	return uint32(0xa8718dc5)
+}
+
+func (*PageBlockEmbed) ImplementsPageBlock() {}
+
+func (e *PageBlockEmbed) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.FullWidth) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Url) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.Html) {
+		flag |= 1 << 2
+	}
+	if !zero.IsZeroVal(e.AllowScrolling) {
+		flag |= 1 << 3
+	}
+	if !zero.IsZeroVal(e.PosterPhotoId) {
+		flag |= 1 << 4
+	}
+	if !zero.IsZeroVal(e.W) || !zero.IsZeroVal(e.H) {
+		flag |= 1 << 5
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.FullWidth) {
+	}
+	if !zero.IsZeroVal(e.AllowScrolling) {
+	}
+	if !zero.IsZeroVal(e.Url) {
+		buf.PutString(e.Url)
+	}
+	if !zero.IsZeroVal(e.Html) {
+		buf.PutString(e.Html)
+	}
+	if !zero.IsZeroVal(e.PosterPhotoId) {
+		buf.PutLong(e.PosterPhotoId)
+	}
+	if !zero.IsZeroVal(e.W) {
+		buf.PutInt(e.W)
+	}
+	if !zero.IsZeroVal(e.H) {
+		buf.PutInt(e.H)
+	}
+	buf.PutRawBytes(e.Caption.Encode())
+	return buf.Result()
+}
+
+type PageBlockEmbedPost struct {
+	Url           string       `validate:"required"`
+	WebpageId     int64        `validate:"required"`
+	AuthorPhotoId int64        `validate:"required"`
+	Author        string       `validate:"required"`
+	Date          int32        `validate:"required"`
+	Blocks        []PageBlock  `validate:"required"`
+	Caption       *PageCaption `validate:"required"`
+}
+
+func (*PageBlockEmbedPost) CRC() uint32 {
+	return uint32(0xf259a80b)
+}
+
+func (*PageBlockEmbedPost) ImplementsPageBlock() {}
+
+func (e *PageBlockEmbedPost) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Url)
+	buf.PutLong(e.WebpageId)
+	buf.PutLong(e.AuthorPhotoId)
+	buf.PutString(e.Author)
+	buf.PutInt(e.Date)
+	buf.PutVector(e.Blocks)
+	buf.PutRawBytes(e.Caption.Encode())
+	return buf.Result()
+}
+
+type PageBlockCollage struct {
+	Items   []PageBlock  `validate:"required"`
+	Caption *PageCaption `validate:"required"`
+}
+
+func (*PageBlockCollage) CRC() uint32 {
+	return uint32(0x65a0fa4d)
+}
+
+func (*PageBlockCollage) ImplementsPageBlock() {}
+
+func (e *PageBlockCollage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Items)
+	buf.PutRawBytes(e.Caption.Encode())
+	return buf.Result()
+}
+
+type PageBlockSlideshow struct {
+	Items   []PageBlock  `validate:"required"`
+	Caption *PageCaption `validate:"required"`
+}
+
+func (*PageBlockSlideshow) CRC() uint32 {
+	return uint32(0x31f9590)
+}
+
+func (*PageBlockSlideshow) ImplementsPageBlock() {}
+
+func (e *PageBlockSlideshow) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Items)
+	buf.PutRawBytes(e.Caption.Encode())
+	return buf.Result()
+}
+
+type PageBlockChannel struct {
+	Channel Chat `validate:"required"`
+}
+
+func (*PageBlockChannel) CRC() uint32 {
+	return uint32(0xef1751b5)
+}
+
+func (*PageBlockChannel) ImplementsPageBlock() {}
+
+func (e *PageBlockChannel) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Channel.Encode())
+	return buf.Result()
+}
+
+type PageBlockAudio struct {
+	AudioId int64        `validate:"required"`
+	Caption *PageCaption `validate:"required"`
+}
+
+func (*PageBlockAudio) CRC() uint32 {
+	return uint32(0x804361ea)
+}
+
+func (*PageBlockAudio) ImplementsPageBlock() {}
+
+func (e *PageBlockAudio) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.AudioId)
+	buf.PutRawBytes(e.Caption.Encode())
+	return buf.Result()
+}
+
+type PageBlockKicker struct {
+	Text RichText `validate:"required"`
+}
+
+func (*PageBlockKicker) CRC() uint32 {
+	return uint32(0x1e148390)
+}
+
+func (*PageBlockKicker) ImplementsPageBlock() {}
+
+func (e *PageBlockKicker) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	return buf.Result()
+}
+
+type PageBlockTable struct {
+	__flagsPosition struct{}        // flags param position `validate:"required"`
+	Bordered        bool            `flag:"0,encoded_in_bitflags"`
+	Striped         bool            `flag:"1,encoded_in_bitflags"`
+	Title           RichText        `validate:"required"`
+	Rows            []*PageTableRow `validate:"required"`
+}
+
+func (*PageBlockTable) CRC() uint32 {
+	return uint32(0xbf4dea82)
+}
+
+func (*PageBlockTable) ImplementsPageBlock() {}
+
+func (e *PageBlockTable) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Bordered) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Striped) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Bordered) {
+	}
+	if !zero.IsZeroVal(e.Striped) {
+	}
+	buf.PutRawBytes(e.Title.Encode())
+	buf.PutVector(e.Rows)
+	return buf.Result()
+}
+
+type PageBlockOrderedList struct {
+	Items []PageListOrderedItem `validate:"required"`
+}
+
+func (*PageBlockOrderedList) CRC() uint32 {
+	return uint32(0x9a8ae1e1)
+}
+
+func (*PageBlockOrderedList) ImplementsPageBlock() {}
+
+func (e *PageBlockOrderedList) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Items)
+	return buf.Result()
+}
+
+type PageBlockDetails struct {
+	__flagsPosition struct{}    // flags param position `validate:"required"`
+	Open            bool        `flag:"0,encoded_in_bitflags"`
+	Blocks          []PageBlock `validate:"required"`
+	Title           RichText    `validate:"required"`
+}
+
+func (*PageBlockDetails) CRC() uint32 {
+	return uint32(0x76768bed)
+}
+
+func (*PageBlockDetails) ImplementsPageBlock() {}
+
+func (e *PageBlockDetails) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Open) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Open) {
+	}
+	buf.PutVector(e.Blocks)
+	buf.PutRawBytes(e.Title.Encode())
+	return buf.Result()
+}
+
+type PageBlockRelatedArticles struct {
+	Title    RichText              `validate:"required"`
+	Articles []*PageRelatedArticle `validate:"required"`
+}
+
+func (*PageBlockRelatedArticles) CRC() uint32 {
+	return uint32(0x16115a96)
+}
+
+func (*PageBlockRelatedArticles) ImplementsPageBlock() {}
+
+func (e *PageBlockRelatedArticles) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Title.Encode())
+	buf.PutVector(e.Articles)
+	return buf.Result()
+}
+
+type PageBlockMap struct {
+	Geo     GeoPoint     `validate:"required"`
+	Zoom    int32        `validate:"required"`
+	W       int32        `validate:"required"`
+	H       int32        `validate:"required"`
+	Caption *PageCaption `validate:"required"`
+}
+
+func (*PageBlockMap) CRC() uint32 {
+	return uint32(0xa44f3ef6)
+}
+
+func (*PageBlockMap) ImplementsPageBlock() {}
+
+func (e *PageBlockMap) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Geo.Encode())
+	buf.PutInt(e.Zoom)
+	buf.PutInt(e.W)
+	buf.PutInt(e.H)
+	buf.PutRawBytes(e.Caption.Encode())
+	return buf.Result()
+}
+
+type UpdatesChannelDifference interface {
+	serialize.TL
+	ImplementsUpdatesChannelDifference()
+}
+
+type UpdatesChannelDifferenceEmpty struct {
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	Final           bool     `flag:"0,encoded_in_bitflags"`
+	Pts             int32    `validate:"required"`
+	Timeout         int32    `flag:"1"`
+}
+
+func (*UpdatesChannelDifferenceEmpty) CRC() uint32 {
+	return uint32(0x3e11affb)
+}
+
+func (*UpdatesChannelDifferenceEmpty) ImplementsUpdatesChannelDifference() {}
+
+func (e *UpdatesChannelDifferenceEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Final) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Timeout) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Final) {
+	}
+	buf.PutInt(e.Pts)
+	if !zero.IsZeroVal(e.Timeout) {
+		buf.PutInt(e.Timeout)
+	}
+	return buf.Result()
+}
+
+type UpdatesChannelDifferenceTooLong struct {
+	__flagsPosition struct{}  // flags param position `validate:"required"`
+	Final           bool      `flag:"0,encoded_in_bitflags"`
+	Timeout         int32     `flag:"1"`
+	Dialog          Dialog    `validate:"required"`
+	Messages        []Message `validate:"required"`
+	Chats           []Chat    `validate:"required"`
+	Users           []User    `validate:"required"`
+}
+
+func (*UpdatesChannelDifferenceTooLong) CRC() uint32 {
+	return uint32(0xa4bcc6fe)
+}
+
+func (*UpdatesChannelDifferenceTooLong) ImplementsUpdatesChannelDifference() {}
+
+func (e *UpdatesChannelDifferenceTooLong) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Final) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Timeout) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Final) {
+	}
+	if !zero.IsZeroVal(e.Timeout) {
+		buf.PutInt(e.Timeout)
+	}
+	buf.PutRawBytes(e.Dialog.Encode())
+	buf.PutVector(e.Messages)
+	buf.PutVector(e.Chats)
+	buf.PutVector(e.Users)
+	return buf.Result()
+}
+
+type UpdatesChannelDifferenceObj struct {
+	__flagsPosition struct{}  // flags param position `validate:"required"`
+	Final           bool      `flag:"0,encoded_in_bitflags"`
+	Pts             int32     `validate:"required"`
+	Timeout         int32     `flag:"1"`
+	NewMessages     []Message `validate:"required"`
+	OtherUpdates    []Update  `validate:"required"`
+	Chats           []Chat    `validate:"required"`
+	Users           []User    `validate:"required"`
+}
+
+func (*UpdatesChannelDifferenceObj) CRC() uint32 {
+	return uint32(0x2064674e)
+}
+
+func (*UpdatesChannelDifferenceObj) ImplementsUpdatesChannelDifference() {}
+
+func (e *UpdatesChannelDifferenceObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Final) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Timeout) {
+		flag |= 1 << 1
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Final) {
+	}
+	buf.PutInt(e.Pts)
+	if !zero.IsZeroVal(e.Timeout) {
+		buf.PutInt(e.Timeout)
+	}
+	buf.PutVector(e.NewMessages)
+	buf.PutVector(e.OtherUpdates)
+	buf.PutVector(e.Chats)
+	buf.PutVector(e.Users)
+	return buf.Result()
+}
+
+type ChatParticipants interface {
+	serialize.TL
+	ImplementsChatParticipants()
+}
+
+type ChatParticipantsForbidden struct {
+	__flagsPosition struct{}        // flags param position `validate:"required"`
+	ChatId          int32           `validate:"required"`
+	SelfParticipant ChatParticipant `flag:"0"`
+}
+
+func (*ChatParticipantsForbidden) CRC() uint32 {
+	return uint32(0xfc900c2b)
+}
+
+func (*ChatParticipantsForbidden) ImplementsChatParticipants() {}
+
+func (e *ChatParticipantsForbidden) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.SelfParticipant) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	buf.PutInt(e.ChatId)
+	if !zero.IsZeroVal(e.SelfParticipant) {
+		buf.PutRawBytes(e.SelfParticipant.Encode())
+	}
+	return buf.Result()
+}
+
+type ChatParticipantsObj struct {
+	ChatId       int32             `validate:"required"`
+	Participants []ChatParticipant `validate:"required"`
+	Version      int32             `validate:"required"`
+}
+
+func (*ChatParticipantsObj) CRC() uint32 {
+	return uint32(0x3f460fed)
+}
+
+func (*ChatParticipantsObj) ImplementsChatParticipants() {}
+
+func (e *ChatParticipantsObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.ChatId)
+	buf.PutVector(e.Participants)
+	buf.PutInt(e.Version)
+	return buf.Result()
+}
+
+type EncryptedFile interface {
+	serialize.TL
+	ImplementsEncryptedFile()
+}
+
+type EncryptedFileEmpty struct{}
+
+func (*EncryptedFileEmpty) CRC() uint32 {
+	return uint32(0xc21f497e)
+}
+
+func (*EncryptedFileEmpty) ImplementsEncryptedFile() {}
+
+func (e *EncryptedFileEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type EncryptedFileObj struct {
+	Id             int64 `validate:"required"`
+	AccessHash     int64 `validate:"required"`
+	Size           int32 `validate:"required"`
+	DcId           int32 `validate:"required"`
+	KeyFingerprint int32 `validate:"required"`
+}
+
+func (*EncryptedFileObj) CRC() uint32 {
+	return uint32(0x4a70994c)
+}
+
+func (*EncryptedFileObj) ImplementsEncryptedFile() {}
+
+func (e *EncryptedFileObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutLong(e.AccessHash)
+	buf.PutInt(e.Size)
+	buf.PutInt(e.DcId)
+	buf.PutInt(e.KeyFingerprint)
+	return buf.Result()
+}
+
+type InputSecureFile interface {
+	serialize.TL
+	ImplementsInputSecureFile()
+}
+
+type InputSecureFileUploaded struct {
+	Id          int64  `validate:"required"`
+	Parts       int32  `validate:"required"`
+	Md5Checksum string `validate:"required"`
+	FileHash    []byte `validate:"required"`
+	Secret      []byte `validate:"required"`
+}
+
+func (*InputSecureFileUploaded) CRC() uint32 {
+	return uint32(0x3334b0f0)
+}
+
+func (*InputSecureFileUploaded) ImplementsInputSecureFile() {}
+
+func (e *InputSecureFileUploaded) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutInt(e.Parts)
+	buf.PutString(e.Md5Checksum)
+	buf.PutMessage(e.FileHash)
+	buf.PutMessage(e.Secret)
+	return buf.Result()
+}
+
+type InputSecureFileObj struct {
+	Id         int64 `validate:"required"`
+	AccessHash int64 `validate:"required"`
+}
+
+func (*InputSecureFileObj) CRC() uint32 {
+	return uint32(0x5367e5be)
+}
+
+func (*InputSecureFileObj) ImplementsInputSecureFile() {}
+
+func (e *InputSecureFileObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutLong(e.AccessHash)
+	return buf.Result()
+}
+
+type HelpTermsOfServiceUpdate interface {
+	serialize.TL
+	ImplementsHelpTermsOfServiceUpdate()
+}
+
+type HelpTermsOfServiceUpdateEmpty struct {
+	Expires int32 `validate:"required"`
+}
+
+func (*HelpTermsOfServiceUpdateEmpty) CRC() uint32 {
+	return uint32(0xe3309f7f)
+}
+
+func (*HelpTermsOfServiceUpdateEmpty) ImplementsHelpTermsOfServiceUpdate() {}
+
+func (e *HelpTermsOfServiceUpdateEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Expires)
+	return buf.Result()
+}
+
+type HelpTermsOfServiceUpdateObj struct {
+	Expires        int32               `validate:"required"`
+	TermsOfService *HelpTermsOfService `validate:"required"`
+}
+
+func (*HelpTermsOfServiceUpdateObj) CRC() uint32 {
+	return uint32(0x28ecf961)
+}
+
+func (*HelpTermsOfServiceUpdateObj) ImplementsHelpTermsOfServiceUpdate() {}
+
+func (e *HelpTermsOfServiceUpdateObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Expires)
+	buf.PutRawBytes(e.TermsOfService.Encode())
+	return buf.Result()
+}
+
+type ChannelParticipantsFilter interface {
+	serialize.TL
+	ImplementsChannelParticipantsFilter()
+}
+
+type ChannelParticipantsRecent struct{}
+
+func (*ChannelParticipantsRecent) CRC() uint32 {
+	return uint32(0xde3f3c79)
+}
+
+func (*ChannelParticipantsRecent) ImplementsChannelParticipantsFilter() {}
+
+func (e *ChannelParticipantsRecent) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type ChannelParticipantsAdmins struct{}
+
+func (*ChannelParticipantsAdmins) CRC() uint32 {
+	return uint32(0xb4608969)
+}
+
+func (*ChannelParticipantsAdmins) ImplementsChannelParticipantsFilter() {}
+
+func (e *ChannelParticipantsAdmins) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type ChannelParticipantsKicked struct {
+	Q string `validate:"required"`
+}
+
+func (*ChannelParticipantsKicked) CRC() uint32 {
+	return uint32(0xa3b54985)
+}
+
+func (*ChannelParticipantsKicked) ImplementsChannelParticipantsFilter() {}
+
+func (e *ChannelParticipantsKicked) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Q)
+	return buf.Result()
+}
+
+type ChannelParticipantsBots struct{}
+
+func (*ChannelParticipantsBots) CRC() uint32 {
+	return uint32(0xb0d1865b)
+}
+
+func (*ChannelParticipantsBots) ImplementsChannelParticipantsFilter() {}
+
+func (e *ChannelParticipantsBots) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type ChannelParticipantsBanned struct {
+	Q string `validate:"required"`
+}
+
+func (*ChannelParticipantsBanned) CRC() uint32 {
+	return uint32(0x1427a5e1)
+}
+
+func (*ChannelParticipantsBanned) ImplementsChannelParticipantsFilter() {}
+
+func (e *ChannelParticipantsBanned) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Q)
+	return buf.Result()
+}
+
+type ChannelParticipantsSearch struct {
+	Q string `validate:"required"`
+}
+
+func (*ChannelParticipantsSearch) CRC() uint32 {
+	return uint32(0x656ac4b)
+}
+
+func (*ChannelParticipantsSearch) ImplementsChannelParticipantsFilter() {}
+
+func (e *ChannelParticipantsSearch) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Q)
+	return buf.Result()
+}
+
+type ChannelParticipantsContacts struct {
+	Q string `validate:"required"`
+}
+
+func (*ChannelParticipantsContacts) CRC() uint32 {
+	return uint32(0xbb6ae88d)
+}
+
+func (*ChannelParticipantsContacts) ImplementsChannelParticipantsFilter() {}
+
+func (e *ChannelParticipantsContacts) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Q)
+	return buf.Result()
+}
+
+type PhotoSize interface {
+	serialize.TL
+	ImplementsPhotoSize()
+}
+
+type PhotoSizeEmpty struct {
+	Type string `validate:"required"`
+}
+
+func (*PhotoSizeEmpty) CRC() uint32 {
+	return uint32(0xe17e23c)
+}
+
+func (*PhotoSizeEmpty) ImplementsPhotoSize() {}
+
+func (e *PhotoSizeEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Type)
+	return buf.Result()
+}
+
+type PhotoSizeObj struct {
+	Type     string        `validate:"required"`
+	Location *FileLocation `validate:"required"`
+	W        int32         `validate:"required"`
+	H        int32         `validate:"required"`
+	Size     int32         `validate:"required"`
+}
+
+func (*PhotoSizeObj) CRC() uint32 {
+	return uint32(0x77bfb61b)
+}
+
+func (*PhotoSizeObj) ImplementsPhotoSize() {}
+
+func (e *PhotoSizeObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Type)
+	buf.PutRawBytes(e.Location.Encode())
+	buf.PutInt(e.W)
+	buf.PutInt(e.H)
+	buf.PutInt(e.Size)
+	return buf.Result()
+}
+
+type PhotoCachedSize struct {
+	Type     string        `validate:"required"`
+	Location *FileLocation `validate:"required"`
+	W        int32         `validate:"required"`
+	H        int32         `validate:"required"`
+	Bytes    []byte        `validate:"required"`
+}
+
+func (*PhotoCachedSize) CRC() uint32 {
+	return uint32(0xe9a734fa)
+}
+
+func (*PhotoCachedSize) ImplementsPhotoSize() {}
+
+func (e *PhotoCachedSize) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Type)
+	buf.PutRawBytes(e.Location.Encode())
+	buf.PutInt(e.W)
+	buf.PutInt(e.H)
+	buf.PutMessage(e.Bytes)
+	return buf.Result()
+}
+
+type PhotoStrippedSize struct {
+	Type  string `validate:"required"`
+	Bytes []byte `validate:"required"`
+}
+
+func (*PhotoStrippedSize) CRC() uint32 {
+	return uint32(0xe0b0bc2e)
+}
+
+func (*PhotoStrippedSize) ImplementsPhotoSize() {}
+
+func (e *PhotoStrippedSize) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Type)
+	buf.PutMessage(e.Bytes)
+	return buf.Result()
+}
+
+type ChatPhoto interface {
+	serialize.TL
+	ImplementsChatPhoto()
+}
+
+type ChatPhotoEmpty struct{}
+
+func (*ChatPhotoEmpty) CRC() uint32 {
+	return uint32(0x37c1011c)
+}
+
+func (*ChatPhotoEmpty) ImplementsChatPhoto() {}
+
+func (e *ChatPhotoEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type ChatPhotoObj struct {
+	__flagsPosition struct{}      // flags param position `validate:"required"`
+	HasVideo        bool          `flag:"0,encoded_in_bitflags"`
+	PhotoSmall      *FileLocation `validate:"required"`
+	PhotoBig        *FileLocation `validate:"required"`
+	DcId            int32         `validate:"required"`
+}
+
+func (*ChatPhotoObj) CRC() uint32 {
+	return uint32(0xd20b9f3c)
+}
+
+func (*ChatPhotoObj) ImplementsChatPhoto() {}
+
+func (e *ChatPhotoObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.HasVideo) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.HasVideo) {
+	}
+	buf.PutRawBytes(e.PhotoSmall.Encode())
+	buf.PutRawBytes(e.PhotoBig.Encode())
+	buf.PutInt(e.DcId)
+	return buf.Result()
+}
+
+type SecurePasswordKdfAlgo interface {
+	serialize.TL
+	ImplementsSecurePasswordKdfAlgo()
+}
+
+type SecurePasswordKdfAlgoUnknown struct{}
+
+func (*SecurePasswordKdfAlgoUnknown) CRC() uint32 {
+	return uint32(0x4a8537)
+}
+
+func (*SecurePasswordKdfAlgoUnknown) ImplementsSecurePasswordKdfAlgo() {}
+
+func (e *SecurePasswordKdfAlgoUnknown) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type SecurePasswordKdfAlgoPBKDF2HMACSHA512iter100000 struct {
+	Salt []byte `validate:"required"`
+}
+
+func (*SecurePasswordKdfAlgoPBKDF2HMACSHA512iter100000) CRC() uint32 {
+	return uint32(0xbbf2dda0)
+}
+
+func (*SecurePasswordKdfAlgoPBKDF2HMACSHA512iter100000) ImplementsSecurePasswordKdfAlgo() {}
+
+func (e *SecurePasswordKdfAlgoPBKDF2HMACSHA512iter100000) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutMessage(e.Salt)
+	return buf.Result()
+}
+
+type SecurePasswordKdfAlgoSHA512 struct {
+	Salt []byte `validate:"required"`
+}
+
+func (*SecurePasswordKdfAlgoSHA512) CRC() uint32 {
+	return uint32(0x86471d92)
+}
+
+func (*SecurePasswordKdfAlgoSHA512) ImplementsSecurePasswordKdfAlgo() {}
+
+func (e *SecurePasswordKdfAlgoSHA512) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutMessage(e.Salt)
+	return buf.Result()
+}
+
+type InputFileLocation interface {
+	serialize.TL
+	ImplementsInputFileLocation()
+}
+
+type InputFileLocationObj struct {
+	VolumeId      int64  `validate:"required"`
+	LocalId       int32  `validate:"required"`
+	Secret        int64  `validate:"required"`
+	FileReference []byte `validate:"required"`
+}
+
+func (*InputFileLocationObj) CRC() uint32 {
+	return uint32(0xdfdaabe1)
+}
+
+func (*InputFileLocationObj) ImplementsInputFileLocation() {}
+
+func (e *InputFileLocationObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.VolumeId)
+	buf.PutInt(e.LocalId)
+	buf.PutLong(e.Secret)
+	buf.PutMessage(e.FileReference)
+	return buf.Result()
+}
+
+type InputEncryptedFileLocation struct {
+	Id         int64 `validate:"required"`
+	AccessHash int64 `validate:"required"`
+}
+
+func (*InputEncryptedFileLocation) CRC() uint32 {
+	return uint32(0xf5235d55)
+}
+
+func (*InputEncryptedFileLocation) ImplementsInputFileLocation() {}
+
+func (e *InputEncryptedFileLocation) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutLong(e.AccessHash)
+	return buf.Result()
+}
+
+type InputDocumentFileLocation struct {
+	Id            int64  `validate:"required"`
+	AccessHash    int64  `validate:"required"`
+	FileReference []byte `validate:"required"`
+	ThumbSize     string `validate:"required"`
+}
+
+func (*InputDocumentFileLocation) CRC() uint32 {
+	return uint32(0xbad07584)
+}
+
+func (*InputDocumentFileLocation) ImplementsInputFileLocation() {}
+
+func (e *InputDocumentFileLocation) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutLong(e.AccessHash)
+	buf.PutMessage(e.FileReference)
+	buf.PutString(e.ThumbSize)
+	return buf.Result()
+}
+
+type InputSecureFileLocation struct {
+	Id         int64 `validate:"required"`
+	AccessHash int64 `validate:"required"`
+}
+
+func (*InputSecureFileLocation) CRC() uint32 {
+	return uint32(0xcbc7ee28)
+}
+
+func (*InputSecureFileLocation) ImplementsInputFileLocation() {}
+
+func (e *InputSecureFileLocation) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutLong(e.AccessHash)
+	return buf.Result()
+}
+
+type InputTakeoutFileLocation struct{}
+
+func (*InputTakeoutFileLocation) CRC() uint32 {
+	return uint32(0x29be5899)
+}
+
+func (*InputTakeoutFileLocation) ImplementsInputFileLocation() {}
+
+func (e *InputTakeoutFileLocation) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputPhotoFileLocation struct {
+	Id            int64  `validate:"required"`
+	AccessHash    int64  `validate:"required"`
+	FileReference []byte `validate:"required"`
+	ThumbSize     string `validate:"required"`
+}
+
+func (*InputPhotoFileLocation) CRC() uint32 {
+	return uint32(0x40181ffe)
+}
+
+func (*InputPhotoFileLocation) ImplementsInputFileLocation() {}
+
+func (e *InputPhotoFileLocation) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutLong(e.AccessHash)
+	buf.PutMessage(e.FileReference)
+	buf.PutString(e.ThumbSize)
+	return buf.Result()
+}
+
+type InputPhotoLegacyFileLocation struct {
+	Id            int64  `validate:"required"`
+	AccessHash    int64  `validate:"required"`
+	FileReference []byte `validate:"required"`
+	VolumeId      int64  `validate:"required"`
+	LocalId       int32  `validate:"required"`
+	Secret        int64  `validate:"required"`
+}
+
+func (*InputPhotoLegacyFileLocation) CRC() uint32 {
+	return uint32(0xd83466f3)
+}
+
+func (*InputPhotoLegacyFileLocation) ImplementsInputFileLocation() {}
+
+func (e *InputPhotoLegacyFileLocation) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutLong(e.AccessHash)
+	buf.PutMessage(e.FileReference)
+	buf.PutLong(e.VolumeId)
+	buf.PutInt(e.LocalId)
+	buf.PutLong(e.Secret)
+	return buf.Result()
+}
+
+type InputPeerPhotoFileLocation struct {
+	__flagsPosition struct{}  // flags param position `validate:"required"`
+	Big             bool      `flag:"0,encoded_in_bitflags"`
+	Peer            InputPeer `validate:"required"`
+	VolumeId        int64     `validate:"required"`
+	LocalId         int32     `validate:"required"`
+}
+
+func (*InputPeerPhotoFileLocation) CRC() uint32 {
+	return uint32(0x27d69997)
+}
+
+func (*InputPeerPhotoFileLocation) ImplementsInputFileLocation() {}
+
+func (e *InputPeerPhotoFileLocation) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Big) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Big) {
+	}
+	buf.PutRawBytes(e.Peer.Encode())
+	buf.PutLong(e.VolumeId)
+	buf.PutInt(e.LocalId)
+	return buf.Result()
+}
+
+type InputStickerSetThumb struct {
+	Stickerset InputStickerSet `validate:"required"`
+	VolumeId   int64           `validate:"required"`
+	LocalId    int32           `validate:"required"`
+}
+
+func (*InputStickerSetThumb) CRC() uint32 {
+	return uint32(0xdbaeae9)
+}
+
+func (*InputStickerSetThumb) ImplementsInputFileLocation() {}
+
+func (e *InputStickerSetThumb) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Stickerset.Encode())
+	buf.PutLong(e.VolumeId)
+	buf.PutInt(e.LocalId)
+	return buf.Result()
+}
+
+type RichText interface {
+	serialize.TL
+	ImplementsRichText()
+}
+
+type TextEmpty struct{}
+
+func (*TextEmpty) CRC() uint32 {
+	return uint32(0xdc3d824f)
+}
+
+func (*TextEmpty) ImplementsRichText() {}
+
+func (e *TextEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type TextPlain struct {
+	Text string `validate:"required"`
+}
+
+func (*TextPlain) CRC() uint32 {
+	return uint32(0x744694e0)
+}
+
+func (*TextPlain) ImplementsRichText() {}
+
+func (e *TextPlain) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Text)
+	return buf.Result()
+}
+
+type TextBold struct {
+	Text RichText `validate:"required"`
+}
+
+func (*TextBold) CRC() uint32 {
+	return uint32(0x6724abc4)
+}
+
+func (*TextBold) ImplementsRichText() {}
+
+func (e *TextBold) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	return buf.Result()
+}
+
+type TextItalic struct {
+	Text RichText `validate:"required"`
+}
+
+func (*TextItalic) CRC() uint32 {
+	return uint32(0xd912a59c)
+}
+
+func (*TextItalic) ImplementsRichText() {}
+
+func (e *TextItalic) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	return buf.Result()
+}
+
+type TextUnderline struct {
+	Text RichText `validate:"required"`
+}
+
+func (*TextUnderline) CRC() uint32 {
+	return uint32(0xc12622c4)
+}
+
+func (*TextUnderline) ImplementsRichText() {}
+
+func (e *TextUnderline) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	return buf.Result()
+}
+
+type TextStrike struct {
+	Text RichText `validate:"required"`
+}
+
+func (*TextStrike) CRC() uint32 {
+	return uint32(0x9bf8bb95)
+}
+
+func (*TextStrike) ImplementsRichText() {}
+
+func (e *TextStrike) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	return buf.Result()
+}
+
+type TextFixed struct {
+	Text RichText `validate:"required"`
+}
+
+func (*TextFixed) CRC() uint32 {
+	return uint32(0x6c3f19b9)
+}
+
+func (*TextFixed) ImplementsRichText() {}
+
+func (e *TextFixed) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	return buf.Result()
+}
+
+type TextUrl struct {
+	Text      RichText `validate:"required"`
+	Url       string   `validate:"required"`
+	WebpageId int64    `validate:"required"`
+}
+
+func (*TextUrl) CRC() uint32 {
+	return uint32(0x3c2884c1)
+}
+
+func (*TextUrl) ImplementsRichText() {}
+
+func (e *TextUrl) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	buf.PutString(e.Url)
+	buf.PutLong(e.WebpageId)
+	return buf.Result()
+}
+
+type TextEmail struct {
+	Text  RichText `validate:"required"`
+	Email string   `validate:"required"`
+}
+
+func (*TextEmail) CRC() uint32 {
+	return uint32(0xde5a0dd6)
+}
+
+func (*TextEmail) ImplementsRichText() {}
+
+func (e *TextEmail) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	buf.PutString(e.Email)
+	return buf.Result()
+}
+
+type TextConcat struct {
+	Texts []RichText `validate:"required"`
+}
+
+func (*TextConcat) CRC() uint32 {
+	return uint32(0x7e6260d7)
+}
+
+func (*TextConcat) ImplementsRichText() {}
+
+func (e *TextConcat) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Texts)
+	return buf.Result()
+}
+
+type TextSubscript struct {
+	Text RichText `validate:"required"`
+}
+
+func (*TextSubscript) CRC() uint32 {
+	return uint32(0xed6a8504)
+}
+
+func (*TextSubscript) ImplementsRichText() {}
+
+func (e *TextSubscript) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	return buf.Result()
+}
+
+type TextSuperscript struct {
+	Text RichText `validate:"required"`
+}
+
+func (*TextSuperscript) CRC() uint32 {
+	return uint32(0xc7fb5e01)
+}
+
+func (*TextSuperscript) ImplementsRichText() {}
+
+func (e *TextSuperscript) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	return buf.Result()
+}
+
+type TextMarked struct {
+	Text RichText `validate:"required"`
+}
+
+func (*TextMarked) CRC() uint32 {
+	return uint32(0x34b8621)
+}
+
+func (*TextMarked) ImplementsRichText() {}
+
+func (e *TextMarked) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	return buf.Result()
+}
+
+type TextPhone struct {
+	Text  RichText `validate:"required"`
+	Phone string   `validate:"required"`
+}
+
+func (*TextPhone) CRC() uint32 {
+	return uint32(0x1ccb966a)
+}
+
+func (*TextPhone) ImplementsRichText() {}
+
+func (e *TextPhone) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	buf.PutString(e.Phone)
+	return buf.Result()
+}
+
+type TextImage struct {
+	DocumentId int64 `validate:"required"`
+	W          int32 `validate:"required"`
+	H          int32 `validate:"required"`
+}
+
+func (*TextImage) CRC() uint32 {
+	return uint32(0x81ccf4f)
+}
+
+func (*TextImage) ImplementsRichText() {}
+
+func (e *TextImage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.DocumentId)
+	buf.PutInt(e.W)
+	buf.PutInt(e.H)
+	return buf.Result()
+}
+
+type TextAnchor struct {
+	Text RichText `validate:"required"`
+	Name string   `validate:"required"`
+}
+
+func (*TextAnchor) CRC() uint32 {
+	return uint32(0x35553762)
+}
+
+func (*TextAnchor) ImplementsRichText() {}
+
+func (e *TextAnchor) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Text.Encode())
+	buf.PutString(e.Name)
+	return buf.Result()
+}
+
+type InputFile interface {
+	serialize.TL
+	ImplementsInputFile()
+}
+
+type InputFileObj struct {
+	Id          int64  `validate:"required"`
+	Parts       int32  `validate:"required"`
+	Name        string `validate:"required"`
+	Md5Checksum string `validate:"required"`
+}
+
+func (*InputFileObj) CRC() uint32 {
+	return uint32(0xf52ff27f)
+}
+
+func (*InputFileObj) ImplementsInputFile() {}
+
+func (e *InputFileObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutInt(e.Parts)
+	buf.PutString(e.Name)
+	buf.PutString(e.Md5Checksum)
+	return buf.Result()
+}
+
+type InputFileBig struct {
+	Id    int64  `validate:"required"`
+	Parts int32  `validate:"required"`
+	Name  string `validate:"required"`
+}
+
+func (*InputFileBig) CRC() uint32 {
+	return uint32(0xfa4f0bb5)
+}
+
+func (*InputFileBig) ImplementsInputFile() {}
+
+func (e *InputFileBig) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutLong(e.Id)
+	buf.PutInt(e.Parts)
+	buf.PutString(e.Name)
+	return buf.Result()
+}
+
+type InputChatPhoto interface {
+	serialize.TL
+	ImplementsInputChatPhoto()
+}
+
+type InputChatPhotoEmpty struct{}
+
+func (*InputChatPhotoEmpty) CRC() uint32 {
+	return uint32(0x1ca48f57)
+}
+
+func (*InputChatPhotoEmpty) ImplementsInputChatPhoto() {}
+
+func (e *InputChatPhotoEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputChatUploadedPhoto struct {
+	__flagsPosition struct{}  // flags param position `validate:"required"`
+	File            InputFile `flag:"0"`
+	Video           InputFile `flag:"1"`
+	VideoStartTs    float64   `flag:"2"`
+}
+
+func (*InputChatUploadedPhoto) CRC() uint32 {
+	return uint32(0xc642724e)
+}
+
+func (*InputChatUploadedPhoto) ImplementsInputChatPhoto() {}
+
+func (e *InputChatUploadedPhoto) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.File) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Video) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.VideoStartTs) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.File) {
+		buf.PutRawBytes(e.File.Encode())
+	}
+	if !zero.IsZeroVal(e.Video) {
+		buf.PutRawBytes(e.Video.Encode())
+	}
+	if !zero.IsZeroVal(e.VideoStartTs) {
+		buf.PutDouble(e.VideoStartTs)
+	}
+	return buf.Result()
+}
+
+type InputChatPhotoObj struct {
+	Id InputPhoto `validate:"required"`
+}
+
+func (*InputChatPhotoObj) CRC() uint32 {
+	return uint32(0x8953ad37)
+}
+
+func (*InputChatPhotoObj) ImplementsInputChatPhoto() {}
+
+func (e *InputChatPhotoObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Id.Encode())
+	return buf.Result()
+}
+
+type AccountWallPapers interface {
+	serialize.TL
+	ImplementsAccountWallPapers()
+}
+
+type AccountWallPapersNotModified struct{}
+
+func (*AccountWallPapersNotModified) CRC() uint32 {
+	return uint32(0x1c199183)
+}
+
+func (*AccountWallPapersNotModified) ImplementsAccountWallPapers() {}
+
+func (e *AccountWallPapersNotModified) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type AccountWallPapersObj struct {
+	Hash       int32       `validate:"required"`
+	Wallpapers []WallPaper `validate:"required"`
+}
+
+func (*AccountWallPapersObj) CRC() uint32 {
+	return uint32(0x702b65a9)
+}
+
+func (*AccountWallPapersObj) ImplementsAccountWallPapers() {}
+
+func (e *AccountWallPapersObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Hash)
+	buf.PutVector(e.Wallpapers)
+	return buf.Result()
+}
+
+type RecentMeUrl interface {
+	serialize.TL
+	ImplementsRecentMeUrl()
+}
+
+type RecentMeUrlUnknown struct {
+	Url string `validate:"required"`
+}
+
+func (*RecentMeUrlUnknown) CRC() uint32 {
+	return uint32(0x46e1d13d)
+}
+
+func (*RecentMeUrlUnknown) ImplementsRecentMeUrl() {}
+
+func (e *RecentMeUrlUnknown) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Url)
+	return buf.Result()
+}
+
+type RecentMeUrlUser struct {
+	Url    string `validate:"required"`
+	UserId int32  `validate:"required"`
+}
+
+func (*RecentMeUrlUser) CRC() uint32 {
+	return uint32(0x8dbc3336)
+}
+
+func (*RecentMeUrlUser) ImplementsRecentMeUrl() {}
+
+func (e *RecentMeUrlUser) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Url)
+	buf.PutInt(e.UserId)
+	return buf.Result()
+}
+
+type RecentMeUrlChat struct {
+	Url    string `validate:"required"`
+	ChatId int32  `validate:"required"`
+}
+
+func (*RecentMeUrlChat) CRC() uint32 {
+	return uint32(0xa01b22f9)
+}
+
+func (*RecentMeUrlChat) ImplementsRecentMeUrl() {}
+
+func (e *RecentMeUrlChat) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Url)
+	buf.PutInt(e.ChatId)
+	return buf.Result()
+}
+
+type RecentMeUrlChatInvite struct {
+	Url        string     `validate:"required"`
+	ChatInvite ChatInvite `validate:"required"`
+}
+
+func (*RecentMeUrlChatInvite) CRC() uint32 {
+	return uint32(0xeb49081d)
+}
+
+func (*RecentMeUrlChatInvite) ImplementsRecentMeUrl() {}
+
+func (e *RecentMeUrlChatInvite) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Url)
+	buf.PutRawBytes(e.ChatInvite.Encode())
+	return buf.Result()
+}
+
+type RecentMeUrlStickerSet struct {
+	Url string            `validate:"required"`
+	Set StickerSetCovered `validate:"required"`
+}
+
+func (*RecentMeUrlStickerSet) CRC() uint32 {
+	return uint32(0xbc0a57dc)
+}
+
+func (*RecentMeUrlStickerSet) ImplementsRecentMeUrl() {}
+
+func (e *RecentMeUrlStickerSet) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Url)
+	buf.PutRawBytes(e.Set.Encode())
+	return buf.Result()
+}
+
+type InputChannel interface {
+	serialize.TL
+	ImplementsInputChannel()
+}
+
+type InputChannelEmpty struct{}
+
+func (*InputChannelEmpty) CRC() uint32 {
+	return uint32(0xee8c1e86)
+}
+
+func (*InputChannelEmpty) ImplementsInputChannel() {}
+
+func (e *InputChannelEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	return buf.Result()
+}
+
+type InputChannelObj struct {
+	ChannelId  int32 `validate:"required"`
+	AccessHash int64 `validate:"required"`
+}
+
+func (*InputChannelObj) CRC() uint32 {
+	return uint32(0xafeb712e)
+}
+
+func (*InputChannelObj) ImplementsInputChannel() {}
+
+func (e *InputChannelObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.ChannelId)
+	buf.PutLong(e.AccessHash)
+	return buf.Result()
+}
+
+type InputChannelFromMessage struct {
+	Peer      InputPeer `validate:"required"`
+	MsgId     int32     `validate:"required"`
+	ChannelId int32     `validate:"required"`
+}
+
+func (*InputChannelFromMessage) CRC() uint32 {
+	return uint32(0x2a286531)
+}
+
+func (*InputChannelFromMessage) ImplementsInputChannel() {}
+
+func (e *InputChannelFromMessage) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Peer.Encode())
+	buf.PutInt(e.MsgId)
+	buf.PutInt(e.ChannelId)
+	return buf.Result()
+}
+
+type InputWebFileLocation interface {
+	serialize.TL
+	ImplementsInputWebFileLocation()
+}
+
+type InputWebFileLocationObj struct {
+	Url        string `validate:"required"`
+	AccessHash int64  `validate:"required"`
+}
+
+func (*InputWebFileLocationObj) CRC() uint32 {
+	return uint32(0xc239d686)
+}
+
+func (*InputWebFileLocationObj) ImplementsInputWebFileLocation() {}
+
+func (e *InputWebFileLocationObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Url)
+	buf.PutLong(e.AccessHash)
+	return buf.Result()
+}
+
+type InputWebFileGeoPointLocation struct {
+	GeoPoint   InputGeoPoint `validate:"required"`
+	AccessHash int64         `validate:"required"`
+	W          int32         `validate:"required"`
+	H          int32         `validate:"required"`
+	Zoom       int32         `validate:"required"`
+	Scale      int32         `validate:"required"`
+}
+
+func (*InputWebFileGeoPointLocation) CRC() uint32 {
+	return uint32(0x9f2221c9)
+}
+
+func (*InputWebFileGeoPointLocation) ImplementsInputWebFileLocation() {}
+
+func (e *InputWebFileGeoPointLocation) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.GeoPoint.Encode())
+	buf.PutLong(e.AccessHash)
+	buf.PutInt(e.W)
+	buf.PutInt(e.H)
+	buf.PutInt(e.Zoom)
+	buf.PutInt(e.Scale)
+	return buf.Result()
+}
+
+type ChatInvite interface {
+	serialize.TL
+	ImplementsChatInvite()
+}
+
+type ChatInviteAlready struct {
+	Chat Chat `validate:"required"`
+}
+
+func (*ChatInviteAlready) CRC() uint32 {
+	return uint32(0x5a686d7c)
+}
+
+func (*ChatInviteAlready) ImplementsChatInvite() {}
+
+func (e *ChatInviteAlready) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Chat.Encode())
+	return buf.Result()
+}
+
+type ChatInviteObj struct {
+	__flagsPosition   struct{} // flags param position `validate:"required"`
+	Channel           bool     `flag:"0,encoded_in_bitflags"`
+	Broadcast         bool     `flag:"1,encoded_in_bitflags"`
+	Public            bool     `flag:"2,encoded_in_bitflags"`
+	Megagroup         bool     `flag:"3,encoded_in_bitflags"`
+	Title             string   `validate:"required"`
+	Photo             Photo    `validate:"required"`
+	ParticipantsCount int32    `validate:"required"`
+	Participants      []User   `flag:"4"`
+}
+
+func (*ChatInviteObj) CRC() uint32 {
+	return uint32(0xdfc2f58e)
+}
+
+func (*ChatInviteObj) ImplementsChatInvite() {}
+
+func (e *ChatInviteObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Channel) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.Broadcast) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.Public) {
+		flag |= 1 << 2
+	}
+	if !zero.IsZeroVal(e.Megagroup) {
+		flag |= 1 << 3
+	}
+	if !zero.IsZeroVal(e.Participants) {
+		flag |= 1 << 4
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Channel) {
+	}
+	if !zero.IsZeroVal(e.Broadcast) {
+	}
+	if !zero.IsZeroVal(e.Public) {
+	}
+	if !zero.IsZeroVal(e.Megagroup) {
+	}
+	buf.PutString(e.Title)
+	buf.PutRawBytes(e.Photo.Encode())
+	buf.PutInt(e.ParticipantsCount)
+	if !zero.IsZeroVal(e.Participants) {
+		buf.PutVector(e.Participants)
+	}
+	return buf.Result()
+}
+
+type ChatInvitePeek struct {
+	Chat    Chat  `validate:"required"`
+	Expires int32 `validate:"required"`
+}
+
+func (*ChatInvitePeek) CRC() uint32 {
+	return uint32(0x61695cb0)
+}
+
+func (*ChatInvitePeek) ImplementsChatInvite() {}
+
+func (e *ChatInvitePeek) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutRawBytes(e.Chat.Encode())
+	buf.PutInt(e.Expires)
+	return buf.Result()
+}
+
+type ReplyMarkup interface {
+	serialize.TL
+	ImplementsReplyMarkup()
+}
+
+type ReplyKeyboardHide struct {
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	Selective       bool     `flag:"2,encoded_in_bitflags"`
+}
+
+func (*ReplyKeyboardHide) CRC() uint32 {
+	return uint32(0xa03e5b85)
+}
+
+func (*ReplyKeyboardHide) ImplementsReplyMarkup() {}
+
+func (e *ReplyKeyboardHide) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Selective) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Selective) {
+	}
+	return buf.Result()
+}
+
+type ReplyKeyboardForceReply struct {
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	SingleUse       bool     `flag:"1,encoded_in_bitflags"`
+	Selective       bool     `flag:"2,encoded_in_bitflags"`
+}
+
+func (*ReplyKeyboardForceReply) CRC() uint32 {
+	return uint32(0xf4108aa0)
+}
+
+func (*ReplyKeyboardForceReply) ImplementsReplyMarkup() {}
+
+func (e *ReplyKeyboardForceReply) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.SingleUse) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.Selective) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.SingleUse) {
+	}
+	if !zero.IsZeroVal(e.Selective) {
+	}
+	return buf.Result()
+}
+
+type ReplyKeyboardMarkup struct {
+	__flagsPosition struct{}             // flags param position `validate:"required"`
+	Resize          bool                 `flag:"0,encoded_in_bitflags"`
+	SingleUse       bool                 `flag:"1,encoded_in_bitflags"`
+	Selective       bool                 `flag:"2,encoded_in_bitflags"`
+	Rows            []*KeyboardButtonRow `validate:"required"`
+}
+
+func (*ReplyKeyboardMarkup) CRC() uint32 {
+	return uint32(0x3502758c)
+}
+
+func (*ReplyKeyboardMarkup) ImplementsReplyMarkup() {}
+
+func (e *ReplyKeyboardMarkup) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.Resize) {
+		flag |= 1 << 0
+	}
+	if !zero.IsZeroVal(e.SingleUse) {
+		flag |= 1 << 1
+	}
+	if !zero.IsZeroVal(e.Selective) {
+		flag |= 1 << 2
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.Resize) {
+	}
+	if !zero.IsZeroVal(e.SingleUse) {
+	}
+	if !zero.IsZeroVal(e.Selective) {
+	}
+	buf.PutVector(e.Rows)
+	return buf.Result()
+}
+
+type ReplyInlineMarkup struct {
+	Rows []*KeyboardButtonRow `validate:"required"`
+}
+
+func (*ReplyInlineMarkup) CRC() uint32 {
+	return uint32(0x48a30254)
+}
+
+func (*ReplyInlineMarkup) ImplementsReplyMarkup() {}
+
+func (e *ReplyInlineMarkup) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutVector(e.Rows)
+	return buf.Result()
+}
+
+type EncryptedChat interface {
+	serialize.TL
+	ImplementsEncryptedChat()
+}
+
+type EncryptedChatEmpty struct {
+	Id int32 `validate:"required"`
+}
+
+func (*EncryptedChatEmpty) CRC() uint32 {
+	return uint32(0xab7ec0a0)
+}
+
+func (*EncryptedChatEmpty) ImplementsEncryptedChat() {}
+
+func (e *EncryptedChatEmpty) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Id)
+	return buf.Result()
+}
+
+type EncryptedChatWaiting struct {
+	Id            int32 `validate:"required"`
+	AccessHash    int64 `validate:"required"`
+	Date          int32 `validate:"required"`
+	AdminId       int32 `validate:"required"`
+	ParticipantId int32 `validate:"required"`
+}
+
+func (*EncryptedChatWaiting) CRC() uint32 {
+	return uint32(0x3bf703dc)
+}
+
+func (*EncryptedChatWaiting) ImplementsEncryptedChat() {}
+
+func (e *EncryptedChatWaiting) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Id)
+	buf.PutLong(e.AccessHash)
+	buf.PutInt(e.Date)
+	buf.PutInt(e.AdminId)
+	buf.PutInt(e.ParticipantId)
+	return buf.Result()
+}
+
+type EncryptedChatRequested struct {
+	__flagsPosition struct{} // flags param position `validate:"required"`
+	FolderId        int32    `flag:"0"`
+	Id              int32    `validate:"required"`
+	AccessHash      int64    `validate:"required"`
+	Date            int32    `validate:"required"`
+	AdminId         int32    `validate:"required"`
+	ParticipantId   int32    `validate:"required"`
+	GA              []byte   `validate:"required"`
+}
+
+func (*EncryptedChatRequested) CRC() uint32 {
+	return uint32(0x62718a82)
+}
+
+func (*EncryptedChatRequested) ImplementsEncryptedChat() {}
+
+func (e *EncryptedChatRequested) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	var flag uint32
+	if !zero.IsZeroVal(e.FolderId) {
+		flag |= 1 << 0
+	}
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutUint(flag)
+	if !zero.IsZeroVal(e.FolderId) {
+		buf.PutInt(e.FolderId)
+	}
+	buf.PutInt(e.Id)
+	buf.PutLong(e.AccessHash)
+	buf.PutInt(e.Date)
+	buf.PutInt(e.AdminId)
+	buf.PutInt(e.ParticipantId)
+	buf.PutMessage(e.GA)
+	return buf.Result()
+}
+
+type EncryptedChatObj struct {
+	Id             int32  `validate:"required"`
+	AccessHash     int64  `validate:"required"`
+	Date           int32  `validate:"required"`
+	AdminId        int32  `validate:"required"`
+	ParticipantId  int32  `validate:"required"`
+	GAOrB          []byte `validate:"required"`
+	KeyFingerprint int64  `validate:"required"`
+}
+
+func (*EncryptedChatObj) CRC() uint32 {
+	return uint32(0xfa56ce36)
+}
+
+func (*EncryptedChatObj) ImplementsEncryptedChat() {}
+
+func (e *EncryptedChatObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Id)
+	buf.PutLong(e.AccessHash)
+	buf.PutInt(e.Date)
+	buf.PutInt(e.AdminId)
+	buf.PutInt(e.ParticipantId)
+	buf.PutMessage(e.GAOrB)
+	buf.PutLong(e.KeyFingerprint)
+	return buf.Result()
+}
+
+type EncryptedChatDiscarded struct {
+	Id int32 `validate:"required"`
+}
+
+func (*EncryptedChatDiscarded) CRC() uint32 {
+	return uint32(0x13d6dd27)
+}
+
+func (*EncryptedChatDiscarded) ImplementsEncryptedChat() {}
+
+func (e *EncryptedChatDiscarded) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Id)
+	return buf.Result()
+}
+
+type AuthSentCodeType interface {
+	serialize.TL
+	ImplementsAuthSentCodeType()
+}
+
+type AuthSentCodeTypeApp struct {
+	Length int32 `validate:"required"`
+}
+
+func (*AuthSentCodeTypeApp) CRC() uint32 {
+	return uint32(0x3dbb5986)
+}
+
+func (*AuthSentCodeTypeApp) ImplementsAuthSentCodeType() {}
+
+func (e *AuthSentCodeTypeApp) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Length)
+	return buf.Result()
+}
+
+type AuthSentCodeTypeSms struct {
+	Length int32 `validate:"required"`
+}
+
+func (*AuthSentCodeTypeSms) CRC() uint32 {
+	return uint32(0xc000bba2)
+}
+
+func (*AuthSentCodeTypeSms) ImplementsAuthSentCodeType() {}
+
+func (e *AuthSentCodeTypeSms) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Length)
+	return buf.Result()
+}
+
+type AuthSentCodeTypeCall struct {
+	Length int32 `validate:"required"`
+}
+
+func (*AuthSentCodeTypeCall) CRC() uint32 {
+	return uint32(0x5353e5a7)
+}
+
+func (*AuthSentCodeTypeCall) ImplementsAuthSentCodeType() {}
+
+func (e *AuthSentCodeTypeCall) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutInt(e.Length)
+	return buf.Result()
+}
+
+type AuthSentCodeTypeFlashCall struct {
+	Pattern string `validate:"required"`
+}
+
+func (*AuthSentCodeTypeFlashCall) CRC() uint32 {
+	return uint32(0xab03c6d9)
+}
+
+func (*AuthSentCodeTypeFlashCall) ImplementsAuthSentCodeType() {}
+
+func (e *AuthSentCodeTypeFlashCall) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Pattern)
+	return buf.Result()
+}
+
+type WebDocument interface {
+	serialize.TL
+	ImplementsWebDocument()
+}
+
+type WebDocumentObj struct {
+	Url        string              `validate:"required"`
+	AccessHash int64               `validate:"required"`
+	Size       int32               `validate:"required"`
+	MimeType   string              `validate:"required"`
+	Attributes []DocumentAttribute `validate:"required"`
+}
+
+func (*WebDocumentObj) CRC() uint32 {
+	return uint32(0x1c570ed1)
+}
+
+func (*WebDocumentObj) ImplementsWebDocument() {}
+
+func (e *WebDocumentObj) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Url)
+	buf.PutLong(e.AccessHash)
+	buf.PutInt(e.Size)
+	buf.PutString(e.MimeType)
+	buf.PutVector(e.Attributes)
+	return buf.Result()
+}
+
+type WebDocumentNoProxy struct {
+	Url        string              `validate:"required"`
+	Size       int32               `validate:"required"`
+	MimeType   string              `validate:"required"`
+	Attributes []DocumentAttribute `validate:"required"`
+}
+
+func (*WebDocumentNoProxy) CRC() uint32 {
+	return uint32(0xf9c8bcc6)
+}
+
+func (*WebDocumentNoProxy) ImplementsWebDocument() {}
+
+func (e *WebDocumentNoProxy) Encode() []byte {
+	err := validator.New().Struct(e)
+	dry.PanicIfErr(err)
+
+	buf := serialize.NewEncoder()
+	buf.PutUint(e.CRC())
+	buf.PutString(e.Url)
+	buf.PutInt(e.Size)
+	buf.PutString(e.MimeType)
+	buf.PutVector(e.Attributes)
+	return buf.Result()
+}
