@@ -83,18 +83,18 @@ func (c *ReadCursor) PopBool() (bool, error) {
 	}
 }
 
-func (c *ReadCursor) PopNull() (interface{}, error) {
-	crc, err := c.PopUint()
-	if err != nil {
-		return nil, err
-	}
+// func (c *ReadCursor) PopNull() (interface{}, error) {
+// 	crc, err := c.PopUint()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	if crc != CrcNull {
-		return nil, fmt.Errorf("not a null value, actually: %#v", crc)
-	}
+// 	if crc != CrcNull {
+// 		return nil, fmt.Errorf("not a null value, actually: %#v", crc)
+// 	}
 
-	return nil, nil
-}
+// 	return nil, nil
+// }
 
 func (c *ReadCursor) PopCRC() (uint32, error) {
 	return c.PopUint() // я так и не понял, кажется что crc это bigendian, но видимо нет
