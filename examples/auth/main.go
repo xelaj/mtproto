@@ -77,7 +77,7 @@ func main() {
 	dry.PanicIfErr(err)
 
 	// GetInputCheckPassword is fast response object generator
-	inputCheck, err := telegram.GetInputCheckPassword(password, accountPassword)
+	inputCheck, err := telegram.GetInputCheckPassword(password, &accountPassword)
 	dry.PanicIfErr(err)
 
 	auth, err = client.AuthCheckPassword(&telegram.AuthCheckPasswordParams{

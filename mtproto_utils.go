@@ -34,7 +34,7 @@ func (m *MTProto) resetAck() {
 
 // получает текущий идентификатор сессии
 func (m *MTProto) GetSessionID() int64 {
-	return m.sessionId
+	return atomic.LoadInt64(&m.sessionID)
 }
 
 // Получает lastSeqNo

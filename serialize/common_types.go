@@ -3,8 +3,6 @@
 package serialize
 
 import (
-	"bytes"
-	"compress/gzip"
 	"fmt"
 
 	"github.com/xelaj/mtproto/encoding/tl"
@@ -146,57 +144,6 @@ func (g *GzipPacked) UnmarshalTL(r *tl.ReadCursor) (err error) {
 func (*GzipPacked) MarshalTL(w *tl.WriteCursor) error {
 	panic("don't use me")
 }
-
-// func (*RpcResult) UnmarshalTL(*tl.ReadCursor) error {
-// 	panic("don't use me")
-// }
-
-// func (*RpcResult) MarshalTL(*tl.WriteCursor) error {
-// 	panic("don't use me")
-// }
-
-// DecodeFromButItsVector
-// декодирует ТАК ЖЕ как DecodeFrom, но за тем исключением, что достает не объект, а слайс.
-// проблема в том, что вектор (слайс) в понятиях MTProto это как-бы объект, но вот как бы и нет
-// технически, эта функция — костыль, т.к. нет никакого внятного способа передать декодеру
-// информацию, что нужно доставать вектор (ведь RPC Result это всегда объекты, но вектор тоже
-// объект, кто бы мог подумать)
-// другими словами:
-// т.к. telegram отсылает на реквесты сообщения (messages, TL в рамках этого пакета)
-// НО! иногда на некоторые запросы приходят ответы в виде вектора. Просто потому что.
-// поэтому этот кусочек возвращает корявое апи к его же описанию — ответы это всегда объекты.
-// func (t *RpcResult) DecodeFromButItsVector(r *tl.ReadCursor, as reflect.Type) error {
-// 	var err error
-// 	t.ReqMsgID, err = r.PopLong()
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	msg, err := r.GetRestOfMessage()
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	crc := binary.LittleEndian.Uint32(msg[:tl.WordLen])
-// 	if crc == CrcGzipPacked {
-// 		if _, err := r.PopCRC(); err != nil {
-// 			return err
-// 		}
-
-// 		gz := &GzipPacked{}
-// 		gz.DecodeFromButItsVector(r, as)
-// 		t.Obj = gz.Obj.(*InnerVectorObject)
-// 	} else {
-// 		vector, err := r.PopVector(as)
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 		t.Obj = &InnerVectorObject{I: vector}
-// 	}
-
-// 	return nil
-// }
 
 type RpcError struct {
 	ErrorCode    int32
@@ -357,57 +304,6 @@ func (*MsgCopy) CRC() uint32 { return 0xe06046b2 }
 func (t *MsgCopy) UnmarshalTL(r *tl.ReadCursor) error {
 	// pp.Println(r)
 	panic("очень специфичный конструктор Message, надо сначала посмотреть, как это что это")
-}
-
-func (*GzipPacked) popMessageAsBytes(r *tl.ReadCursor) ([]byte, error) {
-	// TODO: СТАНДАРТНЫЙ СУКА ПАКЕТ gzip пишет "gzip: invalid header". при этом как я разобрался, в
-	//       сам гзип попадает кусок, который находится за миллиард бит от реального сообщения
-	//       например: сообщение начинается с 0x1f 0x8b 0x08 0x00 ..., но при этом в сам гзип
-	//       отдается кусок, который дальше начала сообщения за 500+ байт
-	//! вот ЭТОТ кусок работает. так что наверное не будем трогать, дай бог чтоб работал
-
-	decompressed := make([]byte, 0, 4096)
-	var buf bytes.Buffer
-
-	msg, err := r.PopMessage()
-	if err != nil {
-		return nil, err
-	}
-
-	n, err := buf.Write(msg)
-	if err != nil {
-		return nil, err
-	}
-
-	if n != len(msg) {
-		return nil, fmt.Errorf("can't write omg")
-	}
-
-	gz, err := gzip.NewReader(&buf)
-	if err != nil {
-		return nil, err
-	}
-
-	b := make([]byte, 4096)
-	for {
-		n, _ := gz.Read(b)
-
-		decompressed = append(decompressed, b[0:n]...)
-		if n <= 0 {
-			break
-		}
-	}
-
-	return decompressed, nil
-	//? это то что я пытался сделать
-	// data := d.PopMessage()
-	// gz, err := gzip.NewReader(bytes.NewBuffer(data))
-	// dry.PanicIfErr(err)
-
-	// decompressed, err := ioutil.ReadAll(gz)
-	// dry.PanicIfErr(err)
-
-	// return decompressed
 }
 
 type MsgsAck struct {

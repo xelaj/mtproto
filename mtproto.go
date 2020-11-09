@@ -33,7 +33,7 @@ type MTProto struct {
 	// соль сессии
 	serverSalt int64
 	encrypted  bool
-	sessionId  int64
+	sessionID  int64
 
 	// общий мьютекс
 	mutex         *sync.Mutex
@@ -98,7 +98,7 @@ func NewMTProto(c Config) (*MTProto, error) {
 		return nil, errors.Wrap(err, "loading session")
 	}
 
-	m.sessionId = utils.GenerateSessionID()
+	m.sessionID = utils.GenerateSessionID()
 	m.serviceChannel = make(chan []byte)
 	m.publicKey = c.PublicKey
 	m.serverRequestHandlers = make([]customHandlerFunc, 0)
@@ -317,18 +317,7 @@ func (m *MTProto) processResponse(msgID int64, seqNo int32, data []byte) error {
 		// NOTE:
 		// что-то сделать с этим)
 		panic(message)
-		return BadMsgErrorFromNative(message)
-
-		// case *serialize.RpcResult:
-		// 	obj := message.Obj
-		// 	if v, ok := obj.(*serialize.GzipPacked); ok {
-		// 		obj = v.Obj
-		// 	}
-
-		// err := m.writeRPCResponse(int(message.ReqMsgID), obj)
-		// if err != nil {
-		// 	return errors.Wrap(err, "writing RPC response")
-		// }
+		// return BadMsgErrorFromNative(message)
 
 	default:
 		panic(fmt.Sprintf("type %T not handled", message))

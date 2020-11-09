@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-  "github.com/xelaj/go-dry"
-  "github.com/xelaj/mtproto/serialize"
+	"github.com/xelaj/go-dry"
+	"github.com/xelaj/mtproto/serialize"
 )
 
 type ErrResponseCode struct {

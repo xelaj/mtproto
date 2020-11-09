@@ -62,7 +62,6 @@ func (m *MTProto) sendPacket(request tl.Object, response interface{}) (err error
 				echan:    echan,
 			}
 			m.mutex.Unlock()
-
 		}
 
 		// этот кусок не часть кодирования так что делаем при отправке

@@ -25,11 +25,6 @@ func haveFlag(v interface{}) bool {
 	return false
 }
 
-func reflectIsTL(v reflect.Value) bool {
-	_, ok := v.Interface().(Object)
-	return ok
-}
-
 func sliceToInterfaceSlice(in interface{}) []interface{} {
 	if in == nil {
 		return nil
