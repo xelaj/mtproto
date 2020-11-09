@@ -11,14 +11,15 @@ import (
 	"github.com/xelaj/go-dry"
 
 	ige "github.com/xelaj/mtproto/aes_ige"
+	"github.com/xelaj/mtproto/encoding/tl"
 	"github.com/xelaj/mtproto/utils"
 )
 
 // CommonMessage это сообщение (зашифрованое либо открытое) которыми общаются между собой клиент и сервер
 type CommonMessage interface {
 	GetMsg() []byte
-	GetMsgID() int
-	GetSeqNo() int
+	GetMsgID() int64
+	GetSeqNo() int32
 }
 
 type EncryptedMessage struct {
@@ -32,44 +33,106 @@ type EncryptedMessage struct {
 	MsgKey    []byte
 }
 
+func (msg *EncryptedMessage) GetMsg() []byte {
+	return msg.Msg
+}
+
+func (msg *EncryptedMessage) GetMsgID() int64 {
+	return msg.MsgID
+}
+
+func (msg *EncryptedMessage) GetSeqNo() int32 {
+	return msg.SeqNo
+}
+
 func (msg *EncryptedMessage) Serialize(client MessageInformator, requireToAck bool) ([]byte, error) {
-	obj := serializePacket(client, msg.Msg, msg.MsgID, requireToAck)
+	obj, err := serializePacket(client, msg.Msg, msg.MsgID, requireToAck)
+	if err != nil {
+		return nil, err
+	}
+
 	encryptedData, err := ige.Encrypt(obj, client.GetAuthKey())
 	if err != nil {
 		return nil, errors.Wrap(err, "encrypting")
 	}
 
-	buf := NewEncoder()
-	buf.PutRawBytes(utils.AuthKeyHash(client.GetAuthKey()))
-	buf.PutRawBytes(ige.MessageKey(obj))
-	buf.PutRawBytes(encryptedData)
+	buf := bytes.NewBuffer(nil)
+	cw := tl.NewWriteCursor(buf)
+	err = cw.PutRawBytes(utils.AuthKeyHash(client.GetAuthKey()))
+	if err != nil {
+		return nil, err
+	}
 
-	return buf.Result(), nil
+	err = cw.PutRawBytes(ige.MessageKey(obj))
+	if err != nil {
+		return nil, err
+	}
+
+	err = cw.PutRawBytes(encryptedData)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }
 
 func DeserializeEncryptedMessage(data, authKey []byte) (*EncryptedMessage, error) {
 	msg := new(EncryptedMessage)
 
-	buf := NewDecoder(data)
-	keyHash := buf.PopRawBytes(LongLen)
+	cr := tl.NewReadCursor(bytes.NewBuffer(data))
+	keyHash, err := cr.PopRawBytes(tl.LongLen)
+	if err != nil {
+		return nil, err
+	}
+
 	if !bytes.Equal(keyHash, utils.AuthKeyHash(authKey)) {
 		return nil, errors.New("wrong encryption key")
 	}
-	msg.MsgKey = buf.PopRawBytes(Int128Len) // msgKey это хэш от расшифрованного набора байт, последние 16 символов
-	encryptedData := buf.PopRawBytes(len(data) - (LongLen + Int128Len))
+
+	msg.MsgKey, err = cr.PopRawBytes(int128Len) // msgKey это хэш от расшифрованного набора байт, последние 16 символов
+	if err != nil {
+		return nil, err
+	}
+
+	encryptedData, err := cr.PopRawBytes(len(data) - (tl.LongLen + int128Len))
+	if err != nil {
+		return nil, err
+	}
 
 	decrypted, err := ige.Decrypt(encryptedData, authKey, msg.MsgKey)
 	if err != nil {
 		return nil, errors.Wrap(err, "decrypting message")
 	}
-	buf = NewDecoder(decrypted)
-	msg.Salt = buf.PopLong()
-	msg.SessionID = buf.PopLong()
-	msg.MsgID = buf.PopLong()
-	msg.SeqNo = buf.PopInt()
-	messageLen := buf.PopInt()
 
-	if len(decrypted) < int(messageLen)-(LongLen+LongLen+LongLen+WordLen+WordLen) {
+	cr = tl.NewReadCursor(bytes.NewBuffer(decrypted))
+	msg.Salt, err = cr.PopLong()
+	if err != nil {
+		return nil, err
+	}
+
+	msg.SessionID, err = cr.PopLong()
+	if err != nil {
+		return nil, err
+	}
+
+	msg.MsgID, err = cr.PopLong()
+	if err != nil {
+		return nil, err
+	}
+
+	seqNo, err := cr.PopUint()
+	if err != nil {
+		return nil, err
+	}
+
+	msg.SeqNo = int32(seqNo)
+
+	messageLen, err := cr.PopUint()
+	if err != nil {
+		return nil, err
+	}
+
+	if len(decrypted) < int(messageLen)-(tl.LongLen+tl.LongLen+tl.LongLen+tl.WordLen+tl.WordLen) {
 		return nil, fmt.Errorf("message is smaller than it's defining: have %v, but messageLen is %v", len(decrypted), messageLen)
 	}
 
@@ -83,21 +146,13 @@ func DeserializeEncryptedMessage(data, authKey []byte) (*EncryptedMessage, error
 	if !bytes.Equal(dry.Sha1Byte(trimed)[4:20], msg.MsgKey) {
 		return nil, errors.New("wrong message key, can't trust to sender")
 	}
-	msg.Msg = buf.PopRawBytes(int(messageLen))
+
+	msg.Msg, err = cr.PopRawBytes(int(messageLen))
+	if err != nil {
+		return nil, err
+	}
 
 	return msg, nil
-}
-
-func (msg *EncryptedMessage) GetMsg() []byte {
-	return msg.Msg
-}
-
-func (msg *EncryptedMessage) GetMsgID() int {
-	return int(msg.MsgID)
-}
-
-func (msg *EncryptedMessage) GetSeqNo() int {
-	return int(msg.SeqNo)
 }
 
 type UnencryptedMessage struct {
@@ -105,50 +160,77 @@ type UnencryptedMessage struct {
 	MsgID int64
 }
 
+func (msg *UnencryptedMessage) GetMsg() []byte {
+	return msg.Msg
+}
+
+func (msg *UnencryptedMessage) GetMsgID() int64 {
+	return msg.MsgID
+}
+
+func (msg *UnencryptedMessage) GetSeqNo() int32 {
+	return 0
+}
+
 func (msg *UnencryptedMessage) Serialize(client MessageInformator) ([]byte, error) {
-	buf := NewEncoder()
+	buf := bytes.NewBuffer(nil)
+	cw := tl.NewWriteCursor(buf)
+
 	// authKeyHash, always 0 if unencrypted
-	buf.PutLong(0)
-	buf.PutLong(msg.MsgID)
-	buf.PutInt(int32(len(msg.Msg)))
-	buf.PutRawBytes(msg.Msg)
-	return buf.Result(), nil
+	if err := cw.PutLong(0); err != nil {
+		return nil, err
+	}
+
+	if err := cw.PutLong(msg.MsgID); err != nil {
+		return nil, err
+	}
+
+	if err := cw.PutUint(uint32(len(msg.Msg))); err != nil {
+		return nil, err
+	}
+
+	if err := cw.PutRawBytes(msg.Msg); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }
 
 func DeserializeUnencryptedMessage(data []byte) (*UnencryptedMessage, error) {
 	msg := new(UnencryptedMessage)
-	buf := NewDecoder(data)
-	_ = buf.PopRawBytes(LongLen) // authKeyHash, always 0 if unencrypted
 
-	msg.MsgID = buf.PopLong()
+	buf := bytes.NewBuffer(data)
+	cr := tl.NewReadCursor(buf)
+
+	_, err := cr.PopRawBytes(tl.LongLen) // authKeyHash, always 0 if unencrypted
+	if err != nil {
+		return nil, err
+	}
+
+	msg.MsgID, err = cr.PopLong()
+	if err != nil {
+		return nil, err
+	}
 
 	mod := msg.MsgID & 3
 	if mod != 1 && mod != 3 {
 		return nil, fmt.Errorf("Wrong bits of message_id: %#v", uint64(mod))
 	}
 
-	messageLen := buf.PopUint()
-	if len(data)-(LongLen+LongLen+WordLen) != int(messageLen) {
-		fmt.Println(len(data), int(messageLen), int(messageLen+(LongLen+LongLen+WordLen)))
+	messageLen, err := cr.PopUint()
+	if err != nil {
+		return nil, err
+	}
+
+	if len(data)-(tl.LongLen+tl.LongLen+tl.WordLen) != int(messageLen) {
+		fmt.Println(len(data), int(messageLen), int(messageLen+(tl.LongLen+tl.LongLen+tl.WordLen)))
 		return nil, fmt.Errorf("message not equal defined size: have %v, want %v", len(data), messageLen)
 	}
 
-	msg.Msg = buf.GetRestOfMessage()
+	msg.Msg = buf.Bytes()
 
 	// TODO: в мтпрото объекте изменить msgID и задать seqNo 0
 	return msg, nil
-}
-
-func (msg *UnencryptedMessage) GetMsg() []byte {
-	return msg.Msg
-}
-
-func (msg *UnencryptedMessage) GetMsgID() int {
-	return int(msg.MsgID)
-}
-
-func (msg *UnencryptedMessage) GetSeqNo() int {
-	return 0
 }
 
 //------------------------------------------------------------------------------------------
@@ -160,23 +242,45 @@ type MessageInformator interface {
 	GetLastSeqNo() int32
 	GetServerSalt() int64
 	GetAuthKey() []byte
-	MakeRequest(msg TL) (TL, error)
+	MakeRequest(req tl.Object, resp interface{}) error
 }
 
-func serializePacket(client MessageInformator, msg []byte, messageID int64, requireToAck bool) []byte {
-	buf := NewEncoder()
+func serializePacket(client MessageInformator, msg []byte, messageID int64, requireToAck bool) ([]byte, error) {
+	buf := bytes.NewBuffer(nil)
+	cw := tl.NewWriteCursor(buf)
 
-	saltBytes := make([]byte, LongLen)
+	saltBytes := make([]byte, tl.LongLen)
 	binary.LittleEndian.PutUint64(saltBytes, uint64(client.GetServerSalt()))
-	buf.PutRawBytes(saltBytes)
-	buf.PutLong(client.GetSessionID())
-	buf.PutLong(messageID)
-	if requireToAck { // не спрашивай, как это работает
-		buf.PutInt(client.GetLastSeqNo() | 1) // почему тут добавляется бит не ебу
-	} else {
-		buf.PutInt(client.GetLastSeqNo())
+	if err := cw.PutRawBytes(saltBytes); err != nil {
+		return nil, err
 	}
-	buf.PutInt(int32(len(msg)))
-	buf.PutRawBytes(msg)
-	return buf.buf
+
+	if err := cw.PutLong(client.GetSessionID()); err != nil {
+		return nil, err
+	}
+
+	if err := cw.PutLong(messageID); err != nil {
+		return nil, err
+	}
+
+	if requireToAck { // не спрашивай, как это работает
+		// почему тут добавляется бит не ебу
+		if err := cw.PutUint(uint32(client.GetLastSeqNo() | 1)); err != nil {
+			return nil, err
+		}
+	} else {
+		if err := cw.PutUint(uint32(client.GetLastSeqNo())); err != nil {
+			return nil, err
+		}
+	}
+
+	if err := cw.PutUint(uint32(len(msg))); err != nil {
+		return nil, err
+	}
+
+	if err := cw.PutRawBytes(msg); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }

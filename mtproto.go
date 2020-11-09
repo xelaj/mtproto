@@ -3,10 +3,10 @@ package mtproto
 import (
 	"context"
 	"crypto/rsa"
-	"encoding/binary"
+	"fmt"
 	"net"
-	"reflect"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	bus "github.com/asaskevich/EventBus"
@@ -14,6 +14,7 @@ import (
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
 
+	"github.com/xelaj/mtproto/encoding/tl"
 	"github.com/xelaj/mtproto/serialize"
 	"github.com/xelaj/mtproto/utils"
 )
@@ -35,19 +36,10 @@ type MTProto struct {
 	sessionId  int64
 
 	// общий мьютекс
-	mutex *sync.Mutex
-
-	// msgsIdDecodeAsVector показывает, что определенный ответ сервера нужно декодировать как
-	// слайс. Это костыль, т.к. MTProto ЧЕТКО указывает, что ответы это всегда объекты, но
-	// вектор (слайс) это как бы тоже объект. Из-за этого приходится четко указывать, что
-	// сообщения с определенным msgID нужно декодировать как слайс, а не объект
-	msgsIdDecodeAsVector map[int64]reflect.Type
-	msgsIdToResp         map[int64]chan serialize.TL
-	idsToAck             map[int64]struct{}
-	idsToAckMutex        sync.Mutex
-
-	// каналы, которые ожидают ответа rpc. ответ записывается в канал и удаляется
-	responseChannels map[int64]chan serialize.TL
+	mutex         *sync.Mutex
+	pending       map[int64]pendingRequest
+	idsToAck      map[int64]struct{}
+	idsToAckMutex sync.Mutex
 
 	// идентификаторы сообщений, нужны что бы посылать и принимать сообщения.
 	seqNo int32
@@ -71,15 +63,17 @@ type MTProto struct {
 	// serviceChannel нужен только на время создания ключей, т.к. это
 	// не RpcResult, поэтому все данные отдаются в один поток без
 	// привязки к MsgID
-	serviceChannel       chan serialize.TL
+	serviceChannel       chan []byte
 	serviceModeActivated bool
 
-	//! DEPRECATED RecoverFunc используется только до того момента, когда из пакета будут убраны все паники
-	RecoverFunc func(i interface{})
-	// если задан, то в канал пишутся ошибки
-	Warnings chan error
-
 	serverRequestHandlers []customHandlerFunc
+}
+
+type pendingRequest struct {
+	// в response хранится тип который ожидаем получить
+	// если он nil, то эта структурка не попадет в мапу pendingRequests
+	response interface{}
+	echan    chan error
 }
 
 type customHandlerFunc = func(i interface{}) bool
@@ -105,10 +99,8 @@ func NewMTProto(c Config) (*MTProto, error) {
 	}
 
 	m.sessionId = utils.GenerateSessionID()
-	m.serviceChannel = make(chan serialize.TL)
+	m.serviceChannel = make(chan []byte)
 	m.publicKey = c.PublicKey
-	m.responseChannels = make(map[int64]chan serialize.TL)
-	m.msgsIdDecodeAsVector = make(map[int64]reflect.Type)
 	m.serverRequestHandlers = make([]customHandlerFunc, 0)
 	m.resetAck()
 
@@ -136,44 +128,35 @@ func (m *MTProto) CreateConnection() error {
 	m.stopRoutines = cancelfunc
 
 	// start reading responses from the server
-	m.startReadingResponses(ctx)
+	go m.startReadingResponses(ctx)
 
 	// get new authKey if need
 	if !m.encrypted {
 		println("not encrypted, creating auth key")
 		err = m.makeAuthKey()
+		fmt.Println("authkey status:", err)
 		if err != nil {
 			return errors.Wrap(err, "making auth key")
 		}
 	}
 
 	// start goroutines
-	m.msgsIdToResp = make(map[int64]chan serialize.TL)
 	m.mutex = &sync.Mutex{}
-
+	m.pending = make(map[int64]pendingRequest)
 	// start keepalive pinging
-	m.startPinging(ctx)
+	go m.startPinging(ctx)
 
 	return nil
 }
 
-// отправить запрос
-func (m *MTProto) makeRequest(data serialize.TL, as reflect.Type) (serialize.TL, error) {
-	resp, err := m.sendPacketNew(data, as)
-	if err != nil {
-		return nil, errors.Wrap(err, "sending message")
-	}
-	response := <-resp
-
-	if _, ok := response.(*serialize.ErrorSessionConfigsChanged); ok {
-		// если пришел ответ типа badServerSalt, то отправляем данные заново
-		return m.makeRequest(data, as)
-	}
-	if e, ok := response.(*serialize.RpcError); ok {
-		return nil, RpcErrorToNative(e)
+func (m *MTProto) makeRequest(req tl.Object, resp interface{}) error {
+	err := m.sendPacket(req, resp)
+	// если пришел ответ типа badServerSalt, то отправляем данные заново
+	if errors.As(err, &serialize.ErrorSessionConfigsChanged{}) {
+		return m.makeRequest(req, resp)
 	}
 
-	return response, nil
+	return err
 }
 
 func (m *MTProto) Disconnect() error {
@@ -198,86 +181,106 @@ func (m *MTProto) Disconnect() error {
 // нужно просто запустить
 func (m *MTProto) startPinging(ctx context.Context) {
 	ticker := time.Tick(60 * time.Second)
-	go func() {
-		defer m.recoverGoroutine()
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-ticker:
-				_, err := m.Ping(0xCADACADA)
-				if err != nil {
-					if m.Warnings != nil {
-						m.Warnings <- errors.Wrap(err, "ping unsuccsesful")
-					}
-				}
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker:
+			_, err := m.Ping(0xCADACADA)
+			if err != nil {
+				panic(err)
 			}
 		}
-	}()
+	}
 }
 
 func (m *MTProto) startReadingResponses(ctx context.Context) {
-	go func() {
-		defer m.recoverGoroutine()
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				data, err := m.readFromConn(ctx)
-				if err != nil {
-					m.Warnings <- errors.Wrap(err, "reading from connection")
-				}
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			data, err := m.readFromConn(ctx)
+			if err != nil {
+				panic(err)
+			}
 
-				response, err := m.decodeRecievedData(data)
-				if err != nil {
-					m.Warnings <- errors.Wrap(err, "decoding received data")
-				}
+			response, err := m.decodeRecievedData(data)
+			if err != nil {
+				panic(err)
+			}
 
-				if m.serviceModeActivated {
-					// сервисные сообщения ГАРАНТИРОВАННО в теле содержат TL.
-					decoder := serialize.NewDecoder(response.GetMsg())
-					obj := decoder.PopObj()
-					m.serviceChannel <- obj
-				} else {
-					err = m.processResponse(int(m.msgId), int(m.seqNo), response)
-					if err != nil {
-						m.Warnings <- errors.Wrap(err, "processing response")
-					}
-				}
+			if m.serviceModeActivated {
+				fmt.Println("got service message")
+				m.serviceChannel <- response.GetMsg()
+				fmt.Println("service message pushed")
+				continue
+			}
+
+			// NOTE:
+			// Зачем сюда передавать m.msgId, m.seqNo
+			// если у сообщения есть методы GetMsgID() и GetSeqNo()?
+			if err := m.processResponse(
+				atomic.LoadInt64(&m.msgId),
+				atomic.LoadInt32(&m.seqNo),
+				response.GetMsg(),
+			); err != nil {
+				panic(err)
 			}
 		}
-	}()
+	}
 }
 
-func (m *MTProto) processResponse(msgId, seqNo int, msg serialize.CommonMessage) error {
-	// сначала декодируем исключения
-
-	// TODO: может как-то поопрятней сделать? а то очень кринжово, функция занимается не тем, чем должна
-	decoder := serialize.NewDecoder(msg.GetMsg())
-	var data serialize.TL
-	// если это ответ Rpc, то там может быть слайс вместо объекта, надо проверить указывали ли мы,
-	// что ответ с этим MsgId нужно декодировать как слайс, а не объект
-	if binary.LittleEndian.Uint32(msg.GetMsg()[:serialize.WordLen]) == serialize.CrcRpcResult {
-		_ = decoder.PopCRC() // уже прочитали
-		rpc := &serialize.RpcResult{}
-		msgID := binary.LittleEndian.Uint64(msg.GetMsg()[serialize.WordLen : serialize.WordLen+serialize.LongLen])
-		if typ, ok := m.msgsIdDecodeAsVector[int64(msgID)]; ok {
-			rpc.DecodeFromButItsVector(decoder, typ)
-			delete(m.msgsIdDecodeAsVector, int64(msgID))
-		} else {
-			rpc.DecodeFrom(decoder)
-		}
-		data = rpc
-	} else {
-		data = decoder.PopObj()
+func (m *MTProto) processResponse(msgID int64, seqNo int32, data []byte) error {
+	object, err := tl.DecodeRegistered(data)
+	if err != nil {
+		return fmt.Errorf("decode base message: %w", err)
 	}
 
-	switch message := data.(type) {
+	switch message := object.(type) {
+	case *serialize.RpcResult:
+		m.mutex.Lock()
+		req, found := m.pending[message.ReqMsgID]
+		if !found {
+			m.mutex.Unlock()
+			fmt.Printf("pending request for messageID %d not found\n", message.ReqMsgID)
+			break
+		}
+		delete(m.pending, message.ReqMsgID)
+		m.mutex.Unlock()
+
+		rpcMessageObject, err := tl.DecodeRegistered(message.Payload)
+		if err != nil {
+			// если не смогли заанмаршалить в зареганный тип
+			// пробуем анмаршалить в тип прокинутый юзером
+			//
+			// Такое случается потому что DecodeRegistered (в отличие от Decode) не умеет
+			// анмаршалить CrcVector, но можно его научить
+			req.echan <- tl.Decode(message.Payload, req.response)
+			break
+		}
+
+		// джедайские трюки
+		switch rpcMessage := rpcMessageObject.(type) {
+		case *serialize.GzipPacked:
+			req.echan <- tl.Decode(rpcMessage.PackedData, req.response)
+		case *serialize.RpcError:
+			req.echan <- rpcMessage
+		default: // если в rpc хз что, то анмаршалим его пейлоад в тот тип который запросил юзер
+
+			// NOTE:
+			// мб сделать свитч чисто по CRC чтобы убрать повторный анмаршал?
+			// или установить значение rpcMessageObject в req.response через reflect?
+			req.echan <- tl.Decode(message.Payload, req.response)
+		}
+
 	case *serialize.MessageContainer:
 		println("MessageContainer")
 		for _, v := range *message {
-			err := m.processResponse(int(v.MsgID), int(v.SeqNo), v)
+			// NOTE:
+			// Зачем сюда передавать m.msgId, m.seqNo
+			// если у сообщения есть методы GetMsgID() и GetSeqNo()?
+			err := m.processResponse(v.MsgID, v.SeqNo, v.GetMsg())
 			if err != nil {
 				return errors.Wrap(err, "processing item in container")
 			}
@@ -289,8 +292,8 @@ func (m *MTProto) processResponse(msgId, seqNo int, msg serialize.CommonMessage)
 		dry.PanicIfErr(err)
 
 		m.mutex.Lock()
-		for _, v := range m.responseChannels {
-			v <- &serialize.ErrorSessionConfigsChanged{}
+		for _, v := range m.pending {
+			v.echan <- &serialize.ErrorSessionConfigsChanged{}
 		}
 		m.mutex.Unlock()
 
@@ -299,9 +302,7 @@ func (m *MTProto) processResponse(msgId, seqNo int, msg serialize.CommonMessage)
 		m.serverSalt = message.ServerSalt
 		err := m.SaveSession()
 		if err != nil {
-			if m.Warnings != nil {
-				m.Warnings <- errors.Wrap(err, "saving session")
-			}
+			panic(err)
 		}
 
 	case *serialize.Pong:
@@ -313,37 +314,31 @@ func (m *MTProto) processResponse(msgId, seqNo int, msg serialize.CommonMessage)
 		}
 
 	case *serialize.BadMsgNotification:
+		// NOTE:
+		// что-то сделать с этим)
 		panic(message)
 		return BadMsgErrorFromNative(message)
 
-	case *serialize.RpcResult:
-		obj := message.Obj
-		if v, ok := obj.(*serialize.GzipPacked); ok {
-			obj = v.Obj
-		}
+		// case *serialize.RpcResult:
+		// 	obj := message.Obj
+		// 	if v, ok := obj.(*serialize.GzipPacked); ok {
+		// 		obj = v.Obj
+		// 	}
 
-		err := m.writeRPCResponse(int(message.ReqMsgID), obj)
-		if err != nil {
-			return errors.Wrap(err, "writing RPC response")
-		}
+		// err := m.writeRPCResponse(int(message.ReqMsgID), obj)
+		// if err != nil {
+		// 	return errors.Wrap(err, "writing RPC response")
+		// }
 
 	default:
-		processed := false
-		for _, f := range m.serverRequestHandlers {
-			processed = f(message)
-			if processed {
-				break
-			}
-		}
-		if !processed {
-			if m.Warnings != nil {
-				m.Warnings <- errors.New("got nonsystem message from server: " + reflect.TypeOf(message).String())
-			}
-		}
+		panic(fmt.Sprintf("type %T not handled", message))
 	}
 
 	if (seqNo & 1) != 0 {
-		_, err := m.MakeRequest(&serialize.MsgsAck{MsgIds: []int64{int64(msgId)}})
+		// NOTE:
+		// похоже MsgsAck можно кидать Ack на несколько сообщений сразу
+		// Мб отправлять их батчами для меньшего жора сети?
+		err = m.MakeRequest(&serialize.MsgsAck{MsgIds: []int64{int64(msgID)}}, nil)
 		if err != nil {
 			return errors.Wrap(err, "sending ack")
 		}

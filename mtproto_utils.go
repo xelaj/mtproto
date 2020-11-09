@@ -1,12 +1,9 @@
 package mtproto
 
 import (
-	"fmt"
-	"reflect"
+	"sync/atomic"
 
-	"github.com/xelaj/go-dry"
-
-	"github.com/xelaj/mtproto/serialize"
+	"github.com/xelaj/mtproto/encoding/tl"
 	"github.com/xelaj/mtproto/utils"
 )
 
@@ -42,12 +39,12 @@ func (m *MTProto) GetSessionID() int64 {
 
 // Получает lastSeqNo
 func (m *MTProto) GetLastSeqNo() int32 {
-	return m.lastSeqNo
+	return atomic.LoadInt32(&m.lastSeqNo)
 }
 
 // получает соль
 func (m *MTProto) GetServerSalt() int64 {
-	return m.serverSalt
+	return atomic.LoadInt64(&m.serverSalt)
 }
 
 // получает ключ авторизации
@@ -60,23 +57,8 @@ func (m *MTProto) SetAuthKey(key []byte) {
 	m.authKeyHash = utils.AuthKeyHash(m.authKey)
 }
 
-func (m *MTProto) MakeRequest(msg serialize.TL) (serialize.TL, error) {
-	return m.makeRequest(msg, nil)
-}
-
-func (m *MTProto) MakeRequestAsSlice(msg serialize.TL, as reflect.Type) (serialize.TL, error) {
-	return m.makeRequest(msg, as)
-}
-
-func (m *MTProto) recoverGoroutine() {
-	if r := recover(); r != nil {
-		if m.RecoverFunc != nil {
-			fmt.Println(dry.StackTrace(0))
-			m.RecoverFunc(r)
-		} else {
-			panic(r)
-		}
-	}
+func (m *MTProto) MakeRequest(req tl.Object, resp interface{}) error {
+	return m.makeRequest(req, resp)
 }
 
 func (m *MTProto) AddCustomServerRequestHandler(handler customHandlerFunc) {

@@ -4,31 +4,22 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
-	"reflect"
-	"strconv"
+	"sync/atomic"
 	"time"
 
 	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
-	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
+	"github.com/xelaj/mtproto/encoding/tl"
 	"github.com/xelaj/mtproto/serialize"
 	"github.com/xelaj/mtproto/utils"
 )
 
-func (m *MTProto) sendPacketNew(request serialize.TL, expectVector reflect.Type) (chan serialize.TL, error) {
-	resp := make(chan serialize.TL)
-	if m.serviceModeActivated {
-		resp = m.serviceChannel
-	}
-	var data []byte
-	var err error
-	var msgID = utils.GenerateMessageId()
+func (m *MTProto) sendPacket(request tl.Object, response interface{}) (err error) {
+	msgID := utils.GenerateMessageId()
+	echan := make(chan error)
 
-	// может мы ожидаем вектор, см. erialize.RpcResult для понимания
-	if expectVector != nil {
-		m.msgsIdDecodeAsVector[msgID] = expectVector
-	}
+	var data []byte
 
 	if m.encrypted {
 		requireToAck := false
@@ -39,67 +30,87 @@ func (m *MTProto) sendPacketNew(request serialize.TL, expectVector reflect.Type)
 			requireToAck = true
 		}
 
+		msg, err := tl.Encode(request)
+		if err != nil {
+			return err
+		}
+
 		data, err = (&serialize.EncryptedMessage{
-			Msg:         request.Encode(),
+			Msg:         msg,
 			MsgID:       msgID,
 			AuthKeyHash: m.authKeyHash,
 		}).Serialize(m, requireToAck)
 		if err != nil {
-			return nil, errors.Wrap(err, "serializing message")
+			return errors.Wrap(err, "serializing message")
 		}
 
-		if !isNullableResponse(request) {
-			m.mutex.Lock()
+		// FIXME:
+		// что если:
+		// 1. Запрос не требует ответа, но response не nil?
+		// 2. Запрос требует ответа, но response nil - нам следует обрабатывать RpcError для него?
 
-			m.responseChannels[msgID] = resp
-			m.mutex.Unlock()
-		} else {
-			// ответов на TL_Ack, TL_Pong и пр. не требуется
+		// запрос не требует ответа
+		if isNullableResponse(request) {
+			pp.Println("nullable:", request)
 			go func() {
-				// горутина, т.к. мы ПРЯМО СЕЙЧАС из resp не читаем
-				resp <- &serialize.Null{}
+				echan <- nil
 			}()
+		} else {
+			m.mutex.Lock()
+			m.pending[msgID] = pendingRequest{
+				response: response,
+				echan:    echan,
+			}
+			m.mutex.Unlock()
+
 		}
+
 		// этот кусок не часть кодирования так что делаем при отправке
-		m.lastSeqNo += 2
+		atomic.AddInt32(&m.lastSeqNo, 2)
 	} else {
-		data, _ = (&serialize.UnencryptedMessage{ //nolint: errcheck нешифрованое не отправляет ошибки
-			Msg:   request.Encode(),
+		msg, err := tl.Encode(request)
+		if err != nil {
+			return err
+		}
+
+		data, err = (&serialize.UnencryptedMessage{ //nolint: errcheck нешифрованое не отправляет ошибки
+			Msg:   msg,
 			MsgID: msgID,
 		}).Serialize(m)
+		if err != nil {
+			return err
+		}
 	}
 
-	//? https://core.telegram.org/mtproto/mtproto-transports#intermediate
+	if m.serviceModeActivated {
+		if m.encrypted {
+			panic("omg")
+		}
+
+		go func() {
+			serviceMessage := <-m.serviceChannel
+			err := tl.Decode(serviceMessage, response)
+			if err != nil {
+				echan <- fmt.Errorf("decode service message: %w", err)
+			}
+
+			echan <- nil
+		}()
+	}
+
 	size := make([]byte, 4)
 	binary.LittleEndian.PutUint32(size, uint32(len(data)))
 	_, err = m.conn.Write(size)
 	if err != nil {
-		return nil, errors.Wrap(err, "sending data")
+		return errors.Wrap(err, "sending data")
 	}
 
-	//? https://core.telegram.org/mtproto/mtproto-transports#abridged
-	// _, err := m.conn.Write(utils.PacketLengthMTProtoCompatible(data))
-	// dry.PanicIfErr(err)
 	_, err = m.conn.Write(data)
 	if err != nil {
-		return nil, errors.Wrap(err, "sending request")
+		return errors.Wrap(err, "sending request")
 	}
 
-	return resp, nil
-}
-
-func (m *MTProto) writeRPCResponse(msgID int, data serialize.TL) error {
-	m.mutex.Lock()
-	v, ok := m.responseChannels[int64(msgID)]
-	if !ok {
-		return errs.NotFound("msgID", strconv.Itoa(msgID))
-	}
-
-	v <- data
-
-	delete(m.responseChannels, int64(msgID))
-	m.mutex.Unlock()
-	return nil
+	return <-echan
 }
 
 func (m *MTProto) readFromConn(ctx context.Context) (data []byte, err error) {

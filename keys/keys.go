@@ -11,22 +11,27 @@ import (
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
-	"github.com/xelaj/mtproto/serialize"
+	"github.com/xelaj/mtproto/encoding/tl"
 )
 
 // RSAFingerprint вычисляет отпечаток ключа
 // т.к. rsa ключ в понятиях MTProto это TL объект, то используется буффер
 // подробнее https://core.telegram.org/mtproto/auth_key
-func RSAFingerprint(key *rsa.PublicKey) []byte {
+func RSAFingerprint(key *rsa.PublicKey) ([]byte, error) {
 	dry.PanicIf(key == nil, "key can't be nil")
 	exponentAsBigInt := (big.NewInt(0)).SetInt64(int64(key.E))
 
-	buf := serialize.NewEncoder()
-	buf.PutMessage(key.N.Bytes())
-	buf.PutMessage(exponentAsBigInt.Bytes())
+	buf := bytes.NewBuffer(nil)
+	w := tl.NewWriteCursor(buf)
+	if err := w.PutMessage(key.N.Bytes()); err != nil {
+		return nil, err
+	}
+	if err := w.PutMessage(exponentAsBigInt.Bytes()); err != nil {
+		return nil, err
+	}
 
-	fingerprint := dry.Sha1(string(buf.Result()))
-	return []byte(fingerprint)[12:] // последние 8 байт это и есть отпечаток
+	fingerprint := dry.Sha1(string(buf.Bytes()))
+	return []byte(fingerprint)[12:], nil // последние 8 байт это и есть отпечаток
 }
 
 func ReadFromFile(path string) ([]*rsa.PublicKey, error) {

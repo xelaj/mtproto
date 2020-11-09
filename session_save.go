@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
-	"github.com/xelaj/mtproto/serialize"
+	"github.com/xelaj/mtproto/encoding/tl"
 )
 
 func (m *MTProto) SaveSession() (err error) {
@@ -19,7 +19,7 @@ func (m *MTProto) SaveSession() (err error) {
 	s := new(Session)
 	s.Key = m.authKey
 	s.Hash = m.authKeyHash
-	buf := make([]byte, serialize.LongLen)
+	buf := make([]byte, tl.LongLen)
 	binary.LittleEndian.PutUint64(buf, uint64(m.serverSalt))
 	s.Salt = buf
 	s.Hostname = m.addr

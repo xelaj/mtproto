@@ -1,7 +1,7 @@
 package telegram
 
 import (
-	"reflect"
+	"fmt"
 	"runtime"
 
 	"github.com/k0kubun/pp"
@@ -10,9 +10,11 @@ import (
 	dry "github.com/xelaj/go-dry"
 
 	"github.com/xelaj/mtproto"
+	"github.com/xelaj/mtproto/encoding/tl"
 	"github.com/xelaj/mtproto/keys"
-	"github.com/xelaj/mtproto/serialize"
 )
+
+const ApiVersion = 117
 
 type Client struct {
 	*mtproto.MTProto
@@ -37,9 +39,9 @@ func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not 
 		return nil, errs.NotFound("file", c.PublicKeysFile)
 	}
 
-	if !dry.PathIsWirtable(c.SessionFile) {
-		return nil, errs.Permission(c.SessionFile).Scope("write")
-	}
+	// if !dry.PathIsWirtable(c.SessionFile) {
+	// 	return nil, errs.Permission(c.SessionFile).Scope("write")
+	// }
 
 	if c.DeviceModel == "" {
 		c.DeviceModel = "Unknown"
@@ -66,20 +68,21 @@ func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not 
 	if err != nil {
 		return nil, errors.Wrap(err, "setup common MTProto client")
 	}
-
+	fmt.Println("mtproto created")
 	err = m.CreateConnection()
 	if err != nil {
 		return nil, errors.Wrap(err, "creating connection")
 	}
-
+	fmt.Println("connection created")
 	client := &Client{
 		MTProto: m,
 		config:  &c,
 	}
 
 	client.AddCustomServerRequestHandler(client.handleSpecialRequests())
-
-	resp, err := client.InvokeWithLayer(ApiVersion, &InitConnectionParams{
+	fmt.Println("HelpGetCfgParams invoking...")
+	config := new(Config)
+	err = client.InvokeWithLayer(ApiVersion, &InitConnectionParams{
 		ApiID:          int32(c.AppID),
 		DeviceModel:    c.DeviceModel,
 		SystemVersion:  c.SystemVersion,
@@ -87,15 +90,10 @@ func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not 
 		SystemLangCode: "en", // can't be edited, cause docs says that a single possible parameter
 		LangCode:       "en",
 		Query:          &HelpGetConfigParams{},
-	})
-
+	}, config)
+	fmt.Println("HelpGetCfgParams done...")
 	if err != nil {
 		return nil, errors.Wrap(err, "getting server configs")
-	}
-
-	config, ok := resp.(*Config)
-	if !ok {
-		return nil, errors.New("got wrong response: " + reflect.TypeOf(resp).String())
 	}
 
 	pp.Println(config)
@@ -122,126 +120,43 @@ func (c *Client) handleSpecialRequests() func(interface{}) bool {
 
 type InvokeWithLayerParams struct {
 	Layer int32
-	Query serialize.TLEncoder
+	Query tl.Object
 }
 
-func (_ *InvokeWithLayerParams) CRC() uint32 {
-	return 0xda9b0d0d
-}
+func (_ *InvokeWithLayerParams) CRC() uint32 { return 0xda9b0d0d }
 
-func (t *InvokeWithLayerParams) Encode() []byte {
-	buf := serialize.NewEncoder()
-	buf.PutUint(t.CRC())
-	buf.PutInt(t.Layer)
-	buf.PutRawBytes(t.Query.Encode())
-	return buf.Result()
-}
-
-func (t *InvokeWithLayerParams) DecodeFrom(d *serialize.Decoder) {
-	panic("makes no sense")
-}
-
-func (m *Client) InvokeWithLayer(layer int, query serialize.TLEncoder) (serialize.TL, error) {
-	data, err := m.MakeRequest(&InvokeWithLayerParams{
+func (m *Client) InvokeWithLayer(layer int, query tl.Object, resp interface{}) error {
+	return m.MakeRequest(&InvokeWithLayerParams{
 		Layer: int32(layer),
 		Query: query,
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, "sending InvokeWithLayer")
-	}
-
-	return data, nil
+	}, resp)
 }
 
 type InvokeWithTakeoutParams struct {
 	TakeoutID int64
-	Query     serialize.TLEncoder
+	Query     tl.Object
 }
 
-func (*InvokeWithTakeoutParams) CRC() uint32 {
-	return 0xaca9fd2e
-}
+func (*InvokeWithTakeoutParams) CRC() uint32 { return 0xaca9fd2e }
 
-func (t *InvokeWithTakeoutParams) Encode() []byte {
-	buf := serialize.NewEncoder()
-	buf.PutUint(t.CRC())
-	buf.PutLong(t.TakeoutID)
-	buf.PutRawBytes(t.Query.Encode())
-	return buf.Result()
-}
-
-func (t *InvokeWithTakeoutParams) DecodeFrom(d *serialize.Decoder) {
-	panic("makes no sense")
-}
-
-func (m *Client) InvokeWithTakeout(takeoutID int, query serialize.TLEncoder) (serialize.TL, error) {
-	data, err := m.MakeRequest(&InvokeWithTakeoutParams{
+func (m *Client) InvokeWithTakeout(takeoutID int, query tl.Object, resp interface{}) error {
+	return m.MakeRequest(&InvokeWithTakeoutParams{
 		TakeoutID: int64(takeoutID),
 		Query:     query,
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, "sending InvokeWithLayer")
-	}
-
-	return data, nil
+	}, resp)
 }
 
 type InitConnectionParams struct {
-	__flagsPosition struct{}
-	ApiID           int32
-	DeviceModel     string
-	SystemVersion   string
-	AppVersion      string
-	SystemLangCode  string
-	LangPack        string
-	LangCode        string
-	Proxy           *InputClientProxy `flag:"0"`
-	Params          JSONValue         `flag:"1"`
-	Query           serialize.TLEncoder
+	ApiID          int32
+	DeviceModel    string
+	SystemVersion  string
+	AppVersion     string
+	SystemLangCode string
+	LangPack       string
+	LangCode       string
+	Proxy          *InputClientProxy `tl:"flag:0"`
+	Params         JSONValue         `tl:"flag:1"`
+	Query          tl.Object
 }
 
-func (_ *InitConnectionParams) CRC() uint32 {
-	return 0xc1cd5ea9
-}
-
-func (t *InitConnectionParams) Encode() []byte {
-	var flag uint32
-	if t.Proxy != nil {
-		flag |= 1 << 0
-	}
-	if t.Params != nil {
-		flag |= 1 << 1
-	}
-
-	buf := serialize.NewEncoder()
-	buf.PutUint(t.CRC())
-	buf.PutUint(flag)
-	buf.PutInt(t.ApiID)
-	buf.PutString(t.DeviceModel)
-	buf.PutString(t.SystemVersion)
-	buf.PutString(t.AppVersion)
-	buf.PutString(t.SystemLangCode)
-	buf.PutString(t.LangPack)
-	buf.PutString(t.LangCode)
-	if t.Proxy != nil {
-		buf.PutRawBytes(t.Proxy.Encode())
-	}
-	if t.Params != nil {
-		buf.PutRawBytes(t.Params.Encode())
-	}
-	buf.PutRawBytes(t.Query.Encode())
-	return buf.Result()
-}
-
-func (t *InitConnectionParams) DecodeFrom(d *serialize.Decoder) {
-	panic("makes no sense")
-}
-
-func (m *Client) InitConnection(params *InitConnectionParams) (serialize.TL, error) {
-	data, err := m.MakeRequest(params)
-	if err != nil {
-		return nil, errors.Wrap(err, "sending InitConnection")
-	}
-
-	return data, nil
-}
+func (_ *InitConnectionParams) CRC() uint32 { return 0xc1cd5ea9 }
