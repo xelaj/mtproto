@@ -172,7 +172,7 @@ func (msg *UnencryptedMessage) GetSeqNo() int32 {
 	return 0
 }
 
-func (msg *UnencryptedMessage) Serialize(client MessageInformator) ([]byte, error) {
+func (msg *UnencryptedMessage) Serialize() ([]byte, error) {
 	buf := bytes.NewBuffer(nil)
 	cw := tl.NewWriteCursor(buf)
 

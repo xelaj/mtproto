@@ -75,7 +75,7 @@ func (m *MTProto) sendPacket(request tl.Object, response interface{}) (err error
 		data, err = (&serialize.UnencryptedMessage{ //nolint: errcheck нешифрованое не отправляет ошибки
 			Msg:   msg,
 			MsgID: msgID,
-		}).Serialize(m)
+		}).Serialize()
 		if err != nil {
 			return err
 		}
