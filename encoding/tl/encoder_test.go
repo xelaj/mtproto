@@ -133,6 +133,13 @@ func TestEncode(t *testing.T) {
 			},
 			wantErr: "field 'Action': invalid value",
 		},
+		{
+			name: "int_in_bitflags",
+			obj: &struct {
+				Kek int `tl:"flag:0,encoded_in_bitflags"`
+			}{Kek: 1},
+			wantErr: "field 'Kek': only bool values can be encoded in bitflags",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

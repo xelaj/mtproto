@@ -85,10 +85,6 @@ func encodeStruct(cur *WriteCursor, v interface{}) error {
 				return fmt.Errorf("parsing tag: %w", err)
 			}
 
-			if info.encodedInBitflag && vtyp.Field(i).Type.Kind() != reflect.Bool {
-				return fmt.Errorf("field '%s': only bool values can be encoded in bitflag", vtyp.Field(i).Name)
-			}
-
 			if info.ignore {
 				continue
 			}
@@ -98,7 +94,7 @@ func encodeStruct(cur *WriteCursor, v interface{}) error {
 				flag |= 1 << info.index
 				if info.encodedInBitflag {
 					if fieldVal.Kind() != reflect.Bool {
-						return fmt.Errorf("field '%s': only bool values can be encoded in bitflag", vtyp.Field(i).Name)
+						return fmt.Errorf("field '%s': only bool values can be encoded in bitflags", vtyp.Field(i).Name)
 					}
 
 					continue
