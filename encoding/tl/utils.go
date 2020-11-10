@@ -4,10 +4,11 @@ import (
 	"reflect"
 )
 
-func haveFlag(v interface{}) bool {
+//! мне не нравится, непонятно зачем
+func haveFlag(v any) bool {
 	typ := reflect.TypeOf(v)
 	for i := 0; i < typ.NumField(); i++ {
-		tag, found := typ.Field(i).Tag.Lookup(tagName)
+		tag, found := typ.Field(i).Tag.Lookup("tl")
 		if found {
 			info, err := parseTag(tag)
 			if err != nil {
@@ -25,7 +26,8 @@ func haveFlag(v interface{}) bool {
 	return false
 }
 
-func sliceToInterfaceSlice(in interface{}) []interface{} {
+//! слайстрикс
+func sliceToInterfaceSlice(in any) []any {
 	if in == nil {
 		return nil
 	}
@@ -35,7 +37,7 @@ func sliceToInterfaceSlice(in interface{}) []interface{} {
 		panic("not a slice: " + ival.Type().String())
 	}
 
-	res := make([]interface{}, ival.Len())
+	res := make([]any, ival.Len())
 	for i := 0; i < ival.Len(); i++ {
 		res[i] = ival.Index(i).Interface()
 	}

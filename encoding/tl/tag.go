@@ -1,63 +1,71 @@
 package tl
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/fatih/structtag"
+	"github.com/pkg/errors"
 )
 
-const (
-	tagName              = "tl"
-	optEncodedInBitflags = "encoded_in_bitflags"
-	optFlagPrefix        = "flag:"
-	optIgnore            = "-"
-)
+const tagName = "tl"
 
-type tagInfo struct {
-	index             int
-	encodedInBitflags bool
-	ignore            bool
+type fieldTag struct {
+	index            int  // flags:<N>
+	encodedInBitflag bool // encoded_in_bitflags
+	ignore           bool // -
+	optional         bool // omitempty
 }
 
-func parseTag(s string) (info tagInfo, err error) {
-	vals := strings.Split(s, ",")
-	if len(vals) == 0 {
-		err = fmt.Errorf("bad tag: %s", s)
-		return
+func parseTag(s string) (*fieldTag, error) {
+	tags, err := structtag.Parse(s)
+	if err != nil {
+		return nil, errors.Wrap(err, "parsing field tags")
 	}
 
-	if haveInSlice(optIgnore, vals) {
-		if len(vals) != 1 {
-			err = fmt.Errorf("got '%s' with multiple options", optIgnore)
-			return
-		}
+	tag, err := tags.Get(tagName)
+	if err != nil {
+		// ну не нашли и не нашли, че бубнить то
+		return nil, nil
+	}
 
+	info := &fieldTag{}
+
+	if tag.Name == "-" {
 		info.ignore = true
-		return
+		return info, nil
 	}
 
-	flag, haveFlag := haveStartsWith(optFlagPrefix, vals)
-	if haveFlag {
-		num := flag[len(optFlagPrefix):] // get index
+	var flagIndexSet bool
+	if strings.HasPrefix(tag.Name, "flag:") {
+		num := strings.TrimPrefix(tag.Name, "flag:")
 		info.index, err = strconv.Atoi(num)
 		if err != nil {
-			err = fmt.Errorf("parse flag index '%s': %w", num, err)
-			return
-		}
-	}
-
-	if haveInSlice(optEncodedInBitflags, vals) {
-		if !haveFlag {
-			err = fmt.Errorf("have '%s' option without flag index", optEncodedInBitflags)
-			return
+			return nil, errors.Wrapf(err, "parsing index number '%s'", num)
 		}
 
-		info.encodedInBitflags = true
+		// поля внутри битфлагов всегда optional
+		info.optional = true
+
+		flagIndexSet = true
 	}
 
-	return
+	if haveInSlice("encoded_in_bitflags", tag.Options) {
+		if !flagIndexSet {
+			return nil, errors.New("have 'encoded_in_bitflag' option without flag index")
+		}
+
+		info.encodedInBitflag = true
+	}
+
+	if haveInSlice("omitempty", tag.Options) {
+		info.optional = true
+	}
+
+	return info, nil
 }
 
+//! slicetricks
 func haveInSlice(s string, slice []string) bool {
 	for _, item := range slice {
 		if item == s {
@@ -66,14 +74,4 @@ func haveInSlice(s string, slice []string) bool {
 	}
 
 	return false
-}
-
-func haveStartsWith(s string, slice []string) (string, bool) {
-	for _, item := range slice {
-		if strings.HasPrefix(item, s) {
-			return item, true
-		}
-	}
-
-	return "", false
 }

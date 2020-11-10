@@ -1,10 +1,12 @@
 package tl_test
 
 import (
+	"encoding/hex"
 	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/xelaj/go-dry"
 	"github.com/xelaj/mtproto/encoding/tl"
 	"github.com/xelaj/mtproto/serialize"
 	"github.com/xelaj/mtproto/telegram"
@@ -13,10 +15,19 @@ import (
 func TestEncode(t *testing.T) {
 	tests := []struct {
 		name    string
-		obj     interface{}
+		obj     any
 		want    []byte
-		wantErr string
+		wantErr assert.ErrorAssertionFunc
 	}{
+		{
+			name: "Rights",
+			obj: &Rights{
+				DeleteMessages: true,
+				BanUsers:       true,
+			},
+			want:    Hexed("D524B25F18000000"),
+			wantErr: assert.NoError,
+		},
 		{
 			name: "AccountInstallThemeParams",
 			obj: &telegram.AccountInstallThemeParams{
@@ -31,6 +42,7 @@ func TestEncode(t *testing.T) {
 				0x37, 0x37, 0xe4, 0x7a, 0x03, 0x00, 0x00, 0x00, 0x03, 0x61, 0x62, 0x63, 0xe9, 0x93, 0x56, 0x3c,
 				0x7b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x41, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "AccountUnregisterDeviceParams",
@@ -45,6 +57,7 @@ func TestEncode(t *testing.T) {
 				0xbf, 0xc4, 0x76, 0x30, 0x01, 0x00, 0x00, 0x00, 0x03, 0x66, 0x6f, 0x6f, 0x15, 0xc4, 0xb5, 0x1c,
 				0x03, 0x00, 0x00, 0x00, 0x39, 0x05, 0x00, 0x00, 0xe4, 0x00, 0x00, 0x00, 0x42, 0x01, 0x00, 0x00,
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "respq",
@@ -52,9 +65,7 @@ func TestEncode(t *testing.T) {
 				Nonce: &serialize.Int128{
 					big.NewInt(123),
 				},
-				ServerNonce: &serialize.Int128{
-					big.NewInt(321),
-				},
+				ServerNonce:  &serialize.Int128{big.NewInt(321)},
 				Pq:           []byte{1, 2, 3},
 				Fingerprints: []int64{322, 1337},
 			},
@@ -64,6 +75,7 @@ func TestEncode(t *testing.T) {
 				0x00, 0x00, 0x01, 0x41, 0x03, 0x01, 0x02, 0x03, 0x15, 0xc4, 0xb5, 0x1c, 0x02, 0x00, 0x00, 0x00,
 				0x42, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x39, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "InitConnectionParams",
@@ -84,6 +96,7 @@ func TestEncode(t *testing.T) {
 				0x39, 0x05, 0x00, 0x00, 0x03, 0x61, 0x62, 0x63, 0x03, 0x64, 0x65, 0x66, 0x03, 0x31, 0x32, 0x33,
 				0x02, 0x65, 0x6e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x65, 0x6e, 0x00, 0x6b, 0x18, 0xf9, 0xc4,
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "access-point-rule",
@@ -110,50 +123,32 @@ func TestEncode(t *testing.T) {
 				0x46, 0x26, 0x98, 0x37, 0x41, 0x01, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00, 0x05, 0x01, 0x02, 0x03,
 				0x04, 0x05, 0x00, 0x00,
 			},
+			wantErr: assert.NoError,
 		},
-		{
-			name: "nil-struct",
-			obj: &telegram.AccountPasswordSettings{
-				Email: "foo",
-				SecureSettings: &telegram.SecureSecretSettings{
-					SecureAlgo:     nil,
-					SecureSecret:   []byte{1},
-					SecureSecretId: 1,
-				},
-			},
-			wantErr: "field 'SecureSettings': field 'SecureAlgo': invalid value",
-		},
-		{
-			name: "nil-interface",
-			obj: &telegram.ChannelAdminLogEvent{
-				Id:     123,
-				Date:   123,
-				UserId: 123,
-				Action: nil,
-			},
-			wantErr: "field 'Action': invalid value",
-		},
-		{
-			name: "int_in_bitflags",
-			obj: &struct {
-				Kek int `tl:"flag:0,encoded_in_bitflags"`
-			}{Kek: 1},
-			wantErr: "field 'Kek': only bool values can be encoded in bitflags",
-		},
+		// {
+		// 	name: "struct",
+		// 	obj: &telegram.AccountPasswordSettings{
+		// 		Email: "foo",
+		// 		SecureSettings: &telegram.SecureSecretSettings{
+		// 			SecureAlgo:     &telegram.SecurePasswordKdfAlgoUnknown{},
+		// 			SecureSecret:   []byte{1},
+		// 			SecureSecretId: 1,
+		// 		},
+		// 	},
+		// 	want: nil,
+		// },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tl.Encode(tt.obj)
-			if err != nil {
-				if tt.wantErr != "" {
-					assert.EqualError(t, err, tt.wantErr)
-					return
-				}
-
-				t.Errorf("Encode() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			got, err := tl.Marshal(tt.obj)
+			tt.wantErr(t, err)
 			assert.Equal(t, got, tt.want)
 		})
 	}
+}
+
+func Hexed(in string) []byte {
+	res, err := hex.DecodeString(in)
+	dry.PanicIfErr(err)
+	return res
 }

@@ -9,7 +9,7 @@ import (
 
 func BenchmarkEncoder(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		tl.Encode(&telegram.AccountInstallThemeParams{
+		tl.Marshal(&telegram.AccountInstallThemeParams{
 			Dark:   true,
 			Format: "abc",
 			Theme: &telegram.InputThemeObj{

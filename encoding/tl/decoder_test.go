@@ -8,15 +8,18 @@ import (
 	"github.com/xelaj/mtproto/telegram"
 )
 
+type any = interface{}
+type null = struct{}
+
 func TestDecode(t *testing.T) {
 	type args struct {
 		data []byte
-		v    interface{}
+		v    any
 	}
 	tests := []struct {
 		name     string
 		args     args
-		expected interface{}
+		expected any
 		wantErr  bool
 	}{
 		{

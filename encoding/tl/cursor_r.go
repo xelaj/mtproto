@@ -83,7 +83,7 @@ func (c *ReadCursor) PopBool() (bool, error) {
 	}
 }
 
-// func (c *ReadCursor) PopNull() (interface{}, error) {
+// func (c *ReadCursor) PopNull() (any, error) {
 // 	crc, err := c.PopUint()
 // 	if err != nil {
 // 		return nil, err
@@ -117,7 +117,7 @@ func (c *ReadCursor) DumpWithoutRead() ([]byte, error) {
 	return data, nil
 }
 
-func (c *ReadCursor) PopVector(as reflect.Type) (interface{}, error) {
+func (c *ReadCursor) PopVector(as reflect.Type) (any, error) {
 	return decodeVector(c, as)
 }
 

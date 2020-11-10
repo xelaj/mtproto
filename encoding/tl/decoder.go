@@ -9,7 +9,7 @@ import (
 	"github.com/k0kubun/pp"
 )
 
-func Decode(data []byte, v interface{}) error {
+func Decode(data []byte, v any) error {
 	if v == nil {
 		return fmt.Errorf("can't unmarshal to nil value")
 	}
@@ -46,13 +46,7 @@ func decodeObject(cur *ReadCursor, o Object, ignoreCRC bool) error {
 
 	vtyp := value.Type()
 	var optionalBitSet uint32
-
-	popFlag, cached := haveFlagCache[o.CRC()]
-	if !cached {
-		popFlag = haveFlag(value.Interface())
-	}
-
-	if popFlag {
+	if haveFlag(value.Interface()) {
 		bitset, err := cur.PopUint()
 		if err != nil {
 			return fmt.Errorf("read bitset: %w", err)
@@ -64,7 +58,7 @@ func decodeObject(cur *ReadCursor, o Object, ignoreCRC bool) error {
 	for i := 0; i < value.NumField(); i++ {
 		field := value.Field(i)
 
-		if tag, found := vtyp.Field(i).Tag.Lookup(tagName); found {
+		if tag, found := vtyp.Field(i).Tag.Lookup("tl"); found {
 			info, err := parseTag(tag)
 			if err != nil {
 				return fmt.Errorf("parse tag: %w", err)
@@ -74,7 +68,7 @@ func decodeObject(cur *ReadCursor, o Object, ignoreCRC bool) error {
 				continue
 			}
 
-			if info.encodedInBitflags {
+			if info.encodedInBitflag {
 				field.Set(reflect.ValueOf(true).Convert(field.Type()))
 				continue
 			}
@@ -85,7 +79,6 @@ func decodeObject(cur *ReadCursor, o Object, ignoreCRC bool) error {
 			field.Set(val)
 		}
 
-		// fmt.Printf("decoding field '%s'\n", vtyp.Field(i).Name)
 		if err := decodeValue(cur, field); err != nil {
 			return fmt.Errorf("decode field '%s': %w", vtyp.Field(i).Name, err)
 		}
@@ -94,6 +87,7 @@ func decodeObject(cur *ReadCursor, o Object, ignoreCRC bool) error {
 	return nil
 }
 
+// FIXME: has too many statements (59 > 50) (funlen)
 func decodeValue(cur *ReadCursor, value reflect.Value) error {
 	if m, ok := value.Interface().(Unmarshaler); ok {
 		return m.UnmarshalTL(cur)
@@ -210,7 +204,7 @@ func decodeRegisteredObject(cur *ReadCursor) (Object, error) {
 			Crc:  crc,
 			Data: msg,
 		}
-		// return nil, fmt.Errorf("object with crc %#v not found", crc)
+		// return nil, fmt.Errorf("object with crc %#v not found", crc) //nolint:gocritic experiments
 	}
 
 	if o == nil {
@@ -281,7 +275,7 @@ func decodeMessage(c *ReadCursor) ([]byte, error) {
 	return buf, nil
 }
 
-func decodeVector(c *ReadCursor, as reflect.Type) (interface{}, error) {
+func decodeVector(c *ReadCursor, as reflect.Type) (any, error) {
 	crc, err := c.PopCRC()
 	if err != nil {
 		return nil, fmt.Errorf("read crc: %w", err)
