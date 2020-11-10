@@ -79,7 +79,7 @@ func encodeStruct(cur *WriteCursor, v interface{}) error {
 	vtyp := val.Type()
 	for i := 0; i < val.NumField(); i++ {
 		fieldVal := val.Field(i)
-		if tag, found := vtyp.Field(i).Tag.Lookup("tl"); found {
+		if tag, found := vtyp.Field(i).Tag.Lookup(tagName); found {
 			info, err := parseTag(tag)
 			if err != nil {
 				return fmt.Errorf("parsing tag: %w", err)
@@ -92,7 +92,7 @@ func encodeStruct(cur *WriteCursor, v interface{}) error {
 			haveFlag = true
 			if !fieldVal.IsZero() {
 				flag |= 1 << info.index
-				if info.encodedInBitflag {
+				if info.encodedInBitflags {
 					if fieldVal.Kind() != reflect.Bool {
 						return fmt.Errorf("field '%s': only bool values can be encoded in bitflags", vtyp.Field(i).Name)
 					}

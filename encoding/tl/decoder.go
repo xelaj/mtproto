@@ -58,7 +58,7 @@ func decodeObject(cur *ReadCursor, o Object, ignoreCRC bool) error {
 	for i := 0; i < value.NumField(); i++ {
 		field := value.Field(i)
 
-		if tag, found := vtyp.Field(i).Tag.Lookup("tl"); found {
+		if tag, found := vtyp.Field(i).Tag.Lookup(tagName); found {
 			info, err := parseTag(tag)
 			if err != nil {
 				return fmt.Errorf("parse tag: %w", err)
@@ -68,7 +68,7 @@ func decodeObject(cur *ReadCursor, o Object, ignoreCRC bool) error {
 				continue
 			}
 
-			if info.encodedInBitflag {
+			if info.encodedInBitflags {
 				field.Set(reflect.ValueOf(true).Convert(field.Type()))
 				continue
 			}

@@ -6,10 +6,17 @@ import (
 	"strings"
 )
 
+const (
+	tagName              = "tl"
+	optEncodedInBitflags = "encoded_in_bitflags"
+	optFlagPrefix        = "flag:"
+	optIgnore            = "-"
+)
+
 type tagInfo struct {
-	index            int
-	encodedInBitflag bool
-	ignore           bool
+	index             int
+	encodedInBitflags bool
+	ignore            bool
 }
 
 func parseTag(s string) (info tagInfo, err error) {
@@ -19,9 +26,9 @@ func parseTag(s string) (info tagInfo, err error) {
 		return
 	}
 
-	if haveInSlice("-", vals) {
+	if haveInSlice(optIgnore, vals) {
 		if len(vals) != 1 {
-			err = fmt.Errorf("got '-' with multiple options")
+			err = fmt.Errorf("got '%s' with multiple options", optIgnore)
 			return
 		}
 
@@ -29,9 +36,9 @@ func parseTag(s string) (info tagInfo, err error) {
 		return
 	}
 
-	flag, haveFlag := haveStartsWith("flag:", vals)
+	flag, haveFlag := haveStartsWith(optFlagPrefix, vals)
 	if haveFlag {
-		num := flag[len("flag:"):] // get index
+		num := flag[len(optFlagPrefix):] // get index
 		info.index, err = strconv.Atoi(num)
 		if err != nil {
 			err = fmt.Errorf("parse flag index '%s': %w", num, err)
@@ -39,13 +46,13 @@ func parseTag(s string) (info tagInfo, err error) {
 		}
 	}
 
-	if haveInSlice("encoded_in_bitflags", vals) {
+	if haveInSlice(optEncodedInBitflags, vals) {
 		if !haveFlag {
-			err = fmt.Errorf("have 'encoded_in_bitflag' option without flag index")
+			err = fmt.Errorf("have '%s' option without flag index", optEncodedInBitflags)
 			return
 		}
 
-		info.encodedInBitflag = true
+		info.encodedInBitflags = true
 	}
 
 	return
