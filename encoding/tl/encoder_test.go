@@ -15,7 +15,7 @@ func TestEncode(t *testing.T) {
 		name    string
 		obj     interface{}
 		want    []byte
-		wantErr bool
+		wantErr string
 	}{
 		{
 			name: "AccountInstallThemeParams",
@@ -111,23 +111,38 @@ func TestEncode(t *testing.T) {
 				0x04, 0x05, 0x00, 0x00,
 			},
 		},
-		// {
-		// 	name: "struct",
-		// 	obj: &telegram.AccountPasswordSettings{
-		// 		Email: "foo",
-		// 		SecureSettings: &telegram.SecureSecretSettings{
-		// 			SecureAlgo:     &telegram.SecurePasswordKdfAlgoUnknown{},
-		// 			SecureSecret:   []byte{1},
-		// 			SecureSecretId: 1,
-		// 		},
-		// 	},
-		// 	want: nil,
-		// },
+		{
+			name: "nil-struct",
+			obj: &telegram.AccountPasswordSettings{
+				Email: "foo",
+				SecureSettings: &telegram.SecureSecretSettings{
+					SecureAlgo:     nil,
+					SecureSecret:   []byte{1},
+					SecureSecretId: 1,
+				},
+			},
+			wantErr: "field 'SecureSettings': field 'SecureAlgo': invalid value",
+		},
+		{
+			name: "nil-interface",
+			obj: &telegram.ChannelAdminLogEvent{
+				Id:     123,
+				Date:   123,
+				UserId: 123,
+				Action: nil,
+			},
+			wantErr: "field 'Action': invalid value",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := tl.Encode(tt.obj)
-			if (err != nil) != tt.wantErr {
+			if err != nil {
+				if tt.wantErr != "" {
+					assert.EqualError(t, err, tt.wantErr)
+					return
+				}
+
 				t.Errorf("Encode() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}

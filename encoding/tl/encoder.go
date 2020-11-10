@@ -49,10 +49,6 @@ func encodeValue(cur *WriteCursor, value reflect.Value) (err error) {
 
 // v must be pointer to struct
 func encodeStruct(cur *WriteCursor, v interface{}) error {
-	// if reflect.ValueOf(v).IsZero() {
-	// 	return fmt.Errorf("zero struct")
-	// }
-
 	if m, ok := v.(Marshaler); ok {
 		return m.MarshalTL(cur)
 	}
@@ -63,7 +59,7 @@ func encodeStruct(cur *WriteCursor, v interface{}) error {
 
 	val := reflect.ValueOf(v)
 	if val.Kind() != reflect.Ptr {
-		return fmt.Errorf("not a pointer")
+		return fmt.Errorf("invalid value")
 	}
 
 	val = reflect.Indirect(val)
@@ -115,12 +111,6 @@ func encodeStruct(cur *WriteCursor, v interface{}) error {
 
 			continue
 		}
-
-		// FIXME:
-		// проверка на zero-value, падает на InitConnectionParams.LangPack т.к. он никогда не указывается
-		// if fieldVal.IsZero() {
-		// 	return fmt.Errorf("field '%s' have zero value", vtyp.Field(i).Name)
-		// }
 
 		if err := encodeValue(newCursor, fieldVal); err != nil {
 			return fmt.Errorf("field '%s': %w", vtyp.Field(i).Name, err)
