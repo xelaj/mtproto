@@ -46,7 +46,13 @@ func decodeObject(cur *ReadCursor, o Object, ignoreCRC bool) error {
 
 	vtyp := value.Type()
 	var optionalBitSet uint32
-	if haveFlag(value.Interface()) {
+
+	popFlag, cached := haveFlagCache[o.CRC()]
+	if !cached {
+		popFlag = haveFlag(value.Interface())
+	}
+
+	if popFlag {
 		bitset, err := cur.PopUint()
 		if err != nil {
 			return fmt.Errorf("read bitset: %w", err)

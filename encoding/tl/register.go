@@ -1,18 +1,21 @@
 package tl
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
 
 var (
 	// used by decoder
-	objectByCrc map[uint32]Object
-	crcByObject map[Object]uint32
-	enumCrcs    map[uint32]struct{}
+	objectByCrc   map[uint32]Object
+	enumCrcs      map[uint32]struct{}
+	haveFlagCache map[uint32]bool
 )
 
 func init() {
 	objectByCrc = make(map[uint32]Object)
-	crcByObject = make(map[Object]uint32)
 	enumCrcs = make(map[uint32]struct{})
+	haveFlagCache = map[uint32]bool{}
 }
 
 func registerObject(o Object) {
@@ -20,12 +23,14 @@ func registerObject(o Object) {
 		panic(fmt.Errorf("object with that crc already registered: %d", o.CRC()))
 	}
 
-	if another, found := crcByObject[o]; found {
-		panic(fmt.Errorf("crc already associated with another object: %T", another))
+	if elem := reflect.ValueOf(o); elem.Kind() == reflect.Ptr {
+		elem = elem.Elem()
+		if elem.Kind() == reflect.Struct {
+			haveFlagCache[o.CRC()] = haveFlag(elem.Interface())
+		}
 	}
 
 	objectByCrc[o.CRC()] = o
-	crcByObject[o] = o.CRC()
 }
 
 func registerEnum(o Object) {
