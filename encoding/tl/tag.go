@@ -10,7 +10,6 @@ type tagInfo struct {
 	index            int
 	encodedInBitflag bool
 	ignore           bool
-	optional         bool
 }
 
 func parseTag(s string) (info tagInfo, err error) {
@@ -38,9 +37,6 @@ func parseTag(s string) (info tagInfo, err error) {
 			err = fmt.Errorf("parse flag index '%s': %w", num, err)
 			return
 		}
-
-		// поля внутри битфлагов всегда optional
-		info.optional = true
 	}
 
 	if haveInSlice("encoded_in_bitflags", vals) {
@@ -50,10 +46,6 @@ func parseTag(s string) (info tagInfo, err error) {
 		}
 
 		info.encodedInBitflag = true
-	}
-
-	if haveInSlice("optional", vals) {
-		info.optional = true
 	}
 
 	return
