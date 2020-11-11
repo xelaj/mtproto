@@ -192,7 +192,7 @@ Technically — yes. In practice — components don't require specific architect
 
 ## Contributing
 
-Please read [contributing guide](https://github.com/xelaj/mtproto/blob/master/doc/en_US/CONTRIBUTING.md) if you want to help. And the help is very necessary!
+Please read [contributing guide](https://github.com/xelaj/mtproto/blob/master/docs/en_US/CONTRIBUTING.md) if you want to help. And the help is very necessary!
 
 ## TODO
 
