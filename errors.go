@@ -74,7 +74,7 @@ func TryExpandError(errStr string) (nativeErrorName string, additionalData inter
 		}
 	}
 
-	if choosedPrefixSuffix != nil {
+	if choosedPrefixSuffix == nil {
 		return errStr, nil // common error, returning
 	}
 
