@@ -9,7 +9,6 @@ import (
 	"sync"
 	"time"
 
-	bus "github.com/asaskevich/EventBus"
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
@@ -22,6 +21,7 @@ type MTProto struct {
 	addr         string
 	conn         *net.TCPConn
 	stopRoutines context.CancelFunc // остановить ping, read, и подобные горутины
+	routineswg   sync.WaitGroup     // WaitGroup что бы быть уверенным, что все рутины остановились
 
 	// ключ авторизации. изменять можно только через setAuthKey
 	authKey []byte
@@ -57,10 +57,7 @@ type MTProto struct {
 	lastSeqNo int32
 
 	// пока непонятно для чего, кажется это нужно клиенту конкретно телеграма
-	dclist map[int32]string
-
-	// шина сообщений, используется для разных нотификаций, описанных в константах нотификации
-	bus bus.Bus
+	dclist map[int]string
 
 	// путь до файла токена сессии.
 	tokensStorage string
@@ -110,9 +107,35 @@ func NewMTProto(c Config) (*MTProto, error) {
 	m.responseChannels = make(map[int64]chan serialize.TL)
 	m.msgsIdDecodeAsVector = make(map[int64]reflect.Type)
 	m.serverRequestHandlers = make([]customHandlerFunc, 0)
+	// копируем мапу, т.к. все таки дефолтный список нельзя менять, вдруг его использует несколько клиентов
+	m.SetDCStorages(defaultDCList)
+
 	m.resetAck()
 
 	return m, nil
+}
+
+func (m *MTProto) SetDCStorages(in map[int]string) {
+	if m.dclist == nil {
+		m.dclist = make(map[int]string)
+	}
+	for k, v := range defaultDCList {
+		m.dclist[k] = v
+	}
+}
+
+// Stop останавливает текущее соединение
+func (m *MTProto) Stop() error {
+	m.stopRoutines()
+	m.routineswg.Wait()
+
+	err := m.conn.Close()
+	if err != nil {
+		return errors.Wrap(err, "closing connection")
+	}
+
+	// все остановили, погнали пересоздаваться
+	return nil
 }
 
 func (m *MTProto) CreateConnection() error {
@@ -170,7 +193,14 @@ func (m *MTProto) makeRequest(data serialize.TL, as reflect.Type) (serialize.TL,
 		return m.makeRequest(data, as)
 	}
 	if e, ok := response.(*serialize.RpcError); ok {
-		return nil, RpcErrorToNative(e)
+		realErr := RpcErrorToNative(e)
+
+		err = m.tryToProcessErr(realErr.(*ErrResponseCode))
+		if err != nil {
+			return nil, err
+		}
+
+		return m.makeRequest(data, as)
 	}
 
 	return response, nil
@@ -197,12 +227,14 @@ func (m *MTProto) Disconnect() error {
 // startPinging пингует сервер что все хорошо, клиент в сети
 // нужно просто запустить
 func (m *MTProto) startPinging(ctx context.Context) {
+	m.routineswg.Add(1)
 	ticker := time.Tick(60 * time.Second)
 	go func() {
 		defer m.recoverGoroutine()
 		for {
 			select {
 			case <-ctx.Done():
+				m.routineswg.Done()
 				return
 			case <-ticker:
 				_, err := m.Ping(0xCADACADA)
@@ -217,11 +249,13 @@ func (m *MTProto) startPinging(ctx context.Context) {
 }
 
 func (m *MTProto) startReadingResponses(ctx context.Context) {
+	m.routineswg.Add(1)
 	go func() {
 		defer m.recoverGoroutine()
 		for {
 			select {
 			case <-ctx.Done():
+				m.routineswg.Done()
 				return
 			default:
 				data, err := m.readFromConn(ctx)
@@ -350,4 +384,35 @@ func (m *MTProto) processResponse(msgId, seqNo int, msg serialize.CommonMessage)
 	}
 
 	return nil
+}
+
+// tryToProcessErr пытается автоматически решить ошибку полученную от сервера. в случае успеха вернет nil,
+// в случае если нет способа решить эту проблему, возвращается сама ошибка
+// если в процессе решения появлиась еще одна ошибка, то она оборачивается в errors.Wrap, основная
+// игнорируется (потому что гарантируется, что обработка ошибки надежна, и параллельная ошибка это что-то из
+// ряда вон выходящее)
+func (m *MTProto) tryToProcessErr(e *ErrResponseCode) error {
+	switch e.Message {
+	case "PHONE_MIGRATE_X":
+		newIP, found := m.dclist[e.AdditionalInfo.(int)]
+		if !found {
+			return errors.Wrapf(e, "DC with id %v not found", e.AdditionalInfo)
+		}
+		err := m.Stop()
+		if err != nil {
+			return errors.Wrap(err, "stopping session")
+		}
+
+		m.addr = newIP
+
+		err = m.CreateConnection()
+		if err != nil {
+			return errors.Wrap(err, "recreating session")
+		}
+
+		return nil
+
+	default:
+		return e
+	}
 }

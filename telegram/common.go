@@ -16,7 +16,8 @@ import (
 
 type Client struct {
 	*mtproto.MTProto
-	config *ClientConfig
+	config       *ClientConfig
+	serverConfig *Config
 }
 
 type ClientConfig struct {
@@ -98,7 +99,17 @@ func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not 
 		return nil, errors.New("got wrong response: " + reflect.TypeOf(resp).String())
 	}
 
-	pp.Println(config)
+	client.serverConfig = config
+
+	dcList := make(map[int]string)
+	for _, dc := range config.DcOptions {
+		if dc.Cdn {
+			continue
+		}
+
+		dcList[int(dc.Id)] = dc.IpAddress
+	}
+	client.SetDCStorages(dcList)
 
 	return client, nil
 }
@@ -125,7 +136,7 @@ type InvokeWithLayerParams struct {
 	Query serialize.TLEncoder
 }
 
-func (_ *InvokeWithLayerParams) CRC() uint32 {
+func (*InvokeWithLayerParams) CRC() uint32 {
 	return 0xda9b0d0d
 }
 
@@ -237,8 +248,8 @@ func (t *InitConnectionParams) DecodeFrom(d *serialize.Decoder) {
 	panic("makes no sense")
 }
 
-func (m *Client) InitConnection(params *InitConnectionParams) (serialize.TL, error) {
-	data, err := m.MakeRequest(params)
+func (c *Client) InitConnection(params *InitConnectionParams) (serialize.TL, error) {
+	data, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sending InitConnection")
 	}
