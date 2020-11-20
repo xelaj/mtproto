@@ -1,3 +1,8 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package tl
 
 import (
@@ -6,8 +11,6 @@ import (
 	"io"
 	"math"
 )
-
-type WriteCursor = Encoder
 
 type Encoder struct {
 	w io.Writer
@@ -135,7 +138,7 @@ func (c *Encoder) putLargeBytes(msg []byte) {
 	binary.LittleEndian.PutUint32(littleEndianLength, uint32(len(msg)))
 
 	buf := make([]byte, factBytesLen)
-	buf[0] = byte(ByteLenMagicNumber)
+	buf[0] = byte(FuckingMagicNumber)
 	buf[1] = littleEndianLength[0]
 	buf[2] = littleEndianLength[1]
 	buf[3] = littleEndianLength[2]

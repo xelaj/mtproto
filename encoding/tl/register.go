@@ -1,15 +1,27 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
+//nolint:gochecknoglobals required global
 package tl
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
 
 var (
-	// used by decoder
-	objectByCrc = make(map[uint32]Object) // this value setting by registerObject(), DO NOT CALL IT BY HANDS
+	// used by decoder, guaranteed that types are convertible to tl.Object
+	objectByCrc = make(map[uint32]reflect.Type) // this value setting by registerObject(), DO NOT CALL IT BY HANDS
 	enumCrcs    = make(map[uint32]null)
 )
 
 func registerObject(o Object) {
-	objectByCrc[o.CRC()] = o
+	if o == nil {
+		panic("object is nil")
+	}
+	objectByCrc[o.CRC()] = reflect.TypeOf(o)
 }
 
 func registerEnum(o Object) {

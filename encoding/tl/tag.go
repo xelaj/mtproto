@@ -1,6 +1,12 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package tl
 
 import (
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -17,8 +23,8 @@ type fieldTag struct {
 	optional         bool // omitempty
 }
 
-func parseTag(s string) (*fieldTag, error) {
-	tags, err := structtag.Parse(s)
+func parseTag(s reflect.StructTag) (*fieldTag, error) {
+	tags, err := structtag.Parse(string(s))
 	if err != nil {
 		return nil, errors.Wrap(err, "parsing field tags")
 	}

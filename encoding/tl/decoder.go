@@ -1,36 +1,51 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package tl
 
 import (
 	"bytes"
-	"encoding/binary"
 	"fmt"
 	"reflect"
 
-	"github.com/k0kubun/pp"
+	"github.com/pkg/errors"
 )
 
 func Decode(data []byte, v any) error {
 	if v == nil {
-		return fmt.Errorf("can't unmarshal to nil value")
+		return errors.New("can't unmarshal to nil value")
+	}
+	if reflect.TypeOf(v).Kind() != reflect.Ptr {
+		return fmt.Errorf("v value is not pointer as expected. got %v", reflect.TypeOf(v))
 	}
 
-	if err := decodeValue(NewReadCursor(bytes.NewReader(data)), reflect.ValueOf(v)); err != nil {
-		pp.Println("failed_decode:", data)
-		return fmt.Errorf("decode %T: %w", v, err)
+	d := NewDecoder(bytes.NewReader(data))
+
+	d.decodeValue(reflect.ValueOf(v))
+	if d.err != nil {
+		return errors.Wrapf(d.err, "decode %T", v)
 	}
 
 	return nil
 }
 
-func decodeObject(cur *ReadCursor, o Object, ignoreCRC bool) error {
+func (d *Decoder) decodeObject(o Object, ignoreCRC bool) {
+	if d.err != nil {
+		return
+	}
+
 	if !ignoreCRC {
-		crcCode, err := cur.PopCRC()
-		if err != nil {
-			return fmt.Errorf("read crc: %w", err)
+		crcCode := d.PopCRC()
+		if d.err != nil {
+			d.err = errors.Wrap(d.err, "read crc")
+			return
 		}
 
 		if crcCode != o.CRC() {
-			return fmt.Errorf("invalid crc code: %#v, want: %#v", crcCode, o.CRC())
+			d.err = fmt.Errorf("invalid crc code: %#v, want: %#v", crcCode, o.CRC())
+			return
 		}
 	}
 
@@ -47,9 +62,10 @@ func decodeObject(cur *ReadCursor, o Object, ignoreCRC bool) error {
 	vtyp := value.Type()
 	var optionalBitSet uint32
 	if haveFlag(value.Interface()) {
-		bitset, err := cur.PopUint()
-		if err != nil {
-			return fmt.Errorf("read bitset: %w", err)
+		bitset := d.PopUint()
+		if d.err != nil {
+			d.err = errors.Wrap(d.err, "read bitset")
+			return
 		}
 
 		optionalBitSet = bitset
@@ -58,10 +74,11 @@ func decodeObject(cur *ReadCursor, o Object, ignoreCRC bool) error {
 	for i := 0; i < value.NumField(); i++ {
 		field := value.Field(i)
 
-		if tag, found := vtyp.Field(i).Tag.Lookup("tl"); found {
-			info, err := parseTag(tag)
+		if _, found := vtyp.Field(i).Tag.Lookup(tagName); found {
+			info, err := parseTag(vtyp.Field(i).Tag)
 			if err != nil {
-				return fmt.Errorf("parse tag: %w", err)
+				d.err = errors.Wrap(err, "parse tag")
+				return
 			}
 
 			if optionalBitSet&(1<<info.index) == 0 {
@@ -79,232 +96,173 @@ func decodeObject(cur *ReadCursor, o Object, ignoreCRC bool) error {
 			field.Set(val)
 		}
 
-		if err := decodeValue(cur, field); err != nil {
-			return fmt.Errorf("decode field '%s': %w", vtyp.Field(i).Name, err)
+		d.decodeValue(field)
+		if d.err != nil {
+			d.err = errors.Wrapf(d.err, "decode field '%s'", vtyp.Field(i).Name)
 		}
 	}
-
-	return nil
 }
 
-// FIXME: has too many statements (59 > 50) (funlen)
-func decodeValue(cur *ReadCursor, value reflect.Value) error {
-	if m, ok := value.Interface().(Unmarshaler); ok {
-		return m.UnmarshalTL(cur)
+func (d *Decoder) decodeValue(value reflect.Value) {
+	if d.err != nil {
+		return
 	}
 
-	switch value.Kind() {
-	case reflect.Float64:
-		val, err := cur.PopDouble()
+	if m, ok := value.Interface().(Unmarshaler); ok {
+		err := m.UnmarshalTL(d)
 		if err != nil {
-			return err
+			d.err = err
+			return
 		}
+	}
 
+	val := d.decodeValueGeneral(value)
+	if val != nil {
 		value.Set(reflect.ValueOf(val).Convert(value.Type()))
-	case reflect.Int64:
-		val, err := cur.PopLong()
-		if err != nil {
-			return err
-		}
+		return
+	}
 
-		value.Set(reflect.ValueOf(val).Convert(value.Type()))
-	case reflect.Uint32: // это применимо так же к енумам
-		val, err := cur.PopUint()
-		if err != nil {
-			return err
-		}
+	switch value.Kind() { //nolint:exhaustive has default case + more types checked
+	// Float64,Int64,Uint32,Int32,Bool,String,Chan, Func, Uintptr, UnsafePointer,Struct,Map,Array,Int,
+	// Int8,Int16,Uint,Uint8,Uint16,Uint64,Float32,Complex64,Complex128
+	// these values are checked already
 
-		value.Set(reflect.ValueOf(val).Convert(value.Type()))
-	case reflect.Int32:
-		val, err := cur.PopUint()
-		if err != nil {
-			return err
-		}
-
-		value.Set(reflect.ValueOf(int32(val)).Convert(value.Type()))
-	case reflect.Bool:
-		val, err := cur.PopBool()
-		if err != nil {
-			return err
-		}
-
-		value.Set(reflect.ValueOf(val).Convert(value.Type()))
-	case reflect.String:
-		msg, err := decodeMessage(cur)
-		if err != nil {
-			return err
-		}
-
-		value.Set(reflect.ValueOf(string(msg)).Convert(value.Type()))
-	case reflect.Struct:
-		panic("struct does not supported")
 	case reflect.Slice:
 		if _, ok := value.Interface().([]byte); ok {
-			msg, err := decodeMessage(cur)
-			if err != nil {
-				return err
-			}
-
-			value.Set(reflect.ValueOf(msg))
-			break
+			val = d.PopMessage()
+		} else {
+			val = d.PopVector(value.Type().Elem())
 		}
 
-		vec, err := decodeVector(cur, value.Type().Elem())
-		if err != nil {
-			return err
-		}
-
-		value.Set(reflect.ValueOf(vec))
 	case reflect.Ptr:
 		if o, ok := value.Interface().(Object); ok {
-			return decodeObject(cur, o, false)
+			d.decodeObject(o, false)
+		} else {
+			d.decodeValue(value.Elem())
 		}
 
-		return decodeValue(cur, value.Elem())
-		panic("неизвестная штука: " + value.Type().String())
+		return
+
 	case reflect.Interface:
-		obj, err := decodeRegisteredObject(cur)
-		if err != nil {
-			return fmt.Errorf("decode interface: %w", err)
+		val = d.decodeRegisteredObject()
+		if d.err != nil {
+			d.err = errors.Wrap(d.err, "decode interface")
+			return
 		}
-
-		value.Set(reflect.ValueOf(obj))
 	default:
 		panic("неизвестная штука: " + value.Type().String())
 	}
 
-	return nil
+	if d.err != nil {
+		return
+	}
+
+	value.Set(reflect.ValueOf(val).Convert(value.Type()))
+}
+
+// декодирует базовые типы, строчки числа, вот это. если тип не найден возвращает nil
+func (d *Decoder) decodeValueGeneral(value reflect.Value) interface{} {
+	// value, which is setting into value arg
+	var val interface{}
+
+	switch value.Kind() { //nolint:exhaustive has default case
+	case reflect.Float64:
+		val = d.PopDouble()
+
+	case reflect.Int64:
+		val = d.PopLong()
+
+	case reflect.Uint32: // это применимо так же к енумам
+		val = d.PopUint()
+
+	case reflect.Int32:
+		val = int32(d.PopUint())
+
+	case reflect.Bool:
+		val = d.PopBool()
+
+	case reflect.String:
+		val = string(d.PopMessage())
+
+	case reflect.Chan, reflect.Func, reflect.Uintptr, reflect.UnsafePointer:
+		panic(value.Kind().String() + " does not supported")
+
+	case reflect.Struct:
+		d.err = fmt.Errorf("%v must implement tl.Object for decoding (also it must be pointer)", value.Type())
+
+	case reflect.Map:
+		d.err = errors.New("map is not ordered object (must order like structs)")
+
+	case reflect.Array:
+		d.err = errors.New("array must be slice")
+
+	case reflect.Int, reflect.Int8, reflect.Int16,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint64:
+		d.err = fmt.Errorf("int kind: %v (must converted to int32, int64 or uint32 explicitly)", value.Kind())
+		return nil
+
+	case reflect.Float32, reflect.Complex64, reflect.Complex128:
+		d.err = fmt.Errorf("float kind: %s (must be converted to float64 explicitly)", value.Kind())
+		return nil
+
+	default:
+		// not basic type
+		return nil
+	}
+
+	return val
 }
 
 func DecodeRegistered(data []byte) (Object, error) {
-	ob, err := decodeRegisteredObject(
-		NewReadCursor(bytes.NewReader(data)),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("decode registered object: %w", err)
+	decoder := NewDecoder(bytes.NewReader(data))
+	ob := decoder.decodeRegisteredObject()
+
+	if decoder.err != nil {
+		return nil, errors.Wrap(decoder.err, "decode registered object")
 	}
 
 	return ob, nil
 }
 
-func decodeRegisteredObject(cur *ReadCursor) (Object, error) {
-	crc, err := cur.PopCRC()
-	if err != nil {
-		return nil, fmt.Errorf("read crc: %w", err)
+func (d *Decoder) decodeRegisteredObject() Object {
+	crc := d.PopCRC()
+	if d.err != nil {
+		d.err = errors.Wrap(d.err, "read crc")
 	}
 
-	o, ok := objectByCrc[crc]
+	_typ, ok := objectByCrc[crc]
 	if !ok {
-		msg, err := cur.DumpWithoutRead()
+		msg, err := d.DumpWithoutRead()
 		if err != nil {
-			return nil, err
+			return nil
 		}
 
-		return nil, ErrRegisteredObjectNotFound{
+		d.err = ErrRegisteredObjectNotFound{
 			Crc:  crc,
 			Data: msg,
 		}
-		// return nil, fmt.Errorf("object with crc %#v not found", crc) //nolint:gocritic experiments
+
+		return nil
 	}
 
-	if o == nil {
-		panic("nil object")
-	}
+	o := reflect.New(_typ.Elem()).Interface().(Object)
 
 	if m, ok := o.(Unmarshaler); ok {
-		return o, m.UnmarshalTL(cur)
+		err := m.UnmarshalTL(d)
+		if err != nil {
+			d.err = err
+			return nil
+		}
+		return o
 	}
 
 	if _, isEnum := enumCrcs[crc]; !isEnum {
-		err := decodeObject(cur, o, true)
-		if err != nil {
-			return nil, fmt.Errorf("decode registered object %T: %w", o, err)
+		d.decodeObject(o, true)
+		if d.err != nil {
+			d.err = errors.Wrapf(d.err, "decode registered object %T", o)
+			return nil
 		}
 	}
 
-	return o, nil
-}
-
-func decodeMessage(c *ReadCursor) ([]byte, error) {
-	var firstByte byte
-	val := []byte{0}
-
-	if err := c.read(val); err != nil {
-		return nil, err
-	}
-
-	firstByte = val[0]
-
-	realSize := 0
-	lenNumberSize := 0 // сколько байт занимаем число обозначающее длину массива
-	if firstByte != FuckingMagicNumber {
-		realSize = int(firstByte) // это tinyMessage по сути, первый байт является 8битным числом, которое представляет длину сообщения
-		lenNumberSize = 1
-	} else {
-		// иначе это largeMessage с блядским магитческим числом 0xfe
-		realSizeBuf := make([]byte, WordLen-1) // WordLen-1 т.к. 1 байт уже прочитали
-		if err := c.read(realSizeBuf); err != nil {
-			return nil, err
-		}
-
-		realSizeBuf = append(realSizeBuf, 0x0) // добиваем до WordLen
-
-		realSize = int(binary.LittleEndian.Uint32(realSizeBuf))
-		lenNumberSize = WordLen
-	}
-
-	buf := make([]byte, realSize)
-	if err := c.read(buf); err != nil {
-		return nil, err
-	}
-
-	readLen := lenNumberSize + realSize // lenNumberSize это сколько байт ушло на описание длины а realsize это сколько мы по факту прочитали
-	if readLen%WordLen != 0 {
-		voidBytes := make([]byte, 4-readLen%WordLen)
-		if err := c.read(voidBytes); err != nil { // читаем оставшиеся пустые байты. пустые, потому что длина слова 4 байта, может остаться 1,2 или 3 лишних байта
-			return nil, err
-		}
-
-		for _, b := range voidBytes {
-			if b != 0 {
-				return nil, fmt.Errorf("some of bytes doesn't equal zero: %#v", voidBytes)
-			}
-		}
-	}
-
-	return buf, nil
-}
-
-func decodeVector(c *ReadCursor, as reflect.Type) (any, error) {
-	crc, err := c.PopCRC()
-	if err != nil {
-		return nil, fmt.Errorf("read crc: %w", err)
-	}
-
-	if crc != CrcVector {
-		return nil, fmt.Errorf("not a vector: %#v, want: %#v", crc, CrcVector)
-	}
-
-	size, err := c.PopUint()
-	if err != nil {
-		return nil, fmt.Errorf("read vector size: %w", err)
-	}
-
-	x := reflect.MakeSlice(reflect.SliceOf(as), int(size), int(size))
-	for i := 0; i < int(size); i++ {
-		var val reflect.Value
-		if as.Kind() == reflect.Ptr {
-			val = reflect.New(as.Elem())
-		} else {
-			val = reflect.New(as).Elem()
-		}
-
-		if err := decodeValue(c, val); err != nil {
-			return nil, err
-		}
-
-		x.Index(i).Set(val)
-	}
-
-	return x.Interface(), nil
+	return o
 }

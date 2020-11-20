@@ -1,16 +1,20 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package tl
 
 import (
 	"reflect"
 )
 
-//! мне не нравится, непонятно зачем
 func haveFlag(v any) bool {
 	typ := reflect.TypeOf(v)
 	for i := 0; i < typ.NumField(); i++ {
-		tag, found := typ.Field(i).Tag.Lookup("tl")
+		_, found := typ.Field(i).Tag.Lookup(tagName)
 		if found {
-			info, err := parseTag(tag)
+			info, err := parseTag(typ.Field(i).Tag)
 			if err != nil {
 				continue
 			}

@@ -1,3 +1,8 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package tl_test
 
 import (
@@ -8,8 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/xelaj/go-dry"
 	"github.com/xelaj/mtproto/encoding/tl"
-	"github.com/xelaj/mtproto/serialize"
-	"github.com/xelaj/mtproto/telegram"
 )
 
 func TestEncode(t *testing.T) {
@@ -30,119 +33,67 @@ func TestEncode(t *testing.T) {
 		},
 		{
 			name: "AccountInstallThemeParams",
-			obj: &telegram.AccountInstallThemeParams{
+			obj: &AccountInstallThemeParams{
 				Dark:   true,
 				Format: "abc",
-				Theme: &telegram.InputThemeObj{
-					Id:         123,
+				Theme: &InputThemeObj{
+					ID:         123,
 					AccessHash: 321,
 				},
 			},
-			want: []byte{
-				0x37, 0x37, 0xe4, 0x7a, 0x03, 0x00, 0x00, 0x00, 0x03, 0x61, 0x62, 0x63, 0xe9, 0x93, 0x56, 0x3c,
-				0x7b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x41, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			},
+			want:    Hexed("3737E47A0300000003616263E993563C7B000000000000004101000000000000"),
 			wantErr: assert.NoError,
 		},
 		{
 			name: "AccountUnregisterDeviceParams",
-			obj: &telegram.AccountUnregisterDeviceParams{
+			obj: &AccountUnregisterDeviceParams{
 				TokenType: 1,
 				Token:     "foo",
 				OtherUids: []int32{
 					1337, 228, 322,
 				},
 			},
-			want: []byte{
-				0xbf, 0xc4, 0x76, 0x30, 0x01, 0x00, 0x00, 0x00, 0x03, 0x66, 0x6f, 0x6f, 0x15, 0xc4, 0xb5, 0x1c,
-				0x03, 0x00, 0x00, 0x00, 0x39, 0x05, 0x00, 0x00, 0xe4, 0x00, 0x00, 0x00, 0x42, 0x01, 0x00, 0x00,
-			},
+			want:    Hexed("BFC476300100000003666F6F15C4B51C0300000039050000E400000042010000"),
 			wantErr: assert.NoError,
 		},
 		{
 			name: "respq",
-			obj: &serialize.ResPQ{
-				Nonce: &serialize.Int128{
-					big.NewInt(123),
-				},
-				ServerNonce:  &serialize.Int128{big.NewInt(321)},
+			obj: &ResPQ{
+				Nonce:        &tl.Int128{Int: big.NewInt(123)},
+				ServerNonce:  &tl.Int128{Int: big.NewInt(321)},
 				Pq:           []byte{1, 2, 3},
 				Fingerprints: []int64{322, 1337},
 			},
-			want: []byte{
-				0x63, 0x24, 0x16, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-				0x00, 0x00, 0x00, 0x7b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-				0x00, 0x00, 0x01, 0x41, 0x03, 0x01, 0x02, 0x03, 0x15, 0xc4, 0xb5, 0x1c, 0x02, 0x00, 0x00, 0x00,
-				0x42, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x39, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			},
+			want: Hexed("632416050000000000000000000000000000007B00000000000000000000" +
+				"0000000001410301020315C4B51C0200000042010000000000003905000000000000"),
 			wantErr: assert.NoError,
 		},
 		{
 			name: "InitConnectionParams",
-			obj: &telegram.InvokeWithLayerParams{
+			obj: &InvokeWithLayerParams{
 				Layer: int32(322),
-				Query: &telegram.InitConnectionParams{
-					ApiID:          int32(1337),
+				Query: &InitConnectionParams{
+					APIID:          int32(1337),
 					DeviceModel:    "abc",
 					SystemVersion:  "def",
 					AppVersion:     "123",
 					SystemLangCode: "en",
 					LangCode:       "en",
-					Query:          &telegram.HelpGetConfigParams{},
+					Query:          &SomeNullStruct{},
 				},
 			},
-			want: []byte{
-				0x0d, 0x0d, 0x9b, 0xda, 0x42, 0x01, 0x00, 0x00, 0xa9, 0x5e, 0xcd, 0xc1, 0x00, 0x00, 0x00, 0x00,
-				0x39, 0x05, 0x00, 0x00, 0x03, 0x61, 0x62, 0x63, 0x03, 0x64, 0x65, 0x66, 0x03, 0x31, 0x32, 0x33,
-				0x02, 0x65, 0x6e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x65, 0x6e, 0x00, 0x6b, 0x18, 0xf9, 0xc4,
-			},
+			want: Hexed("0d0d9bda42010000a95ecdc1000000003905000003616263036465660331" +
+				"323302656e000000000002656e006b18f9c4"),
 			wantErr: assert.NoError,
 		},
-		{
-			name: "access-point-rule",
-			obj: &telegram.AccessPointRule{
-				PhonePrefixRules: "abc",
-				DcId:             1,
-				Ips: []telegram.IpPort{
-					&telegram.IpPortObj{
-						Ipv4: 123,
-						Port: 12,
-					},
-					&telegram.IpPortSecret{
-						Ipv4: 321,
-						Port: 22,
-						Secret: []byte{
-							1, 2, 3, 4, 5,
-						},
-					},
-				},
-			},
-			want: []byte{
-				0x5f, 0xb6, 0x79, 0x46, 0x03, 0x61, 0x62, 0x63, 0x01, 0x00, 0x00, 0x00, 0x15, 0xc4, 0xb5, 0x1c,
-				0x02, 0x00, 0x00, 0x00, 0x73, 0xad, 0x33, 0xd4, 0x7b, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x00,
-				0x46, 0x26, 0x98, 0x37, 0x41, 0x01, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00, 0x05, 0x01, 0x02, 0x03,
-				0x04, 0x05, 0x00, 0x00,
-			},
-			wantErr: assert.NoError,
-		},
-		// {
-		// 	name: "struct",
-		// 	obj: &telegram.AccountPasswordSettings{
-		// 		Email: "foo",
-		// 		SecureSettings: &telegram.SecureSecretSettings{
-		// 			SecureAlgo:     &telegram.SecurePasswordKdfAlgoUnknown{},
-		// 			SecureSecret:   []byte{1},
-		// 			SecureSecretId: 1,
-		// 		},
-		// 	},
-		// 	want: nil,
-		// },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := tl.Marshal(tt.obj)
-			tt.wantErr(t, err)
-			assert.Equal(t, got, tt.want)
+			if !tt.wantErr(t, err) {
+				return
+			}
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

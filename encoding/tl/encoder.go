@@ -1,3 +1,8 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package tl
 
 import (
@@ -19,8 +24,7 @@ func Marshal(v any) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// FIXME: high cyclomatic complexity
-func (c *Encoder) encodeValue(value reflect.Value) { //nolint:gocyclo working on it
+func (c *Encoder) encodeValue(value reflect.Value) {
 	if m, ok := value.Interface().(Marshaler); ok {
 		if c.err != nil {
 			return
@@ -29,7 +33,7 @@ func (c *Encoder) encodeValue(value reflect.Value) { //nolint:gocyclo working on
 		return
 	}
 
-	switch value.Kind() {
+	switch value.Type().Kind() { //nolint:exhaustive has default case
 	case reflect.Uint32:
 		c.PutUint(uint32(value.Uint()))
 
@@ -48,16 +52,16 @@ func (c *Encoder) encodeValue(value reflect.Value) { //nolint:gocyclo working on
 	case reflect.String:
 		c.PutString(value.String())
 
+	case reflect.Struct:
+		c.encodeStruct(value.Addr())
+
 	case reflect.Ptr, reflect.Interface:
 		if value.IsNil() {
 			c.err = errors.New("value can't be nil")
-			return
+			break
 		}
-		if reflect.Indirect(value).Kind() == reflect.Struct {
-			c.encodeStruct(value)
-		} else {
-			c.err = fmt.Errorf("unsupported type: %s", value.Type().String())
-		}
+
+		c.encodeValue(value.Elem())
 
 	case reflect.Slice:
 		if b, ok := value.Interface().([]byte); ok {
@@ -69,19 +73,18 @@ func (c *Encoder) encodeValue(value reflect.Value) { //nolint:gocyclo working on
 
 	case reflect.Int, reflect.Int8, reflect.Int16,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint64:
-		c.err = fmt.Errorf("int kind: %s (must be converted to int32, int64 or uint32 explicitly)", value.Kind())
+		c.err = fmt.Errorf("int kind: %v (must be converted to int32, int64 or uint32 explicitly)", value.Kind())
 
 	case reflect.Float32, reflect.Complex64, reflect.Complex128:
 		c.err = fmt.Errorf("float kind: %s (must be converted to float64 explicitly)", value.Kind())
 
 	default:
-		c.err = fmt.Errorf("unsupported type: %s", value.Type().String())
+		c.err = fmt.Errorf("unsupported type: %v", value.Type())
 	}
 }
 
-// FIXME: high cyclomatic complexity
 // v must be pointer to struct
-func (c *Encoder) encodeStruct(v reflect.Value) { //nolint:gocyclo WIP
+func (c *Encoder) encodeStruct(v reflect.Value) {
 	if c.err != nil {
 		return
 	}
@@ -112,12 +115,14 @@ func (c *Encoder) encodeStruct(v reflect.Value) { //nolint:gocyclo WIP
 	var tmpObjects = make([]reflect.Value, 0)
 
 	vtyp := v.Type()
+
 	for i := 0; i < v.NumField(); i++ {
+		// THIS PART is appending to object meta value, that actually don't writing in real encodeValue
 		if hasFlagsField && flagIndex == i {
 			tmpObjects = append(tmpObjects, reflect.ValueOf(0))
 		}
 
-		info, err := parseTag(string(vtyp.Field(i).Tag))
+		info, err := parseTag(vtyp.Field(i).Tag)
 		if err != nil {
 			c.err = errors.Wrapf(err, "parsing tag of field %v", vtyp.Field(i).Name)
 			return
@@ -147,12 +152,15 @@ func (c *Encoder) encodeStruct(v reflect.Value) { //nolint:gocyclo WIP
 			}
 
 			tmpObjects = append(tmpObjects, v.Field(i))
+
 			continue
 		}
 	}
 
 	for i, elem := range tmpObjects {
-		if i == flagIndex {
+		// if you asking, wtf is here: continuing, cause we injected int value (native int, not int32), so we
+		// CAN skip this iter
+		if hasFlagsField && flagIndex == i {
 			c.PutUint(flag)
 			continue
 		}
@@ -164,7 +172,7 @@ func (c *Encoder) encodeStruct(v reflect.Value) { //nolint:gocyclo WIP
 	}
 }
 
-func (c *WriteCursor) encodeVector(slice ...any) {
+func (c *Encoder) encodeVector(slice ...any) {
 	c.PutCRC(CrcVector)
 	c.PutUint(uint32(len(slice)))
 

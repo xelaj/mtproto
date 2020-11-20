@@ -1,40 +1,39 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package tl_test
 
 import (
 	"testing"
 
+	"github.com/k0kubun/pp"
+	"github.com/xelaj/go-dry"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/xelaj/mtproto/encoding/tl"
-	"github.com/xelaj/mtproto/telegram"
 )
 
 type any = interface{}
-type null = struct{}
+
+// null struct{}
 
 func TestDecode(t *testing.T) {
-	type args struct {
-		data []byte
-		v    any
-	}
 	tests := []struct {
 		name     string
-		args     args
+		data     []byte
+		v        any
 		expected any
-		wantErr  bool
+		wantErr  assert.ErrorAssertionFunc
 	}{
 		{
 			name: "authSentCode",
-			args: args{
-				data: []byte{
-					//| AuthSentCode CRC |  |          Flag      |  |AuthSentCodeTypeAppCRC|
-					0x02, 0x25, 0x00, 0x5e, 0x02, 0x00, 0x00, 0x00, 0x86, 0x59, 0xbb, 0x3d, 0x05, 0x00, 0x00, 0x00,
-					0x12, 0x31, 0x66, 0x37, 0x36, 0x64, 0x61, 0x30, 0x64, 0x31, 0x35, 0x35, 0x31, 0x31, 0x35, 0x39,
-					0x36, 0x33, 0x36, 0x00, 0x8c, 0x15, 0xa3, 0x72,
-				},
-				v: &telegram.AuthSentCode{},
-			},
-			expected: &telegram.AuthSentCode{
-				Type: &telegram.AuthSentCodeTypeApp{
+			//           |  CRC || Flag || CRC  |
+			data: Hexed("0225005E020000008659BB3D0500000012316637366461306431353531313539363336008C15A372"),
+			v:    &AuthSentCode{},
+			expected: &AuthSentCode{
+				Type: &AuthSentCodeTypeApp{
 					Length: 5,
 				},
 				PhoneCodeHash: "1f76da0d1551159636",
@@ -43,23 +42,15 @@ func TestDecode(t *testing.T) {
 			},
 		},
 		{
-			name: "los-pollos-hermanos",
-			args: args{
-				data: []byte{
-					0xa3, 0xc1, 0xdc, 0xba, 0x1e, 0x00, 0x00, 0x00, 0x15, 0xc4, 0xb5, 0x1c, 0x02, 0x00, 0x00, 0x00,
-					0xd2, 0xda, 0x6d, 0x3b, 0x01, 0x00, 0x00, 0x00, 0x03, 0x01, 0x02, 0x03, 0x02, 0x00, 0x00, 0x00,
-					0xd2, 0xda, 0x6d, 0x3b, 0x00, 0x00, 0x00, 0x00, 0x03, 0x04, 0x05, 0x06, 0x06, 0x00, 0x00, 0x00,
-					0x0c, 0x00, 0x00, 0x00, 0x15, 0xc4, 0xb5, 0x1c, 0x02, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00,
-					0x06, 0x00, 0x00, 0x00, 0x05, 0x61, 0x6c, 0x61, 0x6c, 0x61, 0x00, 0x00, 0x15, 0xc4, 0xb5, 0x1c,
-					0x02, 0x00, 0x00, 0x00, 0xc9, 0x68, 0x8e, 0x20, 0x01, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00,
-					0xcf, 0x86, 0x88, 0xb9, 0x71, 0x05, 0xa2, 0x28, 0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00,
-				},
-				v: &telegram.PollResults{},
-			},
-			expected: &telegram.PollResults{
+			name: "poll-results",
+			data: Hexed("a3c1dcba1e00000015c4b51c02000000d2da6d3b010000000301020302000000d2da6d3b" +
+				"0000000003040506060000000c00000015c4b51c02000000050000000600000005616c616c610000" +
+				"15c4b51c00000000"),
+			v: &PollResults{},
+			expected: &PollResults{
 				Min: false,
-				Results: []*telegram.PollAnswerVoters{
-					&telegram.PollAnswerVoters{
+				Results: []*PollAnswerVoters{
+					{
 						Chosen:  true,
 						Correct: false,
 						Option: []byte{
@@ -67,7 +58,7 @@ func TestDecode(t *testing.T) {
 						},
 						Voters: 2,
 					},
-					&telegram.PollAnswerVoters{
+					{
 						Chosen:  false,
 						Correct: false,
 						Option: []byte{
@@ -81,27 +72,35 @@ func TestDecode(t *testing.T) {
 					5,
 					6,
 				},
-				Solution: "alala",
-				SolutionEntities: []telegram.MessageEntity{
-					&telegram.InputMessageEntityMentionName{
-						Offset: 1,
-						Length: 3,
-						UserId: &telegram.InputUserEmpty{},
-					},
-					&telegram.MessageEntityCode{
-						Offset: 1,
-						Length: 2,
-					},
-				},
+				Solution:         "alala",
+				SolutionEntities: []MessageEntity{},
 			},
 		},
+		// TODO: отработать возможные ошибки
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tl.Decode(tt.args.data, tt.args.v); (err != nil) != tt.wantErr {
-				t.Errorf("Decode() error = %v, wantErr %v", err, tt.wantErr)
+			var (
+				data     = tt.data
+				v        = tt.v
+				expected = tt.expected
+				wantErr  = noErrAsDefault(tt.wantErr)
+			)
+			err := tl.Decode(data, v)
+			if !wantErr(t, err) {
+				pp.Println(dry.BytesEncodeHex(string(data)))
+				return
 			}
-			assert.Equal(t, tt.expected, tt.args.v)
+
+			assert.Equal(t, expected, v)
 		})
 	}
+}
+
+func noErrAsDefault(e assert.ErrorAssertionFunc) assert.ErrorAssertionFunc {
+	if e == nil {
+		return assert.NoError
+	}
+
+	return e
 }
