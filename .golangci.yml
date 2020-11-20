@@ -9,15 +9,15 @@ linters-settings:
       - github.com/sirupsen/logrus
       - log
     packages-with-error-message:
-      - github.com/sirupsen/logrus: "logging is allowed only by zap"
-      - log: "logging is allowed only by zap"
+      github.com/sirupsen/logrus: "logging is allowed only by zap"
+      log: "logging is allowed only by zap"
   dupl:
     threshold: 100
   funlen:
     lines: 100
     statements: 50
   goconst:
-    min-len: 2
+    min-len: 3
     min-occurrences: 2
   gocritic:
     enabled-tags:
@@ -38,7 +38,7 @@ linters-settings:
     settings:
       mnd:
         # don't include the "operation" and "assign"
-        checks: argument,case,condition,return
+        checks: [argument, case, condition, return]
   govet:
     check-shadowing: true
   lll:
@@ -47,6 +47,13 @@ linters-settings:
     suggest-new: true
   misspell:
     locale: US
+  goheader:
+    values:
+      const:
+        OWNER_COMPANY: KHS Films
+        MAINTAINER_COMPANY: Xelaj Software
+        LICENSE_URL: https://github.com/xelaj/mtproto/blob/master/LICENSE
+    template-path: docs/.license_header.txt
 
 linters:
   disable-all: true
@@ -76,7 +83,7 @@ linters:
     - misspell
     - nakedret
     - rowserrcheck
-    - scopelint
+    # - scopelint
     - staticcheck
     - structcheck
     - stylecheck
@@ -86,9 +93,20 @@ linters:
     - unused
     - varcheck
     - whitespace
+    # - wsl
+    - prealloc
+    - godox
+    - exhaustive
+    - gci
+    - gocognit
+    - gomodguard
+    - goheader
+    - maligned
+    - asciicheck
+    - gochecknoglobals
 
 issues:
-    exclude-rules:
+  exclude-rules:
     # Exclude some linters from running on tests files.
     - path: _test\.go
       linters:
