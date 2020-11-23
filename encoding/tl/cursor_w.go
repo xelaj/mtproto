@@ -23,74 +23,80 @@ func NewEncoder(w io.Writer) *Encoder {
 	return &Encoder{w: w}
 }
 
-func (c *Encoder) write(b []byte) {
-	if c.err != nil {
+func (e *Encoder) write(b []byte) {
+	if e.err != nil {
 		return
 	}
 
-	n, err := c.w.Write(b)
+	n, err := e.w.Write(b)
 	if err != nil {
-		c.err = err
+		e.err = err
 		return
 	}
 
 	if n != len(b) {
-		c.err = &ErrorPartialWrite{Has: n, Want: len(b)}
+		e.err = &ErrorPartialWrite{Has: n, Want: len(b)}
 	}
 }
 
 // CheckErr must call after encoding has been finished. if this func returns not nil value, encoding has
 // failed, and you shouldn't use its result
-func (c *Encoder) CheckErr() error {
-	return c.err
+func (e *Encoder) CheckErr() error {
+	return e.err
 }
 
 // PutBool очень специфичный тип, т.к. есть отдельный конструктор под true и false,
 // то можно считать, что это две crc константы
-func (c *Encoder) PutBool(v bool) {
+func (e *Encoder) PutBool(v bool) {
 	crc := CrcFalse
 	if v {
 		crc = CrcTrue
 	}
 
-	c.PutUint(uint32(crc))
+	e.PutUint(uint32(crc))
 }
 
-func (c *Encoder) PutUint(v uint32) {
+func (e *Encoder) PutUint(v uint32) {
 	buf := make([]byte, WordLen)
 	binary.LittleEndian.PutUint32(buf, v)
-	c.write(buf)
+	e.write(buf)
 }
 
-func (c *Encoder) PutCRC(v uint32) {
-	c.PutUint(v) // я так и не понял, кажется что crc это bigendian, но видимо нет
+// PutCRC is an alias for Encoder.PutUint. It uses only for understanding what your code do (like
+// self-documented code)
+func (e *Encoder) PutCRC(v uint32) {
+	e.PutUint(v) // я так и не понял, кажется что crc это bigendian, но видимо нет
 }
 
-func (c *Encoder) PutLong(v int64) {
+func (e *Encoder) PutInt(v int32) {
+	e.PutUint(uint32(v))
+}
+
+func (e *Encoder) PutLong(v int64) {
 	buf := make([]byte, LongLen)
 	binary.LittleEndian.PutUint64(buf, uint64(v))
-	c.write(buf)
+	e.write(buf)
 }
 
-func (c *Encoder) PutDouble(v float64) {
+func (e *Encoder) PutDouble(v float64) {
 	buf := make([]byte, DoubleLen)
 	binary.LittleEndian.PutUint64(buf, math.Float64bits(v))
-	c.write(buf)
+	e.write(buf)
 }
 
-func (c *Encoder) PutMessage(msg []byte) {
+func (e *Encoder) PutMessage(msg []byte) {
 	if len(msg) < FuckingMagicNumber {
-		c.putTinyBytes(msg)
+		e.putTinyBytes(msg)
 	} else {
-		c.putLargeBytes(msg)
+		e.putLargeBytes(msg)
 	}
 }
 
-func (c *Encoder) PutString(msg string) {
-	c.PutMessage([]byte(msg))
+func (e *Encoder) PutString(msg string) {
+	e.PutMessage([]byte(msg))
 }
 
-func (c *Encoder) putTinyBytes(msg []byte) {
+func (e *Encoder) putTinyBytes(msg []byte) {
 	if len(msg) >= FuckingMagicNumber {
 		// it's panicing, cause, you shouldn' call this func by your
 		// hands. panic required for internal purposes
@@ -111,10 +117,10 @@ func (c *Encoder) putTinyBytes(msg []byte) {
 	buf[0] = byte(len(msg)) // пихаем в первый байт размер сообщения
 	copy(buf[1:], msg)
 
-	c.write(buf)
+	e.write(buf)
 }
 
-func (c *Encoder) putLargeBytes(msg []byte) {
+func (e *Encoder) putLargeBytes(msg []byte) {
 	if len(msg) < FuckingMagicNumber {
 		// it's panicing, cause, you shouldn' call this func by your
 		// hands. panic required for internal purposes
@@ -123,7 +129,7 @@ func (c *Encoder) putLargeBytes(msg []byte) {
 
 	maxLen := 1 << 24 // 3 байта 24 бита, самый первый это 0xfe оставшиеся 3 как раз длина
 	if len(msg) > maxLen {
-		c.err = fmt.Errorf("message entity too large: expect less than %v, got %v", maxLen, len(msg))
+		e.err = fmt.Errorf("message entity too large: expect less than %v, got %v", maxLen, len(msg))
 		return
 	}
 
@@ -144,13 +150,13 @@ func (c *Encoder) putLargeBytes(msg []byte) {
 	buf[3] = littleEndianLength[2]
 	copy(buf[WordLen:], msg)
 
-	c.write(buf)
+	e.write(buf)
 }
 
-func (c *Encoder) PutRawBytes(b []byte) {
-	c.write(b)
+func (e *Encoder) PutRawBytes(b []byte) {
+	e.write(b)
 }
 
-func (c *Encoder) PutVector(v any) {
-	c.encodeVector(sliceToInterfaceSlice(v)...)
+func (e *Encoder) PutVector(v any) {
+	e.encodeVector(sliceToInterfaceSlice(v)...)
 }

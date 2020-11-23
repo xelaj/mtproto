@@ -8,9 +8,6 @@ linters-settings:
     packages:
       - github.com/sirupsen/logrus
       - log
-    packages-with-error-message:
-      github.com/sirupsen/logrus: "logging is allowed only by zap"
-      log: "logging is allowed only by zap"
   dupl:
     threshold: 100
   funlen:

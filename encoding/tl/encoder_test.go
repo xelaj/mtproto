@@ -6,12 +6,10 @@
 package tl_test
 
 import (
-	"encoding/hex"
 	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/xelaj/go-dry"
 	"github.com/xelaj/mtproto/encoding/tl"
 )
 
@@ -98,8 +96,3 @@ func TestEncode(t *testing.T) {
 	}
 }
 
-func Hexed(in string) []byte {
-	res, err := hex.DecodeString(in)
-	dry.PanicIfErr(err)
-	return res
-}

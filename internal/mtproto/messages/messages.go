@@ -1,6 +1,7 @@
-package serialize
+package messages
 
-// messages.go отвечает за имплементацию сериализации сообщений. зашифрованных и незашифрованных.
+// messages implements encoding and decoding messages in mtproto
+// messages can be encoded end decoded
 
 import (
 	"bytes"
@@ -10,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/xelaj/go-dry"
 
+	"github.com/xelaj/mtproto/encoding/tl"
 	ige "github.com/xelaj/mtproto/internal/aes_ige"
 	"github.com/xelaj/mtproto/utils"
 )
@@ -39,37 +41,41 @@ func (msg *EncryptedMessage) Serialize(client MessageInformator, requireToAck bo
 		return nil, errors.Wrap(err, "encrypting")
 	}
 
-	buf := NewEncoder()
-	buf.PutRawBytes(utils.AuthKeyHash(client.GetAuthKey()))
-	buf.PutRawBytes(ige.MessageKey(obj))
-	buf.PutRawBytes(encryptedData)
+	buf := bytes.NewBuffer(nil)
 
-	return buf.Result(), nil
+	e := tl.NewEncoder(buf)
+	e.PutRawBytes(utils.AuthKeyHash(client.GetAuthKey()))
+	e.PutRawBytes(ige.MessageKey(obj))
+	e.PutRawBytes(encryptedData)
+
+	return buf.Bytes(), nil
 }
 
 func DeserializeEncryptedMessage(data, authKey []byte) (*EncryptedMessage, error) {
 	msg := new(EncryptedMessage)
 
-	buf := NewDecoder(data)
-	keyHash := buf.PopRawBytes(LongLen)
+	buf := bytes.NewBuffer(data)
+	d := tl.NewDecoder(buf)
+	keyHash := d.PopRawBytes(tl.LongLen)
 	if !bytes.Equal(keyHash, utils.AuthKeyHash(authKey)) {
 		return nil, errors.New("wrong encryption key")
 	}
-	msg.MsgKey = buf.PopRawBytes(Int128Len) // msgKey это хэш от расшифрованного набора байт, последние 16 символов
-	encryptedData := buf.PopRawBytes(len(data) - (LongLen + Int128Len))
+	msg.MsgKey = d.PopRawBytes(tl.Int128Len) // msgKey это хэш от расшифрованного набора байт, последние 16 символов
+	encryptedData := d.PopRawBytes(len(data) - (tl.LongLen + tl.Int128Len))
 
 	decrypted, err := ige.Decrypt(encryptedData, authKey, msg.MsgKey)
 	if err != nil {
 		return nil, errors.Wrap(err, "decrypting message")
 	}
-	buf = NewDecoder(decrypted)
-	msg.Salt = buf.PopLong()
-	msg.SessionID = buf.PopLong()
-	msg.MsgID = buf.PopLong()
-	msg.SeqNo = buf.PopInt()
-	messageLen := buf.PopInt()
+	buf = bytes.NewBuffer(decrypted)
+	d = tl.NewDecoder(buf)
+	msg.Salt = d.PopLong()
+	msg.SessionID = d.PopLong()
+	msg.MsgID = d.PopLong()
+	msg.SeqNo = d.PopInt()
+	messageLen := d.PopInt()
 
-	if len(decrypted) < int(messageLen)-(LongLen+LongLen+LongLen+WordLen+WordLen) {
+	if len(decrypted) < int(messageLen)-(tl.LongLen+tl.LongLen+tl.LongLen+tl.WordLen+tl.WordLen) {
 		return nil, fmt.Errorf("message is smaller than it's defining: have %v, but messageLen is %v", len(decrypted), messageLen)
 	}
 
@@ -83,7 +89,7 @@ func DeserializeEncryptedMessage(data, authKey []byte) (*EncryptedMessage, error
 	if !bytes.Equal(dry.Sha1Byte(trimed)[4:20], msg.MsgKey) {
 		return nil, errors.New("wrong message key, can't trust to sender")
 	}
-	msg.Msg = buf.PopRawBytes(int(messageLen))
+	msg.Msg = d.PopRawBytes(int(messageLen))
 
 	return msg, nil
 }
@@ -106,36 +112,40 @@ type UnencryptedMessage struct {
 }
 
 func (msg *UnencryptedMessage) Serialize(client MessageInformator) ([]byte, error) {
-	buf := NewEncoder()
+	buf := bytes.NewBuffer(nil)
+	e := tl.NewEncoder(buf)
 	// authKeyHash, always 0 if unencrypted
-	buf.PutLong(0)
-	buf.PutLong(msg.MsgID)
-	buf.PutInt(int32(len(msg.Msg)))
-	buf.PutRawBytes(msg.Msg)
-	return buf.Result(), nil
+	e.PutLong(0)
+	e.PutLong(msg.MsgID)
+	e.PutInt(int32(len(msg.Msg)))
+	e.PutRawBytes(msg.Msg)
+	return buf.Bytes(), nil
 }
 
 func DeserializeUnencryptedMessage(data []byte) (*UnencryptedMessage, error) {
 	msg := new(UnencryptedMessage)
-	buf := NewDecoder(data)
-	_ = buf.PopRawBytes(LongLen) // authKeyHash, always 0 if unencrypted
+	d := tl.NewDecoder(bytes.NewBuffer(data))
+	_ = d.PopRawBytes(tl.LongLen) // authKeyHash, always 0 if unencrypted
 
-	msg.MsgID = buf.PopLong()
+	msg.MsgID = d.PopLong()
 
 	mod := msg.MsgID & 3
 	if mod != 1 && mod != 3 {
 		return nil, fmt.Errorf("Wrong bits of message_id: %#v", uint64(mod))
 	}
 
-	messageLen := buf.PopUint()
-	if len(data)-(LongLen+LongLen+WordLen) != int(messageLen) {
-		fmt.Println(len(data), int(messageLen), int(messageLen+(LongLen+LongLen+WordLen)))
+	messageLen := d.PopUint()
+	if len(data)-(tl.LongLen+tl.LongLen+tl.WordLen) != int(messageLen) {
+		fmt.Println(len(data), int(messageLen), int(messageLen+(tl.LongLen+tl.LongLen+tl.WordLen)))
 		return nil, fmt.Errorf("message not equal defined size: have %v, want %v", len(data), messageLen)
 	}
 
-	msg.Msg = buf.GetRestOfMessage()
+	var err error
+	msg.Msg, err = d.GetRestOfMessage()
+	if err != nil {
+		return nil, errors.Wrap(err, "getting real message")
+	}
 
-	// TODO: в мтпрото объекте изменить msgID и задать seqNo 0
 	return msg, nil
 }
 
@@ -160,23 +170,23 @@ type MessageInformator interface {
 	GetLastSeqNo() int32
 	GetServerSalt() int64
 	GetAuthKey() []byte
-	MakeRequest(msg TL) (TL, error)
 }
 
 func serializePacket(client MessageInformator, msg []byte, messageID int64, requireToAck bool) []byte {
-	buf := NewEncoder()
+	buf := bytes.NewBuffer(nil)
+	d := tl.NewEncoder(buf)
 
-	saltBytes := make([]byte, LongLen)
+	saltBytes := make([]byte, tl.LongLen)
 	binary.LittleEndian.PutUint64(saltBytes, uint64(client.GetServerSalt()))
-	buf.PutRawBytes(saltBytes)
-	buf.PutLong(client.GetSessionID())
-	buf.PutLong(messageID)
+	d.PutRawBytes(saltBytes)
+	d.PutLong(client.GetSessionID())
+	d.PutLong(messageID)
 	if requireToAck { // не спрашивай, как это работает
-		buf.PutInt(client.GetLastSeqNo() | 1) // почему тут добавляется бит не ебу
+		d.PutInt(client.GetLastSeqNo() | 1) // почему тут добавляется бит не ебу
 	} else {
-		buf.PutInt(client.GetLastSeqNo())
+		d.PutInt(client.GetLastSeqNo())
 	}
-	buf.PutInt(int32(len(msg)))
-	buf.PutRawBytes(msg)
-	return buf.buf
+	d.PutInt(int32(len(msg)))
+	d.PutRawBytes(msg)
+	return buf.Bytes()
 }

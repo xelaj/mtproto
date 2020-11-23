@@ -241,27 +241,3 @@ func (*ResPQ) CRC() uint32 {
 	return 0x05162463
 }
 
-func init() {
-	tl.RegisterObjects(
-		&MultipleChats{},
-		&Chat{},
-		&AuthSentCode{},
-		&SomeNullStruct{},
-		&AuthSentCodeTypeApp{},
-		&Rights{},
-		&PollResults{},
-		&PollAnswerVoters{},
-		&AccountInstallThemeParams{},
-		&InputThemeObj{},
-		&AccountUnregisterDeviceParams{},
-		&InvokeWithLayerParams{},
-		&InitConnectionParams{},
-		&ResPQ{},
-	)
-
-	tl.RegisterEnums(
-		AuthCodeTypeSms,
-		AuthCodeTypeCall,
-		AuthCodeTypeFlashCall,
-	)
-}

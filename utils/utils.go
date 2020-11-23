@@ -17,7 +17,8 @@ import (
 const (
 	wordLen = 4
 
-	// если длина пакета больше или равн 127 слов, то кодируем 4 байтами, 1 это магическое число, оставшиеся 3 — дилна
+	// если длина пакета больше или равен 127 слов, то кодируем 4 байтами, 1 это магическое число, оставшиеся
+	// 3 — длина
 	// https://core.telegram.org/mtproto/mtproto-transports#abridged
 	magicValueSizeMoreThanSingleByte = 0x7f
 )

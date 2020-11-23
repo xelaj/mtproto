@@ -118,6 +118,10 @@ func (d *Decoder) PopCRC() uint32 {
 	return d.PopUint() // я так и не понял, кажется что crc это bigendian, но видимо нет
 }
 
+func (d *Decoder) PopInt() int32 {
+	return int32(d.PopUint())
+}
+
 func (d *Decoder) GetRestOfMessage() ([]byte, error) {
 	return ioutil.ReadAll(d.r)
 }
