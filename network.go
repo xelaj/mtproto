@@ -8,8 +8,8 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/xelaj/mtproto/encoding/tl"
+	"github.com/xelaj/mtproto/internal/mtproto/messages"
 	"github.com/xelaj/mtproto/internal/mtproto/objects"
-	"github.com/xelaj/mtproto/serialize"
 )
 
 const (
@@ -47,19 +47,19 @@ func IsPacketEncrypted(data []byte) bool {
 	return binary.LittleEndian.Uint64(authKeyHash) != 0
 }
 
-func (m *MTProto) decodeRecievedData(data []byte) (serialize.CommonMessage, error) {
+func (m *MTProto) decodeRecievedData(data []byte) (messages.Common, error) {
 	// проверим, что это не код ошибки
 	err := CatchResponseErrorCode(data)
 	if err != nil {
 		return nil, errors.Wrap(err, "Server response error")
 	}
 
-	var msg serialize.CommonMessage
+	var msg messages.Common
 
 	if IsPacketEncrypted(data) {
-		msg, err = serialize.DeserializeEncryptedMessage(data, m.GetAuthKey())
+		msg, err = messages.DeserializeEncrypted(data, m.GetAuthKey())
 	} else {
-		msg, err = serialize.DeserializeUnencryptedMessage(data)
+		msg, err = messages.DeserializeUnencrypted(data)
 	}
 	if err != nil {
 		return nil, errors.Wrap(err, "parsing message")

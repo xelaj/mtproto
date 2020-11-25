@@ -14,7 +14,6 @@ import (
 	"github.com/xelaj/mtproto/encoding/tl"
 	"github.com/xelaj/mtproto/internal/mtproto/objects"
 	"github.com/xelaj/mtproto/keys"
-	"github.com/xelaj/mtproto/serialize"
 )
 
 // https://tlgrm.ru/docs/mtproto/auth_key
@@ -86,7 +85,7 @@ func (m *MTProto) makeAuthKey() error {
 		return errors.Wrap(err, "decoding response from server")
 	}
 
-	dhi, ok := data.(*serialize.ServerDHInnerData)
+	dhi, ok := data.(*objects.ServerDHInnerData)
 	if !ok {
 		return errors.New("Handshake: Need server_DH_inner_data")
 	}

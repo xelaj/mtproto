@@ -15,8 +15,8 @@ import (
 	"github.com/xelaj/go-dry"
 
 	"github.com/xelaj/mtproto/encoding/tl"
+	"github.com/xelaj/mtproto/internal/mtproto/messages"
 	"github.com/xelaj/mtproto/internal/mtproto/objects"
-	"github.com/xelaj/mtproto/serialize"
 	"github.com/xelaj/mtproto/utils"
 )
 
@@ -270,9 +270,12 @@ func (m *MTProto) startReadingResponses(ctx context.Context) {
 
 				if m.serviceModeActivated {
 					// сервисные сообщения ГАРАНТИРОВАННО в теле содержат TL.
-					decoder := serialize.NewDecoder(response.GetMsg())
-					obj := decoder.PopObj()
-					m.serviceChannel <- obj
+					obj, err := tl.DecodeUnknownObject(response.GetMsg())
+					if err != nil {
+						m.Warnings <- errors.Wrap(err, "parsing object")
+					} else {
+						m.serviceChannel <- obj
+					}
 				} else {
 					err = m.processResponse(int(m.msgId), int(m.seqNo), response)
 					if err != nil {
@@ -284,7 +287,7 @@ func (m *MTProto) startReadingResponses(ctx context.Context) {
 	}()
 }
 
-func (m *MTProto) processResponse(msgId, seqNo int, msg serialize.CommonMessage) error {
+func (m *MTProto) processResponse(msgId, seqNo int, msg messages.Common) error {
 	data, err := tl.DecodeUnknownObject(msg.GetMsg())
 	if err != nil {
 		return errors.Wrap(err, "unmarshaling response")
@@ -360,7 +363,7 @@ func (m *MTProto) processResponse(msgId, seqNo int, msg serialize.CommonMessage)
 	}
 
 	if (seqNo & 1) != 0 {
-		_, err := m.MakeRequest(&serialize.MsgsAck{MsgIds: []int64{int64(msgId)}})
+		_, err := m.MakeRequest(&objects.MsgsAck{MsgIds: []int64{int64(msgId)}})
 		if err != nil {
 			return errors.Wrap(err, "sending ack")
 		}

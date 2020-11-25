@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
-	"github.com/xelaj/mtproto/serialize"
+	"github.com/xelaj/mtproto/encoding/tl"
 )
 
 // RSAFingerprint вычисляет отпечаток ключа
@@ -21,11 +21,12 @@ func RSAFingerprint(key *rsa.PublicKey) []byte {
 	dry.PanicIf(key == nil, "key can't be nil")
 	exponentAsBigInt := (big.NewInt(0)).SetInt64(int64(key.E))
 
-	buf := serialize.NewEncoder()
-	buf.PutMessage(key.N.Bytes())
-	buf.PutMessage(exponentAsBigInt.Bytes())
+	buf := bytes.NewBuffer(nil)
+	e := tl.NewEncoder(buf)
+	e.PutMessage(key.N.Bytes())
+	e.PutMessage(exponentAsBigInt.Bytes())
 
-	fingerprint := dry.Sha1(string(buf.Result()))
+	fingerprint := dry.Sha1(buf.String())
 	return []byte(fingerprint)[12:] // последние 8 байт это и есть отпечаток
 }
 
