@@ -10,8 +10,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/xelaj/go-dry"
 
-	ige "github.com/xelaj/mtproto/aes_ige"
 	"github.com/xelaj/mtproto/encoding/tl"
+	ige "github.com/xelaj/mtproto/internal/aes_ige"
 	"github.com/xelaj/mtproto/internal/mtproto/objects"
 	"github.com/xelaj/mtproto/keys"
 )
