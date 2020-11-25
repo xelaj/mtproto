@@ -1,14 +1,12 @@
 // init.go нужен для того что бы иметь один единственный инит в пакете, и при этом не заставляет его генерироваться через generate-tl-files
 package telegram
 
-import (
-	"github.com/xelaj/mtproto/serialize"
-)
+// "github.com/xelaj/mtproto/serialize"
 
 const (
-	ApiVersion = 117
+	ApiVersion = 121
 )
 
 func init() {
-	serialize.AddObjectConstructor(GenerateStructByConstructor)
+	//serialize.AddObjectConstructor(GenerateStructByConstructor)
 }

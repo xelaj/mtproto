@@ -2,11 +2,10 @@ package mtproto
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/xelaj/go-dry"
 
-	"github.com/xelaj/mtproto/serialize"
+	"github.com/xelaj/mtproto/encoding/tl"
 	"github.com/xelaj/mtproto/utils"
 )
 
@@ -60,12 +59,8 @@ func (m *MTProto) SetAuthKey(key []byte) {
 	m.authKeyHash = utils.AuthKeyHash(m.authKey)
 }
 
-func (m *MTProto) MakeRequest(msg serialize.TL) (serialize.TL, error) {
-	return m.makeRequest(msg, nil)
-}
-
-func (m *MTProto) MakeRequestAsSlice(msg serialize.TL, as reflect.Type) (serialize.TL, error) {
-	return m.makeRequest(msg, as)
+func (m *MTProto) MakeRequest(msg tl.Object) (tl.Object, error) {
+	return m.makeRequest(msg)
 }
 
 func (m *MTProto) recoverGoroutine() {

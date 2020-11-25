@@ -1,7 +1,8 @@
 package mtproto
 
 import (
-	"github.com/xelaj/mtproto/serialize"
+	"github.com/xelaj/mtproto/encoding/tl"
+	"github.com/xelaj/mtproto/internal/mtproto/objects"
 )
 
 // это неофициальная информация, но есть подозрение, что список датацентров АБСОЛЮТНО идентичный для всех
@@ -15,9 +16,9 @@ var defaultDCList = map[int]string{
 	5: "91.108.56.151:443",
 }
 
-func MessageRequireToAck(msg serialize.TL) bool {
+func MessageRequireToAck(msg tl.Object) bool {
 	switch msg.(type) {
-	case /**serialize.Ping,*/ *serialize.MsgsAck:
+	case /**objects.Ping,*/ *objects.MsgsAck:
 		return false
 	default:
 		return true

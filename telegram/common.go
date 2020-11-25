@@ -4,14 +4,12 @@ import (
 	"reflect"
 	"runtime"
 
-	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
 	dry "github.com/xelaj/go-dry"
 
 	"github.com/xelaj/mtproto"
 	"github.com/xelaj/mtproto/keys"
-	"github.com/xelaj/mtproto/serialize"
 )
 
 type Client struct {
@@ -78,7 +76,7 @@ func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not 
 		config:  &c,
 	}
 
-	client.AddCustomServerRequestHandler(client.handleSpecialRequests())
+	//client.AddCustomServerRequestHandler(client.handleSpecialRequests())
 
 	resp, err := client.InvokeWithLayer(ApiVersion, &InitConnectionParams{
 		ApiID:          int32(c.AppID),
@@ -114,6 +112,7 @@ func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not 
 	return client, nil
 }
 
+/*
 func (c *Client) handleSpecialRequests() func(interface{}) bool {
 	return func(i interface{}) bool {
 		switch msg := i.(type) {
@@ -128,131 +127,5 @@ func (c *Client) handleSpecialRequests() func(interface{}) bool {
 		return false
 	}
 }
-
+*/
 //----------------------------------------------------------------------------
-
-type InvokeWithLayerParams struct {
-	Layer int32
-	Query serialize.TLEncoder
-}
-
-func (*InvokeWithLayerParams) CRC() uint32 {
-	return 0xda9b0d0d
-}
-
-func (t *InvokeWithLayerParams) Encode() []byte {
-	buf := serialize.NewEncoder()
-	buf.PutUint(t.CRC())
-	buf.PutInt(t.Layer)
-	buf.PutRawBytes(t.Query.Encode())
-	return buf.Result()
-}
-
-func (t *InvokeWithLayerParams) DecodeFrom(d *serialize.Decoder) {
-	panic("makes no sense")
-}
-
-func (m *Client) InvokeWithLayer(layer int, query serialize.TLEncoder) (serialize.TL, error) {
-	data, err := m.MakeRequest(&InvokeWithLayerParams{
-		Layer: int32(layer),
-		Query: query,
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, "sending InvokeWithLayer")
-	}
-
-	return data, nil
-}
-
-type InvokeWithTakeoutParams struct {
-	TakeoutID int64
-	Query     serialize.TLEncoder
-}
-
-func (*InvokeWithTakeoutParams) CRC() uint32 {
-	return 0xaca9fd2e
-}
-
-func (t *InvokeWithTakeoutParams) Encode() []byte {
-	buf := serialize.NewEncoder()
-	buf.PutUint(t.CRC())
-	buf.PutLong(t.TakeoutID)
-	buf.PutRawBytes(t.Query.Encode())
-	return buf.Result()
-}
-
-func (t *InvokeWithTakeoutParams) DecodeFrom(d *serialize.Decoder) {
-	panic("makes no sense")
-}
-
-func (m *Client) InvokeWithTakeout(takeoutID int, query serialize.TLEncoder) (serialize.TL, error) {
-	data, err := m.MakeRequest(&InvokeWithTakeoutParams{
-		TakeoutID: int64(takeoutID),
-		Query:     query,
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, "sending InvokeWithLayer")
-	}
-
-	return data, nil
-}
-
-type InitConnectionParams struct {
-	__flagsPosition struct{}
-	ApiID           int32
-	DeviceModel     string
-	SystemVersion   string
-	AppVersion      string
-	SystemLangCode  string
-	LangPack        string
-	LangCode        string
-	Proxy           *InputClientProxy `flag:"0"`
-	Params          JSONValue         `flag:"1"`
-	Query           serialize.TLEncoder
-}
-
-func (_ *InitConnectionParams) CRC() uint32 {
-	return 0xc1cd5ea9
-}
-
-func (t *InitConnectionParams) Encode() []byte {
-	var flag uint32
-	if t.Proxy != nil {
-		flag |= 1 << 0
-	}
-	if t.Params != nil {
-		flag |= 1 << 1
-	}
-
-	buf := serialize.NewEncoder()
-	buf.PutUint(t.CRC())
-	buf.PutUint(flag)
-	buf.PutInt(t.ApiID)
-	buf.PutString(t.DeviceModel)
-	buf.PutString(t.SystemVersion)
-	buf.PutString(t.AppVersion)
-	buf.PutString(t.SystemLangCode)
-	buf.PutString(t.LangPack)
-	buf.PutString(t.LangCode)
-	if t.Proxy != nil {
-		buf.PutRawBytes(t.Proxy.Encode())
-	}
-	if t.Params != nil {
-		buf.PutRawBytes(t.Params.Encode())
-	}
-	buf.PutRawBytes(t.Query.Encode())
-	return buf.Result()
-}
-
-func (t *InitConnectionParams) DecodeFrom(d *serialize.Decoder) {
-	panic("makes no sense")
-}
-
-func (c *Client) InitConnection(params *InitConnectionParams) (serialize.TL, error) {
-	data, err := c.MakeRequest(params)
-	if err != nil {
-		return nil, errors.Wrap(err, "sending InitConnection")
-	}
-
-	return data, nil
-}

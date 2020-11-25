@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
-	"reflect"
 	"strconv"
 	"time"
 
@@ -12,22 +11,23 @@ import (
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
-	"github.com/xelaj/mtproto/serialize"
+	"github.com/xelaj/mtproto/encoding/tl"
+	"github.com/xelaj/mtproto/internal/mtproto/messages"
+	"github.com/xelaj/mtproto/internal/mtproto/objects"
 	"github.com/xelaj/mtproto/utils"
 )
 
-func (m *MTProto) sendPacketNew(request serialize.TL, expectVector reflect.Type) (chan serialize.TL, error) {
-	resp := make(chan serialize.TL)
+func (m *MTProto) sendPacketNew(request tl.Object) (chan tl.Object, error) {
+	resp := make(chan tl.Object)
 	if m.serviceModeActivated {
 		resp = m.serviceChannel
 	}
 	var data []byte
 	var err error
 	var msgID = utils.GenerateMessageId()
-
-	// может мы ожидаем вектор, см. erialize.RpcResult для понимания
-	if expectVector != nil {
-		m.msgsIdDecodeAsVector[msgID] = expectVector
+	msg, err := tl.Marshal(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "encoding request message")
 	}
 
 	if m.encrypted {
@@ -39,8 +39,8 @@ func (m *MTProto) sendPacketNew(request serialize.TL, expectVector reflect.Type)
 			requireToAck = true
 		}
 
-		data, err = (&serialize.EncryptedMessage{
-			Msg:         request.Encode(),
+		data, err = (&messages.Encrypted{
+			Msg:         msg,
 			MsgID:       msgID,
 			AuthKeyHash: m.authKeyHash,
 		}).Serialize(m, requireToAck)
@@ -57,14 +57,14 @@ func (m *MTProto) sendPacketNew(request serialize.TL, expectVector reflect.Type)
 			// ответов на TL_Ack, TL_Pong и пр. не требуется
 			go func() {
 				// горутина, т.к. мы ПРЯМО СЕЙЧАС из resp не читаем
-				resp <- &serialize.Null{}
+				resp <- &objects.Null{}
 			}()
 		}
 		// этот кусок не часть кодирования так что делаем при отправке
 		m.lastSeqNo += 2
 	} else {
-		data, _ = (&serialize.UnencryptedMessage{ //nolint: errcheck нешифрованое не отправляет ошибки
-			Msg:   request.Encode(),
+		data, _ = (&messages.Unencrypted{ //nolint: errcheck нешифрованое не отправляет ошибки
+			Msg:   msg,
 			MsgID: msgID,
 		}).Serialize(m)
 	}
@@ -88,7 +88,7 @@ func (m *MTProto) sendPacketNew(request serialize.TL, expectVector reflect.Type)
 	return resp, nil
 }
 
-func (m *MTProto) writeRPCResponse(msgID int, data serialize.TL) error {
+func (m *MTProto) writeRPCResponse(msgID int, data tl.Object) error {
 	m.mutex.Lock()
 	v, ok := m.responseChannels[int64(msgID)]
 	if !ok {

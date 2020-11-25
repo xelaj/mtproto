@@ -16,14 +16,14 @@ import (
 	"github.com/xelaj/mtproto/utils"
 )
 
-// CommonMessage это сообщение (зашифрованое либо открытое) которыми общаются между собой клиент и сервер
-type CommonMessage interface {
+// Common это сообщение (зашифрованое либо открытое) которыми общаются между собой клиент и сервер
+type Common interface {
 	GetMsg() []byte
 	GetMsgID() int
 	GetSeqNo() int
 }
 
-type EncryptedMessage struct {
+type Encrypted struct {
 	Msg         []byte
 	MsgID       int64
 	AuthKeyHash []byte
@@ -34,7 +34,7 @@ type EncryptedMessage struct {
 	MsgKey    []byte
 }
 
-func (msg *EncryptedMessage) Serialize(client MessageInformator, requireToAck bool) ([]byte, error) {
+func (msg *Encrypted) Serialize(client MessageInformator, requireToAck bool) ([]byte, error) {
 	obj := serializePacket(client, msg.Msg, msg.MsgID, requireToAck)
 	encryptedData, err := ige.Encrypt(obj, client.GetAuthKey())
 	if err != nil {
@@ -51,8 +51,8 @@ func (msg *EncryptedMessage) Serialize(client MessageInformator, requireToAck bo
 	return buf.Bytes(), nil
 }
 
-func DeserializeEncryptedMessage(data, authKey []byte) (*EncryptedMessage, error) {
-	msg := new(EncryptedMessage)
+func DeserializeEncrypted(data, authKey []byte) (*Encrypted, error) {
+	msg := new(Encrypted)
 
 	buf := bytes.NewBuffer(data)
 	d := tl.NewDecoder(buf)
@@ -94,24 +94,24 @@ func DeserializeEncryptedMessage(data, authKey []byte) (*EncryptedMessage, error
 	return msg, nil
 }
 
-func (msg *EncryptedMessage) GetMsg() []byte {
+func (msg *Encrypted) GetMsg() []byte {
 	return msg.Msg
 }
 
-func (msg *EncryptedMessage) GetMsgID() int {
+func (msg *Encrypted) GetMsgID() int {
 	return int(msg.MsgID)
 }
 
-func (msg *EncryptedMessage) GetSeqNo() int {
+func (msg *Encrypted) GetSeqNo() int {
 	return int(msg.SeqNo)
 }
 
-type UnencryptedMessage struct {
+type Unencrypted struct {
 	Msg   []byte
 	MsgID int64
 }
 
-func (msg *UnencryptedMessage) Serialize(client MessageInformator) ([]byte, error) {
+func (msg *Unencrypted) Serialize(client MessageInformator) ([]byte, error) {
 	buf := bytes.NewBuffer(nil)
 	e := tl.NewEncoder(buf)
 	// authKeyHash, always 0 if unencrypted
@@ -122,8 +122,8 @@ func (msg *UnencryptedMessage) Serialize(client MessageInformator) ([]byte, erro
 	return buf.Bytes(), nil
 }
 
-func DeserializeUnencryptedMessage(data []byte) (*UnencryptedMessage, error) {
-	msg := new(UnencryptedMessage)
+func DeserializeUnencrypted(data []byte) (*Unencrypted, error) {
+	msg := new(Unencrypted)
 	d := tl.NewDecoder(bytes.NewBuffer(data))
 	_ = d.PopRawBytes(tl.LongLen) // authKeyHash, always 0 if unencrypted
 
@@ -149,15 +149,15 @@ func DeserializeUnencryptedMessage(data []byte) (*UnencryptedMessage, error) {
 	return msg, nil
 }
 
-func (msg *UnencryptedMessage) GetMsg() []byte {
+func (msg *Unencrypted) GetMsg() []byte {
 	return msg.Msg
 }
 
-func (msg *UnencryptedMessage) GetMsgID() int {
+func (msg *Unencrypted) GetMsgID() int {
 	return int(msg.MsgID)
 }
 
-func (msg *UnencryptedMessage) GetSeqNo() int {
+func (msg *Unencrypted) GetSeqNo() int {
 	return 0
 }
 

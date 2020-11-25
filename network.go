@@ -7,6 +7,8 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/xelaj/mtproto/encoding/tl"
+	"github.com/xelaj/mtproto/internal/mtproto/objects"
 	"github.com/xelaj/mtproto/serialize"
 )
 
@@ -15,9 +17,10 @@ const (
 	magicValueSizeMoreThanSingleByte = 0x7f
 )
 
-func isNullableResponse(t serialize.TL) bool {
+// проверяет, надо ли ждать от сервера пинга
+func isNullableResponse(t tl.Object) bool {
 	switch t.(type) {
-	case /**serialize.Ping,*/ *serialize.Pong, *serialize.MsgsAck:
+	case /**objects.Ping,*/ *objects.Pong, *objects.MsgsAck:
 		return true
 	default:
 		return false
@@ -37,8 +40,10 @@ func CatchResponseErrorCode(data []byte) error {
 }
 
 func IsPacketEncrypted(data []byte) bool {
-	buf := serialize.NewDecoder(data)
-	authKeyHash := buf.PopRawBytes(serialize.DoubleLen)
+	if len(data) < tl.DoubleLen {
+		return false
+	}
+	authKeyHash := data[:tl.DoubleLen]
 	return binary.LittleEndian.Uint64(authKeyHash) != 0
 }
 

@@ -31,6 +31,22 @@ func Decode(data []byte, v any) error {
 	return nil
 }
 
+// DecodeUnknownObject decodes object from message, when you don't actually know, what message contains.
+// due to TL doesn't provide mechanism for understanding is message a int or string, you MUST guarantee, that
+// input stream DOES NOT contains any type WITHOUT its CRC code. So, strings, ints, floats, etc. CAN'T BE
+// automatically parsed.
+func DecodeUnknownObject(data []byte) (Object, error) {
+	d := NewDecoder(bytes.NewReader(data))
+
+	obj := d.decodeRegisteredObject()
+	if d.err != nil {
+		return nil, errors.Wrap(d.err, "decoding predicted object")
+	}
+
+	return obj, nil
+
+}
+
 func (d *Decoder) decodeObject(o Object, ignoreCRC bool) {
 	if d.err != nil {
 		return
@@ -211,17 +227,6 @@ func (d *Decoder) decodeValueGeneral(value reflect.Value) interface{} {
 	}
 
 	return val
-}
-
-func DecodeRegistered(data []byte) (Object, error) {
-	decoder := NewDecoder(bytes.NewReader(data))
-	ob := decoder.decodeRegisteredObject()
-
-	if decoder.err != nil {
-		return nil, errors.Wrap(decoder.err, "decode registered object")
-	}
-
-	return ob, nil
 }
 
 func (d *Decoder) decodeRegisteredObject() Object {

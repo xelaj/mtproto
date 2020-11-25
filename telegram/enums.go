@@ -2,8 +2,6 @@
 
 package telegram
 
-import serialize "github.com/xelaj/mtproto/serialize"
-
 type BaseTheme uint32
 
 const (
@@ -32,12 +30,6 @@ func (e BaseTheme) String() string {
 }
 func (e BaseTheme) CRC() uint32 {
 	return uint32(e)
-}
-func (e BaseTheme) Encode() []byte {
-	buf := serialize.NewEncoder()
-	buf.PutCRC(uint32(e))
-
-	return buf.Result()
 }
 
 type InputPrivacyKey uint32
@@ -78,12 +70,6 @@ func (e InputPrivacyKey) String() string {
 func (e InputPrivacyKey) CRC() uint32 {
 	return uint32(e)
 }
-func (e InputPrivacyKey) Encode() []byte {
-	buf := serialize.NewEncoder()
-	buf.PutCRC(uint32(e))
-
-	return buf.Result()
-}
 
 type PhoneCallDiscardReason uint32
 
@@ -110,12 +96,6 @@ func (e PhoneCallDiscardReason) String() string {
 }
 func (e PhoneCallDiscardReason) CRC() uint32 {
 	return uint32(e)
-}
-func (e PhoneCallDiscardReason) Encode() []byte {
-	buf := serialize.NewEncoder()
-	buf.PutCRC(uint32(e))
-
-	return buf.Result()
 }
 
 type PrivacyKey uint32
@@ -155,12 +135,6 @@ func (e PrivacyKey) String() string {
 }
 func (e PrivacyKey) CRC() uint32 {
 	return uint32(e)
-}
-func (e PrivacyKey) Encode() []byte {
-	buf := serialize.NewEncoder()
-	buf.PutCRC(uint32(e))
-
-	return buf.Result()
 }
 
 type SecureValueType uint32
@@ -216,12 +190,6 @@ func (e SecureValueType) String() string {
 func (e SecureValueType) CRC() uint32 {
 	return uint32(e)
 }
-func (e SecureValueType) Encode() []byte {
-	buf := serialize.NewEncoder()
-	buf.PutCRC(uint32(e))
-
-	return buf.Result()
-}
 
 type TopPeerCategory uint32
 
@@ -261,12 +229,6 @@ func (e TopPeerCategory) String() string {
 func (e TopPeerCategory) CRC() uint32 {
 	return uint32(e)
 }
-func (e TopPeerCategory) Encode() []byte {
-	buf := serialize.NewEncoder()
-	buf.PutCRC(uint32(e))
-
-	return buf.Result()
-}
 
 type AuthCodeType uint32
 
@@ -290,12 +252,6 @@ func (e AuthCodeType) String() string {
 }
 func (e AuthCodeType) CRC() uint32 {
 	return uint32(e)
-}
-func (e AuthCodeType) Encode() []byte {
-	buf := serialize.NewEncoder()
-	buf.PutCRC(uint32(e))
-
-	return buf.Result()
 }
 
 type StorageFileType uint32
@@ -341,10 +297,4 @@ func (e StorageFileType) String() string {
 }
 func (e StorageFileType) CRC() uint32 {
 	return uint32(e)
-}
-func (e StorageFileType) Encode() []byte {
-	buf := serialize.NewEncoder()
-	buf.PutCRC(uint32(e))
-
-	return buf.Result()
 }

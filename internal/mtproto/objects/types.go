@@ -11,13 +11,21 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
-	"reflect"
 
-	"github.com/k0kubun/pp"
+	"github.com/pkg/errors"
 	"github.com/xelaj/mtproto/encoding/tl"
+	"github.com/xelaj/mtproto/internal/mtproto/messages"
 )
 
 // TYPES
+
+// Null это пустой объект, который нужен для передачи в каналы TL с информацией, что ответа можно не ждать
+type Null struct {
+}
+
+func (*Null) CRC() uint32 {
+	panic("makes no sense")
+}
 
 type ResPQ struct {
 	Nonce        *tl.Int128
@@ -47,7 +55,6 @@ type ServerDHParams interface {
 	tl.Object
 	ImplementsServerDHParams()
 }
-
 
 type ServerDHParamsFail struct {
 	Nonce        *tl.Int128
@@ -180,7 +187,7 @@ func (*RpcError) CRC() uint32 {
 	return 0x2144ca19
 }
 
-type RpcDropAnswer interface{
+type RpcDropAnswer interface {
 	tl.Object
 	ImplementsRpcDropAnswer()
 }
@@ -259,39 +266,39 @@ func (*NewSessionCreated) CRC() uint32 {
 //  записан как `msg_container#73f1f8dc messages:vector<%Message> = MessageContainer;`
 //  судя по всему, <%Type> означает, что может это неявный вектор???
 //! возможно разработчики в этот момент поехаи кукухой, я не знаю правда
-type MessageContainer []*EncryptedMessage
+type MessageContainer []*messages.Encrypted
 
-func (_ *MessageContainer) CRC() uint32 {
+func (*MessageContainer) CRC() uint32 {
 	return 0x73f1f8dc
 }
 
 func (t *MessageContainer) MarshalTL(e *tl.Encoder) error {
 	e.PutUint(t.CRC())
 	e.PutInt(int32(len(*t)))
-	if e.CheckErr() != nil {
+	if err := e.CheckErr(); err != nil {
 		return err
 	}
 
 	for _, msg := range *t {
 		e.PutLong(msg.MsgID)
 		e.PutInt(msg.SeqNo)
-		//       msgID     seqNo     len             object
-		e.PutInt(LongLen + WordLen + WordLen + int32(len(msg.Msg)))
+		//       msgID        seqNo        len                object
+		e.PutInt(tl.LongLen + tl.WordLen + tl.WordLen + int32(len(msg.Msg)))
 		e.PutRawBytes(msg.Msg)
 	}
-	return buf.GetBuffer()
+	return e.CheckErr()
 }
 
 func (t *MessageContainer) UnmarshalTL(d *tl.Decoder) error {
 	crc := d.PopCRC()
 	if crc != t.CRC() {
-		return errors.New("wrong CRC code, want %#v, got %#v", t.CRC(), crc)
+		return fmt.Errorf("wrong CRC code, want %#v, got %#v", t.CRC(), crc)
 	}
 
 	count := int(d.PopInt())
-	arr := make([]*EncryptedMessage, count)
+	arr := make([]*messages.Encrypted, count)
 	for i := 0; i < count; i++ {
-		msg := new(EncryptedMessage)
+		msg := new(messages.Encrypted)
 		msg.MsgID = d.PopLong()
 		msg.SeqNo = d.PopInt()
 		size := d.PopInt()
@@ -333,12 +340,20 @@ func (*GzipPacked) MarshalTL(e *tl.Encoder) error {
 func (t *GzipPacked) UnmarshalTL(d *tl.Decoder) error {
 	crc := d.PopCRC()
 	if crc != t.CRC() {
-		return errors.New("wrong CRC code, want %#v, got %#v", t.CRC(), crc)
+		return fmt.Errorf("wrong CRC code, want %#v, got %#v", t.CRC(), crc)
 	}
 
-	obj := t.popMessageAsBytes(d)
-	innerDecoder := NewDecoder(obj)
-	t.Obj = innerDecoder.PopObj()
+	obj, err := t.popMessageAsBytes(d)
+	if err != nil {
+		return err
+	}
+
+	t.Obj, err = tl.DecodeUnknownObject(obj)
+	if err != nil {
+		return errors.Wrap(err, "parsing gzipped object")
+	}
+
+	return nil
 }
 
 func (*GzipPacked) popMessageAsBytes(d *tl.Decoder) ([]byte, error) {
@@ -353,6 +368,9 @@ func (*GzipPacked) popMessageAsBytes(d *tl.Decoder) ([]byte, error) {
 	var buf bytes.Buffer
 	_, _ = buf.Write(d.PopMessage())
 	gz, err := gzip.NewReader(&buf)
+	if err != nil {
+		return nil, errors.Wrap(err, "creating gzip reader")
+	}
 
 	b := make([]byte, 4096)
 	for {
@@ -364,7 +382,7 @@ func (*GzipPacked) popMessageAsBytes(d *tl.Decoder) ([]byte, error) {
 		}
 	}
 
-	return decompressed
+	return decompressed, nil
 	//? это то что я пытался сделать
 	// data := d.PopMessage()
 	// gz, err := gzip.NewReader(bytes.NewBuffer(data))
@@ -429,7 +447,6 @@ func (*MsgsStateReq) CRC() uint32 {
 
 }
 
-
 type MsgsStateInfo struct {
 	ReqMsgId int64
 	Info     []byte
@@ -457,7 +474,7 @@ type MsgsDetailedInfo struct {
 	Status      int32
 }
 
-func (_ *MsgsDetailedInfo) CRC() uint32 {
+func (*MsgsDetailedInfo) CRC() uint32 {
 	return 0x276d3ec6
 
 }
