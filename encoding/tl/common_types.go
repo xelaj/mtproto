@@ -92,3 +92,12 @@ func (i *Int256) UnmarshalTL(d *Decoder) error {
 	i.Int = big.NewInt(0).SetBytes(val)
 	return nil
 }
+
+// PseudoBool is a support struct which is required to get native
+type PseudoBool struct {
+	value bool
+}
+
+func (*PseudoBool) CRC() uint32 {
+	panic("it's pseudo bool type")
+}

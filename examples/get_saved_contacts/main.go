@@ -1,8 +1,6 @@
 package main
 
 import (
-	"reflect"
-
 	"github.com/k0kubun/pp"
 
 	"github.com/xelaj/go-dry"
@@ -29,21 +27,16 @@ func main() {
 	})
 	dry.PanicIfErr(err)
 
-	res, err := client.MakeRequestAsSlice( // this is crutch of decoder, cause SOME methods
-		//                                    responses vector. BUT, vector is slice, not native object.
-		//                                    You need to use MakeRequestAsSlice only when you are invoking
-		//                                    method in another. If you using client.ContactsGetSavedParams,
-		//                                    you just need to call it, generated implementation is already
-		//                                    doing stuff for you.
+	res, err := client.MakeRequest(
 		&telegram.InvokeWithTakeoutParams{
-			TakeoutID: resp.Id,
-			Query:     &telegram.ContactsGetSavedParams{}},
-		reflect.TypeOf(&telegram.SavedContact{}),
+			TakeoutID: resp.ID,
+			Query:     &telegram.ContactsGetSavedParams{},
+		},
 	)
 
 	pp.Sprintln(res, err)
 
-	contacts, err := client.ContactsGetContacts(&telegram.ContactsGetContactsParams{})
+	contacts, err := client.ContactsGetContacts(0)
 	dry.PanicIfErr(err)
 	c := contacts.(*telegram.ContactsContactsObj)
 	pp.Println(int(c.SavedCount), len(c.Users), len(c.Contacts))

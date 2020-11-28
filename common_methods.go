@@ -1,3 +1,8 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package mtproto
 
 // методы (ну или функции, you name it), которые взяты отсюда https://core.telegram.org/schema/mtproto

@@ -1,3 +1,8 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package keys
 
 import (
@@ -11,6 +16,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
+
 	"github.com/xelaj/mtproto/encoding/tl"
 )
 

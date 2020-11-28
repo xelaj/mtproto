@@ -1,3 +1,8 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package mtproto
 
 // internal errors for internal purposes
@@ -11,5 +16,3 @@ func (*errorSessionConfigsChanged) Error() string {
 func (*errorSessionConfigsChanged) CRC() uint32 {
 	panic("makes no sense")
 }
-
-

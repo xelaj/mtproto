@@ -30,22 +30,22 @@ func main() {
 	peer, err := client.GetChatInfoByHashLink(hash)
 	dry.PanicIfErr(err)
 
-	total, err := client.GetPossibleAllParticipantsOfGroup(telegram.InputChannel(&telegram.InputChannelObj{
-		ChannelId:  peer.(*telegram.Channel).Id,
+	total, err := client.GetPossibleAllParticipantsOfGroup(&telegram.InputChannelObj{
+		ChannelID:  peer.(*telegram.Channel).ID,
 		AccessHash: peer.(*telegram.Channel).AccessHash,
-	}))
+	})
 
 	dry.PanicIfErr(err)
 	pp.Println(total, len(total))
 
 	println("this is partial users in CHANNEL. In supergroup you can use more easy way to find, see below")
 
-	resolved, err := client.ContactsResolveUsername(&telegram.ContactsResolveUsernameParams{"gogolang"})
+	resolved, err := client.ContactsResolveUsername("gogolang")
 	dry.PanicIfErr(err)
 
 	channel := resolved.Chats[0].(*telegram.Channel)
 	inCh := telegram.InputChannel(&telegram.InputChannelObj{
-		ChannelId:  channel.Id,
+		ChannelID:  channel.ID,
 		AccessHash: channel.AccessHash,
 	})
 
@@ -53,25 +53,20 @@ func main() {
 	totalCount := 100 // at least 100
 	offset := 0
 	for offset < totalCount {
-		resp, err := client.ChannelsGetParticipants(&telegram.ChannelsGetParticipantsParams{
-			Channel: inCh,
-			Filter:  telegram.ChannelParticipantsFilter(&telegram.ChannelParticipantsRecent{}),
-			Limit:   100,
-			Offset:  int32(offset),
-		})
+		resp, err := client.ChannelsGetParticipants(inCh, telegram.ChannelParticipantsFilter(&telegram.ChannelParticipantsRecent{}), 100, int32(offset), 0)
 		dry.PanicIfErr(err)
 		data := resp.(*telegram.ChannelsChannelParticipantsObj)
 		totalCount = int(data.Count)
 		for _, participant := range data.Participants {
 			switch user := participant.(type) {
 			case *telegram.ChannelParticipantSelf:
-				res[int(user.UserId)] = struct{}{}
+				res[int(user.UserID)] = struct{}{}
 			case *telegram.ChannelParticipantObj:
-				res[int(user.UserId)] = struct{}{}
+				res[int(user.UserID)] = struct{}{}
 			case *telegram.ChannelParticipantAdmin:
-				res[int(user.UserId)] = struct{}{}
+				res[int(user.UserID)] = struct{}{}
 			case *telegram.ChannelParticipantCreator:
-				res[int(user.UserId)] = struct{}{}
+				res[int(user.UserID)] = struct{}{}
 			default:
 				pp.Println(user)
 				panic("что?")

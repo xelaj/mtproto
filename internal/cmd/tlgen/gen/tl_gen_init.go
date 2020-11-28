@@ -6,56 +6,43 @@ import (
 	"github.com/dave/jennifer/jen"
 )
 
+var tlPackagePath = "github.com/xelaj/mtproto/encoding/tl"
+var errorsPackagePath = "github.com/pkg/errors"
+
 func (g *Generator) generateInit(file *jen.File) {
+	structs, enums := g.getAllConstructors()
+
 	initFunc := jen.Func().Id("init").Params().Block(
-		g.createInitStructs(),
+		g.createInitStructs(structs...),
 		jen.Line(),
-		g.createInitEnums(),
+		g.createInitEnums(enums...),
 	)
 
 	file.Add(initFunc)
 }
 
-func (g *Generator) createInitStructs() jen.Code {
-	structs, _ := g.getAllConstructors()
-	crcs := make([]uint32, 0)
+func (g *Generator) createInitStructs(itemNames ...string) jen.Code {
+	sort.Strings(itemNames)
 
-	for crc := range structs {
-		crcs = append(crcs, crc)
+	structs := make([]jen.Code, len(itemNames))
+	for i, item := range itemNames {
+		structs[i] = jen.Op("&").Id(item).Block()
 	}
 
-	sort.Slice(crcs, func(i, j int) bool {
-		return crcs[i] < crcs[j]
-	})
-
-	var stmts []jen.Code
-	for _, crc := range crcs {
-		name := structs[crc]
-		stmts = append(stmts, jen.Line().Id("&"+name).Values())
-	}
-
-	stmts = append(stmts, jen.Line())
-	return jen.Qual("github.com/xelaj/mtproto/encoding/tl", "RegisterObjects").Call(stmts...)
+	return jen.Qual(tlPackagePath, "RegisterObjects").Call(
+		structs...,
+	)
 }
 
-func (g *Generator) createInitEnums() jen.Code {
-	_, enums := g.getAllConstructors()
-	crcs := make([]uint32, 0)
+func (g *Generator) createInitEnums(itemNames ...string) jen.Code {
+	sort.Strings(itemNames)
 
-	for crc := range enums {
-		crcs = append(crcs, crc)
+	enums := make([]jen.Code, len(itemNames))
+	for i, item := range itemNames {
+		enums[i] = jen.Id(item)
 	}
 
-	sort.Slice(crcs, func(i, j int) bool {
-		return crcs[i] < crcs[j]
-	})
-
-	var stmts []jen.Code
-	for _, crc := range crcs {
-		name := enums[crc]
-		stmts = append(stmts, jen.Line().Id(name))
-	}
-
-	stmts = append(stmts, jen.Line())
-	return jen.Qual("github.com/xelaj/mtproto/encoding/tl", "RegisterEnums").Call(stmts...)
+	return jen.Qual(tlPackagePath, "RegisterEnums").Call(
+		enums...,
+	)
 }

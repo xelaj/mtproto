@@ -9,7 +9,7 @@ import (
 )
 
 // строчка в tl
-type definition struct {
+type definition struct { //nolint:maligned для удобочитаемости, сохранен порядок филдов как в схеме
 	Name       string      // название в самом начале
 	CRC        uint32      // crc после #
 	Params     []Parameter // параметры после crc
@@ -106,6 +106,7 @@ func ParseSchema(source string) (*Schema, error) {
 		if isFunctions {
 			methods = append(methods, Method{
 				Name:       def.Name,
+				Comment:    constructorComment,
 				CRC:        def.CRC,
 				Parameters: def.Params,
 				Response: MethodResponse{

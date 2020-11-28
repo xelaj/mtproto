@@ -18,7 +18,7 @@ func BenchmarkEncoder(b *testing.B) {
 			Dark:   true,
 			Format: "abc",
 			Theme: &telegram.InputThemeObj{
-				Id:         123,
+				ID:         123,
 				AccessHash: 321,
 			},
 		})

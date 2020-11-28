@@ -1,14 +1,20 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package objects
 
 import (
 	"reflect"
 
 	"github.com/pkg/errors"
+
 	"github.com/xelaj/mtproto/encoding/tl"
 )
 
 type requester interface {
-	MakeRequest(tl.Object) (tl.Object, error)
+	MakeRequest(tl.Object) (interface{}, error)
 }
 
 type ReqPQParams struct {
@@ -16,7 +22,7 @@ type ReqPQParams struct {
 }
 
 func (*ReqPQParams) CRC() uint32 {
-	return 0x60469778
+	return 0x60469778 //nolint:gomnd not magic
 }
 
 func ReqPQ(m requester, nonce *tl.Int128) (*ResPQ, error) {
@@ -33,7 +39,6 @@ func ReqPQ(m requester, nonce *tl.Int128) (*ResPQ, error) {
 	return resp, nil
 }
 
-
 type ReqDHParamsParams struct {
 	Nonce                *tl.Int128
 	ServerNonce          *tl.Int128
@@ -44,10 +49,13 @@ type ReqDHParamsParams struct {
 }
 
 func (*ReqDHParamsParams) CRC() uint32 {
-	return 0xd712e4be
+	return 0xd712e4be //nolint:gomnd not magic
 }
 
-func ReqDHParams(m requester, nonce, serverNonce *tl.Int128, p, q []byte, publicKeyFingerprint int64, encryptedData []byte) (ServerDHParams, error) {
+func ReqDHParams(
+	m requester,
+	nonce, serverNonce *tl.Int128, p, q []byte, publicKeyFingerprint int64, encryptedData []byte,
+) (ServerDHParams, error) {
 	data, err := m.MakeRequest(&ReqDHParamsParams{
 		Nonce:                nonce,
 		ServerNonce:          serverNonce,
@@ -75,10 +83,10 @@ type SetClientDHParamsParams struct {
 }
 
 func (*SetClientDHParamsParams) CRC() uint32 {
-	return 0xf5045f1f
+	return 0xf5045f1f //nolint:gomnd not magic
 }
 
-func SetClientDHParams(m requester,  nonce, serverNonce *tl.Int128, encryptedData []byte) (SetClientDHParamsAnswer, error) {
+func SetClientDHParams(m requester, nonce, serverNonce *tl.Int128, encryptedData []byte) (SetClientDHParamsAnswer, error) {
 	data, err := m.MakeRequest(&SetClientDHParamsParams{
 		Nonce:         nonce,
 		ServerNonce:   serverNonce,
@@ -104,7 +112,7 @@ type PingParams struct {
 }
 
 func (*PingParams) CRC() uint32 {
-	return 0x7abe77ec
+	return 0x7abe77ec //nolint:gomnd not magic
 }
 
 func Ping(m requester, pingID int64) (*Pong, error) {
@@ -135,5 +143,3 @@ func Ping(m requester, pingID int64) (*Pong, error) {
 // destroy_session#e7512126 session_id:long = DestroySessionRes;
 
 // http_wait#9299359f max_delay:int wait_after:int max_wait:int = HttpWait;
-
-

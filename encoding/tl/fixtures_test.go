@@ -240,4 +240,3 @@ type ResPQ struct {
 func (*ResPQ) CRC() uint32 {
 	return 0x05162463
 }
-

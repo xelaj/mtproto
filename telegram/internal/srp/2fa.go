@@ -1,8 +1,13 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package srp
 
 //! WARNING: if you want to understand this algorithm, go to https://core.telegram.org/api/srp, and try to
 //  this code on right side, and algorith description on left side. Then, try to search via Cmd+F func
-//  descriptions in algo descritpion. Then bless your god and drink few whiskey. As far as this way i can help
+//  descriptions in algo descriptions. Then bless your god and drink few whiskey. As far as this way i can help
 //  you to understand this secure-like shit created by telegram developers.
 
 import (

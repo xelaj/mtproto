@@ -1,3 +1,8 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package messages_test
 
 import (
@@ -6,6 +11,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/xelaj/go-dry"
+
 	. "github.com/xelaj/mtproto/internal/mtproto/messages"
 )
 
@@ -46,13 +52,13 @@ var client = &DummyClient{
 func TestSerializeUnencryptedMessage(t *testing.T) {
 	tests := []struct {
 		name    string
-		msg     *UnencryptedMessage
+		msg     *Unencrypted
 		want    []byte
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "usualMessage",
-			msg: &UnencryptedMessage{
+			msg: &Unencrypted{
 				Msg:   []byte("hello mtproto messages!"),
 				MsgID: 123,
 			}, //         |   authKeyHash||    msgID     ||mlen ||rest of data                 >>
@@ -79,14 +85,14 @@ func TestSerializeUnencryptedMessage(t *testing.T) {
 func TestSerializeEncryptedMessage(t *testing.T) {
 	tests := []struct {
 		name    string
-		msg     *EncryptedMessage
+		msg     *Encrypted
 		ack     bool
 		want    []byte
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "usualMessage",
-			msg: &EncryptedMessage{
+			msg: &Encrypted{
 				Msg:   []byte("hello mtproto messages!"),
 				MsgID: 123,
 			},
@@ -113,7 +119,6 @@ func TestSerializeEncryptedMessage(t *testing.T) {
 
 			// TODO: тоже не работает
 			//pp.Println(DeserializeEncryptedMessage(got, client.GetAuthKey()))
-
 		})
 	}
 }

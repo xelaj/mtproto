@@ -1,3 +1,8 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package mtproto
 
 import (
@@ -6,9 +11,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/xelaj/go-dry"
-
 	"github.com/tj/assert"
+	"github.com/xelaj/go-dry"
 )
 
 func TestMTProto_SaveSession(t *testing.T) {
@@ -17,7 +21,7 @@ func TestMTProto_SaveSession(t *testing.T) {
 
 	m := &MTProto{
 		authKey:       []byte("some auth key"),
-		authKeyHash:   []byte("oooooh that's definetly a key hash!"),
+		authKeyHash:   []byte("oooooh that's definitely a key hash!"),
 		serverSalt:    0,
 		addr:          "1337.228.1488.0",
 		tokensStorage: storePath,
@@ -32,7 +36,6 @@ func TestMTProto_SaveSession(t *testing.T) {
 
 	assert.Equal(t, `{"key":"c29tZSBhdXRoIGtleQ==","hash":"b29vb29oIHRoYXQncyBkZWZpbmV0bHkgYSBrZXkgaGFzaCE="`+
 		`,"salt":"AAAAAAAAAAA=","hostname":"1337.228.1488.0"}`, string(data))
-
 }
 
 func TestMTProto_LoadSession(t *testing.T) {
@@ -51,7 +54,7 @@ func TestMTProto_LoadSession(t *testing.T) {
 
 	assert.Equal(t, &MTProto{
 		authKey:       []byte("some auth key"),
-		authKeyHash:   []byte("oooooh that's definetly a key hash!"),
+		authKeyHash:   []byte("oooooh that's definitely a key hash!"),
 		serverSalt:    0,
 		addr:          "1337.228.1488.0",
 		tokensStorage: storePath,

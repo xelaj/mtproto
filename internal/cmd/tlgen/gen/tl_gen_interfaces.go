@@ -11,35 +11,27 @@ func (g *Generator) generateInterfaces(f *jen.File) {
 	for key := range g.schema.Types {
 		keys = append(keys, key)
 	}
-
 	sort.Strings(keys)
 
 	for _, i := range keys {
+		f.Add(jen.Type().Id(goify(i, true)).Interface(
+			jen.Qual(tlPackagePath, "Object"),
+			jen.Id("Implements"+goify(i, true)).Params(),
+		))
+
 		structs := g.schema.Types[i]
 
-		iface := jen.Type().Id(g.goify(i)).Interface(
-			jen.Qual("github.com/xelaj/mtproto/encoding/tl", "Object"),
-			jen.Id("Implements"+g.goify(i)).Params(),
-		)
-		f.Add(
-			iface,
-			jen.Line(),
-		)
+		sort.Slice(structs, func(i, j int) bool {
+			return structs[i].Name < structs[j].Name
+		})
 
-		for _, _struct := range structs {
-			implFunc := jen.Func().Params(jen.Id("*" + g.goify(_struct.Name))).Id("Implements" + g.goify(i)).Params().Block()
+		for _, _type := range structs {
+			if goify(_type.Name, true) == goify(i, true) {
+				_type.Name += "Obj"
+			}
 
-			f.Add(
-				g.generateStruct(_struct),
-				jen.Line(),
-				jen.Line(),
-				createCrcFunc("*"+g.goify(_struct.Name), _struct.CRC),
-				jen.Line(),
-				jen.Line(),
-				implFunc,
-				jen.Line(),
-				jen.Line(),
-			)
+			f.Add(g.generateStructTypeAndMethods(_type, []string{goify(i, true)}))
+			f.Line()
 		}
 	}
 }

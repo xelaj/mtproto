@@ -10,6 +10,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/xelaj/go-dry"
+
 	"github.com/xelaj/mtproto/internal/mtproto/objects"
 )
 
@@ -81,7 +82,7 @@ func TryExpandError(errStr string) (nativeErrorName string, additionalData inter
 	nativeErrorName = choosedPrefixSuffix.prefix + "X" + choosedPrefixSuffix.suffix
 	trimmedData := strings.TrimSuffix(strings.TrimPrefix(errStr, choosedPrefixSuffix.prefix), choosedPrefixSuffix.suffix)
 
-	switch v := choosedPrefixSuffix.kind; v {
+	switch v := choosedPrefixSuffix.kind; v { //nolint:exhaustive others will panic
 	case reflect.Int:
 		var err error
 		additionalData, err = strconv.Atoi(trimmedData)

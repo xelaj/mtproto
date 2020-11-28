@@ -1,46 +1,7 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-TEMPORARY DELETED!!!
-it will be restore
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
 
 // this is ALL helpful unoficial telegram api methods.
 
@@ -68,14 +29,12 @@ func (c *Client) GetChannelInfoByInviteLink(hashOrLink string) (*ChannelFull, er
 	if !ok {
 		return nil, errors.New("not a channel")
 	}
-	id := channelSimpleData.Id
+	id := channelSimpleData.ID
 	hash := channelSimpleData.AccessHash
 
-	data, err := c.ChannelsGetFullChannel(&ChannelsGetFullChannelParams{
-		Channel: InputChannel(&InputChannelObj{
-			ChannelId:  id,
-			AccessHash: hash,
-		}),
+	data, err := c.ChannelsGetFullChannel(&InputChannelObj{
+		ChannelID:  id,
+		AccessHash: hash,
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "retrieving full channel info")
@@ -100,7 +59,7 @@ func (c *Client) GetChatInfoByHashLink(hashOrLink string) (Chat, error) {
 		return nil, errors.New("'" + hash + "': not base64 hash")
 	}
 
-	resolved, err := c.MessagesCheckChatInvite(&MessagesCheckChatInviteParams{Hash: hash})
+	resolved, err := c.MessagesCheckChatInvite(hash)
 	if err != nil {
 		return nil, errors.Wrap(err, "retrieving data by invite link")
 	}
@@ -116,22 +75,12 @@ func (c *Client) GetChatInfoByHashLink(hashOrLink string) (Chat, error) {
 }
 
 func (c *Client) GetPossibleAllParticipantsOfGroup(ch InputChannel) ([]int, error) {
-	resp100, err := c.ChannelsGetParticipants(&ChannelsGetParticipantsParams{
-		Channel: ch,
-		Filter:  ChannelParticipantsFilter(&ChannelParticipantsRecent{}),
-		Limit:   100,
-		Offset:  0,
-	})
+	resp100, err := c.ChannelsGetParticipants(ch, ChannelParticipantsFilter(&ChannelParticipantsRecent{}), 100, 0, 0)
 	if err != nil {
 		return nil, errors.Wrap(err, "getting 0-100 recent users")
 	}
 	users100 := resp100.(*ChannelsChannelParticipantsObj).Participants
-	resp200, err := c.ChannelsGetParticipants(&ChannelsGetParticipantsParams{
-		Channel: ch,
-		Filter:  ChannelParticipantsFilter(&ChannelParticipantsRecent{}),
-		Limit:   100,
-		Offset:  100,
-	})
+	resp200, err := c.ChannelsGetParticipants(ch, ChannelParticipantsFilter(&ChannelParticipantsRecent{}), 100, 100, 0)
 	if err != nil {
 		return nil, errors.Wrap(err, "getting 100-200 recent users")
 	}
@@ -141,11 +90,11 @@ func (c *Client) GetPossibleAllParticipantsOfGroup(ch InputChannel) ([]int, erro
 	for _, participant := range append(users100, users200...) {
 		switch user := participant.(type) {
 		case *ChannelParticipantObj:
-			idsStore[int(user.UserId)] = struct{}{}
+			idsStore[int(user.UserID)] = struct{}{}
 		case *ChannelParticipantAdmin:
-			idsStore[int(user.UserId)] = struct{}{}
+			idsStore[int(user.UserID)] = struct{}{}
 		case *ChannelParticipantCreator:
-			idsStore[int(user.UserId)] = struct{}{}
+			idsStore[int(user.UserID)] = struct{}{}
 		default:
 			pp.Println(user)
 			panic("что?")
@@ -182,12 +131,7 @@ func getParticipants(c *Client, ch InputChannel, lastQuery string) (map[int]stru
 		filter := ChannelParticipantsFilter(&ChannelParticipantsSearch{Q: query})
 
 		// начинаем с 100-200, что бы проверить, может нам нужно дополнительный символ вставлять
-		resp200, err := c.ChannelsGetParticipants(&ChannelsGetParticipantsParams{
-			Channel: ch,
-			Filter:  filter,
-			Limit:   100,
-			Offset:  100,
-		})
+		resp200, err := c.ChannelsGetParticipants(ch, filter, 100, 100, 0)
 		if err != nil {
 			return nil, errors.Wrap(err, "getting 100-200 users with query: '"+query+"'")
 		}
@@ -203,11 +147,7 @@ func getParticipants(c *Client, ch InputChannel, lastQuery string) (map[int]stru
 			continue
 		}
 
-		resp100, err := c.ChannelsGetParticipants(&ChannelsGetParticipantsParams{
-			Channel: ch,
-			Filter:  filter,
-			Limit:   100,
-		})
+		resp100, err := c.ChannelsGetParticipants(ch, filter, 0, 100, 0)
 		if err != nil {
 			return nil, errors.Wrap(err, "getting 0-100 users with query: '"+query+"'")
 		}
@@ -216,11 +156,11 @@ func getParticipants(c *Client, ch InputChannel, lastQuery string) (map[int]stru
 		for _, participant := range append(users100, users200...) {
 			switch user := participant.(type) {
 			case *ChannelParticipantObj:
-				idsStore[int(user.UserId)] = struct{}{}
+				idsStore[int(user.UserID)] = struct{}{}
 			case *ChannelParticipantAdmin:
-				idsStore[int(user.UserId)] = struct{}{}
+				idsStore[int(user.UserID)] = struct{}{}
 			case *ChannelParticipantCreator:
-				idsStore[int(user.UserId)] = struct{}{}
+				idsStore[int(user.UserID)] = struct{}{}
 			default:
 				pp.Println(user)
 				panic("что?")
@@ -232,7 +172,7 @@ func getParticipants(c *Client, ch InputChannel, lastQuery string) (map[int]stru
 }
 
 func (c *Client) GetChatByID(chatID int) (Chat, error) {
-	resp, err := c.MessagesGetAllChats(&MessagesGetAllChatsParams{ExceptIds: []int32{}})
+	resp, err := c.MessagesGetAllChats([]int32{})
 	if err != nil {
 		return nil, errors.Wrap(err, "getting all chats")
 	}
@@ -240,11 +180,11 @@ func (c *Client) GetChatByID(chatID int) (Chat, error) {
 	for _, chat := range chats.Chats {
 		switch c := chat.(type) {
 		case *ChatObj:
-			if int(c.Id) == chatID {
+			if int(c.ID) == chatID {
 				return c, nil
 			}
 		case *Channel:
-			if -1*(int(c.Id)+(1000000000000)) == chatID { // -100<channelID, specific for bots>
+			if -1*(int(c.ID)+(1000000000000)) == chatID { // -100<channelID, specific for bots>
 				return c, nil
 			}
 		default:

@@ -21,5 +21,5 @@ func main() {
 	})
 	dry.PanicIfErr(err)
 
-	pp.Println(client.MessagesGetAllChats(&telegram.MessagesGetAllChatsParams{ExceptIds:[]int32{}}))
+	pp.Println(client.MessagesGetAllChats([]int32{}))
 }

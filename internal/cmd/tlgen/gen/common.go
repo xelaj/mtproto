@@ -2,86 +2,11 @@ package gen
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/dave/jennifer/jen"
-	"github.com/iancoleman/strcase"
-	"github.com/xelaj/mtproto/cmd/tlgen/tlparser"
+	
+	"github.com/xelaj/mtproto/internal/cmd/tlgen/tlparser"
 )
-
-func (g *Generator) generateStruct(str tlparser.Object) *jen.Statement {
-	fields := make([]jen.Code, 0, len(str.Parameters))
-
-	for _, field := range str.Parameters {
-		name := strcase.ToCamel(field.Name)
-		typ := field.Type
-		valueInsideFlag := false
-
-		if name == "Flags" && typ == "bitflags" {
-			continue
-		}
-
-		f := jen.Id(name)
-		if field.IsVector {
-			f = f.Index()
-		}
-
-		switch typ {
-		case "Bool":
-			f = f.Bool()
-		case "long":
-			f = f.Int64()
-		case "double":
-			f = f.Float64()
-		case "int":
-			f = f.Int32()
-		case "string":
-			f = f.String()
-		case "bytes":
-			f = f.Index().Byte()
-		case "bitflags":
-			f = f.Struct().Comment("flags param position")
-		case "true":
-			f = f.Bool()
-			//! ИСКЛЮЧЕНИЕ БЛЯТЬ! ИСКЛЮЧЕНИЕ!!!
-			//! если в опциональном флаге указан true, то это значение true уходит в битфлаги и его типа десериализовать не надо!!! ебать!!! ЕБАТЬ!!!
-			valueInsideFlag = true
-		default:
-			if _, ok := g.schema.Enums[typ]; ok {
-				f = f.Id(g.goify(typ))
-				break
-			}
-			if _, ok := g.schema.Types[typ]; ok {
-				f = f.Id(g.goify(typ))
-				break
-			}
-			if _, ok := g.schema.SingleInterfaceCanonical[typ]; ok {
-				f = f.Id("*" + g.goify(typ))
-				break
-			}
-
-			//pp.Fprintln(os.Stderr, g.schema)
-			panic("пробовали обработать '" + field.Type + "'")
-		}
-
-		tags := map[string]string{}
-		if field.IsOptional {
-			tags["tl"] = "flag:" + strconv.Itoa(field.BitToTrigger)
-			if valueInsideFlag {
-				tags["tl"] += ",encoded_in_bitflags"
-			}
-		}
-
-		f.Tag(tags)
-		fields = append(fields, f)
-	}
-
-	structName := g.goify(str.Name)
-
-	return jen.Type().Id(structName).Struct(
-		fields...,
-	)
-}
 
 func (g *Generator) generateMethodCallerFunc(method tlparser.Method) *jen.Statement {
 	resp := createParamsStructFromMethod(method)
@@ -91,7 +16,7 @@ func (g *Generator) generateMethodCallerFunc(method tlparser.Method) *jen.Statem
 	}
 
 	funcParameters := make([]jen.Code, 0)
-	methodName := g.goify(method.Name)
+	methodName := goify(method.Name, true)
 	typeName := methodName + "Params"
 
 	argsAsSingleItem := false
@@ -110,7 +35,7 @@ func (g *Generator) generateMethodCallerFunc(method tlparser.Method) *jen.Statem
 		requestStruct = jen.Id("params")
 	}
 
-	assertedType := g.goify(method.Response.Type)
+	assertedType := goify(method.Response.Type, true)
 	//firstErrorReturn := jen.Code(jen.Nil())
 	if assertedType == "Bool" {
 		assertedType = "bool"

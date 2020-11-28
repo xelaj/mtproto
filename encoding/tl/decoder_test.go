@@ -9,9 +9,9 @@ import (
 	"testing"
 
 	"github.com/k0kubun/pp"
-	"github.com/xelaj/go-dry"
-
 	"github.com/stretchr/testify/assert"
+	"github.com/xelaj/go-dry"
+	
 	"github.com/xelaj/mtproto/encoding/tl"
 )
 

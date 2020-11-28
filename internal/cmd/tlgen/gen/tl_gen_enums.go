@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"fmt"
 	"sort"
 
 	"github.com/dave/jennifer/jen"
@@ -29,7 +30,7 @@ func (g *Generator) generateEnumDefinitions(file *jen.File) {
 func (g *Generator) generateSpecificEnum(enumType string, enumValues []enum) []jen.Code {
 	total := make([]jen.Code, 0)
 
-	typeID := g.goify(enumType)
+	typeID := goify(enumType, true)
 
 	enumDef := jen.Type().Id(typeID).Uint32()
 	total = append(total, enumDef, jen.Line())
@@ -37,10 +38,10 @@ func (g *Generator) generateSpecificEnum(enumType string, enumValues []enum) []j
 	opc := make([]jen.Code, len(enumValues))
 	cases := make([]jen.Code, len(enumValues))
 	for i, id := range enumValues {
-		name := g.goify(id.Name)
+		name := goify(id.Name, true)
 
-		opc[i] = jen.Id(name).Id(typeID).Op("=").Lit(int(id.CRC))
-		cases[i] = jen.Case(jen.Id(typeID).Call(jen.Lit(int(id.CRC)))).Block(jen.Return(jen.Lit(id.Name)))
+		opc[i] = jen.Id(name).Id(typeID).Op("=").Id(fmt.Sprintf("%#v", id.CRC))
+		cases[i] = jen.Case(jen.Id(typeID).Call(jen.Id(fmt.Sprintf("%#v", id.CRC)))).Block(jen.Return(jen.Lit(id.Name)))
 	}
 
 	total = append(total, jen.Const().Defs(opc...), jen.Line())

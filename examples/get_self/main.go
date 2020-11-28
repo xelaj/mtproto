@@ -21,5 +21,5 @@ func main() {
 	})
 	dry.PanicIfErr(err)
 
-	pp.Println(client.ContactsResolveUsername(&telegram.ContactsResolveUsernameParams{Username: "username"}))
+	pp.Println(client.ContactsResolveUsername("username"))
 }

@@ -1,3 +1,8 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package mtproto
 
 import (
@@ -9,7 +14,6 @@ import (
 	"time"
 
 	"github.com/k0kubun/pp"
-
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
@@ -181,14 +185,13 @@ func (m *MTProto) CreateConnection() error {
 // отправить запрос
 func (m *MTProto) makeRequest(data tl.Object) (tl.Object, error) {
 	resp, err := m.sendPacketNew(data)
-	if err != nil {
-		if _, ok := err.(*errorSessionConfigsChanged); ok {
-			// если пришел ответ типа badServerSalt, то отправляем данные заново
-			return m.makeRequest(data)
-		} else {
-			return nil, errors.Wrap(err, "sending message")
-		}
+	if _, ok := err.(*errorSessionConfigsChanged); ok {
+		// если пришел ответ типа badServerSalt, то отправляем данные заново
+		return m.makeRequest(data)
+	} else if err != nil {
+		return nil, errors.Wrap(err, "sending message")
 	}
+
 	response := <-resp
 
 	if e, ok := response.(*objects.RpcError); ok {
@@ -228,7 +231,7 @@ func (m *MTProto) Disconnect() error {
 // нужно просто запустить
 func (m *MTProto) startPinging(ctx context.Context) {
 	m.routineswg.Add(1)
-	ticker := time.Tick(60 * time.Second)
+	ticker := time.Tick(time.Minute)
 	go func() {
 		defer m.recoverGoroutine()
 		for {
@@ -237,7 +240,7 @@ func (m *MTProto) startPinging(ctx context.Context) {
 				m.routineswg.Done()
 				return
 			case <-ticker:
-				_, err := m.ping(0xCADACADA)
+				_, err := m.ping(0xCADACADA) //nolint:gomnd not magic
 				if err != nil {
 					if m.Warnings != nil {
 						m.Warnings <- errors.Wrap(err, "ping unsuccsesful")
@@ -267,7 +270,6 @@ func (m *MTProto) startReadingResponses(ctx context.Context) {
 				if err != nil {
 					m.Warnings <- errors.Wrap(err, "decoding received data")
 				}
-
 				if m.serviceModeActivated {
 					// сервисные сообщения ГАРАНТИРОВАННО в теле содержат TL.
 					obj, err := tl.DecodeUnknownObject(response.GetMsg())
@@ -277,7 +279,7 @@ func (m *MTProto) startReadingResponses(ctx context.Context) {
 						m.serviceChannel <- obj
 					}
 				} else {
-					err = m.processResponse(int(m.msgId), int(m.seqNo), response)
+					err = m.processResponse(response)
 					if err != nil {
 						m.Warnings <- errors.Wrap(err, "processing response")
 					}
@@ -287,17 +289,16 @@ func (m *MTProto) startReadingResponses(ctx context.Context) {
 	}()
 }
 
-func (m *MTProto) processResponse(msgId, seqNo int, msg messages.Common) error {
+func (m *MTProto) processResponse(msg messages.Common) error {
 	data, err := tl.DecodeUnknownObject(msg.GetMsg())
+	pp.Println(data, err)
 	if err != nil {
 		return errors.Wrap(err, "unmarshaling response")
 	}
-
-	pp.Println(reflect.TypeOf(data).String())
 	switch message := data.(type) {
 	case *objects.MessageContainer:
 		for _, v := range *message {
-			err := m.processResponse(int(v.MsgID), int(v.SeqNo), v)
+			err := m.processResponse(v)
 			if err != nil {
 				return errors.Wrap(err, "processing item in container")
 			}
@@ -328,7 +329,7 @@ func (m *MTProto) processResponse(msgId, seqNo int, msg messages.Common) error {
 		// игнорим, пришло и пришло, че бубнить то
 
 	case *objects.MsgsAck:
-		for _, id := range message.MsgIds {
+		for _, id := range message.MsgIDs {
 			m.gotAck(id)
 		}
 
@@ -362,8 +363,8 @@ func (m *MTProto) processResponse(msgId, seqNo int, msg messages.Common) error {
 		}
 	}
 
-	if (seqNo & 1) != 0 {
-		_, err := m.MakeRequest(&objects.MsgsAck{MsgIds: []int64{int64(msgId)}})
+	if (msg.GetSeqNo() & 1) != 0 {
+		_, err := m.MakeRequest(&objects.MsgsAck{MsgIDs: []int64{int64(msg.GetMsgID())}})
 		if err != nil {
 			return errors.Wrap(err, "sending ack")
 		}

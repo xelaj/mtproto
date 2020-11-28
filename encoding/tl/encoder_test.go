@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
 	"github.com/xelaj/mtproto/encoding/tl"
 )
 
@@ -95,4 +96,3 @@ func TestEncode(t *testing.T) {
 		})
 	}
 }
-

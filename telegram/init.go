@@ -1,12 +1,10 @@
-// init.go нужен для того что бы иметь один единственный инит в пакете, и при этом не заставляет его генерироваться через generate-tl-files
-package telegram
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
 
-// "github.com/xelaj/mtproto/serialize"
+package telegram
 
 const (
 	ApiVersion = 121
 )
-
-func init() {
-	//serialize.AddObjectConstructor(GenerateStructByConstructor)
-}

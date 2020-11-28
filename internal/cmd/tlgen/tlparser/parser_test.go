@@ -10,7 +10,7 @@ import (
 )
 
 func LoadTestFile(file string) string {
-	_, filename, _, _ := runtime.Caller(0) // nolint: dogsled cause we don't need another stuff
+	_, filename, _, _ := runtime.Caller(0) // nolint:dogsled cause we don't need another stuff
 	f, err := ioutil.ReadFile(filepath.Join(filepath.Dir(filename), "testdata", file))
 	if err != nil {
 		panic(err)

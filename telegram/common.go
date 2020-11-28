@@ -1,3 +1,8 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package telegram
 
 import (
@@ -105,10 +110,9 @@ func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not 
 			continue
 		}
 
-		dcList[int(dc.Id)] = dc.IpAddress
+		dcList[int(dc.ID)] = dc.IpAddress
 	}
 	client.SetDCStorages(dcList)
-
 	return client, nil
 }
 

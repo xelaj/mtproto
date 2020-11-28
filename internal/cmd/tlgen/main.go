@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/xelaj/mtproto/cmd/tlgen/gen"
-	"github.com/xelaj/mtproto/cmd/tlgen/tlparser"
+	"github.com/xelaj/mtproto/internal/cmd/tlgen/gen"
+	"github.com/xelaj/mtproto/internal/cmd/tlgen/tlparser"
 )
 
 const helpMsg = `tlgen
@@ -17,6 +17,11 @@ GENERATION, DO NOT GENERATE FILES BY HAND!
 
 No, seriously. Don't. go generate is amazing. You
 are amazing too, but lesser 😏
+`
+const license = `Copyright (c) 2020 KHS Films
+
+This file is a part of mtproto package.
+See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
 `
 
 func main() {
@@ -42,7 +47,7 @@ func root(tlfile, outdir string) error {
 		return fmt.Errorf("parse schema file: %w", err)
 	}
 
-	g, err := gen.NewGenerator(schema, outdir)
+	g, err := gen.NewGenerator(schema, license, outdir)
 	if err != nil {
 		return err
 	}

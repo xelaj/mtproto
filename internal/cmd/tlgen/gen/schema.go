@@ -3,34 +3,39 @@ package gen
 import (
 	"strings"
 
-	"github.com/xelaj/mtproto/cmd/tlgen/tlparser"
+	"github.com/xelaj/mtproto/internal/cmd/tlgen/tlparser"
 )
 
+// для понимания как преобразовано название типа
+type goifiedName = string
+type nativeName = string
+
+// предполагаем, что мы пишем в файл данные через goify, поэтому тут все символы нативные
 type internalSchema struct {
-	Types                    map[string][]tlparser.Object
-	SingleInterfaceTypes     []tlparser.Object
-	SingleInterfaceCanonical map[string]string
-	Enums                    map[string][]enum
-	Methods                  []tlparser.Method
+	InterfaceCommnets    map[nativeName]string
+	Types                map[nativeName][]tlparser.Object
+	SingleInterfaceTypes []tlparser.Object
+	Enums                map[nativeName][]enum
+	Methods              []tlparser.Method
 }
 
 type enum struct {
-	Name string
+	Name nativeName
 	CRC  uint32
 }
 
-func createInternalSchema(schema *tlparser.Schema) (*internalSchema, error) {
-	ischem := &internalSchema{
-		Enums:                    make(map[string][]enum),
-		Types:                    make(map[string][]tlparser.Object),
-		SingleInterfaceTypes:     make([]tlparser.Object, 0),
-		SingleInterfaceCanonical: make(map[string]string),
-		Methods:                  make([]tlparser.Method, 0),
+func createInternalSchema(nativeSchema *tlparser.Schema) (*internalSchema, error) {
+	internalSchema := &internalSchema{
+		InterfaceCommnets:    make(map[string]string),
+		Enums:                make(map[string][]enum),
+		Types:                make(map[string][]tlparser.Object),
+		SingleInterfaceTypes: make([]tlparser.Object, 0),
+		Methods:              make([]tlparser.Method, 0),
 	}
 
 	// реверсим, т.к. все обозначается по интерфейсам, а на конструкторы насрать видимо.
 	reversedObjects := make(map[string][]tlparser.Object)
-	for _, obj := range schema.Objects {
+	for _, obj := range nativeSchema.Objects {
 		if reversedObjects[obj.Interface] == nil {
 			reversedObjects[obj.Interface] = make([]tlparser.Object, 0)
 		}
@@ -39,6 +44,14 @@ func createInternalSchema(schema *tlparser.Schema) (*internalSchema, error) {
 	}
 
 	for interfaceName, objects := range reversedObjects {
+		// ну тогда это просто объект с интерфейсом получается, раз не енум и не одиночный объект
+		for _, obj := range objects {
+			// некоторые конструкторы абсолютно идентичны типу по названию
+			if strings.ToLower(obj.Name) == strings.ToLower(obj.Interface) {
+				obj.Name += "Obj"
+			}
+		}
+
 		// может это енум?
 		if interfaceIsEnum(objects) {
 			enums := make([]enum, len(objects))
@@ -49,71 +62,56 @@ func createInternalSchema(schema *tlparser.Schema) (*internalSchema, error) {
 				}
 			}
 
-			ischem.Enums[interfaceName] = enums
+			internalSchema.Enums[interfaceName] = enums
 			continue
 		}
 
 		// а может конкретная структура?
-		// если у нас в интерфейсе только одна структура, то считаем ее уникальной, и пихаем ее как сингл-тип (потому что зачем лишний интерфейс делать)
+		// если у нас в интерфейсе только одна структура, то считаем ее уникальной, и пихаем ее как сингл-тип
+		// (потому что зачем лишний интерфейс делать)
 		//? Зачем нужны типы с единственным конструктором:
-		//? есть такое предположение: возможно конструкторы разбросаны по типам, аггрегируя их (в tl схеме телеги на 2000 с хреном строк всего 300+ интерфейсов)
-		//? ВОЗМОЖНО (не уверен), сервер проверяет на типизацию так: он сначала проходится по типам (интерфейсам), которых не так много, и в каждом типе проверяет, соблюдает ли
-		//? конструктор этот тип (интерфейс), если нет, то идет дальше. ВОЗМОЖНО это сделано чисто для оптимизации, хуй его знает. Но другого объяснения, почему в методы
-		//? отдают вот прям только интерфейсы и ничего больше, у меня вариантов тупо нет
+		//? есть такое предположение: возможно конструкторы разбросаны по типам, аггрегируя их (в tl схеме
+		//? телеги на 2000 с хреном строк всего 300+ интерфейсов) ВОЗМОЖНО (не уверен), сервер проверяет на
+		//? типизацию так: он сначала проходится по типам (интерфейсам), которых не так много, и в каждом типе
+		//? проверяет, соблюдает ли конструктор этот тип (интерфейс), если нет, то идет дальше. ВОЗМОЖНО это
+		//? сделано чисто для оптимизации, хуй его знает. Но другого объяснения, почему в методы отдают вот
+		//? прям только интерфейсы и ничего больше, у меня вариантов тупо нет
 		if len(objects) == 1 {
-			ischem.SingleInterfaceTypes = append(ischem.SingleInterfaceTypes, objects[0])
-			ischem.SingleInterfaceCanonical[interfaceName] = objects[0].Name
-			delete(reversedObjects, interfaceName)
+			internalSchema.SingleInterfaceTypes = append(internalSchema.SingleInterfaceTypes, objects[0])
+			// delete(reversedObjects, interfaceName)
 			continue
 		}
 
-		// ну тогда это просто объект с интерфейсом получается
-		resultStructs := make([]tlparser.Object, len(objects))
-		for i, obj := range objects {
-			constructor := obj.Name
-			// некоторые конструкторы абсолютно идентичны типу
-			if strings.ToLower(constructor) == strings.ToLower(interfaceName) {
-				constructor += "Obj"
-			}
-
-			resultStructs[i] = tlparser.Object{
-				Name:       constructor,
-				CRC:        obj.CRC,
-				Parameters: obj.Parameters,
-				Interface:  obj.Interface,
-			}
-		}
-		ischem.Types[interfaceName] = resultStructs
+		internalSchema.Types[interfaceName] = objects
 	}
 
-	// погнали по методам
-	for _, method := range schema.Methods {
-		ischem.Methods = append(ischem.Methods, method)
-	}
-
-	return ischem, nil
+	internalSchema.Methods = nativeSchema.Methods
+	internalSchema.InterfaceCommnets = nativeSchema.TypeComments
+	return internalSchema, nil
 }
 
-func (g *Generator) getAllConstructors() (structs, enums map[uint32]string) {
-	structs = make(map[uint32]string)
+func (g *Generator) getAllConstructors() (structs, enums []goifiedName) {
+	structs, enums = make([]string, 0), make([]string, 0)
+
 	for _, items := range g.schema.Types {
 		for _, _struct := range items {
-			structs[_struct.CRC] = g.goify(_struct.Name)
+			t := goify(_struct.Name, true)
+			if goify(_struct.Name, true) == goify(_struct.Interface, true) {
+				t = goify(_struct.Name+"Obj", true)
+			}
+			structs = append(structs, t)
 		}
 	}
 	for _, _struct := range g.schema.SingleInterfaceTypes {
-		for k, v := range g.schema.SingleInterfaceCanonical {
-			if v == _struct.Name {
-				structs[_struct.CRC] = g.goify(k)
-			}
-		}
-
+		structs = append(structs, goify(_struct.Name, true))
+	}
+	for _, method := range g.schema.Methods {
+		structs = append(structs, goify(method.Name+"Params", true))
 	}
 
-	enums = make(map[uint32]string)
 	for _, items := range g.schema.Enums {
 		for _, enum := range items {
-			enums[enum.CRC] = g.goify(enum.Name)
+			enums = append(enums, goify(enum.Name, true))
 		}
 	}
 

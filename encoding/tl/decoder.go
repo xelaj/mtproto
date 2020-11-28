@@ -44,7 +44,6 @@ func DecodeUnknownObject(data []byte) (Object, error) {
 	}
 
 	return obj, nil
-
 }
 
 func (d *Decoder) decodeObject(o Object, ignoreCRC bool) {
@@ -115,6 +114,7 @@ func (d *Decoder) decodeObject(o Object, ignoreCRC bool) {
 		d.decodeValue(field)
 		if d.err != nil {
 			d.err = errors.Wrapf(d.err, "decode field '%s'", vtyp.Field(i).Name)
+			break
 		}
 	}
 }
@@ -123,13 +123,12 @@ func (d *Decoder) decodeValue(value reflect.Value) {
 	if d.err != nil {
 		return
 	}
-
 	if m, ok := value.Interface().(Unmarshaler); ok {
 		err := m.UnmarshalTL(d)
 		if err != nil {
 			d.err = err
-			return
 		}
+		return
 	}
 
 	val := d.decodeValueGeneral(value)

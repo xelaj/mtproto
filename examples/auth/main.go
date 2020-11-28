@@ -23,19 +23,19 @@ func main() {
 	// edit these params for you!
 	client, err := telegram.NewClient(telegram.ClientConfig{
 		// where to store session configuration. must be set
-		SessionFile: "/home/me/.local/var/lib/mtproto/session1.json",
+		SessionFile: "/home/r0ck3t/.local/var/lib/mtproto/session1.json",
 		// host address of mtproto server. Actually, it can'be mtproxy, not only official
 		ServerHost: "149.154.167.50:443",
 		// public keys file is patrh to file with public keys, which you must get from https://my.telelgram.org
-		PublicKeysFile: "/home/me/.local/var/lib/mtproto/tg_public_keys.pem",
+		PublicKeysFile: "/home/r0ck3t/.local/var/lib/mtproto/tg_public_keys.pem",
 		AppID:          94575,                              // app id, could be find at https://my.telegram.org
 		AppHash:        "a3406de8d171bb422bb6ddf3bbd800e2", // app hash, could be find at https://my.telegram.org
 	})
 	dry.PanicIfErr(err)
 
-	setCode, err := client.AuthSendCode(&telegram.AuthSendCodeParams{
+	setCode, err := client.AuthSendCode(
 		phoneNumber, 94575, "a3406de8d171bb422bb6ddf3bbd800e2", &telegram.CodeSettings{},
-	})
+	)
 	dry.PanicIfErr(err)
 	pp.Println(setCode)
 
@@ -43,11 +43,11 @@ func main() {
 	code, _ := bufio.NewReader(os.Stdin).ReadString('\n')
 	code = strings.ReplaceAll(code, "\n", "")
 
-	auth, err := client.AuthSignIn(&telegram.AuthSignInParams{
-		PhoneNumber:   phoneNumber,
-		PhoneCodeHash: setCode.PhoneCodeHash,
-		PhoneCode:     code,
-	})
+	auth, err := client.AuthSignIn(
+		phoneNumber,
+		setCode.PhoneCodeHash,
+		code,
+	)
 	if err == nil {
 		pp.Println(auth)
 
@@ -80,9 +80,7 @@ func main() {
 	inputCheck, err := telegram.GetInputCheckPassword(password, accountPassword)
 	dry.PanicIfErr(err)
 
-	auth, err = client.AuthCheckPassword(&telegram.AuthCheckPasswordParams{
-		Password: inputCheck,
-	})
+	auth, err = client.AuthCheckPassword(inputCheck)
 	dry.PanicIfErr(err)
 
 	pp.Println(auth)
