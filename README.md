@@ -192,12 +192,14 @@ Technically — yes. In practice — components don't require specific architect
 
 Please read [contributing guide](https://github.com/xelaj/mtproto/blob/master/docs/en_US/CONTRIBUTING.md) if you want to help. And the help is very necessary!
 
+**Don't want code?** Read [this](https://github.com/xelaj/mtproto/blob/master/docs/en_US/nocode_contributing.md) page! We love nocoders!
+
 ## TODO
 
 - [x] Basic MTProto implementation
 - [x] Implement all Methods for latest layer
 - [x] Make TL Encoder/Decoder
-- [ ] Get away from panics in parsing TL
+- [x] Get away from panics in parsing TL
 - [ ] Support MTProxy
 - [ ] Support socks5 as well
 - [ ] Multiple tests
