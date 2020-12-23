@@ -21,11 +21,27 @@ import (
 type Decoder struct {
 	r   io.Reader
 	err error
+
+	// see Decoder.ExpectTypesInInterface description
+	expectedTypes []reflect.Type
 }
 
 // NewDecoder returns a new decoder that reads from r.
 func NewDecoder(r io.Reader) *Decoder {
 	return &Decoder{r: r}
+}
+
+// ExpectTypesInInterface defines, how decoder must parse implicit objects.
+// how does expectedTypes works:
+// So, imagine: you want parse []int32, but also you can get []int64, or SomeCustomType, or even [][]bool.
+// How to deal it?
+// expectedTypes store your predictions (like "if you got unknown type, parse it as int32, not int64")
+// also, if you have predictions deeper than first unknown type, you can say decoder to use predicted vals
+//
+// So, next time, when you'll have strucre object with interface{} which expect contains []float64 or sort
+// of — use this feature via d.ExpectTypesInInterface()
+func (d *Decoder) ExpectTypesInInterface(types ...reflect.Type) {
+	d.expectedTypes = types
 }
 
 func (d *Decoder) read(buf []byte) {
@@ -140,19 +156,24 @@ func (d *Decoder) DumpWithoutRead() ([]byte, error) {
 }
 
 func (d *Decoder) PopVector(as reflect.Type) any {
+	return d.popVector(as, false)
+}
+
+func (d *Decoder) popVector(as reflect.Type, ignoreCRC bool) any {
 	if d.err != nil {
 		return nil
 	}
+	if !ignoreCRC {
+		crc := d.PopCRC()
+		if d.err != nil {
+			d.err = errors.Wrap(d.err, "read crc")
+			return nil
+		}
 
-	crc := d.PopCRC()
-	if d.err != nil {
-		d.err = errors.Wrap(d.err, "read crc")
-		return nil
-	}
-
-	if crc != CrcVector {
-		d.err = fmt.Errorf("not a vector: %#v, want: %#v", crc, CrcVector)
-		return nil
+		if crc != CrcVector {
+			d.err = fmt.Errorf("not a vector: 0x%08x, want: 0x%08x", crc, CrcVector)
+			return nil
+		}
 	}
 
 	size := d.PopUint()

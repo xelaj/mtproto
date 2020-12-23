@@ -17,6 +17,7 @@ import (
 	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
+	"github.com/xelaj/go-dry"
 )
 
 func (c *Client) GetChannelInfoByInviteLink(hashOrLink string) (*ChannelFull, error) {
@@ -171,6 +172,8 @@ func getParticipants(c *Client, ch InputChannel, lastQuery string) (map[int]stru
 	return idsStore, nil
 }
 
+// GetChatByID is searching in all user chats specific chat with input id
+// TODO: need to test
 func (c *Client) GetChatByID(chatID int) (Chat, error) {
 	resp, err := c.MessagesGetAllChats([]int32{})
 	if err != nil {
@@ -194,4 +197,99 @@ func (c *Client) GetChatByID(chatID int) (Chat, error) {
 	}
 
 	return nil, errs.NotFound("chatID", strconv.Itoa(chatID))
+}
+
+// returning all user ids in specific SUPERGROUP. Note that, SUPERGROUP IS NOT CHANNEL! Major difference in how
+// users list returning: in supergroup you aren't limited in offset of fetching users. But channel is
+// different: telegram forcely limit you in up to 200 users per single request (you can sort it by recently
+// joined, search query, etc.)
+func (c *Client) AllUsersInChat(chatID int) ([]int, error) {
+	chat, err := c.GetChatByID(chatID)
+	if err != nil {
+		return nil, errors.Wrap(err, "getting chat by id: "+strconv.Itoa(chatID))
+	}
+
+	channel, ok := chat.(*Channel)
+	if !ok {
+		return nil, errors.New("Not a channel")
+	}
+
+	inCh := InputChannel(&InputChannelObj{
+		ChannelID:  channel.ID,
+		AccessHash: channel.AccessHash,
+	})
+
+	res := make(map[int]struct{})
+	totalCount := 100 // at least 100
+	offset := 0
+	for offset < totalCount {
+		resp, err := c.ChannelsGetParticipants(
+			inCh,
+			ChannelParticipantsFilter(&ChannelParticipantsRecent{}),
+			100,
+			int32(offset),
+			0,
+		)
+		dry.PanicIfErr(err)
+		data := resp.(*ChannelsChannelParticipantsObj)
+		totalCount = int(data.Count)
+		for _, participant := range data.Participants {
+			switch user := participant.(type) {
+			// здесь хоть и параметр userId одинаковый, да вот объекты разные...
+			case *ChannelParticipantSelf:
+				res[int(user.UserID)] = struct{}{}
+			case *ChannelParticipantObj:
+				res[int(user.UserID)] = struct{}{}
+			case *ChannelParticipantAdmin:
+				res[int(user.UserID)] = struct{}{}
+			case *ChannelParticipantCreator:
+				res[int(user.UserID)] = struct{}{}
+			default:
+				pp.Println(user)
+				return nil, errors.New("found too specific object")
+			}
+		}
+
+		offset += 100
+		pp.Println(offset, totalCount)
+	}
+
+	total := make([]int, 0, len(res))
+	for k := range res {
+		total = append(total, k)
+	}
+
+	sort.Ints(total)
+
+	return total, nil
+}
+
+// returning all user ids in specific SUPERGROUP. Note that, SUPERGROUP IS NOT CHANNEL! Major difference in how
+// users list returning: in supergroup you aren't limited in offset of fetching users. But channel is
+// different: telegram forcely limit you in up to 200 users per single request (you can sort it by recently
+// joined, search query, etc.)
+//
+// This method is running too long for simple call, if channel is big, so call it inside goroutine with
+// callback.
+func (c *Client) AllUsersInChannel(channelID int) ([]int, error) {
+	chat, err := c.GetChatByID(channelID)
+	if err != nil {
+		return nil, errors.Wrap(err, "getting chat by id: "+strconv.Itoa(channelID))
+	}
+
+	channel, ok := chat.(*Channel)
+	if !ok {
+		return nil, errors.New("Not a channel")
+	}
+
+	inCh := InputChannel(&InputChannelObj{
+		ChannelID:  channel.ID,
+		AccessHash: channel.AccessHash,
+	})
+
+	ids, err := c.GetPossibleAllParticipantsOfGroup(inCh)
+	if err != nil {
+		return nil, errors.Wrap(err, "getting clients of chat")
+	}
+	return ids, nil
 }

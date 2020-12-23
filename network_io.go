@@ -9,6 +9,7 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
+	"reflect"
 	"strconv"
 	"time"
 
@@ -23,7 +24,7 @@ import (
 	"github.com/xelaj/mtproto/utils"
 )
 
-func (m *MTProto) sendPacketNew(request tl.Object) (chan tl.Object, error) {
+func (m *MTProto) sendPacketNew(request tl.Object, expectedTypes ...reflect.Type) (chan tl.Object, error) {
 	resp := make(chan tl.Object)
 	if m.serviceModeActivated {
 		resp = m.serviceChannel
@@ -56,8 +57,10 @@ func (m *MTProto) sendPacketNew(request tl.Object) (chan tl.Object, error) {
 
 		if !isNullableResponse(request) {
 			m.mutex.Lock()
-
 			m.responseChannels[msgID] = resp
+			if len(expectedTypes) > 0 {
+				m.expectedTypes[msgID] = expectedTypes
+			}
 			m.mutex.Unlock()
 		} else {
 			// ответов на TL_Ack, TL_Pong и пр. не требуется
@@ -104,6 +107,7 @@ func (m *MTProto) writeRPCResponse(msgID int, data tl.Object) error {
 	v <- data
 
 	delete(m.responseChannels, int64(msgID))
+	delete(m.expectedTypes, int64(msgID))
 	m.mutex.Unlock()
 	return nil
 }

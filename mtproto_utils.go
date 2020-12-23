@@ -7,7 +7,9 @@ package mtproto
 
 import (
 	"fmt"
+	"reflect"
 
+	"github.com/pkg/errors"
 	"github.com/xelaj/go-dry"
 
 	"github.com/xelaj/mtproto/encoding/tl"
@@ -66,6 +68,13 @@ func (m *MTProto) SetAuthKey(key []byte) {
 
 func (m *MTProto) MakeRequest(msg tl.Object) (interface{}, error) {
 	return m.makeRequest(msg)
+}
+
+func (m *MTProto) MakeRequestWithHintToDecoder(msg tl.Object, expectedTypes ...reflect.Type) (interface{}, error) {
+	if len(expectedTypes) == 0 {
+		return nil, errors.New("expected a few hints. If you don't need it, use m.MakeRequest")
+	}
+	return m.makeRequest(msg, expectedTypes...)
 }
 
 func (m *MTProto) recoverGoroutine() {

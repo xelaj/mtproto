@@ -31,8 +31,8 @@ func registerEnum(o Object) {
 
 func RegisterObjects(obs ...Object) {
 	for _, o := range obs {
-		if _, found := objectByCrc[o.CRC()]; found {
-			panic(fmt.Errorf("object with that crc already registered: %d", o.CRC()))
+		if val, found := objectByCrc[o.CRC()]; found {
+			panic(fmt.Errorf("object with that crc already registered as %v: 0x%08x", val.String(), o.CRC()))
 		}
 
 		registerObject(o)

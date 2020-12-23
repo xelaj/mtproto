@@ -115,22 +115,22 @@ func ParseSchema(source string) (*Schema, error) {
 				},
 			})
 			continue
-		}
+		} else {
+			// если мы спарсили объект
+			// тип после знака равенства это интерфейс
+			// и он не может быть вектором
+			if def.IsEqVector {
+				return nil, errors.New("type can't be a vector")
+			}
 
-		// если мы спарсили объект
-		// тип после знака равенства это интерфейс
-		// и он не может быть вектором
-		if def.IsEqVector {
-			return nil, errors.New("type can't be a vector")
+			objects = append(objects, Object{
+				Name:       def.Name,
+				Comment:    constructorComment,
+				CRC:        def.CRC,
+				Parameters: def.Params,
+				Interface:  def.EqType,
+			})
 		}
-
-		objects = append(objects, Object{
-			Name:       def.Name,
-			Comment:    constructorComment,
-			CRC:        def.CRC,
-			Parameters: def.Params,
-			Interface:  def.EqType,
-		})
 
 		if nextTypeComment != "" {
 			typeComments[def.EqType] = nextTypeComment

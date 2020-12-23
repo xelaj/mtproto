@@ -13,19 +13,19 @@ import (
 	"github.com/pkg/errors"
 )
 
-func Decode(data []byte, v any) error {
-	if v == nil {
+func Decode(data []byte, res any) error {
+	if res == nil {
 		return errors.New("can't unmarshal to nil value")
 	}
-	if reflect.TypeOf(v).Kind() != reflect.Ptr {
-		return fmt.Errorf("v value is not pointer as expected. got %v", reflect.TypeOf(v))
+	if reflect.TypeOf(res).Kind() != reflect.Ptr {
+		return fmt.Errorf("res value is not pointer as expected. got %v", reflect.TypeOf(res))
 	}
 
 	d := NewDecoder(bytes.NewReader(data))
 
-	d.decodeValue(reflect.ValueOf(v))
+	d.decodeValue(reflect.ValueOf(res))
 	if d.err != nil {
-		return errors.Wrapf(d.err, "decode %T", v)
+		return errors.Wrapf(d.err, "decode %T", res)
 	}
 
 	return nil
@@ -35,8 +35,14 @@ func Decode(data []byte, v any) error {
 // due to TL doesn't provide mechanism for understanding is message a int or string, you MUST guarantee, that
 // input stream DOES NOT contains any type WITHOUT its CRC code. So, strings, ints, floats, etc. CAN'T BE
 // automatically parsed.
-func DecodeUnknownObject(data []byte) (Object, error) {
+//
+// expectNextTypes is your predictions how decoder must parse objects hidden under interfaces.
+// See Decoder.ExpectTypesInInterface description
+func DecodeUnknownObject(data []byte, expectNextTypes ...reflect.Type) (Object, error) {
 	d := NewDecoder(bytes.NewReader(data))
+	if len(expectNextTypes) > 0 {
+		d.ExpectTypesInInterface(expectNextTypes...)
+	}
 
 	obj := d.decodeRegisteredObject()
 	if d.err != nil {
@@ -228,20 +234,53 @@ func (d *Decoder) decodeValueGeneral(value reflect.Value) interface{} {
 	return val
 }
 
+// decodeRegisteredObject пробует определить,
 func (d *Decoder) decodeRegisteredObject() Object {
 	crc := d.PopCRC()
 	if d.err != nil {
 		d.err = errors.Wrap(d.err, "read crc")
 	}
 
-	_typ, ok := objectByCrc[crc]
+	var _typ reflect.Type
+
+	// firstly, we are checking specific crc situations.
+	// See https://github.com/xelaj/mtproto/issues/51
+	switch crc {
+	case CrcVector:
+		if len(d.expectedTypes) == 0 {
+			d.err = &ErrMustParseSlicesExplicitly{}
+			return nil
+		}
+		_typ = d.expectedTypes[0]
+		d.expectedTypes = d.expectedTypes[1:]
+
+		res := d.popVector(_typ.Elem(), true)
+		if d.err != nil {
+			return nil
+		}
+
+		return &InterfacedObject{res}
+
+	case CrcFalse:
+		return &InterfacedObject{false}
+
+	case CrcTrue:
+		return &InterfacedObject{true}
+
+	case CrcNull:
+		return &InterfacedObject{nil}
+	}
+
+	// in other ways we're trying to get object from registred crcs
+	var ok bool
+	_typ, ok = objectByCrc[crc]
 	if !ok {
 		msg, err := d.DumpWithoutRead()
 		if err != nil {
 			return nil
 		}
 
-		d.err = ErrRegisteredObjectNotFound{
+		d.err = &ErrRegisteredObjectNotFound{
 			Crc:  crc,
 			Data: msg,
 		}

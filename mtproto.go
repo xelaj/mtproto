@@ -13,7 +13,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
@@ -50,6 +49,7 @@ type MTProto struct {
 
 	// каналы, которые ожидают ответа rpc. ответ записывается в канал и удаляется
 	responseChannels map[int64]chan tl.Object
+	expectedTypes    map[int64][]reflect.Type // uses for parcing bool values in rpc result for example
 
 	// идентификаторы сообщений, нужны что бы посылать и принимать сообщения.
 	seqNo int32
@@ -58,7 +58,7 @@ type MTProto struct {
 	// не знаю что это но как-то используется
 	lastSeqNo int32
 
-	// айдишники DC для КОНКРЕТНОГ Приложения и клиента. Может меняться, но фиксирована для
+	// айдишники DC для КОНКРЕТНОГО Приложения и клиента. Может меняться, но фиксирована для
 	// связки приложение+клиент
 	dclist map[int]string
 
@@ -108,6 +108,7 @@ func NewMTProto(c Config) (*MTProto, error) {
 	m.serviceChannel = make(chan tl.Object)
 	m.publicKey = c.PublicKey
 	m.responseChannels = make(map[int64]chan tl.Object)
+	m.expectedTypes = make(map[int64][]reflect.Type)
 	m.serverRequestHandlers = make([]customHandlerFunc, 0)
 	// копируем мапу, т.к. все таки дефолтный список нельзя менять, вдруг его использует несколько клиентов
 	m.SetDCStorages(defaultDCList)
@@ -183,29 +184,31 @@ func (m *MTProto) CreateConnection() error {
 }
 
 // отправить запрос
-func (m *MTProto) makeRequest(data tl.Object) (tl.Object, error) {
-	resp, err := m.sendPacketNew(data)
-	if _, ok := err.(*errorSessionConfigsChanged); ok {
-		// если пришел ответ типа badServerSalt, то отправляем данные заново
-		return m.makeRequest(data)
-	} else if err != nil {
+func (m *MTProto) makeRequest(data tl.Object, expectedTypes ...reflect.Type) (interface{}, error) {
+	resp, err := m.sendPacketNew(data, expectedTypes...)
+	if err != nil {
 		return nil, errors.Wrap(err, "sending message")
 	}
 
 	response := <-resp
 
-	if e, ok := response.(*objects.RpcError); ok {
-		realErr := RpcErrorToNative(e)
+	switch r := response.(type) {
+	case *objects.RpcError:
+		realErr := RpcErrorToNative(r)
 
 		err = m.tryToProcessErr(realErr.(*ErrResponseCode))
 		if err != nil {
 			return nil, err
 		}
 
-		return m.makeRequest(data)
+		return m.makeRequest(data, expectedTypes...)
+
+	case *errorSessionConfigsChanged:
+		return m.makeRequest(data, expectedTypes...)
+
 	}
 
-	return response, nil
+	return tl.UnwrapNativeTypes(response), nil
 }
 
 // Disconnect is closing current TCP connection and stopping all routines like pinging, reading etc.
@@ -290,8 +293,13 @@ func (m *MTProto) startReadingResponses(ctx context.Context) {
 }
 
 func (m *MTProto) processResponse(msg messages.Common) error {
-	data, err := tl.DecodeUnknownObject(msg.GetMsg())
-	pp.Println(data, err)
+	var data tl.Object
+	var err error
+	if et, ok := m.expectedTypes[int64(msg.GetMsgID())]; ok && len(et) > 0 {
+		data, err = tl.DecodeUnknownObject(msg.GetMsg(), et...)
+	} else {
+		data, err = tl.DecodeUnknownObject(msg.GetMsg())
+	}
 	if err != nil {
 		return errors.Wrap(err, "unmarshaling response")
 	}

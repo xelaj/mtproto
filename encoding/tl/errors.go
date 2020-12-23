@@ -12,8 +12,14 @@ type ErrRegisteredObjectNotFound struct {
 	Data []byte
 }
 
-func (e ErrRegisteredObjectNotFound) Error() string {
-	return fmt.Sprintf("object with provided crc not registered: 0x%x", e.Crc)
+func (e *ErrRegisteredObjectNotFound) Error() string {
+	return fmt.Sprintf("object with provided crc not registered: 0x%08x", e.Crc)
+}
+
+type ErrMustParseSlicesExplicitly struct{}
+
+func (e *ErrMustParseSlicesExplicitly) Error() string {
+	return "got vector CRC code when parsing unknown object: vectors can't be parsed as predicted objects"
 }
 
 type ErrorPartialWrite struct {

@@ -9,15 +9,14 @@ import (
 	"testing"
 
 	"github.com/xelaj/mtproto/encoding/tl"
-	"github.com/xelaj/mtproto/telegram"
 )
 
 func BenchmarkEncoder(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		tl.Marshal(&telegram.AccountInstallThemeParams{
+		tl.Marshal(&AccountInstallThemeParams{
 			Dark:   true,
 			Format: "abc",
-			Theme: &telegram.InputThemeObj{
+			Theme: &InputThemeObj{
 				ID:         123,
 				AccessHash: 321,
 			},
