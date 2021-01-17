@@ -9,7 +9,7 @@ package tl_test
 // фикстуры являются полноценно сгенерированными объектами из пакета telegram
 
 import (
-	"github.com/xelaj/mtproto/encoding/tl"
+	"github.com/xelaj/mtproto/internal/encoding/tl"
 )
 
 type MultipleChats struct {

@@ -2,7 +2,7 @@
 
 package telegram
 
-import tl "github.com/xelaj/mtproto/encoding/tl"
+import tl "github.com/xelaj/mtproto/internal/encoding/tl"
 
 type BotInlineMessage interface {
 	tl.Object
@@ -417,7 +417,9 @@ func (*ChannelMessagesFilterEmpty) ImplementsChannelMessagesFilter() {}
 type ChannelParticipant interface {
 	tl.Object
 	ImplementsChannelParticipant()
+	GetUserID() int
 }
+
 type ChannelParticipantObj struct {
 	UserID int32
 	Date   int32
@@ -428,6 +430,10 @@ func (*ChannelParticipantObj) CRC() uint32 {
 }
 
 func (*ChannelParticipantObj) ImplementsChannelParticipant() {}
+
+func (c *ChannelParticipantObj) GetUserID() int {
+	return int(c.UserID)
+}
 
 type ChannelParticipantAdmin struct {
 	CanEdit     bool `tl:"flag:0,encoded_in_bitflags"`
@@ -450,6 +456,10 @@ func (*ChannelParticipantAdmin) FlagIndex() int {
 
 func (*ChannelParticipantAdmin) ImplementsChannelParticipant() {}
 
+func (c *ChannelParticipantAdmin) GetUserID() int {
+	return int(c.UserID)
+}
+
 type ChannelParticipantBanned struct {
 	Left         bool `tl:"flag:0,encoded_in_bitflags"`
 	UserID       int32
@@ -468,6 +478,10 @@ func (*ChannelParticipantBanned) FlagIndex() int {
 
 func (*ChannelParticipantBanned) ImplementsChannelParticipant() {}
 
+func (c *ChannelParticipantBanned) GetUserID() int {
+	return int(c.UserID)
+}
+
 type ChannelParticipantCreator struct {
 	UserID      int32
 	AdminRights *ChatAdminRights
@@ -484,6 +498,10 @@ func (*ChannelParticipantCreator) FlagIndex() int {
 
 func (*ChannelParticipantCreator) ImplementsChannelParticipant() {}
 
+func (c *ChannelParticipantCreator) GetUserID() int {
+	return int(c.UserID)
+}
+
 type ChannelParticipantLeft struct {
 	UserID int32
 }
@@ -493,6 +511,10 @@ func (*ChannelParticipantLeft) CRC() uint32 {
 }
 
 func (*ChannelParticipantLeft) ImplementsChannelParticipant() {}
+
+func (c *ChannelParticipantLeft) GetUserID() int {
+	return int(c.UserID)
+}
 
 type ChannelParticipantSelf struct {
 	UserID    int32
@@ -505,6 +527,10 @@ func (*ChannelParticipantSelf) CRC() uint32 {
 }
 
 func (*ChannelParticipantSelf) ImplementsChannelParticipant() {}
+
+func (c *ChannelParticipantSelf) GetUserID() int {
+	return int(c.UserID)
+}
 
 type ChannelParticipantsFilter interface {
 	tl.Object

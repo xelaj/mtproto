@@ -12,8 +12,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/xelaj/go-dry"
 
-	"github.com/xelaj/mtproto/encoding/tl"
-	"github.com/xelaj/mtproto/utils"
+	"github.com/xelaj/mtproto/internal/encoding/tl"
+	"github.com/xelaj/mtproto/internal/utils"
 )
 
 // мелкие методы, которые сделаны для понимания алгоритмов и кода вцелом

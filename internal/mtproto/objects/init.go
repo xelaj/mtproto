@@ -6,7 +6,7 @@
 package objects
 
 import (
-	"github.com/xelaj/mtproto/encoding/tl"
+	"github.com/xelaj/mtproto/internal/encoding/tl"
 )
 
 func init() {

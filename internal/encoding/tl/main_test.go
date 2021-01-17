@@ -11,8 +11,8 @@ import (
 	"testing"
 
 	"github.com/xelaj/go-dry"
-	
-	"github.com/xelaj/mtproto/encoding/tl"
+
+	"github.com/xelaj/mtproto/internal/encoding/tl"
 )
 
 func tearup() {

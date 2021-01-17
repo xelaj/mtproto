@@ -14,7 +14,7 @@ import (
 	dry "github.com/xelaj/go-dry"
 
 	"github.com/xelaj/mtproto"
-	"github.com/xelaj/mtproto/keys"
+	"github.com/xelaj/mtproto/internal/keys"
 )
 
 type Client struct {

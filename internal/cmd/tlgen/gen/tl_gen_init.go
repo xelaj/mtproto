@@ -6,7 +6,7 @@ import (
 	"github.com/dave/jennifer/jen"
 )
 
-var tlPackagePath = "github.com/xelaj/mtproto/encoding/tl"
+var tlPackagePath = "github.com/xelaj/mtproto/internal/encoding/tl"
 var errorsPackagePath = "github.com/pkg/errors"
 
 func (g *Generator) generateInit(file *jen.File) {

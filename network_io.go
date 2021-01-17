@@ -18,10 +18,10 @@ import (
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
 
-	"github.com/xelaj/mtproto/encoding/tl"
+	"github.com/xelaj/mtproto/internal/encoding/tl"
 	"github.com/xelaj/mtproto/internal/mtproto/messages"
 	"github.com/xelaj/mtproto/internal/mtproto/objects"
-	"github.com/xelaj/mtproto/utils"
+	"github.com/xelaj/mtproto/internal/utils"
 )
 
 func (m *MTProto) sendPacketNew(request tl.Object, expectedTypes ...reflect.Type) (chan tl.Object, error) {

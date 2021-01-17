@@ -8,6 +8,7 @@
 package telegram
 
 import (
+	"fmt"
 	"reflect"
 	"regexp"
 	"sort"
@@ -75,6 +76,67 @@ func (c *Client) GetChatInfoByHashLink(hashOrLink string) (Chat, error) {
 	}
 }
 
+func (c *Client) GetPossibleAllUsersOfGroup(ch InputChannel) ([]User, error) {
+	resp100, err := c.ChannelsGetParticipants(ch, ChannelParticipantsFilter(&ChannelParticipantsRecent{}), 100, 0, 0)
+	if err != nil {
+		return nil, errors.Wrap(err, "getting 0-100 recent users")
+	}
+	parts100 := resp100.(*ChannelsChannelParticipantsObj).Participants
+	users100 := resp100.(*ChannelsChannelParticipantsObj).Users
+	resp200, err := c.ChannelsGetParticipants(ch, ChannelParticipantsFilter(&ChannelParticipantsRecent{}), 100, 100, 0)
+	if err != nil {
+		return nil, errors.Wrap(err, "getting 100-200 recent users")
+	}
+	parts200 := resp200.(*ChannelsChannelParticipantsObj).Participants
+	users200 := resp200.(*ChannelsChannelParticipantsObj).Users
+	users := append(users100, users200...)
+
+	idsStore := make(map[int]User)
+	for _, participant := range append(parts100, parts200...) {
+		uid := participant.GetUserID()
+		var realUser User
+		for _, user := range users {
+			if _, ok := user.(*UserEmpty); ok {
+				continue
+			}
+			v, ok := user.(*UserObj)
+			if !ok {
+				panic(reflect.TypeOf(user).String())
+			}
+			if int(v.ID) == uid {
+				realUser = user
+				break
+			}
+		}
+		if realUser == nil {
+			panic(fmt.Sprintf("user %v not found", uid))
+		}
+
+		idsStore[uid] = realUser
+	}
+
+	searchedUsers, err := getUsersOfChannelBySearching(c, ch, "")
+	if err != nil {
+		return nil, errors.Wrap(err, "searching")
+	}
+
+	for k, v := range searchedUsers {
+		idsStore[k] = v
+	}
+
+	sortedIds := make([]int, 0, len(idsStore))
+	for k := range idsStore {
+		sortedIds = append(sortedIds, k)
+	}
+	sort.Ints(sortedIds)
+	res := make([]User, len(sortedIds))
+	for i, id := range sortedIds {
+		res[i] = idsStore[id]
+	}
+
+	return res, nil
+}
+
 func (c *Client) GetPossibleAllParticipantsOfGroup(ch InputChannel) ([]int, error) {
 	resp100, err := c.ChannelsGetParticipants(ch, ChannelParticipantsFilter(&ChannelParticipantsRecent{}), 100, 0, 0)
 	if err != nil {
@@ -137,7 +199,7 @@ func getParticipants(c *Client, ch InputChannel, lastQuery string) (map[int]stru
 			return nil, errors.Wrap(err, "getting 100-200 users with query: '"+query+"'")
 		}
 		users200 := resp200.(*ChannelsChannelParticipantsObj).Participants
-		if len(users200) >= 200 {
+		if len(users200) >= 100 {
 			deepParticipants, err := getParticipants(c, ch, query)
 			if err != nil {
 				return nil, err
@@ -166,6 +228,65 @@ func getParticipants(c *Client, ch InputChannel, lastQuery string) (map[int]stru
 				pp.Println(user)
 				panic("что?")
 			}
+		}
+	}
+
+	return idsStore, nil
+}
+
+func getUsersOfChannelBySearching(c *Client, ch InputChannel, lastQuery string) (map[int]User, error) {
+	idsStore := make(map[int]User)
+	for _, symbol := range symbols {
+		query := lastQuery + symbol
+		filter := ChannelParticipantsFilter(&ChannelParticipantsSearch{Q: query})
+
+		// начинаем с 100-200, что бы проверить, может нам нужно дополнительный символ вставлять
+		resp200, err := c.ChannelsGetParticipants(ch, filter, 100, 100, 0)
+		if err != nil {
+			return nil, errors.Wrap(err, "getting 100-200 users with query: '"+query+"'")
+		}
+		parts200 := resp200.(*ChannelsChannelParticipantsObj).Participants
+		users200 := resp200.(*ChannelsChannelParticipantsObj).Users
+		if len(parts200) >= 100 {
+			deepParticipants, err := getUsersOfChannelBySearching(c, ch, query)
+			if err != nil {
+				return nil, errors.Wrapf(err, "query '%v'", query)
+			}
+			for k, v := range deepParticipants {
+				idsStore[k] = v
+			}
+			continue
+		}
+
+		resp100, err := c.ChannelsGetParticipants(ch, filter, 0, 100, 0)
+		if err != nil {
+			return nil, errors.Wrap(err, "getting 0-100 users with query: '"+query+"'")
+		}
+		parts100 := resp100.(*ChannelsChannelParticipantsObj).Participants
+		users100 := resp100.(*ChannelsChannelParticipantsObj).Users
+
+		users := append(users100, users200...)
+		for _, participant := range append(parts100, parts200...) {
+			uid := participant.GetUserID()
+			var realUser User
+			for _, user := range users {
+				if _, ok := user.(*UserEmpty); ok {
+					continue
+				}
+				v, ok := user.(*UserObj)
+				if !ok {
+					panic(reflect.TypeOf(user).String())
+				}
+				if int(v.ID) == uid {
+					realUser = user
+					break
+				}
+			}
+			if realUser == nil {
+				panic(fmt.Sprintf("user %v not found", uid))
+			}
+
+			idsStore[uid] = realUser
 		}
 	}
 

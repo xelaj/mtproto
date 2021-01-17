@@ -11,7 +11,7 @@ package telegram
 import (
 	"github.com/pkg/errors"
 
-	"github.com/xelaj/mtproto/encoding/tl"
+	"github.com/xelaj/mtproto/internal/encoding/tl"
 )
 
 //invokeAfterMsg#cb9f372d {X:Type} msg_id:long query:!X = X;

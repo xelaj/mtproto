@@ -8,7 +8,7 @@ package tl_test
 import (
 	"testing"
 
-	"github.com/xelaj/mtproto/encoding/tl"
+	"github.com/xelaj/mtproto/internal/encoding/tl"
 )
 
 func BenchmarkEncoder(b *testing.B) {

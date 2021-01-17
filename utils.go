@@ -6,7 +6,7 @@
 package mtproto
 
 import (
-	"github.com/xelaj/mtproto/encoding/tl"
+	"github.com/xelaj/mtproto/internal/encoding/tl"
 	"github.com/xelaj/mtproto/internal/mtproto/objects"
 )
 
@@ -20,6 +20,14 @@ var defaultDCList = map[int]string{
 	4: "149.154.167.91:443",
 	5: "91.108.56.151:443",
 }
+
+// https://core.telegram.org/mtproto/mtproto-transports
+var (
+	transportModeAbridged           = [...]byte{0xef}                   // meta:immutable
+	transportModeIntermediate       = [...]byte{0xee, 0xee, 0xee, 0xee} // meta:immutable
+	transportModePaddedIntermediate = [...]byte{0xdd, 0xdd, 0xdd, 0xdd} // meta:immutable
+	transportModeFull               = [...]byte{}                       // meta:immutable
+)
 
 func MessageRequireToAck(msg tl.Object) bool {
 	switch msg.(type) {

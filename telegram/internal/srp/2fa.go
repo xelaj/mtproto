@@ -6,7 +6,7 @@
 package srp
 
 //! WARNING: if you want to understand this algorithm, go to https://core.telegram.org/api/srp, and try to
-//  this code on right side, and algorith description on left side. Then, try to search via Cmd+F func
+//  open this code on right side, and algorith description on left side. Then, try to search via Cmd+F func
 //  descriptions in algo descriptions. Then bless your god and drink few whiskey. As far as this way i can help
 //  you to understand this secure-like shit created by telegram developers.
 

@@ -17,10 +17,10 @@ import (
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
 
-	"github.com/xelaj/mtproto/encoding/tl"
+	"github.com/xelaj/mtproto/internal/encoding/tl"
 	"github.com/xelaj/mtproto/internal/mtproto/messages"
 	"github.com/xelaj/mtproto/internal/mtproto/objects"
-	"github.com/xelaj/mtproto/utils"
+	"github.com/xelaj/mtproto/internal/utils"
 )
 
 type MTProto struct {
@@ -153,7 +153,7 @@ func (m *MTProto) CreateConnection() error {
 	}
 
 	// https://core.telegram.org/mtproto/mtproto-transports#intermediate
-	_, err = m.conn.Write([]byte{0xee, 0xee, 0xee, 0xee})
+	_, err = m.conn.Write(transportModeIntermediate[:])
 	if err != nil {
 		return errors.Wrap(err, "writing first byte")
 	}
@@ -324,7 +324,6 @@ func (m *MTProto) processResponse(msg messages.Common) error {
 		m.mutex.Unlock()
 
 	case *objects.NewSessionCreated:
-		println("session created")
 		m.serverSalt = message.ServerSalt
 		err := m.SaveSession()
 		if err != nil {
