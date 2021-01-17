@@ -26,3 +26,7 @@ vendor/
 
 # playgorund
 playground/
+
+# specific for this project: examples creates session.json file which is too sensitive info and must not add
+# in repository in any way. so, ignoring it
+session.json

@@ -1,5 +1,7 @@
 # Ways to contribute, without coding, in just 5-10 minutes
 
+<sub><sup>Want code? No worries, if you improve codebase this lib, you already know, how to make good PR 🙃</sup></sub>
+
 So, you're ready to help this project, but you don't wanna code? This guide is right for you! Plenty of you wonderful people have asked how to help but don't know how to create any algorithms or even hot to write programs on golang 😄
 
 Fear not! There are lots of things you can do to help the project, and here we collected some amazing ideas how to make this project rock!
@@ -7,7 +9,7 @@ Fear not! There are lots of things you can do to help the project, and here we c
 ## Help Spread the Word
 
 * Write any tutorials, cheatsheets or just a review (it must be honest) at any programming forums, blogs, etc. good one are [golangbridge](https://forum.golangbridge.org/), [google group](https://groups.google.com/g/golang-nuts), [ycombinator](https://news.ycombinator.com/newest), [Habr](https://habr.com), (habr also welcoming english posts btw), yandex zen, etc. or any telegram channels like [gogolang](https://t.me/gogolang) (if you found any other resources, add it, just create PR here)
-*  Tell your friends! I mean, literally, tell someone in person, or (if Covid is still around) via some digital mechanism like chat or Zoom. If your company or team works with telegram api, tell them about it! it's dead simple, but can really help!
+* Tell your friends! I mean, literally, tell someone in person, or (if Covid is still around) via some digital mechanism like chat or Zoom. If your company or team works with telegram api, tell them about it! it's dead simple, but can really help!
 * Share on Twitter, Reddit, Facebook, or odnoklassniki or even Friendster (jk). Anyway, post your review with link to this repo.
 
 The more people that use the package - the better it will get. I can share with you (don't tell anyone!) that this package uses 10-50 unique people every day. it can grow up up to hundreds or even thousands. So int this community we can find amazing developers which can improve this project!

@@ -1,0 +1,46 @@
+# 🚨 50-character subject line including emoji
+# This is MAX LENGTH of title ->                 |
+#
+# 72-character wrapped longer description.
+# This is MAX LENGTH of description wrapping ->                        |
+#
+# This description SHOULD answer:
+# * Why was this change necessary?
+# * How does it address the problem?
+# * Are there any side effects?
+#
+# Include a link to the ticket, if any.
+#
+# Tips for commit type icons:
+# * ⚡ Improve performance.
+# * 🔥 Remove (irrevocably!) code or files.
+# * 🐛 Fix a bug.
+# * 🚑 Critical hotfix.
+# * ✨ Introduce new features.
+# * ✅ Add or update tests.
+# * 🔒 Fix security issues.
+# * 🚨 Fix compiler/linter warnings.
+# * 💚 Fix CI Build.
+# * 👷 Add or update CI build system.
+# * 🎨 Improve structure/format of the code.
+# * 🏇 Refactor code. (miscellaneous refactoring)
+# * 🔨 Add or update development scripts.
+# * ✏️ Fix typos.
+# * ⏪ Revert changes.
+# * 🔀 Merge branches.
+# * 👽 Update code due to external API changes.
+# * 📝 Add or update documentation.
+# * 📄 Add or update license. (that's different to docs)
+# * 💡 Add or update comments in source code.
+# * 🍻 Write code drunkenly.
+# * 👥 Add or update contributor(s).
+# * 🚸 Improve user experience/usability.
+# * 🏗 Make architectural changes.
+# * 🤡 Mock things.
+# * 🥚 Add or update an easter egg.
+# * 🙈 Add or update a .gitignore file.
+# * ⚗ Perform experiments.
+# * 🔍 Improve SEO. (seo of repository, not project)
+# * 🗑 Deprecate code that needs to be cleaned up.
+# * 🩹 Simple fix for a non-critical issue.
+# * 🧐 Data exploration/inspection.
