@@ -2,23 +2,11 @@
 
 Mtproto lib can be used with Telegram bot, that can acess to full Telegram API, not just the simplified Telegram Bot API.
 
-First, we need get register our bot via Telegram [@BotFather](https://t.me/BotFather) and obtain *bot token* and *bot username*.
+First, you need to create your telegram bot, like you did this in any another case. Don't know how? Read [this official guide](https://core.telegram.org/bots)
 
-![Obtain bot token via BotFather](img/bot_father.jpg)
+Next we must [register our app](https://my.telegram.org/apps) as usual and obtain all data that we need to run any other examples in this package.
 
-Next we [register our app in Telegram](https://my.telegram.org/apps) and obtain
-
-- ApiID
-- ApiHash
-- IP addresses of MTProto servers
-- Public keys
-
-![App credentials](img/telegram_org.jpg)
-
-Save text from "Public keys" field to the `keys.pem` file.
-
-Other credentials put to `const` section of `main.go` file.
-
+Then fill this code in:
 ```go
 const (
 	// from https://my.telegram.org/apps
@@ -33,12 +21,12 @@ const (
 )
 ```
 
-Then run:
+Okay, you've got bot token, appID, appHash, saved your app public keys, added test and prod ip addresses. What next?
+
+just run in this folder:
 
 ```
 go run main.go
 ```
 
-For my bot I have next output:
-
-![Bot info](img/go_run.jpg)
+And done! That's full example of how to run bot api under mtproto! Easy-peasy!

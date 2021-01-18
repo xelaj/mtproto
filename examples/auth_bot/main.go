@@ -4,55 +4,59 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
+	"github.com/xelaj/go-dry"
+
+	"github.com/k0kubun/pp"
 	"github.com/xelaj/mtproto/telegram"
+
+	utils "github.com/xelaj/mtproto/examples/example_utils"
 )
 
 const (
-	// from https://my.telegram.org/apps
-	TgAppID       = XXXXX                // integer value from "App api_id" field
-	TgAppHash     = "XXXXXXXXXXXX"       // string value from "App api_hash" field
-	TgTestServer  = "149.154.167.40:443" // string value from "Test configuration" field
-	TgProdServer  = "149.154.167.50:443" // string value from "Production configuration" field
-
-	// from https://t.me/BotFather
-	TgBotToken    = "XXXXX"  // bot token from BotFather
-	TgBotUserName = "YourBotUserName" // username of the bot
+	appID   = 94575
+	appHash = "a3406de8d171bb422bb6ddf3bbd800e2"
+	// If you don't know how to get your token, read this guide: https://core.telegram.org/bots
+	botToken = "use your own bot token, i don't want to share mine, lol."
+	// bot username IS NOT required to perform auth, it's using to visualize example
+	botUsername = "superamazingbot"
 )
 
 func main() {
+	// helper variables
+	appStorage := utils.PrepareAppStorageForExamples()
+	sessionFile := filepath.Join(appStorage, "session.json")
+	publicKeys := filepath.Join(appStorage, "tg_public_keys.pem")
+
 	client, err := telegram.NewClient(telegram.ClientConfig{
-		// current dir must be writable
-		// file 'session.json' will be created here
-		SessionFile: "./session.json",
-		// file 'keys.pem' must contain text from "Public keys" field
-		// from https://my.telegram.org/apps
-		PublicKeysFile: "./keys.pem",
-		// we need to use production Telegram API server
-		// because test server don't know about our bot
-		ServerHost: TgProdServer,
-		AppID: TgAppID,
-		AppHash: TgAppHash,
+		// where to store session configuration. must be set
+		SessionFile: sessionFile,
+		// host address of mtproto server. Actually, it can'be mtproxy, not only official
+		ServerHost: "149.154.167.50:443",
+		// public keys file is patrh to file with public keys, which you must get from https://my.telelgram.org
+		PublicKeysFile: publicKeys,
+		AppID:          appID,   // app id, could be find at https://my.telegram.org
+		AppHash:        appHash, // app hash, could be find at https://my.telegram.org
 	})
-	if err != nil {
-		fmt.Println("NewClient error:", err.Error())
-		os.Exit(1)
-	}
+	utils.ReadWarningsToStdErr(client.Warnings)
+	dry.PanicIfErr(err)
 
 	// Trying to auth as bot with our bot token
-	_, err = client.AuthImportBotAuthorization(&telegram.AuthImportBotAuthorizationParams{
-		Flags: 1, // reserved, must be set (not 0)
-		ApiId: TgAppID,
-		ApiHash: TgAppHash,
-		BotAuthToken: TgBotToken,
-	})
+	_, err = client.AuthImportBotAuthorization(
+		1, // flags, it's reserved, must be set (don't mind how does it works, we don't know too)
+		appID,
+		appHash,
+		botToken,
+	)
 	if err != nil {
 		fmt.Println("ImportBotAuthorization error:", err.Error())
 		os.Exit(1)
 	}
 
-	// Request info about username of our bot
-	uname, err := client.ContactsResolveUsername(&telegram.ContactsResolveUsernameParams{Username: TgBotUserName})
+	// Request info about username of our bot, this is not efficient way, we just want to
+	// test, did auth succeed or not
+	uname, err := client.ContactsResolveUsername(botUsername)
 	if err != nil {
 		fmt.Println("ResolveUsername error:", err.Error())
 		os.Exit(1)
@@ -74,32 +78,5 @@ func main() {
 
 	user := uname.Users[0].(*telegram.UserObj)
 
-	// dump our bot info
-	fmt.Println("\nSelf ->", user.Self)
-	fmt.Println("Username ->", user.Username)
-	fmt.Println("FirstName ->", user.FirstName)
-	fmt.Println("LastName ->", user.LastName)
-	fmt.Println("Id ->", user.Id)
-	fmt.Println("Bot ->", user.Bot)
-	fmt.Println("Verified ->", user.Verified)
-	fmt.Println("Restricted ->", user.Restricted)
-	fmt.Println("Support ->", user.Support)
-	fmt.Println("Scam ->", user.Scam)
-	fmt.Println("BotInfoVersion ->", user.BotInfoVersion)
-
-	// fmt.Println("Contact ->", user.Contact)
-	// fmt.Println("MutualContact ->", user.MutualContact)
-	// fmt.Println("Deleted ->", user.Deleted)
-	// fmt.Println("BotChatHistory ->", user.BotChatHistory)
-	// fmt.Println("BotNochats ->", user.BotNochats)
-	// fmt.Println("Min ->", user.Min)
-	// fmt.Println("BotInlineGeo ->", user.BotInlineGeo)
-	// fmt.Println("ApplyMinPhoto ->", user.ApplyMinPhoto)
-	// fmt.Println("AccessHash ->", user.AccessHash)
-	// fmt.Println("Phone ->", user.Phone)
-	// fmt.Println("Photo ->", user.Photo)
-	// fmt.Println("Status ->", user.Status)
-	// fmt.Println("RestrictionReason ->", user.RestrictionReason)
-	// fmt.Println("BotInlinePlaceholder ->", user.BotInlinePlaceholder)
-	// fmt.Println("LangCode ->", user.LangCode)
+	pp.Println(user)
 }

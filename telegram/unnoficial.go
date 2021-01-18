@@ -372,7 +372,6 @@ func (c *Client) AllUsersInChat(chatID int) ([]int, error) {
 		}
 
 		offset += 100
-		pp.Println(offset, totalCount)
 	}
 
 	total := make([]int, 0, len(res))
