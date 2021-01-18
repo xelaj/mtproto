@@ -91,3 +91,12 @@ func (m *MTProto) recoverGoroutine() {
 func (m *MTProto) AddCustomServerRequestHandler(handler customHandlerFunc) {
 	m.serverRequestHandlers = append(m.serverRequestHandlers, handler)
 }
+
+func (m *MTProto) warnError(err error) {
+	if err == nil {
+		return
+	}
+	if m.Warnings != nil {
+		m.Warnings <- err
+	}
+}

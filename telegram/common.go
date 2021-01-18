@@ -24,15 +24,20 @@ type Client struct {
 }
 
 type ClientConfig struct {
-	SessionFile    string
-	ServerHost     string
-	PublicKeysFile string
-	DeviceModel    string
-	SystemVersion  string
-	AppVersion     string
-	AppID          int
-	AppHash        string
+	SessionFile     string
+	ServerHost      string
+	PublicKeysFile  string
+	DeviceModel     string
+	SystemVersion   string
+	AppVersion      string
+	AppID           int
+	AppHash         string
+	InitWarnChannel bool
 }
+
+const (
+	warnChannelDefaultCapacity = 100
+)
 
 func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not ptr cause we call
 	//                                                               it only once, don't care
@@ -69,6 +74,10 @@ func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not 
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "setup common MTProto client")
+	}
+
+	if c.InitWarnChannel {
+		m.Warnings = make(chan error, warnChannelDefaultCapacity)
 	}
 
 	err = m.CreateConnection()

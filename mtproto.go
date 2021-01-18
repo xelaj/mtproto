@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
@@ -245,9 +246,7 @@ func (m *MTProto) startPinging(ctx context.Context) {
 			case <-ticker:
 				_, err := m.ping(0xCADACADA) //nolint:gomnd not magic
 				if err != nil {
-					if m.Warnings != nil {
-						m.Warnings <- errors.Wrap(err, "ping unsuccsesful")
-					}
+					m.warnError(errors.Wrap(err, "ping unsuccsesful"))
 				}
 			}
 		}
@@ -266,26 +265,31 @@ func (m *MTProto) startReadingResponses(ctx context.Context) {
 			default:
 				data, err := m.readFromConn(ctx)
 				if err != nil {
-					m.Warnings <- errors.Wrap(err, "reading from connection")
+					m.warnError(errors.Wrap(err, "reading from connection"))
+					break // select
 				}
 
 				response, err := m.decodeRecievedData(data)
 				if err != nil {
-					m.Warnings <- errors.Wrap(err, "decoding received data")
+					m.warnError(errors.Wrap(err, "decoding received data"))
+					break // select
 				}
+
 				if m.serviceModeActivated {
+					var obj tl.Object
 					// сервисные сообщения ГАРАНТИРОВАННО в теле содержат TL.
-					obj, err := tl.DecodeUnknownObject(response.GetMsg())
+					obj, err = tl.DecodeUnknownObject(response.GetMsg())
 					if err != nil {
-						m.Warnings <- errors.Wrap(err, "parsing object")
-					} else {
-						m.serviceChannel <- obj
+						m.warnError(errors.Wrap(err, "parsing object"))
+						break
 					}
-				} else {
-					err = m.processResponse(response)
-					if err != nil {
-						m.Warnings <- errors.Wrap(err, "processing response")
-					}
+					m.serviceChannel <- obj
+					break
+				}
+
+				err = m.processResponse(response)
+				if err != nil {
+					m.warnError(errors.Wrap(err, "processing response"))
 				}
 			}
 		}
@@ -327,9 +331,7 @@ func (m *MTProto) processResponse(msg messages.Common) error {
 		m.serverSalt = message.ServerSalt
 		err := m.SaveSession()
 		if err != nil {
-			if m.Warnings != nil {
-				m.Warnings <- errors.Wrap(err, "saving session")
-			}
+			m.warnError(errors.Wrap(err, "saving session"))
 		}
 
 	case *objects.Pong:
@@ -341,7 +343,8 @@ func (m *MTProto) processResponse(msg messages.Common) error {
 		}
 
 	case *objects.BadMsgNotification:
-		panic(message)
+		pp.Println(message)
+		panic(message) // for debug, looks like this message is important
 		return BadMsgErrorFromNative(message)
 
 	case *objects.RpcResult:
@@ -364,9 +367,7 @@ func (m *MTProto) processResponse(msg messages.Common) error {
 			}
 		}
 		if !processed {
-			if m.Warnings != nil {
-				m.Warnings <- errors.New("got nonsystem message from server: " + reflect.TypeOf(message).String())
-			}
+			m.warnError(errors.New("got nonsystem message from server: " + reflect.TypeOf(message).String()))
 		}
 	}
 
