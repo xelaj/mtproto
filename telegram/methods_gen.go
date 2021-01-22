@@ -9,7 +9,6 @@ import (
 	"reflect"
 
 	errors "github.com/pkg/errors"
-	tl "github.com/xelaj/mtproto/internal/encoding/tl"
 )
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
@@ -35,7 +34,7 @@ func (c *Client) AccountAcceptAuthorization(botID int32, scope, publicKey string
 		ValueHashes: valueHashes,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountAcceptAuthorization")
+		return false, errors.Wrap(err, "sending AccountAcceptAuthorization")
 	}
 
 	resp, ok := responseData.(bool)
@@ -56,7 +55,7 @@ func (*AccountCancelPasswordEmailParams) CRC() uint32 {
 func (c *Client) AccountCancelPasswordEmail() (bool, error) {
 	responseData, err := c.MakeRequest(&AccountCancelPasswordEmailParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountCancelPasswordEmail")
+		return false, errors.Wrap(err, "sending AccountCancelPasswordEmail")
 	}
 
 	resp, ok := responseData.(bool)
@@ -108,7 +107,7 @@ func (*AccountCheckUsernameParams) CRC() uint32 {
 func (c *Client) AccountCheckUsername(username string) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountCheckUsernameParams{Username: username})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountCheckUsername")
+		return false, errors.Wrap(err, "sending AccountCheckUsername")
 	}
 
 	resp, ok := responseData.(bool)
@@ -131,7 +130,7 @@ func (*AccountConfirmPasswordEmailParams) CRC() uint32 {
 func (c *Client) AccountConfirmPasswordEmail(code string) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountConfirmPasswordEmailParams{Code: code})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountConfirmPasswordEmail")
+		return false, errors.Wrap(err, "sending AccountConfirmPasswordEmail")
 	}
 
 	resp, ok := responseData.(bool)
@@ -158,7 +157,7 @@ func (c *Client) AccountConfirmPhone(phoneCodeHash, phoneCode string) (bool, err
 		PhoneCodeHash: phoneCodeHash,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountConfirmPhone")
+		return false, errors.Wrap(err, "sending AccountConfirmPhone")
 	}
 
 	resp, ok := responseData.(bool)
@@ -216,7 +215,7 @@ func (*AccountDeleteAccountParams) CRC() uint32 {
 func (c *Client) AccountDeleteAccount(reason string) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountDeleteAccountParams{Reason: reason})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountDeleteAccount")
+		return false, errors.Wrap(err, "sending AccountDeleteAccount")
 	}
 
 	resp, ok := responseData.(bool)
@@ -239,7 +238,7 @@ func (*AccountDeleteSecureValueParams) CRC() uint32 {
 func (c *Client) AccountDeleteSecureValue(types []SecureValueType) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountDeleteSecureValueParams{Types: types})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountDeleteSecureValue")
+		return false, errors.Wrap(err, "sending AccountDeleteSecureValue")
 	}
 
 	resp, ok := responseData.(bool)
@@ -266,7 +265,7 @@ func (*AccountFinishTakeoutSessionParams) FlagIndex() int {
 func (c *Client) AccountFinishTakeoutSession(success bool) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountFinishTakeoutSessionParams{Success: success})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountFinishTakeoutSession")
+		return false, errors.Wrap(err, "sending AccountFinishTakeoutSession")
 	}
 
 	resp, ok := responseData.(bool)
@@ -400,7 +399,7 @@ func (*AccountGetContactSignUpNotificationParams) CRC() uint32 {
 func (c *Client) AccountGetContactSignUpNotification() (bool, error) {
 	responseData, err := c.MakeRequest(&AccountGetContactSignUpNotificationParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountGetContactSignUpNotification")
+		return false, errors.Wrap(err, "sending AccountGetContactSignUpNotification")
 	}
 
 	resp, ok := responseData.(bool)
@@ -825,7 +824,7 @@ func (c *Client) AccountInstallTheme(dark bool, format string, theme InputTheme)
 		Theme:  theme,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountInstallTheme")
+		return false, errors.Wrap(err, "sending AccountInstallTheme")
 	}
 
 	resp, ok := responseData.(bool)
@@ -852,7 +851,7 @@ func (c *Client) AccountInstallWallPaper(wallpaper InputWallPaper, settings *Wal
 		Wallpaper: wallpaper,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountInstallWallPaper")
+		return false, errors.Wrap(err, "sending AccountInstallWallPaper")
 	}
 
 	resp, ok := responseData.(bool)
@@ -884,7 +883,7 @@ func (*AccountRegisterDeviceParams) FlagIndex() int {
 func (c *Client) AccountRegisterDevice(params *AccountRegisterDeviceParams) (bool, error) {
 	responseData, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountRegisterDevice")
+		return false, errors.Wrap(err, "sending AccountRegisterDevice")
 	}
 
 	resp, ok := responseData.(bool)
@@ -911,7 +910,7 @@ func (c *Client) AccountReportPeer(peer InputPeer, reason ReportReason) (bool, e
 		Reason: reason,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountReportPeer")
+		return false, errors.Wrap(err, "sending AccountReportPeer")
 	}
 
 	resp, ok := responseData.(bool)
@@ -932,7 +931,7 @@ func (*AccountResendPasswordEmailParams) CRC() uint32 {
 func (c *Client) AccountResendPasswordEmail() (bool, error) {
 	responseData, err := c.MakeRequest(&AccountResendPasswordEmailParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountResendPasswordEmail")
+		return false, errors.Wrap(err, "sending AccountResendPasswordEmail")
 	}
 
 	resp, ok := responseData.(bool)
@@ -955,7 +954,7 @@ func (*AccountResetAuthorizationParams) CRC() uint32 {
 func (c *Client) AccountResetAuthorization(hash int64) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountResetAuthorizationParams{Hash: hash})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountResetAuthorization")
+		return false, errors.Wrap(err, "sending AccountResetAuthorization")
 	}
 
 	resp, ok := responseData.(bool)
@@ -976,7 +975,7 @@ func (*AccountResetNotifySettingsParams) CRC() uint32 {
 func (c *Client) AccountResetNotifySettings() (bool, error) {
 	responseData, err := c.MakeRequest(&AccountResetNotifySettingsParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountResetNotifySettings")
+		return false, errors.Wrap(err, "sending AccountResetNotifySettings")
 	}
 
 	resp, ok := responseData.(bool)
@@ -997,7 +996,7 @@ func (*AccountResetWallPapersParams) CRC() uint32 {
 func (c *Client) AccountResetWallPapers() (bool, error) {
 	responseData, err := c.MakeRequest(&AccountResetWallPapersParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountResetWallPapers")
+		return false, errors.Wrap(err, "sending AccountResetWallPapers")
 	}
 
 	resp, ok := responseData.(bool)
@@ -1020,7 +1019,7 @@ func (*AccountResetWebAuthorizationParams) CRC() uint32 {
 func (c *Client) AccountResetWebAuthorization(hash int64) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountResetWebAuthorizationParams{Hash: hash})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountResetWebAuthorization")
+		return false, errors.Wrap(err, "sending AccountResetWebAuthorization")
 	}
 
 	resp, ok := responseData.(bool)
@@ -1041,7 +1040,7 @@ func (*AccountResetWebAuthorizationsParams) CRC() uint32 {
 func (c *Client) AccountResetWebAuthorizations() (bool, error) {
 	responseData, err := c.MakeRequest(&AccountResetWebAuthorizationsParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountResetWebAuthorizations")
+		return false, errors.Wrap(err, "sending AccountResetWebAuthorizations")
 	}
 
 	resp, ok := responseData.(bool)
@@ -1074,7 +1073,7 @@ func (c *Client) AccountSaveAutoDownloadSettings(low, high bool, settings *AutoD
 		Settings: settings,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountSaveAutoDownloadSettings")
+		return false, errors.Wrap(err, "sending AccountSaveAutoDownloadSettings")
 	}
 
 	resp, ok := responseData.(bool)
@@ -1128,7 +1127,7 @@ func (c *Client) AccountSaveTheme(theme InputTheme, unsave bool) (bool, error) {
 		Unsave: unsave,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountSaveTheme")
+		return false, errors.Wrap(err, "sending AccountSaveTheme")
 	}
 
 	resp, ok := responseData.(bool)
@@ -1157,7 +1156,7 @@ func (c *Client) AccountSaveWallPaper(wallpaper InputWallPaper, unsave bool, set
 		Wallpaper: wallpaper,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountSaveWallPaper")
+		return false, errors.Wrap(err, "sending AccountSaveWallPaper")
 	}
 
 	resp, ok := responseData.(bool)
@@ -1284,7 +1283,7 @@ func (*AccountSetAccountTtlParams) CRC() uint32 {
 func (c *Client) AccountSetAccountTtl(ttl *AccountDaysTtl) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountSetAccountTtlParams{Ttl: ttl})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountSetAccountTtl")
+		return false, errors.Wrap(err, "sending AccountSetAccountTtl")
 	}
 
 	resp, ok := responseData.(bool)
@@ -1307,7 +1306,7 @@ func (*AccountSetContactSignUpNotificationParams) CRC() uint32 {
 func (c *Client) AccountSetContactSignUpNotification(silent bool) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountSetContactSignUpNotificationParams{Silent: silent})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountSetContactSignUpNotification")
+		return false, errors.Wrap(err, "sending AccountSetContactSignUpNotification")
 	}
 
 	resp, ok := responseData.(bool)
@@ -1334,7 +1333,7 @@ func (*AccountSetContentSettingsParams) FlagIndex() int {
 func (c *Client) AccountSetContentSettings(sensitiveEnabled bool) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountSetContentSettingsParams{SensitiveEnabled: sensitiveEnabled})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountSetContentSettings")
+		return false, errors.Wrap(err, "sending AccountSetContentSettings")
 	}
 
 	resp, ok := responseData.(bool)
@@ -1413,7 +1412,7 @@ func (c *Client) AccountUnregisterDevice(tokenType int32, token string, otherUid
 		TokenType: tokenType,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountUnregisterDevice")
+		return false, errors.Wrap(err, "sending AccountUnregisterDevice")
 	}
 
 	resp, ok := responseData.(bool)
@@ -1436,7 +1435,7 @@ func (*AccountUpdateDeviceLockedParams) CRC() uint32 {
 func (c *Client) AccountUpdateDeviceLocked(period int32) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountUpdateDeviceLockedParams{Period: period})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountUpdateDeviceLocked")
+		return false, errors.Wrap(err, "sending AccountUpdateDeviceLocked")
 	}
 
 	resp, ok := responseData.(bool)
@@ -1463,7 +1462,7 @@ func (c *Client) AccountUpdateNotifySettings(peer InputNotifyPeer, settings *Inp
 		Settings: settings,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountUpdateNotifySettings")
+		return false, errors.Wrap(err, "sending AccountUpdateNotifySettings")
 	}
 
 	resp, ok := responseData.(bool)
@@ -1490,7 +1489,7 @@ func (c *Client) AccountUpdatePasswordSettings(password InputCheckPasswordSRP, n
 		Password:    password,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountUpdatePasswordSettings")
+		return false, errors.Wrap(err, "sending AccountUpdatePasswordSettings")
 	}
 
 	resp, ok := responseData.(bool)
@@ -1546,7 +1545,7 @@ func (*AccountUpdateStatusParams) CRC() uint32 {
 func (c *Client) AccountUpdateStatus(offline bool) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountUpdateStatusParams{Offline: offline})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountUpdateStatus")
+		return false, errors.Wrap(err, "sending AccountUpdateStatus")
 	}
 
 	resp, ok := responseData.(bool)
@@ -1692,7 +1691,7 @@ func (c *Client) AccountVerifyEmail(email, code string) (bool, error) {
 		Email: email,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountVerifyEmail")
+		return false, errors.Wrap(err, "sending AccountVerifyEmail")
 	}
 
 	resp, ok := responseData.(bool)
@@ -1721,7 +1720,7 @@ func (c *Client) AccountVerifyPhone(phoneNumber, phoneCodeHash, phoneCode string
 		PhoneNumber:   phoneNumber,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AccountVerifyPhone")
+		return false, errors.Wrap(err, "sending AccountVerifyPhone")
 	}
 
 	resp, ok := responseData.(bool)
@@ -1775,7 +1774,7 @@ func (c *Client) AuthBindTempAuthKey(permAuthKeyID, nonce int64, expiresAt int32
 		PermAuthKeyID:    permAuthKeyID,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AuthBindTempAuthKey")
+		return false, errors.Wrap(err, "sending AuthBindTempAuthKey")
 	}
 
 	resp, ok := responseData.(bool)
@@ -1802,7 +1801,7 @@ func (c *Client) AuthCancelCode(phoneNumber, phoneCodeHash string) (bool, error)
 		PhoneNumber:   phoneNumber,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AuthCancelCode")
+		return false, errors.Wrap(err, "sending AuthCancelCode")
 	}
 
 	resp, ok := responseData.(bool)
@@ -1848,7 +1847,7 @@ func (*AuthDropTempAuthKeysParams) CRC() uint32 {
 func (c *Client) AuthDropTempAuthKeys(exceptAuthKeys []int64) (bool, error) {
 	responseData, err := c.MakeRequest(&AuthDropTempAuthKeysParams{ExceptAuthKeys: exceptAuthKeys})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AuthDropTempAuthKeys")
+		return false, errors.Wrap(err, "sending AuthDropTempAuthKeys")
 	}
 
 	resp, ok := responseData.(bool)
@@ -2002,7 +2001,7 @@ func (*AuthLogOutParams) CRC() uint32 {
 func (c *Client) AuthLogOut() (bool, error) {
 	responseData, err := c.MakeRequest(&AuthLogOutParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AuthLogOut")
+		return false, errors.Wrap(err, "sending AuthLogOut")
 	}
 
 	resp, ok := responseData.(bool)
@@ -2094,7 +2093,7 @@ func (*AuthResetAuthorizationsParams) CRC() uint32 {
 func (c *Client) AuthResetAuthorizations() (bool, error) {
 	responseData, err := c.MakeRequest(&AuthResetAuthorizationsParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending AuthResetAuthorizations")
+		return false, errors.Wrap(err, "sending AuthResetAuthorizations")
 	}
 
 	resp, ok := responseData.(bool)
@@ -2212,7 +2211,7 @@ func (c *Client) BotsAnswerWebhookJsonQuery(queryID int64, data *DataJson) (bool
 		QueryID: queryID,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending BotsAnswerWebhookJsonQuery")
+		return false, errors.Wrap(err, "sending BotsAnswerWebhookJsonQuery")
 	}
 
 	resp, ok := responseData.(bool)
@@ -2262,7 +2261,7 @@ func (*BotsSetBotCommandsParams) CRC() uint32 {
 func (c *Client) BotsSetBotCommands(commands []*BotCommand) (bool, error) {
 	responseData, err := c.MakeRequest(&BotsSetBotCommandsParams{Commands: commands})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending BotsSetBotCommands")
+		return false, errors.Wrap(err, "sending BotsSetBotCommands")
 	}
 
 	resp, ok := responseData.(bool)
@@ -2289,7 +2288,7 @@ func (c *Client) ChannelsCheckUsername(channel InputChannel, username string) (b
 		Username: username,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending ChannelsCheckUsername")
+		return false, errors.Wrap(err, "sending ChannelsCheckUsername")
 	}
 
 	resp, ok := responseData.(bool)
@@ -2371,7 +2370,7 @@ func (c *Client) ChannelsDeleteHistory(channel InputChannel, maxID int32) (bool,
 		MaxID:   maxID,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending ChannelsDeleteHistory")
+		return false, errors.Wrap(err, "sending ChannelsDeleteHistory")
 	}
 
 	resp, ok := responseData.(bool)
@@ -2543,7 +2542,7 @@ func (c *Client) ChannelsEditLocation(channel InputChannel, geoPoint InputGeoPoi
 		GeoPoint: geoPoint,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending ChannelsEditLocation")
+		return false, errors.Wrap(err, "sending ChannelsEditLocation")
 	}
 
 	resp, ok := responseData.(bool)
@@ -2994,7 +2993,7 @@ func (c *Client) ChannelsReadHistory(channel InputChannel, maxID int32) (bool, e
 		MaxID:   maxID,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending ChannelsReadHistory")
+		return false, errors.Wrap(err, "sending ChannelsReadHistory")
 	}
 
 	resp, ok := responseData.(bool)
@@ -3021,7 +3020,7 @@ func (c *Client) ChannelsReadMessageContents(channel InputChannel, id []int32) (
 		ID:      id,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending ChannelsReadMessageContents")
+		return false, errors.Wrap(err, "sending ChannelsReadMessageContents")
 	}
 
 	resp, ok := responseData.(bool)
@@ -3050,7 +3049,7 @@ func (c *Client) ChannelsReportSpam(channel InputChannel, userID InputUser, id [
 		UserID:  userID,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending ChannelsReportSpam")
+		return false, errors.Wrap(err, "sending ChannelsReportSpam")
 	}
 
 	resp, ok := responseData.(bool)
@@ -3077,7 +3076,7 @@ func (c *Client) ChannelsSetDiscussionGroup(broadcast, group InputChannel) (bool
 		Group:     group,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending ChannelsSetDiscussionGroup")
+		return false, errors.Wrap(err, "sending ChannelsSetDiscussionGroup")
 	}
 
 	resp, ok := responseData.(bool)
@@ -3104,7 +3103,7 @@ func (c *Client) ChannelsSetStickers(channel InputChannel, stickerset InputStick
 		Stickerset: stickerset,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending ChannelsSetStickers")
+		return false, errors.Wrap(err, "sending ChannelsSetStickers")
 	}
 
 	resp, ok := responseData.(bool)
@@ -3212,7 +3211,7 @@ func (c *Client) ChannelsUpdateUsername(channel InputChannel, username string) (
 		Username: username,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending ChannelsUpdateUsername")
+		return false, errors.Wrap(err, "sending ChannelsUpdateUsername")
 	}
 
 	resp, ok := responseData.(bool)
@@ -3289,7 +3288,7 @@ func (*ContactsBlockParams) CRC() uint32 {
 func (c *Client) ContactsBlock(id InputPeer) (bool, error) {
 	responseData, err := c.MakeRequest(&ContactsBlockParams{ID: id})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending ContactsBlock")
+		return false, errors.Wrap(err, "sending ContactsBlock")
 	}
 
 	resp, ok := responseData.(bool)
@@ -3347,7 +3346,7 @@ func (*ContactsDeleteByPhonesParams) CRC() uint32 {
 func (c *Client) ContactsDeleteByPhones(phones []string) (bool, error) {
 	responseData, err := c.MakeRequest(&ContactsDeleteByPhonesParams{Phones: phones})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending ContactsDeleteByPhones")
+		return false, errors.Wrap(err, "sending ContactsDeleteByPhones")
 	}
 
 	resp, ok := responseData.(bool)
@@ -3599,7 +3598,7 @@ func (*ContactsResetSavedParams) CRC() uint32 {
 func (c *Client) ContactsResetSaved() (bool, error) {
 	responseData, err := c.MakeRequest(&ContactsResetSavedParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending ContactsResetSaved")
+		return false, errors.Wrap(err, "sending ContactsResetSaved")
 	}
 
 	resp, ok := responseData.(bool)
@@ -3626,7 +3625,7 @@ func (c *Client) ContactsResetTopPeerRating(category TopPeerCategory, peer Input
 		Peer:     peer,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending ContactsResetTopPeerRating")
+		return false, errors.Wrap(err, "sending ContactsResetTopPeerRating")
 	}
 
 	resp, ok := responseData.(bool)
@@ -3699,7 +3698,7 @@ func (*ContactsToggleTopPeersParams) CRC() uint32 {
 func (c *Client) ContactsToggleTopPeers(enabled bool) (bool, error) {
 	responseData, err := c.MakeRequest(&ContactsToggleTopPeersParams{Enabled: enabled})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending ContactsToggleTopPeers")
+		return false, errors.Wrap(err, "sending ContactsToggleTopPeers")
 	}
 
 	resp, ok := responseData.(bool)
@@ -3722,7 +3721,7 @@ func (*ContactsUnblockParams) CRC() uint32 {
 func (c *Client) ContactsUnblock(id InputPeer) (bool, error) {
 	responseData, err := c.MakeRequest(&ContactsUnblockParams{ID: id})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending ContactsUnblock")
+		return false, errors.Wrap(err, "sending ContactsUnblock")
 	}
 
 	resp, ok := responseData.(bool)
@@ -3791,7 +3790,7 @@ func (*HelpAcceptTermsOfServiceParams) CRC() uint32 {
 func (c *Client) HelpAcceptTermsOfService(id *DataJson) (bool, error) {
 	responseData, err := c.MakeRequest(&HelpAcceptTermsOfServiceParams{ID: id})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending HelpAcceptTermsOfService")
+		return false, errors.Wrap(err, "sending HelpAcceptTermsOfService")
 	}
 
 	resp, ok := responseData.(bool)
@@ -3814,7 +3813,7 @@ func (*HelpDismissSuggestionParams) CRC() uint32 {
 func (c *Client) HelpDismissSuggestion(suggestion string) (bool, error) {
 	responseData, err := c.MakeRequest(&HelpDismissSuggestionParams{Suggestion: suggestion})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending HelpDismissSuggestion")
+		return false, errors.Wrap(err, "sending HelpDismissSuggestion")
 	}
 
 	resp, ok := responseData.(bool)
@@ -4220,7 +4219,7 @@ func (*HelpHidePromoDataParams) CRC() uint32 {
 func (c *Client) HelpHidePromoData(peer InputPeer) (bool, error) {
 	responseData, err := c.MakeRequest(&HelpHidePromoDataParams{Peer: peer})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending HelpHidePromoData")
+		return false, errors.Wrap(err, "sending HelpHidePromoData")
 	}
 
 	resp, ok := responseData.(bool)
@@ -4243,7 +4242,7 @@ func (*HelpSaveAppLogParams) CRC() uint32 {
 func (c *Client) HelpSaveAppLog(events []*InputAppEvent) (bool, error) {
 	responseData, err := c.MakeRequest(&HelpSaveAppLogParams{Events: events})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending HelpSaveAppLog")
+		return false, errors.Wrap(err, "sending HelpSaveAppLog")
 	}
 
 	resp, ok := responseData.(bool)
@@ -4270,7 +4269,7 @@ func (c *Client) HelpSetBotUpdatesStatus(pendingUpdatesCount int32, message stri
 		PendingUpdatesCount: pendingUpdatesCount,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending HelpSetBotUpdatesStatus")
+		return false, errors.Wrap(err, "sending HelpSetBotUpdatesStatus")
 	}
 
 	resp, ok := responseData.(bool)
@@ -4542,7 +4541,7 @@ func (*MessagesClearAllDraftsParams) CRC() uint32 {
 func (c *Client) MessagesClearAllDrafts() (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesClearAllDraftsParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesClearAllDrafts")
+		return false, errors.Wrap(err, "sending MessagesClearAllDrafts")
 	}
 
 	resp, ok := responseData.(bool)
@@ -4569,7 +4568,7 @@ func (*MessagesClearRecentStickersParams) FlagIndex() int {
 func (c *Client) MessagesClearRecentStickers(attached bool) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesClearRecentStickersParams{Attached: attached})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesClearRecentStickers")
+		return false, errors.Wrap(err, "sending MessagesClearRecentStickers")
 	}
 
 	resp, ok := responseData.(bool)
@@ -4739,7 +4738,7 @@ func (*MessagesDiscardEncryptionParams) CRC() uint32 {
 func (c *Client) MessagesDiscardEncryption(chatID int32) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesDiscardEncryptionParams{ChatID: chatID})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesDiscardEncryption")
+		return false, errors.Wrap(err, "sending MessagesDiscardEncryption")
 	}
 
 	resp, ok := responseData.(bool)
@@ -4766,7 +4765,7 @@ func (c *Client) MessagesEditChatAbout(peer InputPeer, about string) (bool, erro
 		Peer:  peer,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesEditChatAbout")
+		return false, errors.Wrap(err, "sending MessagesEditChatAbout")
 	}
 
 	resp, ok := responseData.(bool)
@@ -4795,7 +4794,7 @@ func (c *Client) MessagesEditChatAdmin(chatID int32, userID InputUser, isAdmin b
 		UserID:  userID,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesEditChatAdmin")
+		return false, errors.Wrap(err, "sending MessagesEditChatAdmin")
 	}
 
 	resp, ok := responseData.(bool)
@@ -4908,7 +4907,7 @@ func (*MessagesEditInlineBotMessageParams) FlagIndex() int {
 func (c *Client) MessagesEditInlineBotMessage(params *MessagesEditInlineBotMessageParams) (bool, error) {
 	responseData, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesEditInlineBotMessage")
+		return false, errors.Wrap(err, "sending MessagesEditInlineBotMessage")
 	}
 
 	resp, ok := responseData.(bool)
@@ -4992,7 +4991,7 @@ func (c *Client) MessagesFaveSticker(id InputDocument, unfave bool) (bool, error
 		Unfave: unfave,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesFaveSticker")
+		return false, errors.Wrap(err, "sending MessagesFaveSticker")
 	}
 
 	resp, ok := responseData.(bool)
@@ -6382,7 +6381,7 @@ func (*MessagesHidePeerSettingsBarParams) CRC() uint32 {
 func (c *Client) MessagesHidePeerSettingsBar(peer InputPeer) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesHidePeerSettingsBarParams{Peer: peer})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesHidePeerSettingsBar")
+		return false, errors.Wrap(err, "sending MessagesHidePeerSettingsBar")
 	}
 
 	resp, ok := responseData.(bool)
@@ -6463,7 +6462,7 @@ func (c *Client) MessagesMarkDialogUnread(unread bool, peer InputDialogPeer) (bo
 		Unread: unread,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesMarkDialogUnread")
+		return false, errors.Wrap(err, "sending MessagesMarkDialogUnread")
 	}
 
 	resp, ok := responseData.(bool)
@@ -6515,7 +6514,7 @@ func (c *Client) MessagesReadDiscussion(peer InputPeer, msgID, readMaxID int32) 
 		ReadMaxID: readMaxID,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesReadDiscussion")
+		return false, errors.Wrap(err, "sending MessagesReadDiscussion")
 	}
 
 	resp, ok := responseData.(bool)
@@ -6542,7 +6541,7 @@ func (c *Client) MessagesReadEncryptedHistory(peer *InputEncryptedChat, maxDate 
 		Peer:    peer,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesReadEncryptedHistory")
+		return false, errors.Wrap(err, "sending MessagesReadEncryptedHistory")
 	}
 
 	resp, ok := responseData.(bool)
@@ -6565,7 +6564,7 @@ func (*MessagesReadFeaturedStickersParams) CRC() uint32 {
 func (c *Client) MessagesReadFeaturedStickers(id []int64) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesReadFeaturedStickersParams{ID: id})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesReadFeaturedStickers")
+		return false, errors.Wrap(err, "sending MessagesReadFeaturedStickers")
 	}
 
 	resp, ok := responseData.(bool)
@@ -6717,7 +6716,7 @@ func (c *Client) MessagesReorderPinnedDialogs(force bool, folderID int32, order 
 		Order:    order,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesReorderPinnedDialogs")
+		return false, errors.Wrap(err, "sending MessagesReorderPinnedDialogs")
 	}
 
 	resp, ok := responseData.(bool)
@@ -6748,7 +6747,7 @@ func (c *Client) MessagesReorderStickerSets(masks bool, order []int64) (bool, er
 		Order: order,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesReorderStickerSets")
+		return false, errors.Wrap(err, "sending MessagesReorderStickerSets")
 	}
 
 	resp, ok := responseData.(bool)
@@ -6777,7 +6776,7 @@ func (c *Client) MessagesReport(peer InputPeer, id []int32, reason ReportReason)
 		Reason: reason,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesReport")
+		return false, errors.Wrap(err, "sending MessagesReport")
 	}
 
 	resp, ok := responseData.(bool)
@@ -6800,7 +6799,7 @@ func (*MessagesReportEncryptedSpamParams) CRC() uint32 {
 func (c *Client) MessagesReportEncryptedSpam(peer *InputEncryptedChat) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesReportEncryptedSpamParams{Peer: peer})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesReportEncryptedSpam")
+		return false, errors.Wrap(err, "sending MessagesReportEncryptedSpam")
 	}
 
 	resp, ok := responseData.(bool)
@@ -6823,7 +6822,7 @@ func (*MessagesReportSpamParams) CRC() uint32 {
 func (c *Client) MessagesReportSpam(peer InputPeer) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesReportSpamParams{Peer: peer})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesReportSpam")
+		return false, errors.Wrap(err, "sending MessagesReportSpam")
 	}
 
 	resp, ok := responseData.(bool)
@@ -6912,7 +6911,7 @@ func (*MessagesSaveDraftParams) FlagIndex() int {
 func (c *Client) MessagesSaveDraft(params *MessagesSaveDraftParams) (bool, error) {
 	responseData, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesSaveDraft")
+		return false, errors.Wrap(err, "sending MessagesSaveDraft")
 	}
 
 	resp, ok := responseData.(bool)
@@ -6939,7 +6938,7 @@ func (c *Client) MessagesSaveGif(id InputDocument, unsave bool) (bool, error) {
 		Unsave: unsave,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesSaveGif")
+		return false, errors.Wrap(err, "sending MessagesSaveGif")
 	}
 
 	resp, ok := responseData.(bool)
@@ -6972,7 +6971,7 @@ func (c *Client) MessagesSaveRecentSticker(attached bool, id InputDocument, unsa
 		Unsave:   unsave,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesSaveRecentSticker")
+		return false, errors.Wrap(err, "sending MessagesSaveRecentSticker")
 	}
 
 	resp, ok := responseData.(bool)
@@ -7433,7 +7432,7 @@ func (*MessagesSetBotCallbackAnswerParams) FlagIndex() int {
 func (c *Client) MessagesSetBotCallbackAnswer(params *MessagesSetBotCallbackAnswerParams) (bool, error) {
 	responseData, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesSetBotCallbackAnswer")
+		return false, errors.Wrap(err, "sending MessagesSetBotCallbackAnswer")
 	}
 
 	resp, ok := responseData.(bool)
@@ -7466,7 +7465,7 @@ func (c *Client) MessagesSetBotPrecheckoutResults(success bool, queryID int64, e
 		Success: success,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesSetBotPrecheckoutResults")
+		return false, errors.Wrap(err, "sending MessagesSetBotPrecheckoutResults")
 	}
 
 	resp, ok := responseData.(bool)
@@ -7499,7 +7498,7 @@ func (c *Client) MessagesSetBotShippingResults(queryID int64, error string, ship
 		ShippingOptions: shippingOptions,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesSetBotShippingResults")
+		return false, errors.Wrap(err, "sending MessagesSetBotShippingResults")
 	}
 
 	resp, ok := responseData.(bool)
@@ -7526,7 +7525,7 @@ func (c *Client) MessagesSetEncryptedTyping(peer *InputEncryptedChat, typing boo
 		Typing: typing,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesSetEncryptedTyping")
+		return false, errors.Wrap(err, "sending MessagesSetEncryptedTyping")
 	}
 
 	resp, ok := responseData.(bool)
@@ -7591,7 +7590,7 @@ func (*MessagesSetInlineBotResultsParams) FlagIndex() int {
 func (c *Client) MessagesSetInlineBotResults(params *MessagesSetInlineBotResultsParams) (bool, error) {
 	responseData, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesSetInlineBotResults")
+		return false, errors.Wrap(err, "sending MessagesSetInlineBotResults")
 	}
 
 	resp, ok := responseData.(bool)
@@ -7622,7 +7621,7 @@ func (*MessagesSetInlineGameScoreParams) FlagIndex() int {
 func (c *Client) MessagesSetInlineGameScore(params *MessagesSetInlineGameScoreParams) (bool, error) {
 	responseData, err := c.MakeRequest(params)
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesSetInlineGameScore")
+		return false, errors.Wrap(err, "sending MessagesSetInlineGameScore")
 	}
 
 	resp, ok := responseData.(bool)
@@ -7655,7 +7654,7 @@ func (c *Client) MessagesSetTyping(peer InputPeer, topMsgID int32, action SendMe
 		TopMsgID: topMsgID,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesSetTyping")
+		return false, errors.Wrap(err, "sending MessagesSetTyping")
 	}
 
 	resp, ok := responseData.(bool)
@@ -7717,7 +7716,7 @@ func (c *Client) MessagesToggleDialogPin(pinned bool, peer InputDialogPeer) (boo
 		Pinned: pinned,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesToggleDialogPin")
+		return false, errors.Wrap(err, "sending MessagesToggleDialogPin")
 	}
 
 	resp, ok := responseData.(bool)
@@ -7752,7 +7751,7 @@ func (c *Client) MessagesToggleStickerSets(uninstall, archive, unarchive bool, s
 		Uninstall:   uninstall,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesToggleStickerSets")
+		return false, errors.Wrap(err, "sending MessagesToggleStickerSets")
 	}
 
 	resp, ok := responseData.(bool)
@@ -7775,7 +7774,7 @@ func (*MessagesUninstallStickerSetParams) CRC() uint32 {
 func (c *Client) MessagesUninstallStickerSet(stickerset InputStickerSet) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesUninstallStickerSetParams{Stickerset: stickerset})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesUninstallStickerSet")
+		return false, errors.Wrap(err, "sending MessagesUninstallStickerSet")
 	}
 
 	resp, ok := responseData.(bool)
@@ -7829,7 +7828,7 @@ func (c *Client) MessagesUpdateDialogFilter(id int32, filter *DialogFilter) (boo
 		ID:     id,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesUpdateDialogFilter")
+		return false, errors.Wrap(err, "sending MessagesUpdateDialogFilter")
 	}
 
 	resp, ok := responseData.(bool)
@@ -7852,7 +7851,7 @@ func (*MessagesUpdateDialogFiltersOrderParams) CRC() uint32 {
 func (c *Client) MessagesUpdateDialogFiltersOrder(order []int32) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesUpdateDialogFiltersOrderParams{Order: order})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending MessagesUpdateDialogFiltersOrder")
+		return false, errors.Wrap(err, "sending MessagesUpdateDialogFiltersOrder")
 	}
 
 	resp, ok := responseData.(bool)
@@ -7968,7 +7967,7 @@ func (c *Client) PaymentsClearSavedInfo(credentials, info bool) (bool, error) {
 		Info:        info,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending PaymentsClearSavedInfo")
+		return false, errors.Wrap(err, "sending PaymentsClearSavedInfo")
 	}
 
 	resp, ok := responseData.(bool)
@@ -8261,7 +8260,7 @@ func (*PhoneReceivedCallParams) CRC() uint32 {
 func (c *Client) PhoneReceivedCall(peer *InputPhoneCall) (bool, error) {
 	responseData, err := c.MakeRequest(&PhoneReceivedCallParams{Peer: peer})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending PhoneReceivedCall")
+		return false, errors.Wrap(err, "sending PhoneReceivedCall")
 	}
 
 	resp, ok := responseData.(bool)
@@ -8319,7 +8318,7 @@ func (c *Client) PhoneSaveCallDebug(peer *InputPhoneCall, debug *DataJson) (bool
 		Peer:  peer,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending PhoneSaveCallDebug")
+		return false, errors.Wrap(err, "sending PhoneSaveCallDebug")
 	}
 
 	resp, ok := responseData.(bool)
@@ -8346,7 +8345,7 @@ func (c *Client) PhoneSendSignalingData(peer *InputPhoneCall, data []byte) (bool
 		Peer: peer,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending PhoneSendSignalingData")
+		return false, errors.Wrap(err, "sending PhoneSendSignalingData")
 	}
 
 	resp, ok := responseData.(bool)
@@ -9070,7 +9069,7 @@ func (c *Client) UploadSaveBigFilePart(fileID int64, filePart, fileTotalParts in
 		FileTotalParts: fileTotalParts,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending UploadSaveBigFilePart")
+		return false, errors.Wrap(err, "sending UploadSaveBigFilePart")
 	}
 
 	resp, ok := responseData.(bool)
@@ -9099,7 +9098,7 @@ func (c *Client) UploadSaveFilePart(fileID int64, filePart int32, bytes []byte) 
 		FilePart: filePart,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending UploadSaveFilePart")
+		return false, errors.Wrap(err, "sending UploadSaveFilePart")
 	}
 
 	resp, ok := responseData.(bool)
@@ -9172,7 +9171,7 @@ func (c *Client) UsersSetSecureValueErrors(id InputUser, errs []SecureValueError
 		ID:     id,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "sending UsersSetSecureValueErrors")
+		return false, errors.Wrap(err, "sending UsersSetSecureValueErrors")
 	}
 
 	resp, ok := responseData.(bool)
