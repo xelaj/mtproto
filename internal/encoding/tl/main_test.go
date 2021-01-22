@@ -31,6 +31,8 @@ func tearup() {
 		&InvokeWithLayerParams{},
 		&InitConnectionParams{},
 		&ResPQ{},
+		&AnyStructWithAnyType{},
+		&AnyStructWithAnyObject{},
 	)
 
 	tl.RegisterEnums(

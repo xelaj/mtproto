@@ -202,6 +202,24 @@ func (e *AccountUnregisterDeviceParams) CRC() uint32 {
 	return uint32(0x3076c4bf)
 }
 
+type AnyStructWithAnyType struct {
+	SomeInt int32
+	Data    interface{}
+}
+
+func (*AnyStructWithAnyType) CRC() uint32 {
+	return uint32(0xfdfd4646)
+}
+
+type AnyStructWithAnyObject struct {
+	SomeInt int32
+	Data    tl.Object
+}
+
+func (*AnyStructWithAnyObject) CRC() uint32 {
+	return uint32(0xfd46fd46)
+}
+
 type InvokeWithLayerParams struct {
 	Layer int32
 	Query any

@@ -8,6 +8,7 @@
 package telegram
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -19,6 +20,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
+
+	"github.com/xelaj/mtproto/telegram/internal/calls"
 )
 
 func (c *Client) GetChannelInfoByInviteLink(hashOrLink string) (*ChannelFull, error) {
@@ -70,7 +73,7 @@ func (c *Client) GetChatInfoByHashLink(hashOrLink string) (Chat, error) {
 	case *ChatInviteAlready:
 		return res.Chat, nil
 	case *ChatInviteObj:
-		return nil, errors.New("can't retrieve info due to user is not invited in chat  already")
+		return nil, errors.New("can't retrieve info due to user is not invited in chat already")
 	default:
 		panic("impossible type: " + reflect.TypeOf(resolved).String() + ", can't process it")
 	}
@@ -412,4 +415,18 @@ func (c *Client) AllUsersInChannel(channelID int) ([]int, error) {
 		return nil, errors.Wrap(err, "getting clients of chat")
 	}
 	return ids, nil
+}
+
+func (c *Client) PhoneGetCallConfigFormatted() (*calls.CallConfig, error) {
+	jsonString, err := c.PhoneGetCallConfig()
+	if err != nil {
+		return nil, errors.Wrap(err, "calling phone.getCallConfig method")
+	}
+
+	data := &calls.CallConfig{}
+	err = json.Unmarshal([]byte(jsonString.Data), &data)
+	if err != nil {
+		return nil, errors.Wrap(err, "unmarshalling response")
+	}
+	return data, nil
 }

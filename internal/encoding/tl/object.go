@@ -21,24 +21,61 @@ type Unmarshaler interface {
 	UnmarshalTL(*Decoder) error
 }
 
-// InterfacedObject is specific struct for handling bool types, slice and null as object.
-// See https://github.com/xelaj/mtproto/issues/51
-type InterfacedObject struct {
-	value interface{}
+//==========================================================================================================//
+// Next types are specific structs for handling bool types, slice and null as object.                       //
+// See https://github.com/xelaj/mtproto/issues/51                                                           //
+//==========================================================================================================//
+
+// PseudoTrue is a support struct which is required to get native
+type PseudoTrue struct{}
+
+func (*PseudoTrue) CRC() uint32 {
+	return CrcTrue
 }
 
-func (*InterfacedObject) CRC() uint32 {
-	panic("makes no sense")
+// PseudoFalse is a support struct which is required to get native
+type PseudoFalse struct{}
+
+func (*PseudoFalse) CRC() uint32 {
+	return CrcFalse
 }
 
-func (*InterfacedObject) UnmarshalTL(*Decoder) error {
-	panic("impossible to (un)marshal hidden object. Use explicit methods")
+type PseudoNil struct{}
+
+func (*PseudoNil) CRC() uint32 {
+	return CrcNull
 }
 
-func (*InterfacedObject) MarshalTL(*Encoder) error {
-	panic("impossible to (un)marshal hidden object. Use explicit methods")
+// you won't use it, right?
+func (*PseudoNil) Unwrap() interface{} {
+	return nil
 }
 
-func (i *InterfacedObject) Unwrap() interface{} {
-	return i.value
+// WrappedSlice is pseudo type. YOU SHOULD NOT use it customly, instead, you must encode/decode value by
+// encoder.PutVector or decoder.PopVector
+type WrappedSlice struct {
+	data interface{}
+}
+
+func (*WrappedSlice) CRC() uint32 {
+	return CrcVector
+}
+
+func (w *WrappedSlice) Unwrap() interface{} {
+	return w.data
+}
+
+func UnwrapNativeTypes(in Object) interface{} {
+	switch i := in.(type) {
+	case *PseudoTrue:
+		return true
+	case *PseudoFalse:
+		return false
+	case *PseudoNil:
+		return nil
+	case *WrappedSlice:
+		return i.Unwrap()
+	default:
+		return in
+	}
 }

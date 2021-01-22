@@ -166,6 +166,14 @@ func (d *Decoder) decodeValue(value reflect.Value) {
 
 	case reflect.Interface:
 		val = d.decodeRegisteredObject()
+
+		// if we got slice, we must unwrap it, cause WrappedSlice allowed to exist ONLY in root of returned object
+		if v, ok := val.(*WrappedSlice); ok {
+			if reflect.TypeOf(v.data).ConvertibleTo(value.Type()) {
+				val = v.data
+			}
+		}
+
 		if d.err != nil {
 			d.err = errors.Wrap(d.err, "decode interface")
 			return
@@ -234,7 +242,6 @@ func (d *Decoder) decodeValueGeneral(value reflect.Value) interface{} {
 	return val
 }
 
-// decodeRegisteredObject пробует определить,
 func (d *Decoder) decodeRegisteredObject() Object {
 	crc := d.PopCRC()
 	if d.err != nil {
@@ -259,16 +266,16 @@ func (d *Decoder) decodeRegisteredObject() Object {
 			return nil
 		}
 
-		return &InterfacedObject{res}
+		return &WrappedSlice{res}
 
 	case CrcFalse:
-		return &InterfacedObject{false}
+		return &PseudoFalse{}
 
 	case CrcTrue:
-		return &InterfacedObject{true}
+		return &PseudoTrue{}
 
 	case CrcNull:
-		return &InterfacedObject{nil}
+		return &PseudoNil{}
 	}
 
 	// in other ways we're trying to get object from registred crcs

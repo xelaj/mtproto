@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"path/filepath"
 
 	"github.com/k0kubun/pp"
@@ -33,12 +32,8 @@ func main() {
 	utils.ReadWarningsToStdErr(client.Warnings)
 	dry.PanicIfErr(err)
 
-	jsonString, err := client.PhoneGetCallConfig()
-	dry.PanicIfErr(err)
-
-	var data interface{}
-	dry.PanicIfErr(json.Unmarshal([]byte(jsonString.Data), &data))
-	pp.Println(data)
+	data, err := client.PhoneGetCallConfigFormatted()
+	pp.Println(data, err)
 
 	// Actually, i don't know what does these config means, but docs says, that you need to use libtgvoip.
 }

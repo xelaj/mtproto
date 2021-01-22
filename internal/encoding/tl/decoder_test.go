@@ -20,6 +20,10 @@ type any = interface{}
 
 // null struct{}
 
+var (
+	True = true // for pointer
+)
+
 func TestDecode(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -76,6 +80,18 @@ func TestDecode(t *testing.T) {
 				Solution:         "alala",
 				SolutionEntities: []MessageEntity{},
 			},
+		},
+		{
+			name:     "nakedBooleanObject#00",
+			data:     Hexed("b5757299"),
+			v:        &True,
+			expected: &tl.PseudoTrue{},
+		},
+		{
+			name:     "nakedBooleanObject#01",
+			data:     Hexed("379779bc"),
+			v:        &True,
+			expected: &tl.PseudoFalse{},
 		},
 		// TODO: отработать возможные ошибки
 	}
@@ -153,8 +169,36 @@ func TestDecodeUnknown(t *testing.T) {
 		{
 			name:            "predicting-[]int64",
 			data:            Hexed("15c4b51c00000000"),
-			expected:        []int64{},
+			expected:        tl.ExampleWrappedInt64Slice,
 			hintsForDecoder: []reflect.Type{reflect.TypeOf([]int64{})},
+		},
+		{
+			name: "predicting-[]int64ButDataNotWrapped",
+			data: Hexed("4646fdfdff00000015c4b51c00000000"),
+			expected: &AnyStructWithAnyType{
+				SomeInt: 255,
+				Data:    []int64{},
+			},
+			hintsForDecoder: []reflect.Type{reflect.TypeOf([]int64{})},
+		},
+		{
+			name: "predicting-[]int64ButDataNotWrappedAndItsObject",
+			data: Hexed("46fd46fdff00000015c4b51c00000000"),
+			expected: &AnyStructWithAnyObject{
+				SomeInt: 255,
+				Data:    tl.ExampleWrappedInt64Slice,
+			},
+			hintsForDecoder: []reflect.Type{reflect.TypeOf([]int64{})},
+		},
+		{
+			name:     "nakedBooleanObject#00",
+			data:     Hexed("b5757299"),
+			expected: &tl.PseudoTrue{},
+		},
+		{
+			name:     "nakedBooleanObject#01",
+			data:     Hexed("379779bc"),
+			expected: &tl.PseudoFalse{},
 		},
 		// TODO: отработать возможные ошибки
 	}
@@ -169,7 +213,7 @@ func TestDecodeUnknown(t *testing.T) {
 			}
 
 			if err == nil {
-				assert.Equal(t, tt.expected, tl.UnwrapNativeTypes(res))
+				assert.Equal(t, tt.expected, res)
 			}
 		})
 	}

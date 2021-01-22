@@ -48,11 +48,3 @@ func sliceToInterfaceSlice(in any) []any {
 
 	return res
 }
-
-func UnwrapNativeTypes(in Object) interface{} {
-	if v, ok := in.(*InterfacedObject); ok {
-		return v.Unwrap()
-	}
-
-	return in
-}

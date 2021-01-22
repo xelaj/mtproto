@@ -26,7 +26,7 @@ func (*AccountAcceptAuthorizationParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) AccountAcceptAuthorization(botID int32, scope, publicKey string, valueHashes []*SecureValueHash, credentials *SecureCredentialsEncrypted) (*tl.PseudoBool, error) {
+func (c *Client) AccountAcceptAuthorization(botID int32, scope, publicKey string, valueHashes []*SecureValueHash, credentials *SecureCredentialsEncrypted) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountAcceptAuthorizationParams{
 		BotID:       botID,
 		Credentials: credentials,
@@ -38,7 +38,7 @@ func (c *Client) AccountAcceptAuthorization(botID int32, scope, publicKey string
 		return nil, errors.Wrap(err, "sending AccountAcceptAuthorization")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -53,13 +53,13 @@ func (*AccountCancelPasswordEmailParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) AccountCancelPasswordEmail() (*tl.PseudoBool, error) {
+func (c *Client) AccountCancelPasswordEmail() (bool, error) {
 	responseData, err := c.MakeRequest(&AccountCancelPasswordEmailParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending AccountCancelPasswordEmail")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -105,13 +105,13 @@ func (*AccountCheckUsernameParams) CRC() uint32 {
 }
 
 // Registers a validated phone number in the system.
-func (c *Client) AccountCheckUsername(username string) (*tl.PseudoBool, error) {
+func (c *Client) AccountCheckUsername(username string) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountCheckUsernameParams{Username: username})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending AccountCheckUsername")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -128,13 +128,13 @@ func (*AccountConfirmPasswordEmailParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) AccountConfirmPasswordEmail(code string) (*tl.PseudoBool, error) {
+func (c *Client) AccountConfirmPasswordEmail(code string) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountConfirmPasswordEmailParams{Code: code})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending AccountConfirmPasswordEmail")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -152,7 +152,7 @@ func (*AccountConfirmPhoneParams) CRC() uint32 {
 }
 
 // Registers a validated phone number in the system.
-func (c *Client) AccountConfirmPhone(phoneCodeHash, phoneCode string) (*tl.PseudoBool, error) {
+func (c *Client) AccountConfirmPhone(phoneCodeHash, phoneCode string) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountConfirmPhoneParams{
 		PhoneCode:     phoneCode,
 		PhoneCodeHash: phoneCodeHash,
@@ -161,7 +161,7 @@ func (c *Client) AccountConfirmPhone(phoneCodeHash, phoneCode string) (*tl.Pseud
 		return nil, errors.Wrap(err, "sending AccountConfirmPhone")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -213,13 +213,13 @@ func (*AccountDeleteAccountParams) CRC() uint32 {
 }
 
 // Registers a validated phone number in the system.
-func (c *Client) AccountDeleteAccount(reason string) (*tl.PseudoBool, error) {
+func (c *Client) AccountDeleteAccount(reason string) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountDeleteAccountParams{Reason: reason})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending AccountDeleteAccount")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -236,13 +236,13 @@ func (*AccountDeleteSecureValueParams) CRC() uint32 {
 }
 
 // Registers a validated phone number in the system.
-func (c *Client) AccountDeleteSecureValue(types []SecureValueType) (*tl.PseudoBool, error) {
+func (c *Client) AccountDeleteSecureValue(types []SecureValueType) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountDeleteSecureValueParams{Types: types})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending AccountDeleteSecureValue")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -263,13 +263,13 @@ func (*AccountFinishTakeoutSessionParams) FlagIndex() int {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) AccountFinishTakeoutSession(success bool) (*tl.PseudoBool, error) {
+func (c *Client) AccountFinishTakeoutSession(success bool) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountFinishTakeoutSessionParams{Success: success})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending AccountFinishTakeoutSession")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -397,13 +397,13 @@ func (*AccountGetContactSignUpNotificationParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) AccountGetContactSignUpNotification() (*tl.PseudoBool, error) {
+func (c *Client) AccountGetContactSignUpNotification() (bool, error) {
 	responseData, err := c.MakeRequest(&AccountGetContactSignUpNotificationParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending AccountGetContactSignUpNotification")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -818,7 +818,7 @@ func (*AccountInstallThemeParams) FlagIndex() int {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) AccountInstallTheme(dark bool, format string, theme InputTheme) (*tl.PseudoBool, error) {
+func (c *Client) AccountInstallTheme(dark bool, format string, theme InputTheme) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountInstallThemeParams{
 		Dark:   dark,
 		Format: format,
@@ -828,7 +828,7 @@ func (c *Client) AccountInstallTheme(dark bool, format string, theme InputTheme)
 		return nil, errors.Wrap(err, "sending AccountInstallTheme")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -846,7 +846,7 @@ func (*AccountInstallWallPaperParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) AccountInstallWallPaper(wallpaper InputWallPaper, settings *WallPaperSettings) (*tl.PseudoBool, error) {
+func (c *Client) AccountInstallWallPaper(wallpaper InputWallPaper, settings *WallPaperSettings) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountInstallWallPaperParams{
 		Settings:  settings,
 		Wallpaper: wallpaper,
@@ -855,7 +855,7 @@ func (c *Client) AccountInstallWallPaper(wallpaper InputWallPaper, settings *Wal
 		return nil, errors.Wrap(err, "sending AccountInstallWallPaper")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -881,13 +881,13 @@ func (*AccountRegisterDeviceParams) FlagIndex() int {
 }
 
 // Registers a validated phone number in the system.
-func (c *Client) AccountRegisterDevice(params *AccountRegisterDeviceParams) (*tl.PseudoBool, error) {
+func (c *Client) AccountRegisterDevice(params *AccountRegisterDeviceParams) (bool, error) {
 	responseData, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sending AccountRegisterDevice")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -905,7 +905,7 @@ func (*AccountReportPeerParams) CRC() uint32 {
 }
 
 // Registers a validated phone number in the system.
-func (c *Client) AccountReportPeer(peer InputPeer, reason ReportReason) (*tl.PseudoBool, error) {
+func (c *Client) AccountReportPeer(peer InputPeer, reason ReportReason) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountReportPeerParams{
 		Peer:   peer,
 		Reason: reason,
@@ -914,7 +914,7 @@ func (c *Client) AccountReportPeer(peer InputPeer, reason ReportReason) (*tl.Pse
 		return nil, errors.Wrap(err, "sending AccountReportPeer")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -929,13 +929,13 @@ func (*AccountResendPasswordEmailParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) AccountResendPasswordEmail() (*tl.PseudoBool, error) {
+func (c *Client) AccountResendPasswordEmail() (bool, error) {
 	responseData, err := c.MakeRequest(&AccountResendPasswordEmailParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending AccountResendPasswordEmail")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -952,13 +952,13 @@ func (*AccountResetAuthorizationParams) CRC() uint32 {
 }
 
 // Registers a validated phone number in the system.
-func (c *Client) AccountResetAuthorization(hash int64) (*tl.PseudoBool, error) {
+func (c *Client) AccountResetAuthorization(hash int64) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountResetAuthorizationParams{Hash: hash})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending AccountResetAuthorization")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -973,13 +973,13 @@ func (*AccountResetNotifySettingsParams) CRC() uint32 {
 }
 
 // Registers a validated phone number in the system.
-func (c *Client) AccountResetNotifySettings() (*tl.PseudoBool, error) {
+func (c *Client) AccountResetNotifySettings() (bool, error) {
 	responseData, err := c.MakeRequest(&AccountResetNotifySettingsParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending AccountResetNotifySettings")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -994,13 +994,13 @@ func (*AccountResetWallPapersParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) AccountResetWallPapers() (*tl.PseudoBool, error) {
+func (c *Client) AccountResetWallPapers() (bool, error) {
 	responseData, err := c.MakeRequest(&AccountResetWallPapersParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending AccountResetWallPapers")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -1017,13 +1017,13 @@ func (*AccountResetWebAuthorizationParams) CRC() uint32 {
 }
 
 // Registers a validated phone number in the system.
-func (c *Client) AccountResetWebAuthorization(hash int64) (*tl.PseudoBool, error) {
+func (c *Client) AccountResetWebAuthorization(hash int64) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountResetWebAuthorizationParams{Hash: hash})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending AccountResetWebAuthorization")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -1038,13 +1038,13 @@ func (*AccountResetWebAuthorizationsParams) CRC() uint32 {
 }
 
 // Registers a validated phone number in the system.
-func (c *Client) AccountResetWebAuthorizations() (*tl.PseudoBool, error) {
+func (c *Client) AccountResetWebAuthorizations() (bool, error) {
 	responseData, err := c.MakeRequest(&AccountResetWebAuthorizationsParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending AccountResetWebAuthorizations")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -1067,7 +1067,7 @@ func (*AccountSaveAutoDownloadSettingsParams) FlagIndex() int {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) AccountSaveAutoDownloadSettings(low, high bool, settings *AutoDownloadSettings) (*tl.PseudoBool, error) {
+func (c *Client) AccountSaveAutoDownloadSettings(low, high bool, settings *AutoDownloadSettings) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountSaveAutoDownloadSettingsParams{
 		High:     high,
 		Low:      low,
@@ -1077,7 +1077,7 @@ func (c *Client) AccountSaveAutoDownloadSettings(low, high bool, settings *AutoD
 		return nil, errors.Wrap(err, "sending AccountSaveAutoDownloadSettings")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -1122,7 +1122,7 @@ func (*AccountSaveThemeParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) AccountSaveTheme(theme InputTheme, unsave bool) (*tl.PseudoBool, error) {
+func (c *Client) AccountSaveTheme(theme InputTheme, unsave bool) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountSaveThemeParams{
 		Theme:  theme,
 		Unsave: unsave,
@@ -1131,7 +1131,7 @@ func (c *Client) AccountSaveTheme(theme InputTheme, unsave bool) (*tl.PseudoBool
 		return nil, errors.Wrap(err, "sending AccountSaveTheme")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -1150,7 +1150,7 @@ func (*AccountSaveWallPaperParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) AccountSaveWallPaper(wallpaper InputWallPaper, unsave bool, settings *WallPaperSettings) (*tl.PseudoBool, error) {
+func (c *Client) AccountSaveWallPaper(wallpaper InputWallPaper, unsave bool, settings *WallPaperSettings) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountSaveWallPaperParams{
 		Settings:  settings,
 		Unsave:    unsave,
@@ -1160,7 +1160,7 @@ func (c *Client) AccountSaveWallPaper(wallpaper InputWallPaper, unsave bool, set
 		return nil, errors.Wrap(err, "sending AccountSaveWallPaper")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -1281,13 +1281,13 @@ func (*AccountSetAccountTtlParams) CRC() uint32 {
 }
 
 // Registers a validated phone number in the system.
-func (c *Client) AccountSetAccountTtl(ttl *AccountDaysTtl) (*tl.PseudoBool, error) {
+func (c *Client) AccountSetAccountTtl(ttl *AccountDaysTtl) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountSetAccountTtlParams{Ttl: ttl})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending AccountSetAccountTtl")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -1304,13 +1304,13 @@ func (*AccountSetContactSignUpNotificationParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) AccountSetContactSignUpNotification(silent bool) (*tl.PseudoBool, error) {
+func (c *Client) AccountSetContactSignUpNotification(silent bool) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountSetContactSignUpNotificationParams{Silent: silent})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending AccountSetContactSignUpNotification")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -1331,13 +1331,13 @@ func (*AccountSetContentSettingsParams) FlagIndex() int {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) AccountSetContentSettings(sensitiveEnabled bool) (*tl.PseudoBool, error) {
+func (c *Client) AccountSetContentSettings(sensitiveEnabled bool) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountSetContentSettingsParams{SensitiveEnabled: sensitiveEnabled})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending AccountSetContentSettings")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -1406,7 +1406,7 @@ func (*AccountUnregisterDeviceParams) CRC() uint32 {
 }
 
 // Registers a validated phone number in the system.
-func (c *Client) AccountUnregisterDevice(tokenType int32, token string, otherUids []int32) (*tl.PseudoBool, error) {
+func (c *Client) AccountUnregisterDevice(tokenType int32, token string, otherUids []int32) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountUnregisterDeviceParams{
 		OtherUids: otherUids,
 		Token:     token,
@@ -1416,7 +1416,7 @@ func (c *Client) AccountUnregisterDevice(tokenType int32, token string, otherUid
 		return nil, errors.Wrap(err, "sending AccountUnregisterDevice")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -1433,13 +1433,13 @@ func (*AccountUpdateDeviceLockedParams) CRC() uint32 {
 }
 
 // Registers a validated phone number in the system.
-func (c *Client) AccountUpdateDeviceLocked(period int32) (*tl.PseudoBool, error) {
+func (c *Client) AccountUpdateDeviceLocked(period int32) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountUpdateDeviceLockedParams{Period: period})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending AccountUpdateDeviceLocked")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -1457,7 +1457,7 @@ func (*AccountUpdateNotifySettingsParams) CRC() uint32 {
 }
 
 // Registers a validated phone number in the system.
-func (c *Client) AccountUpdateNotifySettings(peer InputNotifyPeer, settings *InputPeerNotifySettings) (*tl.PseudoBool, error) {
+func (c *Client) AccountUpdateNotifySettings(peer InputNotifyPeer, settings *InputPeerNotifySettings) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountUpdateNotifySettingsParams{
 		Peer:     peer,
 		Settings: settings,
@@ -1466,7 +1466,7 @@ func (c *Client) AccountUpdateNotifySettings(peer InputNotifyPeer, settings *Inp
 		return nil, errors.Wrap(err, "sending AccountUpdateNotifySettings")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -1484,7 +1484,7 @@ func (*AccountUpdatePasswordSettingsParams) CRC() uint32 {
 }
 
 // Registers a validated phone number in the system.
-func (c *Client) AccountUpdatePasswordSettings(password InputCheckPasswordSRP, newSettings *AccountPasswordInputSettings) (*tl.PseudoBool, error) {
+func (c *Client) AccountUpdatePasswordSettings(password InputCheckPasswordSRP, newSettings *AccountPasswordInputSettings) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountUpdatePasswordSettingsParams{
 		NewSettings: newSettings,
 		Password:    password,
@@ -1493,7 +1493,7 @@ func (c *Client) AccountUpdatePasswordSettings(password InputCheckPasswordSRP, n
 		return nil, errors.Wrap(err, "sending AccountUpdatePasswordSettings")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -1543,13 +1543,13 @@ func (*AccountUpdateStatusParams) CRC() uint32 {
 }
 
 // Registers a validated phone number in the system.
-func (c *Client) AccountUpdateStatus(offline bool) (*tl.PseudoBool, error) {
+func (c *Client) AccountUpdateStatus(offline bool) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountUpdateStatusParams{Offline: offline})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending AccountUpdateStatus")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -1686,7 +1686,7 @@ func (*AccountVerifyEmailParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) AccountVerifyEmail(email, code string) (*tl.PseudoBool, error) {
+func (c *Client) AccountVerifyEmail(email, code string) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountVerifyEmailParams{
 		Code:  code,
 		Email: email,
@@ -1695,7 +1695,7 @@ func (c *Client) AccountVerifyEmail(email, code string) (*tl.PseudoBool, error) 
 		return nil, errors.Wrap(err, "sending AccountVerifyEmail")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -1714,7 +1714,7 @@ func (*AccountVerifyPhoneParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) AccountVerifyPhone(phoneNumber, phoneCodeHash, phoneCode string) (*tl.PseudoBool, error) {
+func (c *Client) AccountVerifyPhone(phoneNumber, phoneCodeHash, phoneCode string) (bool, error) {
 	responseData, err := c.MakeRequest(&AccountVerifyPhoneParams{
 		PhoneCode:     phoneCode,
 		PhoneCodeHash: phoneCodeHash,
@@ -1724,7 +1724,7 @@ func (c *Client) AccountVerifyPhone(phoneNumber, phoneCodeHash, phoneCode string
 		return nil, errors.Wrap(err, "sending AccountVerifyPhone")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -1767,7 +1767,7 @@ func (*AuthBindTempAuthKeyParams) CRC() uint32 {
 }
 
 // Registers a validated phone number in the system.
-func (c *Client) AuthBindTempAuthKey(permAuthKeyID, nonce int64, expiresAt int32, encryptedMessage []byte) (*tl.PseudoBool, error) {
+func (c *Client) AuthBindTempAuthKey(permAuthKeyID, nonce int64, expiresAt int32, encryptedMessage []byte) (bool, error) {
 	responseData, err := c.MakeRequest(&AuthBindTempAuthKeyParams{
 		EncryptedMessage: encryptedMessage,
 		ExpiresAt:        expiresAt,
@@ -1778,7 +1778,7 @@ func (c *Client) AuthBindTempAuthKey(permAuthKeyID, nonce int64, expiresAt int32
 		return nil, errors.Wrap(err, "sending AuthBindTempAuthKey")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -1796,7 +1796,7 @@ func (*AuthCancelCodeParams) CRC() uint32 {
 }
 
 // Registers a validated phone number in the system.
-func (c *Client) AuthCancelCode(phoneNumber, phoneCodeHash string) (*tl.PseudoBool, error) {
+func (c *Client) AuthCancelCode(phoneNumber, phoneCodeHash string) (bool, error) {
 	responseData, err := c.MakeRequest(&AuthCancelCodeParams{
 		PhoneCodeHash: phoneCodeHash,
 		PhoneNumber:   phoneNumber,
@@ -1805,7 +1805,7 @@ func (c *Client) AuthCancelCode(phoneNumber, phoneCodeHash string) (*tl.PseudoBo
 		return nil, errors.Wrap(err, "sending AuthCancelCode")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -1845,13 +1845,13 @@ func (*AuthDropTempAuthKeysParams) CRC() uint32 {
 }
 
 // Registers a validated phone number in the system.
-func (c *Client) AuthDropTempAuthKeys(exceptAuthKeys []int64) (*tl.PseudoBool, error) {
+func (c *Client) AuthDropTempAuthKeys(exceptAuthKeys []int64) (bool, error) {
 	responseData, err := c.MakeRequest(&AuthDropTempAuthKeysParams{ExceptAuthKeys: exceptAuthKeys})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending AuthDropTempAuthKeys")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -1999,13 +1999,13 @@ func (*AuthLogOutParams) CRC() uint32 {
 }
 
 // Registers a validated phone number in the system.
-func (c *Client) AuthLogOut() (*tl.PseudoBool, error) {
+func (c *Client) AuthLogOut() (bool, error) {
 	responseData, err := c.MakeRequest(&AuthLogOutParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending AuthLogOut")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -2091,13 +2091,13 @@ func (*AuthResetAuthorizationsParams) CRC() uint32 {
 }
 
 // Registers a validated phone number in the system.
-func (c *Client) AuthResetAuthorizations() (*tl.PseudoBool, error) {
+func (c *Client) AuthResetAuthorizations() (bool, error) {
 	responseData, err := c.MakeRequest(&AuthResetAuthorizationsParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending AuthResetAuthorizations")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -2206,7 +2206,7 @@ func (*BotsAnswerWebhookJsonQueryParams) CRC() uint32 {
 }
 
 // Get the participants of a channel
-func (c *Client) BotsAnswerWebhookJsonQuery(queryID int64, data *DataJson) (*tl.PseudoBool, error) {
+func (c *Client) BotsAnswerWebhookJsonQuery(queryID int64, data *DataJson) (bool, error) {
 	responseData, err := c.MakeRequest(&BotsAnswerWebhookJsonQueryParams{
 		Data:    data,
 		QueryID: queryID,
@@ -2215,7 +2215,7 @@ func (c *Client) BotsAnswerWebhookJsonQuery(queryID int64, data *DataJson) (*tl.
 		return nil, errors.Wrap(err, "sending BotsAnswerWebhookJsonQuery")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -2259,13 +2259,13 @@ func (*BotsSetBotCommandsParams) CRC() uint32 {
 }
 
 // Get the participants of a channel
-func (c *Client) BotsSetBotCommands(commands []*BotCommand) (*tl.PseudoBool, error) {
+func (c *Client) BotsSetBotCommands(commands []*BotCommand) (bool, error) {
 	responseData, err := c.MakeRequest(&BotsSetBotCommandsParams{Commands: commands})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending BotsSetBotCommands")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -2283,7 +2283,7 @@ func (*ChannelsCheckUsernameParams) CRC() uint32 {
 }
 
 // Get the participants of a channel
-func (c *Client) ChannelsCheckUsername(channel InputChannel, username string) (*tl.PseudoBool, error) {
+func (c *Client) ChannelsCheckUsername(channel InputChannel, username string) (bool, error) {
 	responseData, err := c.MakeRequest(&ChannelsCheckUsernameParams{
 		Channel:  channel,
 		Username: username,
@@ -2292,7 +2292,7 @@ func (c *Client) ChannelsCheckUsername(channel InputChannel, username string) (*
 		return nil, errors.Wrap(err, "sending ChannelsCheckUsername")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -2365,7 +2365,7 @@ func (*ChannelsDeleteHistoryParams) CRC() uint32 {
 }
 
 // Get the participants of a channel
-func (c *Client) ChannelsDeleteHistory(channel InputChannel, maxID int32) (*tl.PseudoBool, error) {
+func (c *Client) ChannelsDeleteHistory(channel InputChannel, maxID int32) (bool, error) {
 	responseData, err := c.MakeRequest(&ChannelsDeleteHistoryParams{
 		Channel: channel,
 		MaxID:   maxID,
@@ -2374,7 +2374,7 @@ func (c *Client) ChannelsDeleteHistory(channel InputChannel, maxID int32) (*tl.P
 		return nil, errors.Wrap(err, "sending ChannelsDeleteHistory")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -2536,7 +2536,7 @@ func (*ChannelsEditLocationParams) CRC() uint32 {
 }
 
 // Get the participants of a channel
-func (c *Client) ChannelsEditLocation(channel InputChannel, geoPoint InputGeoPoint, address string) (*tl.PseudoBool, error) {
+func (c *Client) ChannelsEditLocation(channel InputChannel, geoPoint InputGeoPoint, address string) (bool, error) {
 	responseData, err := c.MakeRequest(&ChannelsEditLocationParams{
 		Address:  address,
 		Channel:  channel,
@@ -2546,7 +2546,7 @@ func (c *Client) ChannelsEditLocation(channel InputChannel, geoPoint InputGeoPoi
 		return nil, errors.Wrap(err, "sending ChannelsEditLocation")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -2988,7 +2988,7 @@ func (*ChannelsReadHistoryParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) ChannelsReadHistory(channel InputChannel, maxID int32) (*tl.PseudoBool, error) {
+func (c *Client) ChannelsReadHistory(channel InputChannel, maxID int32) (bool, error) {
 	responseData, err := c.MakeRequest(&ChannelsReadHistoryParams{
 		Channel: channel,
 		MaxID:   maxID,
@@ -2997,7 +2997,7 @@ func (c *Client) ChannelsReadHistory(channel InputChannel, maxID int32) (*tl.Pse
 		return nil, errors.Wrap(err, "sending ChannelsReadHistory")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -3015,7 +3015,7 @@ func (*ChannelsReadMessageContentsParams) CRC() uint32 {
 }
 
 // Get the participants of a channel
-func (c *Client) ChannelsReadMessageContents(channel InputChannel, id []int32) (*tl.PseudoBool, error) {
+func (c *Client) ChannelsReadMessageContents(channel InputChannel, id []int32) (bool, error) {
 	responseData, err := c.MakeRequest(&ChannelsReadMessageContentsParams{
 		Channel: channel,
 		ID:      id,
@@ -3024,7 +3024,7 @@ func (c *Client) ChannelsReadMessageContents(channel InputChannel, id []int32) (
 		return nil, errors.Wrap(err, "sending ChannelsReadMessageContents")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -3043,7 +3043,7 @@ func (*ChannelsReportSpamParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) ChannelsReportSpam(channel InputChannel, userID InputUser, id []int32) (*tl.PseudoBool, error) {
+func (c *Client) ChannelsReportSpam(channel InputChannel, userID InputUser, id []int32) (bool, error) {
 	responseData, err := c.MakeRequest(&ChannelsReportSpamParams{
 		Channel: channel,
 		ID:      id,
@@ -3053,7 +3053,7 @@ func (c *Client) ChannelsReportSpam(channel InputChannel, userID InputUser, id [
 		return nil, errors.Wrap(err, "sending ChannelsReportSpam")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -3071,7 +3071,7 @@ func (*ChannelsSetDiscussionGroupParams) CRC() uint32 {
 }
 
 // Get the participants of a channel
-func (c *Client) ChannelsSetDiscussionGroup(broadcast, group InputChannel) (*tl.PseudoBool, error) {
+func (c *Client) ChannelsSetDiscussionGroup(broadcast, group InputChannel) (bool, error) {
 	responseData, err := c.MakeRequest(&ChannelsSetDiscussionGroupParams{
 		Broadcast: broadcast,
 		Group:     group,
@@ -3080,7 +3080,7 @@ func (c *Client) ChannelsSetDiscussionGroup(broadcast, group InputChannel) (*tl.
 		return nil, errors.Wrap(err, "sending ChannelsSetDiscussionGroup")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -3098,7 +3098,7 @@ func (*ChannelsSetStickersParams) CRC() uint32 {
 }
 
 // Get the participants of a channel
-func (c *Client) ChannelsSetStickers(channel InputChannel, stickerset InputStickerSet) (*tl.PseudoBool, error) {
+func (c *Client) ChannelsSetStickers(channel InputChannel, stickerset InputStickerSet) (bool, error) {
 	responseData, err := c.MakeRequest(&ChannelsSetStickersParams{
 		Channel:    channel,
 		Stickerset: stickerset,
@@ -3107,7 +3107,7 @@ func (c *Client) ChannelsSetStickers(channel InputChannel, stickerset InputStick
 		return nil, errors.Wrap(err, "sending ChannelsSetStickers")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -3206,7 +3206,7 @@ func (*ChannelsUpdateUsernameParams) CRC() uint32 {
 }
 
 // Get the participants of a channel
-func (c *Client) ChannelsUpdateUsername(channel InputChannel, username string) (*tl.PseudoBool, error) {
+func (c *Client) ChannelsUpdateUsername(channel InputChannel, username string) (bool, error) {
 	responseData, err := c.MakeRequest(&ChannelsUpdateUsernameParams{
 		Channel:  channel,
 		Username: username,
@@ -3215,7 +3215,7 @@ func (c *Client) ChannelsUpdateUsername(channel InputChannel, username string) (
 		return nil, errors.Wrap(err, "sending ChannelsUpdateUsername")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -3286,13 +3286,13 @@ func (*ContactsBlockParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) ContactsBlock(id InputPeer) (*tl.PseudoBool, error) {
+func (c *Client) ContactsBlock(id InputPeer) (bool, error) {
 	responseData, err := c.MakeRequest(&ContactsBlockParams{ID: id})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending ContactsBlock")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -3344,13 +3344,13 @@ func (*ContactsDeleteByPhonesParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) ContactsDeleteByPhones(phones []string) (*tl.PseudoBool, error) {
+func (c *Client) ContactsDeleteByPhones(phones []string) (bool, error) {
 	responseData, err := c.MakeRequest(&ContactsDeleteByPhonesParams{Phones: phones})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending ContactsDeleteByPhones")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -3596,13 +3596,13 @@ func (*ContactsResetSavedParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) ContactsResetSaved() (*tl.PseudoBool, error) {
+func (c *Client) ContactsResetSaved() (bool, error) {
 	responseData, err := c.MakeRequest(&ContactsResetSavedParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending ContactsResetSaved")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -3620,7 +3620,7 @@ func (*ContactsResetTopPeerRatingParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) ContactsResetTopPeerRating(category TopPeerCategory, peer InputPeer) (*tl.PseudoBool, error) {
+func (c *Client) ContactsResetTopPeerRating(category TopPeerCategory, peer InputPeer) (bool, error) {
 	responseData, err := c.MakeRequest(&ContactsResetTopPeerRatingParams{
 		Category: category,
 		Peer:     peer,
@@ -3629,7 +3629,7 @@ func (c *Client) ContactsResetTopPeerRating(category TopPeerCategory, peer Input
 		return nil, errors.Wrap(err, "sending ContactsResetTopPeerRating")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -3696,13 +3696,13 @@ func (*ContactsToggleTopPeersParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) ContactsToggleTopPeers(enabled bool) (*tl.PseudoBool, error) {
+func (c *Client) ContactsToggleTopPeers(enabled bool) (bool, error) {
 	responseData, err := c.MakeRequest(&ContactsToggleTopPeersParams{Enabled: enabled})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending ContactsToggleTopPeers")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -3719,13 +3719,13 @@ func (*ContactsUnblockParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) ContactsUnblock(id InputPeer) (*tl.PseudoBool, error) {
+func (c *Client) ContactsUnblock(id InputPeer) (bool, error) {
 	responseData, err := c.MakeRequest(&ContactsUnblockParams{ID: id})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending ContactsUnblock")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -3788,13 +3788,13 @@ func (*HelpAcceptTermsOfServiceParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) HelpAcceptTermsOfService(id *DataJson) (*tl.PseudoBool, error) {
+func (c *Client) HelpAcceptTermsOfService(id *DataJson) (bool, error) {
 	responseData, err := c.MakeRequest(&HelpAcceptTermsOfServiceParams{ID: id})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending HelpAcceptTermsOfService")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -3811,13 +3811,13 @@ func (*HelpDismissSuggestionParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) HelpDismissSuggestion(suggestion string) (*tl.PseudoBool, error) {
+func (c *Client) HelpDismissSuggestion(suggestion string) (bool, error) {
 	responseData, err := c.MakeRequest(&HelpDismissSuggestionParams{Suggestion: suggestion})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending HelpDismissSuggestion")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -4217,13 +4217,13 @@ func (*HelpHidePromoDataParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) HelpHidePromoData(peer InputPeer) (*tl.PseudoBool, error) {
+func (c *Client) HelpHidePromoData(peer InputPeer) (bool, error) {
 	responseData, err := c.MakeRequest(&HelpHidePromoDataParams{Peer: peer})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending HelpHidePromoData")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -4240,13 +4240,13 @@ func (*HelpSaveAppLogParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) HelpSaveAppLog(events []*InputAppEvent) (*tl.PseudoBool, error) {
+func (c *Client) HelpSaveAppLog(events []*InputAppEvent) (bool, error) {
 	responseData, err := c.MakeRequest(&HelpSaveAppLogParams{Events: events})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending HelpSaveAppLog")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -4264,7 +4264,7 @@ func (*HelpSetBotUpdatesStatusParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) HelpSetBotUpdatesStatus(pendingUpdatesCount int32, message string) (*tl.PseudoBool, error) {
+func (c *Client) HelpSetBotUpdatesStatus(pendingUpdatesCount int32, message string) (bool, error) {
 	responseData, err := c.MakeRequest(&HelpSetBotUpdatesStatusParams{
 		Message:             message,
 		PendingUpdatesCount: pendingUpdatesCount,
@@ -4273,7 +4273,7 @@ func (c *Client) HelpSetBotUpdatesStatus(pendingUpdatesCount int32, message stri
 		return nil, errors.Wrap(err, "sending HelpSetBotUpdatesStatus")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -4539,13 +4539,13 @@ func (*MessagesClearAllDraftsParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesClearAllDrafts() (*tl.PseudoBool, error) {
+func (c *Client) MessagesClearAllDrafts() (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesClearAllDraftsParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending MessagesClearAllDrafts")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -4566,13 +4566,13 @@ func (*MessagesClearRecentStickersParams) FlagIndex() int {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesClearRecentStickers(attached bool) (*tl.PseudoBool, error) {
+func (c *Client) MessagesClearRecentStickers(attached bool) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesClearRecentStickersParams{Attached: attached})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending MessagesClearRecentStickers")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -4736,13 +4736,13 @@ func (*MessagesDiscardEncryptionParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesDiscardEncryption(chatID int32) (*tl.PseudoBool, error) {
+func (c *Client) MessagesDiscardEncryption(chatID int32) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesDiscardEncryptionParams{ChatID: chatID})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending MessagesDiscardEncryption")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -4760,7 +4760,7 @@ func (*MessagesEditChatAboutParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesEditChatAbout(peer InputPeer, about string) (*tl.PseudoBool, error) {
+func (c *Client) MessagesEditChatAbout(peer InputPeer, about string) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesEditChatAboutParams{
 		About: about,
 		Peer:  peer,
@@ -4769,7 +4769,7 @@ func (c *Client) MessagesEditChatAbout(peer InputPeer, about string) (*tl.Pseudo
 		return nil, errors.Wrap(err, "sending MessagesEditChatAbout")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -4788,7 +4788,7 @@ func (*MessagesEditChatAdminParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesEditChatAdmin(chatID int32, userID InputUser, isAdmin bool) (*tl.PseudoBool, error) {
+func (c *Client) MessagesEditChatAdmin(chatID int32, userID InputUser, isAdmin bool) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesEditChatAdminParams{
 		ChatID:  chatID,
 		IsAdmin: isAdmin,
@@ -4798,7 +4798,7 @@ func (c *Client) MessagesEditChatAdmin(chatID int32, userID InputUser, isAdmin b
 		return nil, errors.Wrap(err, "sending MessagesEditChatAdmin")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -4905,13 +4905,13 @@ func (*MessagesEditInlineBotMessageParams) FlagIndex() int {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesEditInlineBotMessage(params *MessagesEditInlineBotMessageParams) (*tl.PseudoBool, error) {
+func (c *Client) MessagesEditInlineBotMessage(params *MessagesEditInlineBotMessageParams) (bool, error) {
 	responseData, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sending MessagesEditInlineBotMessage")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -4986,7 +4986,7 @@ func (*MessagesFaveStickerParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesFaveSticker(id InputDocument, unfave bool) (*tl.PseudoBool, error) {
+func (c *Client) MessagesFaveSticker(id InputDocument, unfave bool) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesFaveStickerParams{
 		ID:     id,
 		Unfave: unfave,
@@ -4995,7 +4995,7 @@ func (c *Client) MessagesFaveSticker(id InputDocument, unfave bool) (*tl.PseudoB
 		return nil, errors.Wrap(err, "sending MessagesFaveSticker")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -6379,13 +6379,13 @@ func (*MessagesHidePeerSettingsBarParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesHidePeerSettingsBar(peer InputPeer) (*tl.PseudoBool, error) {
+func (c *Client) MessagesHidePeerSettingsBar(peer InputPeer) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesHidePeerSettingsBarParams{Peer: peer})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending MessagesHidePeerSettingsBar")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -6457,7 +6457,7 @@ func (*MessagesMarkDialogUnreadParams) FlagIndex() int {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesMarkDialogUnread(unread bool, peer InputDialogPeer) (*tl.PseudoBool, error) {
+func (c *Client) MessagesMarkDialogUnread(unread bool, peer InputDialogPeer) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesMarkDialogUnreadParams{
 		Peer:   peer,
 		Unread: unread,
@@ -6466,7 +6466,7 @@ func (c *Client) MessagesMarkDialogUnread(unread bool, peer InputDialogPeer) (*t
 		return nil, errors.Wrap(err, "sending MessagesMarkDialogUnread")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -6508,7 +6508,7 @@ func (*MessagesReadDiscussionParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesReadDiscussion(peer InputPeer, msgID, readMaxID int32) (*tl.PseudoBool, error) {
+func (c *Client) MessagesReadDiscussion(peer InputPeer, msgID, readMaxID int32) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesReadDiscussionParams{
 		MsgID:     msgID,
 		Peer:      peer,
@@ -6518,7 +6518,7 @@ func (c *Client) MessagesReadDiscussion(peer InputPeer, msgID, readMaxID int32) 
 		return nil, errors.Wrap(err, "sending MessagesReadDiscussion")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -6536,7 +6536,7 @@ func (*MessagesReadEncryptedHistoryParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesReadEncryptedHistory(peer *InputEncryptedChat, maxDate int32) (*tl.PseudoBool, error) {
+func (c *Client) MessagesReadEncryptedHistory(peer *InputEncryptedChat, maxDate int32) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesReadEncryptedHistoryParams{
 		MaxDate: maxDate,
 		Peer:    peer,
@@ -6545,7 +6545,7 @@ func (c *Client) MessagesReadEncryptedHistory(peer *InputEncryptedChat, maxDate 
 		return nil, errors.Wrap(err, "sending MessagesReadEncryptedHistory")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -6562,13 +6562,13 @@ func (*MessagesReadFeaturedStickersParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesReadFeaturedStickers(id []int64) (*tl.PseudoBool, error) {
+func (c *Client) MessagesReadFeaturedStickers(id []int64) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesReadFeaturedStickersParams{ID: id})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending MessagesReadFeaturedStickers")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -6710,7 +6710,7 @@ func (*MessagesReorderPinnedDialogsParams) FlagIndex() int {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesReorderPinnedDialogs(force bool, folderID int32, order []InputDialogPeer) (*tl.PseudoBool, error) {
+func (c *Client) MessagesReorderPinnedDialogs(force bool, folderID int32, order []InputDialogPeer) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesReorderPinnedDialogsParams{
 		FolderID: folderID,
 		Force:    force,
@@ -6720,7 +6720,7 @@ func (c *Client) MessagesReorderPinnedDialogs(force bool, folderID int32, order 
 		return nil, errors.Wrap(err, "sending MessagesReorderPinnedDialogs")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -6742,7 +6742,7 @@ func (*MessagesReorderStickerSetsParams) FlagIndex() int {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesReorderStickerSets(masks bool, order []int64) (*tl.PseudoBool, error) {
+func (c *Client) MessagesReorderStickerSets(masks bool, order []int64) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesReorderStickerSetsParams{
 		Masks: masks,
 		Order: order,
@@ -6751,7 +6751,7 @@ func (c *Client) MessagesReorderStickerSets(masks bool, order []int64) (*tl.Pseu
 		return nil, errors.Wrap(err, "sending MessagesReorderStickerSets")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -6770,7 +6770,7 @@ func (*MessagesReportParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesReport(peer InputPeer, id []int32, reason ReportReason) (*tl.PseudoBool, error) {
+func (c *Client) MessagesReport(peer InputPeer, id []int32, reason ReportReason) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesReportParams{
 		ID:     id,
 		Peer:   peer,
@@ -6780,7 +6780,7 @@ func (c *Client) MessagesReport(peer InputPeer, id []int32, reason ReportReason)
 		return nil, errors.Wrap(err, "sending MessagesReport")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -6797,13 +6797,13 @@ func (*MessagesReportEncryptedSpamParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesReportEncryptedSpam(peer *InputEncryptedChat) (*tl.PseudoBool, error) {
+func (c *Client) MessagesReportEncryptedSpam(peer *InputEncryptedChat) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesReportEncryptedSpamParams{Peer: peer})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending MessagesReportEncryptedSpam")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -6820,13 +6820,13 @@ func (*MessagesReportSpamParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesReportSpam(peer InputPeer) (*tl.PseudoBool, error) {
+func (c *Client) MessagesReportSpam(peer InputPeer) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesReportSpamParams{Peer: peer})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending MessagesReportSpam")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -6909,13 +6909,13 @@ func (*MessagesSaveDraftParams) FlagIndex() int {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesSaveDraft(params *MessagesSaveDraftParams) (*tl.PseudoBool, error) {
+func (c *Client) MessagesSaveDraft(params *MessagesSaveDraftParams) (bool, error) {
 	responseData, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sending MessagesSaveDraft")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -6933,7 +6933,7 @@ func (*MessagesSaveGifParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesSaveGif(id InputDocument, unsave bool) (*tl.PseudoBool, error) {
+func (c *Client) MessagesSaveGif(id InputDocument, unsave bool) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesSaveGifParams{
 		ID:     id,
 		Unsave: unsave,
@@ -6942,7 +6942,7 @@ func (c *Client) MessagesSaveGif(id InputDocument, unsave bool) (*tl.PseudoBool,
 		return nil, errors.Wrap(err, "sending MessagesSaveGif")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -6965,7 +6965,7 @@ func (*MessagesSaveRecentStickerParams) FlagIndex() int {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesSaveRecentSticker(attached bool, id InputDocument, unsave bool) (*tl.PseudoBool, error) {
+func (c *Client) MessagesSaveRecentSticker(attached bool, id InputDocument, unsave bool) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesSaveRecentStickerParams{
 		Attached: attached,
 		ID:       id,
@@ -6975,7 +6975,7 @@ func (c *Client) MessagesSaveRecentSticker(attached bool, id InputDocument, unsa
 		return nil, errors.Wrap(err, "sending MessagesSaveRecentSticker")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -7430,13 +7430,13 @@ func (*MessagesSetBotCallbackAnswerParams) FlagIndex() int {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesSetBotCallbackAnswer(params *MessagesSetBotCallbackAnswerParams) (*tl.PseudoBool, error) {
+func (c *Client) MessagesSetBotCallbackAnswer(params *MessagesSetBotCallbackAnswerParams) (bool, error) {
 	responseData, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sending MessagesSetBotCallbackAnswer")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -7459,7 +7459,7 @@ func (*MessagesSetBotPrecheckoutResultsParams) FlagIndex() int {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesSetBotPrecheckoutResults(success bool, queryID int64, error string) (*tl.PseudoBool, error) {
+func (c *Client) MessagesSetBotPrecheckoutResults(success bool, queryID int64, error string) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesSetBotPrecheckoutResultsParams{
 		Error:   error,
 		QueryID: queryID,
@@ -7469,7 +7469,7 @@ func (c *Client) MessagesSetBotPrecheckoutResults(success bool, queryID int64, e
 		return nil, errors.Wrap(err, "sending MessagesSetBotPrecheckoutResults")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -7492,7 +7492,7 @@ func (*MessagesSetBotShippingResultsParams) FlagIndex() int {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesSetBotShippingResults(queryID int64, error string, shippingOptions []*ShippingOption) (*tl.PseudoBool, error) {
+func (c *Client) MessagesSetBotShippingResults(queryID int64, error string, shippingOptions []*ShippingOption) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesSetBotShippingResultsParams{
 		Error:           error,
 		QueryID:         queryID,
@@ -7502,7 +7502,7 @@ func (c *Client) MessagesSetBotShippingResults(queryID int64, error string, ship
 		return nil, errors.Wrap(err, "sending MessagesSetBotShippingResults")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -7520,7 +7520,7 @@ func (*MessagesSetEncryptedTypingParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesSetEncryptedTyping(peer *InputEncryptedChat, typing bool) (*tl.PseudoBool, error) {
+func (c *Client) MessagesSetEncryptedTyping(peer *InputEncryptedChat, typing bool) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesSetEncryptedTypingParams{
 		Peer:   peer,
 		Typing: typing,
@@ -7529,7 +7529,7 @@ func (c *Client) MessagesSetEncryptedTyping(peer *InputEncryptedChat, typing boo
 		return nil, errors.Wrap(err, "sending MessagesSetEncryptedTyping")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -7588,13 +7588,13 @@ func (*MessagesSetInlineBotResultsParams) FlagIndex() int {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesSetInlineBotResults(params *MessagesSetInlineBotResultsParams) (*tl.PseudoBool, error) {
+func (c *Client) MessagesSetInlineBotResults(params *MessagesSetInlineBotResultsParams) (bool, error) {
 	responseData, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sending MessagesSetInlineBotResults")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -7619,13 +7619,13 @@ func (*MessagesSetInlineGameScoreParams) FlagIndex() int {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesSetInlineGameScore(params *MessagesSetInlineGameScoreParams) (*tl.PseudoBool, error) {
+func (c *Client) MessagesSetInlineGameScore(params *MessagesSetInlineGameScoreParams) (bool, error) {
 	responseData, err := c.MakeRequest(params)
 	if err != nil {
 		return nil, errors.Wrap(err, "sending MessagesSetInlineGameScore")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -7648,7 +7648,7 @@ func (*MessagesSetTypingParams) FlagIndex() int {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesSetTyping(peer InputPeer, topMsgID int32, action SendMessageAction) (*tl.PseudoBool, error) {
+func (c *Client) MessagesSetTyping(peer InputPeer, topMsgID int32, action SendMessageAction) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesSetTypingParams{
 		Action:   action,
 		Peer:     peer,
@@ -7658,7 +7658,7 @@ func (c *Client) MessagesSetTyping(peer InputPeer, topMsgID int32, action SendMe
 		return nil, errors.Wrap(err, "sending MessagesSetTyping")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -7711,7 +7711,7 @@ func (*MessagesToggleDialogPinParams) FlagIndex() int {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesToggleDialogPin(pinned bool, peer InputDialogPeer) (*tl.PseudoBool, error) {
+func (c *Client) MessagesToggleDialogPin(pinned bool, peer InputDialogPeer) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesToggleDialogPinParams{
 		Peer:   peer,
 		Pinned: pinned,
@@ -7720,7 +7720,7 @@ func (c *Client) MessagesToggleDialogPin(pinned bool, peer InputDialogPeer) (*tl
 		return nil, errors.Wrap(err, "sending MessagesToggleDialogPin")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -7744,7 +7744,7 @@ func (*MessagesToggleStickerSetsParams) FlagIndex() int {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesToggleStickerSets(uninstall, archive, unarchive bool, stickersets []InputStickerSet) (*tl.PseudoBool, error) {
+func (c *Client) MessagesToggleStickerSets(uninstall, archive, unarchive bool, stickersets []InputStickerSet) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesToggleStickerSetsParams{
 		Archive:     archive,
 		Stickersets: stickersets,
@@ -7755,7 +7755,7 @@ func (c *Client) MessagesToggleStickerSets(uninstall, archive, unarchive bool, s
 		return nil, errors.Wrap(err, "sending MessagesToggleStickerSets")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -7772,13 +7772,13 @@ func (*MessagesUninstallStickerSetParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesUninstallStickerSet(stickerset InputStickerSet) (*tl.PseudoBool, error) {
+func (c *Client) MessagesUninstallStickerSet(stickerset InputStickerSet) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesUninstallStickerSetParams{Stickerset: stickerset})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending MessagesUninstallStickerSet")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -7823,7 +7823,7 @@ func (*MessagesUpdateDialogFilterParams) FlagIndex() int {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesUpdateDialogFilter(id int32, filter *DialogFilter) (*tl.PseudoBool, error) {
+func (c *Client) MessagesUpdateDialogFilter(id int32, filter *DialogFilter) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesUpdateDialogFilterParams{
 		Filter: filter,
 		ID:     id,
@@ -7832,7 +7832,7 @@ func (c *Client) MessagesUpdateDialogFilter(id int32, filter *DialogFilter) (*tl
 		return nil, errors.Wrap(err, "sending MessagesUpdateDialogFilter")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -7849,13 +7849,13 @@ func (*MessagesUpdateDialogFiltersOrderParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) MessagesUpdateDialogFiltersOrder(order []int32) (*tl.PseudoBool, error) {
+func (c *Client) MessagesUpdateDialogFiltersOrder(order []int32) (bool, error) {
 	responseData, err := c.MakeRequest(&MessagesUpdateDialogFiltersOrderParams{Order: order})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending MessagesUpdateDialogFiltersOrder")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -7962,7 +7962,7 @@ func (*PaymentsClearSavedInfoParams) FlagIndex() int {
 }
 
 // Get the participants of a channel
-func (c *Client) PaymentsClearSavedInfo(credentials, info bool) (*tl.PseudoBool, error) {
+func (c *Client) PaymentsClearSavedInfo(credentials, info bool) (bool, error) {
 	responseData, err := c.MakeRequest(&PaymentsClearSavedInfoParams{
 		Credentials: credentials,
 		Info:        info,
@@ -7971,7 +7971,7 @@ func (c *Client) PaymentsClearSavedInfo(credentials, info bool) (*tl.PseudoBool,
 		return nil, errors.Wrap(err, "sending PaymentsClearSavedInfo")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -8258,13 +8258,13 @@ func (*PhoneReceivedCallParams) CRC() uint32 {
 }
 
 // Get the participants of a channel
-func (c *Client) PhoneReceivedCall(peer *InputPhoneCall) (*tl.PseudoBool, error) {
+func (c *Client) PhoneReceivedCall(peer *InputPhoneCall) (bool, error) {
 	responseData, err := c.MakeRequest(&PhoneReceivedCallParams{Peer: peer})
 	if err != nil {
 		return nil, errors.Wrap(err, "sending PhoneReceivedCall")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -8313,7 +8313,7 @@ func (*PhoneSaveCallDebugParams) CRC() uint32 {
 }
 
 // Get the participants of a channel
-func (c *Client) PhoneSaveCallDebug(peer *InputPhoneCall, debug *DataJson) (*tl.PseudoBool, error) {
+func (c *Client) PhoneSaveCallDebug(peer *InputPhoneCall, debug *DataJson) (bool, error) {
 	responseData, err := c.MakeRequest(&PhoneSaveCallDebugParams{
 		Debug: debug,
 		Peer:  peer,
@@ -8322,7 +8322,7 @@ func (c *Client) PhoneSaveCallDebug(peer *InputPhoneCall, debug *DataJson) (*tl.
 		return nil, errors.Wrap(err, "sending PhoneSaveCallDebug")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -8340,7 +8340,7 @@ func (*PhoneSendSignalingDataParams) CRC() uint32 {
 }
 
 // Get the participants of a channel
-func (c *Client) PhoneSendSignalingData(peer *InputPhoneCall, data []byte) (*tl.PseudoBool, error) {
+func (c *Client) PhoneSendSignalingData(peer *InputPhoneCall, data []byte) (bool, error) {
 	responseData, err := c.MakeRequest(&PhoneSendSignalingDataParams{
 		Data: data,
 		Peer: peer,
@@ -8349,7 +8349,7 @@ func (c *Client) PhoneSendSignalingData(peer *InputPhoneCall, data []byte) (*tl.
 		return nil, errors.Wrap(err, "sending PhoneSendSignalingData")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -9062,7 +9062,7 @@ func (*UploadSaveBigFilePartParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) UploadSaveBigFilePart(fileID int64, filePart, fileTotalParts int32, bytes []byte) (*tl.PseudoBool, error) {
+func (c *Client) UploadSaveBigFilePart(fileID int64, filePart, fileTotalParts int32, bytes []byte) (bool, error) {
 	responseData, err := c.MakeRequest(&UploadSaveBigFilePartParams{
 		Bytes:          bytes,
 		FileID:         fileID,
@@ -9073,7 +9073,7 @@ func (c *Client) UploadSaveBigFilePart(fileID int64, filePart, fileTotalParts in
 		return nil, errors.Wrap(err, "sending UploadSaveBigFilePart")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -9092,7 +9092,7 @@ func (*UploadSaveFilePartParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) UploadSaveFilePart(fileID int64, filePart int32, bytes []byte) (*tl.PseudoBool, error) {
+func (c *Client) UploadSaveFilePart(fileID int64, filePart int32, bytes []byte) (bool, error) {
 	responseData, err := c.MakeRequest(&UploadSaveFilePartParams{
 		Bytes:    bytes,
 		FileID:   fileID,
@@ -9102,7 +9102,7 @@ func (c *Client) UploadSaveFilePart(fileID int64, filePart int32, bytes []byte) 
 		return nil, errors.Wrap(err, "sending UploadSaveFilePart")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
@@ -9166,7 +9166,7 @@ func (*UsersSetSecureValueErrorsParams) CRC() uint32 {
 }
 
 // Sends a Telegram Passport authorization form, effectively sharing data with the service
-func (c *Client) UsersSetSecureValueErrors(id InputUser, errs []SecureValueError) (*tl.PseudoBool, error) {
+func (c *Client) UsersSetSecureValueErrors(id InputUser, errs []SecureValueError) (bool, error) {
 	responseData, err := c.MakeRequest(&UsersSetSecureValueErrorsParams{
 		Errors: errs,
 		ID:     id,
@@ -9175,7 +9175,7 @@ func (c *Client) UsersSetSecureValueErrors(id InputUser, errs []SecureValueError
 		return nil, errors.Wrap(err, "sending UsersSetSecureValueErrors")
 	}
 
-	resp, ok := responseData.(*tl.PseudoBool)
+	resp, ok := responseData.(bool)
 	if !ok {
 		panic("got invalid response type: " + reflect.TypeOf(responseData).String())
 	}
