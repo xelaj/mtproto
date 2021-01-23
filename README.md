@@ -5,8 +5,8 @@
 [![codecov](https://codecov.io/gh/xelaj/mtproto/branch/master/graph/badge.svg)](https://codecov.io/gh/xelaj/mtproto)
 [![license MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/xelaj/mtproto/blob/master/README.md)
 [![chat telegram](https://img.shields.io/badge/chat-telegram-0088cc)](https://bit.ly/2xlsVsQ)
-![version v0.5.0](https://img.shields.io/badge/version-v0.5.0-yellow)
-![unstable](https://img.shields.io/badge/stability-unstable-yellow)
+![version v1.0.0](https://img.shields.io/badge/version-v1.0.0-success)
+![unstable](https://img.shields.io/badge/stability-stable-success)
 <!--
 contributors
 go version
