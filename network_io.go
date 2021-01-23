@@ -13,7 +13,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
@@ -88,7 +87,7 @@ func (m *MTProto) sendPacketNew(request tl.Object, expectedTypes ...reflect.Type
 
 	//? https://core.telegram.org/mtproto/mtproto-transports#abridged
 	// _, err := m.conn.Write(utils.PacketLengthMTProtoCompatible(data))
-	// dry.PanicIfErr(err)
+	// check(err)
 	_, err = m.conn.Write(data)
 	if err != nil {
 		return nil, errors.Wrap(err, "sending request")
@@ -114,7 +113,7 @@ func (m *MTProto) writeRPCResponse(msgID int, data tl.Object) error {
 
 func (m *MTProto) readFromConn(ctx context.Context) (data []byte, err error) {
 	err = m.conn.SetReadDeadline(time.Now().Add(readTimeout)) // возможно поможет???
-	dry.PanicIfErr(err)
+	check(err)
 
 	reader := dry.NewCancelableReader(ctx, m.conn)
 	// https://core.telegram.org/mtproto/mtproto-transports#abridged
@@ -123,13 +122,13 @@ func (m *MTProto) readFromConn(ctx context.Context) (data []byte, err error) {
 	// Read читаем. т.к. маленькие пакеты (до 127 байт)  кодируют длину в 1 байт, а побольше в 4, то
 	// мы читаем сначала 1 байт, смотрим, это 0xef или нет, если да, то читаем оставшиеся 3 байта и получаем длину
 	//firstByte, err := reader.ReadByte()
-	//dry.PanicIfErr(err)
+	//check(err)
 	//
 	//sizeInBytes, err := utils.GetPacketLengthMTProtoCompatible([]byte{firstByte})
 	//if err == utils.ErrPacketSizeIsBigger {
 	//	restOfSize := make([]byte, 3)
 	//	n, err := reader.Read(restOfSize)
-	//	dry.PanicIfErr(err)
+	//	check(err)
 	//	dry.PanicIf(n != 3, fmt.Sprintf("expected read 3 bytes, got %d", n))
 	//
 	//	sizeInBytes, _ = utils.GetPacketLengthMTProtoCompatible(append([]byte{firstByte}, restOfSize...))
@@ -141,7 +140,6 @@ func (m *MTProto) readFromConn(ctx context.Context) (data []byte, err error) {
 	sizeInBytes := make([]byte, 4)
 	n, err := reader.Read(sizeInBytes)
 	if err != nil {
-		pp.Println(sizeInBytes, err)
 		return nil, errors.Wrap(err, "reading length")
 	}
 	if n != 4 {
@@ -152,8 +150,10 @@ func (m *MTProto) readFromConn(ctx context.Context) (data []byte, err error) {
 	// читаем сами данные
 	data = make([]byte, int(size))
 	n, err = reader.Read(data)
-	dry.PanicIfErr(err)
-	dry.PanicIf(n != int(size), fmt.Sprintf("expected read %d bytes, got %d", size, n))
+	check(err)
+	if n != int(size) {
+		panic(fmt.Sprintf("expected read %d bytes, got %d", size, n))
+	}
 
 	return data, nil
 }

@@ -192,7 +192,7 @@ type RpcDropAnswer interface {
 	ImplementsRpcDropAnswer()
 }
 
-type RpcAnswerUnknown struct{}
+type RpcAnswerUnknown null
 
 func (*RpcAnswerUnknown) ImplementsRpcDropAnswer() {}
 
@@ -200,7 +200,7 @@ func (*RpcAnswerUnknown) CRC() uint32 {
 	return 0x5e2ad36e //nolint:gomnd not magic
 }
 
-type RpcAnswerDroppedRunning struct{}
+type RpcAnswerDroppedRunning null
 
 func (*RpcAnswerDroppedRunning) ImplementsRpcDropAnswer() {}
 
@@ -376,10 +376,10 @@ func (*GzipPacked) popMessageAsBytes(d *tl.Decoder) ([]byte, error) {
 	//? это то что я пытался сделать
 	// data := d.PopMessage()
 	// gz, err := gzip.NewReader(bytes.NewBuffer(data))
-	// dry.PanicIfErr(err)
+	// check(err)
 
 	// decompressed, err := ioutil.ReadAll(gz)
-	// dry.PanicIfErr(err)
+	// check(err)
 
 	// return decompressed
 }

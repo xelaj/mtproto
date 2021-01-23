@@ -19,7 +19,6 @@ import (
 	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
-	"github.com/xelaj/go-dry"
 
 	"github.com/xelaj/mtproto/telegram/internal/calls"
 )
@@ -354,7 +353,7 @@ func (c *Client) AllUsersInChat(chatID int) ([]int, error) {
 			int32(offset),
 			0,
 		)
-		dry.PanicIfErr(err)
+		check(err)
 		data := resp.(*ChannelsChannelParticipantsObj)
 		totalCount = int(data.Count)
 		for _, participant := range data.Participants {

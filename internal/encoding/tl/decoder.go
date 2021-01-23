@@ -190,9 +190,9 @@ func (d *Decoder) decodeValue(value reflect.Value) {
 }
 
 // декодирует базовые типы, строчки числа, вот это. если тип не найден возвращает nil
-func (d *Decoder) decodeValueGeneral(value reflect.Value) interface{} {
+func (d *Decoder) decodeValueGeneral(value reflect.Value) any {
 	// value, which is setting into value arg
-	var val interface{}
+	var val any
 
 	switch value.Kind() { //nolint:exhaustive has default case
 	case reflect.Float64:

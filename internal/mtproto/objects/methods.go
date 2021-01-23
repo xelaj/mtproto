@@ -14,7 +14,7 @@ import (
 )
 
 type requester interface {
-	MakeRequest(tl.Object) (interface{}, error)
+	MakeRequest(tl.Object) (any, error)
 }
 
 type ReqPQParams struct {

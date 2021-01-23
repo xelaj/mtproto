@@ -58,7 +58,7 @@ func (*AuthSentCode) FlagIndex() int {
 	return 0
 }
 
-type SomeNullStruct struct{}
+type SomeNullStruct null
 
 func (*SomeNullStruct) CRC() uint32 {
 	return uint32(0xc4f9186b)
@@ -204,7 +204,7 @@ func (e *AccountUnregisterDeviceParams) CRC() uint32 {
 
 type AnyStructWithAnyType struct {
 	SomeInt int32
-	Data    interface{}
+	Data    any
 }
 
 func (*AnyStructWithAnyType) CRC() uint32 {

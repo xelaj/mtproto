@@ -16,7 +16,7 @@ func (e *ErrRegisteredObjectNotFound) Error() string {
 	return fmt.Sprintf("object with provided crc not registered: 0x%08x", e.Crc)
 }
 
-type ErrMustParseSlicesExplicitly struct{}
+type ErrMustParseSlicesExplicitly null
 
 func (e *ErrMustParseSlicesExplicitly) Error() string {
 	return "got vector CRC code when parsing unknown object: vectors can't be parsed as predicted objects"

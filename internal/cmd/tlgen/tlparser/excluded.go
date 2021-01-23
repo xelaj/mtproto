@@ -2,7 +2,7 @@ package tlparser
 
 import "fmt"
 
-var excludedDefinitions = map[string]struct{}{
+var excludedDefinitions = map[string]null{
 	"true":      {},
 	"boolFalse": {},
 	"boolTrue":  {},
@@ -17,7 +17,7 @@ var excludedDefinitions = map[string]struct{}{
 	"invokeWithTakeout":       {},
 }
 
-var excludedTypes = map[string]struct{}{
+var excludedTypes = map[string]null{
 	"int":    {},
 	"long":   {},
 	"double": {},

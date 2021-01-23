@@ -11,8 +11,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/tj/assert"
-	"github.com/xelaj/go-dry"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMTProto_SaveSession(t *testing.T) {
@@ -32,15 +31,15 @@ func TestMTProto_SaveSession(t *testing.T) {
 	assert.NoError(t, err)
 
 	data, err := ioutil.ReadFile(storePath)
-	dry.PanicIfErr(err)
+	check(err)
 
-	assert.Equal(t, `{"key":"c29tZSBhdXRoIGtleQ==","hash":"b29vb29oIHRoYXQncyBkZWZpbmV0bHkgYSBrZXkgaGFzaCE="`+
+	assert.Equal(t, `{"key":"c29tZSBhdXRoIGtleQ==","hash":"b29vb29oIHRoYXQncyBkZWZpbml0ZWx5IGEga2V5IGhhc2gh"`+
 		`,"salt":"AAAAAAAAAAA=","hostname":"1337.228.1488.0"}`, string(data))
 }
 
 func TestMTProto_LoadSession(t *testing.T) {
 	storePath := filepath.Join(os.TempDir(), "session.json")
-	tmpData := `{"key":"c29tZSBhdXRoIGtleQ==","hash":"b29vb29oIHRoYXQncyBkZWZpbmV0bHkgYSBrZXkgaGFzaCE="` +
+	tmpData := `{"key":"c29tZSBhdXRoIGtleQ==","hash":"b29vb29oIHRoYXQncyBkZWZpbml0ZWx5IGEga2V5IGhhc2gh"` +
 		`,"salt":"AAAAAAAAAAA=","hostname":"1337.228.1488.0"}`
 	ioutil.WriteFile(storePath, []byte(tmpData), 0666)
 	defer os.Remove(storePath)

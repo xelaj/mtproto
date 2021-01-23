@@ -30,7 +30,7 @@ func (m *MTProto) SaveSession() (err error) {
 	s.Salt = buf
 	s.Hostname = m.addr
 	err = SaveSession(s, m.tokensStorage)
-	dry.PanicIfErr(err)
+	check(err)
 
 	return nil
 }
@@ -40,7 +40,7 @@ func (m *MTProto) LoadSession() (err error) {
 	if errs.IsNotFound(err) {
 		return err
 	}
-	dry.PanicIfErr(err)
+	check(err)
 
 	m.authKey = s.Key
 	m.authKeyHash = s.Hash

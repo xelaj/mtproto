@@ -15,10 +15,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/xelaj/go-dry"
 
-	"github.com/xelaj/mtproto/internal/encoding/tl"
 	ige "github.com/xelaj/mtproto/internal/aes_ige"
-	"github.com/xelaj/mtproto/internal/mtproto/objects"
+	"github.com/xelaj/mtproto/internal/encoding/tl"
 	"github.com/xelaj/mtproto/internal/keys"
+	"github.com/xelaj/mtproto/internal/mtproto/objects"
 )
 
 // https://tlgrm.ru/docs/mtproto/auth_key
@@ -59,7 +59,7 @@ func (m *MTProto) makeAuthKey() error {
 		ServerNonce: nonceServer,
 		NewNonce:    nonceSecond,
 	})
-	dry.PanicIfErr(err) // ну я не знаю что во вселенной произойдет чтоб тут словилась паника
+	check(err) // ну я не знаю что во вселенной произойдет чтоб тут словилась паника
 
 	hashAndMsg := make([]byte, 255)
 	copy(hashAndMsg, append(dry.Sha1(string(message)), message...))
@@ -124,7 +124,7 @@ func (m *MTProto) makeAuthKey() error {
 
 	// (encoding) client_DH_inner_data
 	clientDHData, err := tl.Marshal(&objects.ClientDHInnerData{nonceFirst, nonceServer, 0, g_b.Bytes()})
-	dry.PanicIfErr(err) // ну я не знаю что во вселенной произойдет чтоб тут словилась паника
+	check(err) // ну я не знаю что во вселенной произойдет чтоб тут словилась паника
 
 	encryptedMessage = ige.EncryptMessageWithTempKeys(clientDHData, nonceSecond.Int, nonceServer.Int)
 

@@ -10,8 +10,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/xelaj/go-dry"
-
 	"github.com/xelaj/mtproto/internal/encoding/tl"
 )
 
@@ -55,6 +53,6 @@ func TestMain(m *testing.M) {
 
 func Hexed(in string) []byte {
 	res, err := hex.DecodeString(in)
-	dry.PanicIfErr(err)
+	check(err)
 	return res
 }

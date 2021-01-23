@@ -27,45 +27,45 @@ type Unmarshaler interface {
 //==========================================================================================================//
 
 // PseudoTrue is a support struct which is required to get native
-type PseudoTrue struct{}
+type PseudoTrue null
 
 func (*PseudoTrue) CRC() uint32 {
 	return CrcTrue
 }
 
 // PseudoFalse is a support struct which is required to get native
-type PseudoFalse struct{}
+type PseudoFalse null
 
 func (*PseudoFalse) CRC() uint32 {
 	return CrcFalse
 }
 
-type PseudoNil struct{}
+type PseudoNil null
 
 func (*PseudoNil) CRC() uint32 {
 	return CrcNull
 }
 
 // you won't use it, right?
-func (*PseudoNil) Unwrap() interface{} {
+func (*PseudoNil) Unwrap() any {
 	return nil
 }
 
 // WrappedSlice is pseudo type. YOU SHOULD NOT use it customly, instead, you must encode/decode value by
 // encoder.PutVector or decoder.PopVector
 type WrappedSlice struct {
-	data interface{}
+	data any
 }
 
 func (*WrappedSlice) CRC() uint32 {
 	return CrcVector
 }
 
-func (w *WrappedSlice) Unwrap() interface{} {
+func (w *WrappedSlice) Unwrap() any {
 	return w.data
 }
 
-func UnwrapNativeTypes(in Object) interface{} {
+func UnwrapNativeTypes(in Object) any {
 	switch i := in.(type) {
 	case *PseudoTrue:
 		return true

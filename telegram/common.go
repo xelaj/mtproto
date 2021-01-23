@@ -126,8 +126,8 @@ func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not 
 }
 
 /*
-func (c *Client) handleSpecialRequests() func(interface{}) bool {
-	return func(i interface{}) bool {
+func (c *Client) handleSpecialRequests() func(any) bool {
+	return func(i any) bool {
 		switch msg := i.(type) {
 		case *UpdatesObj:
 			pp.Println(msg, "UPDATE")

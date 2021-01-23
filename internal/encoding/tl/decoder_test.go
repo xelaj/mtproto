@@ -16,10 +16,6 @@ import (
 	"github.com/xelaj/mtproto/internal/encoding/tl"
 )
 
-type any = interface{}
-
-// null struct{}
-
 var (
 	True = true // for pointer
 )

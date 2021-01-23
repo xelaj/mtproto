@@ -80,7 +80,7 @@ func DecryptMessageWithTempKeys(msg []byte, nonceSecond, nonceServer *big.Int) [
 	key, iv := generateTempKeys(nonceSecond, nonceServer)
 	decodedWithHash := make([]byte, len(msg))
 	err := doAES256IGEdecrypt(msg, decodedWithHash, key, iv)
-	dry.PanicIfErr(err)
+	check(err)
 
 	// decodedWithHash := SHA1(answer) + answer + (0-15 рандомных байт); длина должна делиться на 16;
 	decodedHash := decodedWithHash[:20]
@@ -114,7 +114,7 @@ func encryptMessageWithTempKeys(msg []byte, nonceSecond, nonceServer *big.Int) [
 
 	encodedWithHash := make([]byte, len(msg))
 	err := doAES256IGEencrypt(msg, encodedWithHash, key, iv)
-	dry.PanicIfErr(err)
+	check(err)
 
 	return encodedWithHash
 }

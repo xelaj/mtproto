@@ -16,7 +16,6 @@ import (
 	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
-	"github.com/xelaj/go-dry"
 
 	"github.com/xelaj/mtproto/internal/encoding/tl"
 	"github.com/xelaj/mtproto/internal/mtproto/messages"
@@ -45,7 +44,7 @@ type MTProto struct {
 	mutex *sync.Mutex
 
 	msgsIdToResp  map[int64]chan tl.Object
-	idsToAck      map[int64]struct{}
+	idsToAck      map[int64]null
 	idsToAckMutex sync.Mutex
 
 	// каналы, которые ожидают ответа rpc. ответ записывается в канал и удаляется
@@ -76,14 +75,14 @@ type MTProto struct {
 	serviceModeActivated bool
 
 	//! DEPRECATED RecoverFunc используется только до того момента, когда из пакета будут убраны все паники
-	RecoverFunc func(i interface{})
+	RecoverFunc func(i any)
 	// если задан, то в канал пишутся ошибки
 	Warnings chan error
 
 	serverRequestHandlers []customHandlerFunc
 }
 
-type customHandlerFunc = func(i interface{}) bool
+type customHandlerFunc = func(i any) bool
 
 type Config struct {
 	AuthKeyFile string
@@ -185,7 +184,7 @@ func (m *MTProto) CreateConnection() error {
 }
 
 // отправить запрос
-func (m *MTProto) makeRequest(data tl.Object, expectedTypes ...reflect.Type) (interface{}, error) {
+func (m *MTProto) makeRequest(data tl.Object, expectedTypes ...reflect.Type) (any, error) {
 	resp, err := m.sendPacketNew(data, expectedTypes...)
 	if err != nil {
 		return nil, errors.Wrap(err, "sending message")
@@ -319,7 +318,7 @@ func (m *MTProto) processResponse(msg messages.Common) error {
 	case *objects.BadServerSalt:
 		m.serverSalt = message.NewSalt
 		err := m.SaveSession()
-		dry.PanicIfErr(err)
+		check(err)
 
 		m.mutex.Lock()
 		for _, v := range m.responseChannels {

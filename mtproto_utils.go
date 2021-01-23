@@ -22,7 +22,7 @@ import (
 // возвращает true, если ранее этого id не было
 func (m *MTProto) waitAck(msgID int64) bool {
 	_, ok := m.idsToAck[msgID]
-	m.idsToAck[msgID] = struct{}{}
+	m.idsToAck[msgID] = null{}
 	return !ok
 }
 
@@ -38,7 +38,7 @@ func (m *MTProto) gotAck(msgID int64) bool {
 
 // resetAck сбрасывает целиком список сообщений, которым нужен ack
 func (m *MTProto) resetAck() {
-	m.idsToAck = make(map[int64]struct{})
+	m.idsToAck = make(map[int64]null)
 }
 
 // получает текущий идентификатор сессии
@@ -66,11 +66,11 @@ func (m *MTProto) SetAuthKey(key []byte) {
 	m.authKeyHash = utils.AuthKeyHash(m.authKey)
 }
 
-func (m *MTProto) MakeRequest(msg tl.Object) (interface{}, error) {
+func (m *MTProto) MakeRequest(msg tl.Object) (any, error) {
 	return m.makeRequest(msg)
 }
 
-func (m *MTProto) MakeRequestWithHintToDecoder(msg tl.Object, expectedTypes ...reflect.Type) (interface{}, error) {
+func (m *MTProto) MakeRequestWithHintToDecoder(msg tl.Object, expectedTypes ...reflect.Type) (any, error) {
 	if len(expectedTypes) == 0 {
 		return nil, errors.New("expected a few hints. If you don't need it, use m.MakeRequest")
 	}

@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/xelaj/go-dry"
 
 	"github.com/xelaj/mtproto/internal/mtproto/objects"
 )
@@ -18,7 +17,7 @@ type ErrResponseCode struct {
 	Code           int
 	Message        string
 	Description    string
-	AdditionalInfo interface{} // some errors has additional data like timeout seconds, dc id etc.
+	AdditionalInfo any // some errors has additional data like timeout seconds, dc id etc.
 }
 
 func RpcErrorToNative(r *objects.RpcError) error {
@@ -65,7 +64,7 @@ var specificErrors = []prefixSuffix{
 	{"USER_MIGRATE_", "", reflect.Int},
 }
 
-func TryExpandError(errStr string) (nativeErrorName string, additionalData interface{}) {
+func TryExpandError(errStr string) (nativeErrorName string, additionalData any) {
 	var choosedPrefixSuffix *prefixSuffix
 
 	for _, errCase := range specificErrors {
@@ -86,7 +85,7 @@ func TryExpandError(errStr string) (nativeErrorName string, additionalData inter
 	case reflect.Int:
 		var err error
 		additionalData, err = strconv.Atoi(trimmedData)
-		dry.PanicIfErr(errors.Wrap(err, "error of parsing expected int value"))
+		check(errors.Wrap(err, "error of parsing expected int value"))
 
 	case reflect.String:
 		additionalData = trimmedData
