@@ -15,8 +15,6 @@ gitlab pipelines
 
 ![FINALLY!](docs/assets/finally.jpg) Full-native implementation of MTProto protocol on Golang!
 
-### We are hardly working on [v1.0-rc relase candidate branch](https://github.com/xelaj/mtproto/pull/45), you can leave a feedback! 
-
 **english** [русский](https://github.com/xelaj/mtproto/blob/master/docs/ru_RU/README.md)
 
 <p align="center">
