@@ -10,14 +10,22 @@ package objects
 import (
 	"bytes"
 	"compress/gzip"
-	"fmt"
-	"reflect"
 
-	"github.com/k0kubun/pp"
-	"github.com/xelaj/mtproto/encoding/tl"
+	"github.com/pkg/errors"
+
+	"github.com/xelaj/mtproto/internal/encoding/tl"
+	"github.com/xelaj/mtproto/internal/mtproto/messages"
 )
 
 // TYPES
+
+// Null это пустой объект, который нужен для передачи в каналы TL с информацией, что ответа можно не ждать
+type Null struct {
+}
+
+func (*Null) CRC() uint32 {
+	panic("makes no sense")
+}
 
 type ResPQ struct {
 	Nonce        *tl.Int128
@@ -27,7 +35,7 @@ type ResPQ struct {
 }
 
 func (*ResPQ) CRC() uint32 {
-	return 0x05162463
+	return 0x05162463 //nolint:gomnd not magic
 }
 
 type PQInnerData struct {
@@ -40,14 +48,13 @@ type PQInnerData struct {
 }
 
 func (*PQInnerData) CRC() uint32 {
-	return 0x83c95aec
+	return 0x83c95aec //nolint:gomnd not magic
 }
 
 type ServerDHParams interface {
 	tl.Object
 	ImplementsServerDHParams()
 }
-
 
 type ServerDHParamsFail struct {
 	Nonce        *tl.Int128
@@ -58,7 +65,7 @@ type ServerDHParamsFail struct {
 func (*ServerDHParamsFail) ImplementsServerDHParams() {}
 
 func (*ServerDHParamsFail) CRC() uint32 {
-	return 0x79cb045d
+	return 0x79cb045d //nolint:gomnd not magic
 }
 
 type ServerDHParamsOk struct {
@@ -70,10 +77,10 @@ type ServerDHParamsOk struct {
 func (*ServerDHParamsOk) ImplementsServerDHParams() {}
 
 func (*ServerDHParamsOk) CRC() uint32 {
-	return 0xd0e8075c
+	return 0xd0e8075c //nolint:gomnd not magic
 }
 
-type ServerDHInnerData struct {
+type ServerDHInnerData struct { //nolint:maligned telegram require to fix
 	Nonce       *tl.Int128
 	ServerNonce *tl.Int128
 	G           int32
@@ -83,7 +90,7 @@ type ServerDHInnerData struct {
 }
 
 func (*ServerDHInnerData) CRC() uint32 {
-	return 0xb5890dba
+	return 0xb5890dba //nolint:gomnd not magic
 }
 
 type ClientDHInnerData struct {
@@ -94,7 +101,7 @@ type ClientDHInnerData struct {
 }
 
 func (*ClientDHInnerData) CRC() uint32 {
-	return 0x6643b654
+	return 0x6643b654 //nolint:gomnd not magic
 }
 
 type DHGenOk struct {
@@ -106,7 +113,7 @@ type DHGenOk struct {
 func (t *DHGenOk) ImplementsSetClientDHParamsAnswer() {}
 
 func (*DHGenOk) CRC() uint32 {
-	return 0x3bcbf734
+	return 0x3bcbf734 //nolint:gomnd not magic
 }
 
 type SetClientDHParamsAnswer interface {
@@ -123,7 +130,7 @@ type DHGenRetry struct {
 func (*DHGenRetry) ImplementsSetClientDHParamsAnswer() {}
 
 func (*DHGenRetry) CRC() uint32 {
-	return 0x46dc1fb9
+	return 0x46dc1fb9 //nolint:gomnd not magic
 }
 
 type DHGenFail struct {
@@ -135,7 +142,7 @@ type DHGenFail struct {
 func (*DHGenFail) ImplementsSetClientDHParamsAnswer() {}
 
 func (*DHGenFail) CRC() uint32 {
-	return 0xa69dae02
+	return 0xa69dae02 //nolint:gomnd not magic
 }
 
 type RpcResult struct {
@@ -177,28 +184,28 @@ type RpcError struct {
 }
 
 func (*RpcError) CRC() uint32 {
-	return 0x2144ca19
+	return 0x2144ca19 //nolint:gomnd not magic
 }
 
-type RpcDropAnswer interface{
+type RpcDropAnswer interface {
 	tl.Object
 	ImplementsRpcDropAnswer()
 }
 
-type RpcAnswerUnknown struct{}
+type RpcAnswerUnknown null
 
 func (*RpcAnswerUnknown) ImplementsRpcDropAnswer() {}
 
 func (*RpcAnswerUnknown) CRC() uint32 {
-	return 0x5e2ad36e
+	return 0x5e2ad36e //nolint:gomnd not magic
 }
 
-type RpcAnswerDroppedRunning struct{}
+type RpcAnswerDroppedRunning null
 
 func (*RpcAnswerDroppedRunning) ImplementsRpcDropAnswer() {}
 
 func (*RpcAnswerDroppedRunning) CRC() uint32 {
-	return 0xcd78e586
+	return 0xcd78e586 //nolint:gomnd not magic
 }
 
 type RpcAnswerDropped struct {
@@ -210,7 +217,7 @@ type RpcAnswerDropped struct {
 func (*RpcAnswerDropped) ImplementsRpcDropAnswer() {}
 
 func (*RpcAnswerDropped) CRC() uint32 {
-	return 0xa43ad8b7
+	return 0xa43ad8b7 //nolint:gomnd not magic
 }
 
 type FutureSalt struct {
@@ -220,7 +227,7 @@ type FutureSalt struct {
 }
 
 func (*FutureSalt) CRC() uint32 {
-	return 0x0949d9dc
+	return 0x0949d9dc //nolint:gomnd not magic
 }
 
 type FutureSalts struct {
@@ -230,7 +237,7 @@ type FutureSalts struct {
 }
 
 func (*FutureSalts) CRC() uint32 {
-	return 0xae500895
+	return 0xae500895 //nolint:gomnd not magic
 }
 
 type Pong struct {
@@ -239,7 +246,7 @@ type Pong struct {
 }
 
 func (*Pong) CRC() uint32 {
-	return 0x347773c5
+	return 0x347773c5 //nolint:gomnd not magic
 }
 
 // destroy_session_ok#e22045fc session_id:long = DestroySessionRes;
@@ -252,46 +259,41 @@ type NewSessionCreated struct {
 }
 
 func (*NewSessionCreated) CRC() uint32 {
-	return 0x9ec20908
+	return 0x9ec20908 //nolint:gomnd not magic
 }
 
 //! исключение из правил: это оказывается почти-вектор, т.к.
 //  записан как `msg_container#73f1f8dc messages:vector<%Message> = MessageContainer;`
 //  судя по всему, <%Type> означает, что может это неявный вектор???
 //! возможно разработчики в этот момент поехаи кукухой, я не знаю правда
-type MessageContainer []*EncryptedMessage
+type MessageContainer []*messages.Encrypted
 
-func (_ *MessageContainer) CRC() uint32 {
-	return 0x73f1f8dc
+func (*MessageContainer) CRC() uint32 {
+	return 0x73f1f8dc //nolint:gomnd not magic
 }
 
 func (t *MessageContainer) MarshalTL(e *tl.Encoder) error {
 	e.PutUint(t.CRC())
 	e.PutInt(int32(len(*t)))
-	if e.CheckErr() != nil {
+	if err := e.CheckErr(); err != nil {
 		return err
 	}
 
 	for _, msg := range *t {
 		e.PutLong(msg.MsgID)
 		e.PutInt(msg.SeqNo)
-		//       msgID     seqNo     len             object
-		e.PutInt(LongLen + WordLen + WordLen + int32(len(msg.Msg)))
+		//       msgID        seqNo        len                object
+		e.PutInt(tl.LongLen + tl.WordLen + tl.WordLen + int32(len(msg.Msg)))
 		e.PutRawBytes(msg.Msg)
 	}
-	return buf.GetBuffer()
+	return e.CheckErr()
 }
 
 func (t *MessageContainer) UnmarshalTL(d *tl.Decoder) error {
-	crc := d.PopCRC()
-	if crc != t.CRC() {
-		return errors.New("wrong CRC code, want %#v, got %#v", t.CRC(), crc)
-	}
-
 	count := int(d.PopInt())
-	arr := make([]*EncryptedMessage, count)
+	arr := make([]*messages.Encrypted, count)
 	for i := 0; i < count; i++ {
-		msg := new(EncryptedMessage)
+		msg := new(messages.Encrypted)
 		msg.MsgID = d.PopLong()
 		msg.SeqNo = d.PopInt()
 		size := d.PopInt()
@@ -315,7 +317,7 @@ type MsgCopy struct {
 }
 
 func (*MsgCopy) CRC() uint32 {
-	return 0xe06046b2
+	return 0xe06046b2 //nolint:gomnd not magic
 }
 
 type GzipPacked struct {
@@ -331,14 +333,17 @@ func (*GzipPacked) MarshalTL(e *tl.Encoder) error {
 }
 
 func (t *GzipPacked) UnmarshalTL(d *tl.Decoder) error {
-	crc := d.PopCRC()
-	if crc != t.CRC() {
-		return errors.New("wrong CRC code, want %#v, got %#v", t.CRC(), crc)
+	obj, err := t.popMessageAsBytes(d)
+	if err != nil {
+		return err
 	}
 
-	obj := t.popMessageAsBytes(d)
-	innerDecoder := NewDecoder(obj)
-	t.Obj = innerDecoder.PopObj()
+	t.Obj, err = tl.DecodeUnknownObject(obj)
+	if err != nil {
+		return errors.Wrap(err, "parsing gzipped object")
+	}
+
+	return nil
 }
 
 func (*GzipPacked) popMessageAsBytes(d *tl.Decoder) ([]byte, error) {
@@ -353,6 +358,9 @@ func (*GzipPacked) popMessageAsBytes(d *tl.Decoder) ([]byte, error) {
 	var buf bytes.Buffer
 	_, _ = buf.Write(d.PopMessage())
 	gz, err := gzip.NewReader(&buf)
+	if err != nil {
+		return nil, errors.Wrap(err, "creating gzip reader")
+	}
 
 	b := make([]byte, 4096)
 	for {
@@ -364,24 +372,24 @@ func (*GzipPacked) popMessageAsBytes(d *tl.Decoder) ([]byte, error) {
 		}
 	}
 
-	return decompressed
+	return decompressed, nil
 	//? это то что я пытался сделать
 	// data := d.PopMessage()
 	// gz, err := gzip.NewReader(bytes.NewBuffer(data))
-	// dry.PanicIfErr(err)
+	// check(err)
 
 	// decompressed, err := ioutil.ReadAll(gz)
-	// dry.PanicIfErr(err)
+	// check(err)
 
 	// return decompressed
 }
 
 type MsgsAck struct {
-	MsgIds []int64
+	MsgIDs []int64
 }
 
 func (*MsgsAck) CRC() uint32 {
-	return 0x62d6b459
+	return 0x62d6b459 //nolint:gomnd not magic
 }
 
 type BadMsgNotification struct {
@@ -393,7 +401,7 @@ type BadMsgNotification struct {
 func (*BadMsgNotification) ImplementsBadMsgNotification() {}
 
 func (*BadMsgNotification) CRC() uint32 {
-	return 0xa7eff811
+	return 0xa7eff811 //nolint:gomnd not magic
 }
 
 type BadServerSalt struct {
@@ -406,69 +414,62 @@ type BadServerSalt struct {
 func (*BadServerSalt) ImplementsBadMsgNotification() {}
 
 func (*BadServerSalt) CRC() uint32 {
-	return 0xedab447b
+	return 0xedab447b //nolint:gomnd not magic
 }
 
 // msg_new_detailed_info#809db6df answer_msg_id:long bytes:int status:int = MsgDetailedInfo;
 
 type MsgResendReq struct {
-	MsgIds []int64
+	MsgIDs []int64
 }
 
 func (*MsgResendReq) CRC() uint32 {
-	return 0x7d861a08
-
+	return 0x7d861a08 //nolint:gomnd not magic
 }
 
 type MsgsStateReq struct {
-	MsgIds []int64
+	MsgIDs []int64
 }
 
 func (*MsgsStateReq) CRC() uint32 {
-	return 0xda69fb52
-
+	return 0xda69fb52 //nolint:gomnd not magic
 }
 
-
 type MsgsStateInfo struct {
-	ReqMsgId int64
+	ReqMsgID int64
 	Info     []byte
 }
 
 func (*MsgsStateInfo) CRC() uint32 {
-	return 0x04deb57d
-
+	return 0x04deb57d //nolint:gomnd not magic
 }
 
 type MsgsAllInfo struct {
-	MsgIds []int64
+	MsgIDs []int64
 	Info   []byte
 }
 
 func (*MsgsAllInfo) CRC() uint32 {
-	return 0x8cc0d131
-
+	return 0x8cc0d131 //nolint:gomnd not magic
 }
 
 type MsgsDetailedInfo struct {
-	MsgId       int64
-	AnswerMsgId int64
+	MsgID       int64
+	AnswerMsgID int64
 	Bytes       int32
 	Status      int32
 }
 
-func (_ *MsgsDetailedInfo) CRC() uint32 {
-	return 0x276d3ec6
-
+func (*MsgsDetailedInfo) CRC() uint32 {
+	return 0x276d3ec6 //nolint:gomnd not magic
 }
 
 type MsgsNewDetailedInfo struct {
-	AnswerMsgId int64
+	AnswerMsgID int64
 	Bytes       int32
 	Status      int32
 }
 
 func (*MsgsNewDetailedInfo) CRC() uint32 {
-	return 0x809db6df
-
+	return 0x809db6df //nolint:gomnd not magic
 }

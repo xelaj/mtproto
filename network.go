@@ -1,3 +1,8 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package mtproto
 
 import (
@@ -7,7 +12,9 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/xelaj/mtproto/serialize"
+	"github.com/xelaj/mtproto/internal/encoding/tl"
+	"github.com/xelaj/mtproto/internal/mtproto/messages"
+	"github.com/xelaj/mtproto/internal/mtproto/objects"
 )
 
 const (
@@ -15,9 +22,10 @@ const (
 	magicValueSizeMoreThanSingleByte = 0x7f
 )
 
-func isNullableResponse(t serialize.TL) bool {
+// проверяет, надо ли ждать от сервера пинга
+func isNullableResponse(t tl.Object) bool {
 	switch t.(type) {
-	case /**serialize.Ping,*/ *serialize.Pong, *serialize.MsgsAck:
+	case /**objects.Ping,*/ *objects.Pong, *objects.MsgsAck:
 		return true
 	default:
 		return false
@@ -37,24 +45,26 @@ func CatchResponseErrorCode(data []byte) error {
 }
 
 func IsPacketEncrypted(data []byte) bool {
-	buf := serialize.NewDecoder(data)
-	authKeyHash := buf.PopRawBytes(serialize.DoubleLen)
+	if len(data) < tl.DoubleLen {
+		return false
+	}
+	authKeyHash := data[:tl.DoubleLen]
 	return binary.LittleEndian.Uint64(authKeyHash) != 0
 }
 
-func (m *MTProto) decodeRecievedData(data []byte) (serialize.CommonMessage, error) {
+func (m *MTProto) decodeRecievedData(data []byte) (messages.Common, error) {
 	// проверим, что это не код ошибки
 	err := CatchResponseErrorCode(data)
 	if err != nil {
 		return nil, errors.Wrap(err, "Server response error")
 	}
 
-	var msg serialize.CommonMessage
+	var msg messages.Common
 
 	if IsPacketEncrypted(data) {
-		msg, err = serialize.DeserializeEncryptedMessage(data, m.GetAuthKey())
+		msg, err = messages.DeserializeEncrypted(data, m.GetAuthKey())
 	} else {
-		msg, err = serialize.DeserializeUnencryptedMessage(data)
+		msg, err = messages.DeserializeUnencrypted(data)
 	}
 	if err != nil {
 		return nil, errors.Wrap(err, "parsing message")

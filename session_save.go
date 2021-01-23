@@ -1,3 +1,8 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package mtproto
 
 import (
@@ -11,7 +16,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
-	"github.com/xelaj/mtproto/serialize"
+
+	"github.com/xelaj/mtproto/internal/encoding/tl"
 )
 
 func (m *MTProto) SaveSession() (err error) {
@@ -19,12 +25,12 @@ func (m *MTProto) SaveSession() (err error) {
 	s := new(Session)
 	s.Key = m.authKey
 	s.Hash = m.authKeyHash
-	buf := make([]byte, serialize.LongLen)
+	buf := make([]byte, tl.LongLen)
 	binary.LittleEndian.PutUint64(buf, uint64(m.serverSalt))
 	s.Salt = buf
 	s.Hostname = m.addr
 	err = SaveSession(s, m.tokensStorage)
-	dry.PanicIfErr(err)
+	check(err)
 
 	return nil
 }
@@ -34,7 +40,7 @@ func (m *MTProto) LoadSession() (err error) {
 	if errs.IsNotFound(err) {
 		return err
 	}
-	dry.PanicIfErr(err)
+	check(err)
 
 	m.authKey = s.Key
 	m.authKeyHash = s.Hash

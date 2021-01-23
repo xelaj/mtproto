@@ -2,15 +2,19 @@ package main
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/k0kubun/pp"
+	"github.com/pkg/errors"
 	"github.com/xelaj/go-dry"
 	"github.com/xelaj/mtproto"
 	"github.com/xelaj/mtproto/telegram"
+
+	utils "github.com/xelaj/mtproto/examples/example_utils"
 )
 
 func main() {
@@ -20,34 +24,75 @@ func main() {
 	}
 	phoneNumber := os.Args[1]
 
+	// helper variables
+	appStorage := utils.PrepareAppStorageForExamples()
+	sessionFile := filepath.Join(appStorage, "session.json")
+	publicKeys := filepath.Join(appStorage, "tg_public_keys.pem")
+
 	// edit these params for you!
 	client, err := telegram.NewClient(telegram.ClientConfig{
 		// where to store session configuration. must be set
-		SessionFile: "/home/me/.local/var/lib/mtproto/session1.json",
+		SessionFile: sessionFile,
 		// host address of mtproto server. Actually, it can'be mtproxy, not only official
 		ServerHost: "149.154.167.50:443",
 		// public keys file is patrh to file with public keys, which you must get from https://my.telelgram.org
-		PublicKeysFile: "/home/me/.local/var/lib/mtproto/tg_public_keys.pem",
-		AppID:          94575,                              // app id, could be find at https://my.telegram.org
-		AppHash:        "a3406de8d171bb422bb6ddf3bbd800e2", // app hash, could be find at https://my.telegram.org
+		PublicKeysFile:  publicKeys,
+		AppID:           94575,                              // app id, could be find at https://my.telegram.org
+		AppHash:         "a3406de8d171bb422bb6ddf3bbd800e2", // app hash, could be find at https://my.telegram.org
+		InitWarnChannel: true,                               // if we want to get errors, otherwise, client.Warnings will be set nil
 	})
 	dry.PanicIfErr(err)
+	client.Warnings = make(chan error) // required to initialize, if we want to get errors
+	utils.ReadWarningsToStdErr(client.Warnings)
 
-	setCode, err := client.AuthSendCode(&telegram.AuthSendCodeParams{
+	// Please, don't spam auth too often, if you have session file, don't repeat auth process, please.
+	if !dry.FileExists(sessionFile) {
+		println("You've already signed in!")
+		os.Exit(0)
+	}
+
+	setCode, err := client.AuthSendCode(
 		phoneNumber, 94575, "a3406de8d171bb422bb6ddf3bbd800e2", &telegram.CodeSettings{},
-	})
-	dry.PanicIfErr(err)
-	pp.Println(setCode)
+	)
 
-	fmt.Print("Auth code:")
+	// this part shows how to deal with errors (if you want of course. No one
+	// like errors, but the can be return sometimes)
+	if err != nil {
+		errResponse := &mtproto.ErrResponseCode{}
+		if !errors.As(err, &errResponse) {
+			// some strange error, looks like a bug actually
+			pp.Println(err)
+			panic(err)
+		} else {
+			if errResponse.Message == "AUTH_RESTART" {
+				println("Oh crap! You accidentaly restart authorization process!")
+				println("You should login only once, if you'll spam 'AuthSendCode' method, you can be")
+				println("timeouted to loooooooong long time. You warned.")
+			} else if errResponse.Message == "FLOOD_WAIT_X" {
+				println("No way... You've reached flood timeout! Did i warn you? Yes, i am. That's what")
+				println("happens, when you don't listen to me...")
+				println()
+				timeoutDuration := time.Second * time.Duration(errResponse.AdditionalInfo.(int))
+
+				println("Repeat after " + timeoutDuration.String())
+			} else {
+				println("Oh crap! Got strange error:")
+				pp.Println(errResponse)
+			}
+
+			os.Exit(1)
+		}
+	}
+
+	fmt.Print("Auth code: ")
 	code, _ := bufio.NewReader(os.Stdin).ReadString('\n')
 	code = strings.ReplaceAll(code, "\n", "")
 
-	auth, err := client.AuthSignIn(&telegram.AuthSignInParams{
-		PhoneNumber:   phoneNumber,
-		PhoneCodeHash: setCode.PhoneCodeHash,
-		PhoneCode:     code,
-	})
+	auth, err := client.AuthSignIn(
+		phoneNumber,
+		setCode.PhoneCodeHash,
+		code,
+	)
 	if err == nil {
 		pp.Println(auth)
 
@@ -59,14 +104,14 @@ func main() {
 	// but if you have 2FA, you need to make few more steps:
 
 	// could be some errors:
-
-	mtError, ok := errors.Unwrap(err).(*mtproto.ErrResponseCode)
-	// SESSION_PASSWORD_NEEDED says that your account has 2FA protection
-	if !ok || mtError.Message != "SESSION_PASSWORD_NEEDED" {
+	errResponse := &mtproto.ErrResponseCode{}
+	ok := errors.As(err, &errResponse)
+	// checking that error type is correct, and error msg is actualy ask for password
+	if !ok || errResponse.Message != "SESSION_PASSWORD_NEEDED" {
 		fmt.Println("SignIn failed:", err)
 		println("\n\nMore info about error:")
 		pp.Println(err)
-		return
+		os.Exit(1)
 	}
 
 	fmt.Print("Password:")
@@ -80,9 +125,7 @@ func main() {
 	inputCheck, err := telegram.GetInputCheckPassword(password, accountPassword)
 	dry.PanicIfErr(err)
 
-	auth, err = client.AuthCheckPassword(&telegram.AuthCheckPasswordParams{
-		Password: inputCheck,
-	})
+	auth, err = client.AuthCheckPassword(inputCheck)
 	dry.PanicIfErr(err)
 
 	pp.Println(auth)

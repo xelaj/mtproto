@@ -1,13 +1,19 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package mtproto
 
 import (
 	"fmt"
 	"reflect"
 
+	"github.com/pkg/errors"
 	"github.com/xelaj/go-dry"
 
-	"github.com/xelaj/mtproto/serialize"
-	"github.com/xelaj/mtproto/utils"
+	"github.com/xelaj/mtproto/internal/encoding/tl"
+	"github.com/xelaj/mtproto/internal/utils"
 )
 
 // мелкие методы, которые сделаны для понимания алгоритмов и кода вцелом
@@ -16,7 +22,7 @@ import (
 // возвращает true, если ранее этого id не было
 func (m *MTProto) waitAck(msgID int64) bool {
 	_, ok := m.idsToAck[msgID]
-	m.idsToAck[msgID] = struct{}{}
+	m.idsToAck[msgID] = null{}
 	return !ok
 }
 
@@ -32,7 +38,7 @@ func (m *MTProto) gotAck(msgID int64) bool {
 
 // resetAck сбрасывает целиком список сообщений, которым нужен ack
 func (m *MTProto) resetAck() {
-	m.idsToAck = make(map[int64]struct{})
+	m.idsToAck = make(map[int64]null)
 }
 
 // получает текущий идентификатор сессии
@@ -60,12 +66,15 @@ func (m *MTProto) SetAuthKey(key []byte) {
 	m.authKeyHash = utils.AuthKeyHash(m.authKey)
 }
 
-func (m *MTProto) MakeRequest(msg serialize.TL) (serialize.TL, error) {
-	return m.makeRequest(msg, nil)
+func (m *MTProto) MakeRequest(msg tl.Object) (any, error) {
+	return m.makeRequest(msg)
 }
 
-func (m *MTProto) MakeRequestAsSlice(msg serialize.TL, as reflect.Type) (serialize.TL, error) {
-	return m.makeRequest(msg, as)
+func (m *MTProto) MakeRequestWithHintToDecoder(msg tl.Object, expectedTypes ...reflect.Type) (any, error) {
+	if len(expectedTypes) == 0 {
+		return nil, errors.New("expected a few hints. If you don't need it, use m.MakeRequest")
+	}
+	return m.makeRequest(msg, expectedTypes...)
 }
 
 func (m *MTProto) recoverGoroutine() {
@@ -81,4 +90,13 @@ func (m *MTProto) recoverGoroutine() {
 
 func (m *MTProto) AddCustomServerRequestHandler(handler customHandlerFunc) {
 	m.serverRequestHandlers = append(m.serverRequestHandlers, handler)
+}
+
+func (m *MTProto) warnError(err error) {
+	if err == nil {
+		return
+	}
+	if m.Warnings != nil {
+		m.Warnings <- err
+	}
 }

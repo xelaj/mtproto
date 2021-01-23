@@ -1,3 +1,8 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package mtproto
 
 import (
@@ -8,26 +13,27 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
-	"github.com/xelaj/mtproto/serialize"
-	"github.com/xelaj/mtproto/utils"
+
+	"github.com/xelaj/mtproto/internal/encoding/tl"
+	"github.com/xelaj/mtproto/internal/mtproto/messages"
+	"github.com/xelaj/mtproto/internal/mtproto/objects"
+	"github.com/xelaj/mtproto/internal/utils"
 )
 
-func (m *MTProto) sendPacketNew(request serialize.TL, expectVector reflect.Type) (chan serialize.TL, error) {
-	resp := make(chan serialize.TL)
+func (m *MTProto) sendPacketNew(request tl.Object, expectedTypes ...reflect.Type) (chan tl.Object, error) {
+	resp := make(chan tl.Object)
 	if m.serviceModeActivated {
 		resp = m.serviceChannel
 	}
 	var data []byte
 	var err error
 	var msgID = utils.GenerateMessageId()
-
-	// может мы ожидаем вектор, см. erialize.RpcResult для понимания
-	if expectVector != nil {
-		m.msgsIdDecodeAsVector[msgID] = expectVector
+	msg, err := tl.Marshal(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "encoding request message")
 	}
 
 	if m.encrypted {
@@ -39,8 +45,8 @@ func (m *MTProto) sendPacketNew(request serialize.TL, expectVector reflect.Type)
 			requireToAck = true
 		}
 
-		data, err = (&serialize.EncryptedMessage{
-			Msg:         request.Encode(),
+		data, err = (&messages.Encrypted{
+			Msg:         msg,
 			MsgID:       msgID,
 			AuthKeyHash: m.authKeyHash,
 		}).Serialize(m, requireToAck)
@@ -50,21 +56,23 @@ func (m *MTProto) sendPacketNew(request serialize.TL, expectVector reflect.Type)
 
 		if !isNullableResponse(request) {
 			m.mutex.Lock()
-
 			m.responseChannels[msgID] = resp
+			if len(expectedTypes) > 0 {
+				m.expectedTypes[msgID] = expectedTypes
+			}
 			m.mutex.Unlock()
 		} else {
 			// ответов на TL_Ack, TL_Pong и пр. не требуется
 			go func() {
 				// горутина, т.к. мы ПРЯМО СЕЙЧАС из resp не читаем
-				resp <- &serialize.Null{}
+				resp <- &objects.Null{}
 			}()
 		}
 		// этот кусок не часть кодирования так что делаем при отправке
 		m.lastSeqNo += 2
 	} else {
-		data, _ = (&serialize.UnencryptedMessage{ //nolint: errcheck нешифрованое не отправляет ошибки
-			Msg:   request.Encode(),
+		data, _ = (&messages.Unencrypted{ //nolint: errcheck нешифрованое не отправляет ошибки
+			Msg:   msg,
 			MsgID: msgID,
 		}).Serialize(m)
 	}
@@ -79,7 +87,7 @@ func (m *MTProto) sendPacketNew(request serialize.TL, expectVector reflect.Type)
 
 	//? https://core.telegram.org/mtproto/mtproto-transports#abridged
 	// _, err := m.conn.Write(utils.PacketLengthMTProtoCompatible(data))
-	// dry.PanicIfErr(err)
+	// check(err)
 	_, err = m.conn.Write(data)
 	if err != nil {
 		return nil, errors.Wrap(err, "sending request")
@@ -88,7 +96,7 @@ func (m *MTProto) sendPacketNew(request serialize.TL, expectVector reflect.Type)
 	return resp, nil
 }
 
-func (m *MTProto) writeRPCResponse(msgID int, data serialize.TL) error {
+func (m *MTProto) writeRPCResponse(msgID int, data tl.Object) error {
 	m.mutex.Lock()
 	v, ok := m.responseChannels[int64(msgID)]
 	if !ok {
@@ -98,13 +106,14 @@ func (m *MTProto) writeRPCResponse(msgID int, data serialize.TL) error {
 	v <- data
 
 	delete(m.responseChannels, int64(msgID))
+	delete(m.expectedTypes, int64(msgID))
 	m.mutex.Unlock()
 	return nil
 }
 
 func (m *MTProto) readFromConn(ctx context.Context) (data []byte, err error) {
 	err = m.conn.SetReadDeadline(time.Now().Add(readTimeout)) // возможно поможет???
-	dry.PanicIfErr(err)
+	check(err)
 
 	reader := dry.NewCancelableReader(ctx, m.conn)
 	// https://core.telegram.org/mtproto/mtproto-transports#abridged
@@ -113,13 +122,13 @@ func (m *MTProto) readFromConn(ctx context.Context) (data []byte, err error) {
 	// Read читаем. т.к. маленькие пакеты (до 127 байт)  кодируют длину в 1 байт, а побольше в 4, то
 	// мы читаем сначала 1 байт, смотрим, это 0xef или нет, если да, то читаем оставшиеся 3 байта и получаем длину
 	//firstByte, err := reader.ReadByte()
-	//dry.PanicIfErr(err)
+	//check(err)
 	//
 	//sizeInBytes, err := utils.GetPacketLengthMTProtoCompatible([]byte{firstByte})
 	//if err == utils.ErrPacketSizeIsBigger {
 	//	restOfSize := make([]byte, 3)
 	//	n, err := reader.Read(restOfSize)
-	//	dry.PanicIfErr(err)
+	//	check(err)
 	//	dry.PanicIf(n != 3, fmt.Sprintf("expected read 3 bytes, got %d", n))
 	//
 	//	sizeInBytes, _ = utils.GetPacketLengthMTProtoCompatible(append([]byte{firstByte}, restOfSize...))
@@ -131,7 +140,6 @@ func (m *MTProto) readFromConn(ctx context.Context) (data []byte, err error) {
 	sizeInBytes := make([]byte, 4)
 	n, err := reader.Read(sizeInBytes)
 	if err != nil {
-		pp.Println(sizeInBytes, err)
 		return nil, errors.Wrap(err, "reading length")
 	}
 	if n != 4 {
@@ -142,8 +150,10 @@ func (m *MTProto) readFromConn(ctx context.Context) (data []byte, err error) {
 	// читаем сами данные
 	data = make([]byte, int(size))
 	n, err = reader.Read(data)
-	dry.PanicIfErr(err)
-	dry.PanicIf(n != int(size), fmt.Sprintf("expected read %d bytes, got %d", size, n))
+	check(err)
+	if n != int(size) {
+		panic(fmt.Sprintf("expected read %d bytes, got %d", size, n))
+	}
 
 	return data, nil
 }

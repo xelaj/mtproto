@@ -1,7 +1,13 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package telegram
 
 import (
 	"github.com/pkg/errors"
+
 	"github.com/xelaj/mtproto/telegram/internal/srp"
 )
 
@@ -21,7 +27,7 @@ func GetInputCheckPassword(password string, accountPassword *AccountPassword) (I
 		P:     current.P,
 	}
 
-	res, err := srp.GetInputCheckPassword(password, accountPassword.SrpB, mp)
+	res, err := srp.GetInputCheckPassword(password, accountPassword.SRPB, mp)
 	if err != nil {
 		return nil, errors.Wrap(err, "processing password")
 	}
@@ -31,7 +37,7 @@ func GetInputCheckPassword(password string, accountPassword *AccountPassword) (I
 	}
 
 	return &InputCheckPasswordSRPObj{
-		SrpId: accountPassword.SrpId,
+		SRPID: accountPassword.SRPID,
 		A:     res.GA,
 		M1:    res.M1,
 	}, nil

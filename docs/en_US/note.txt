@@ -1,0 +1,5 @@
+Symbolic links are referenced to .github folder, due to github doesn't supports symlinks for unknown reason.
+So, we don't want to create magic actions, which will fuck up all repo, and we hope that you don't have any
+problems with finding all these files.
+
+Sorry for that, it's not our fault.

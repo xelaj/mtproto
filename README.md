@@ -5,8 +5,8 @@
 [![codecov](https://codecov.io/gh/xelaj/mtproto/branch/master/graph/badge.svg)](https://codecov.io/gh/xelaj/mtproto)
 [![license MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/xelaj/mtproto/blob/master/README.md)
 [![chat telegram](https://img.shields.io/badge/chat-telegram-0088cc)](https://bit.ly/2xlsVsQ)
-![version v0.5.0](https://img.shields.io/badge/version-v0.5.0-yellow)
-![unstable](https://img.shields.io/badge/stability-unstable-yellow)
+![version v1.0.0](https://img.shields.io/badge/version-v1.0.0-success)
+![unstable](https://img.shields.io/badge/stability-stable-success)
 <!--
 contributors
 go version
@@ -49,7 +49,7 @@ All changes in TDLib and Android client are monitoring to get the latest feature
 <div align="left">
 <h3>Implements ONLY network tools</h3>
 <img src="https://i.ibb.co/bLj3PHx/ezgif-3-3ac8a3ea5713.gif" align="left"/>
-No more SQLite databases and caching unnecessary files, that <b>you</b> don't need. Also you can control how sessions are stored, auth process and literally everything that you need!
+No more SQLite databases and caching unnecessary files, that <b>you</b> don't need. Also you can control how sessions are stored, auth process and literally everything that you want to!
 </br></br></br></br></br>
 </div>
 
@@ -138,10 +138,10 @@ It's Telegram specific feature. I you want to create client instance and get inf
         DeviceModel:    "Unknown",
         SystemVersion:  "linux/amd64",
         AppVersion:     "0.1.0",
-	// just use "en", any other language codes will receive error. See telegram docs for more info.
+        // just use "en", any other language codes will receive error. See telegram docs for more info.
         SystemLangCode: "en",
         LangCode:       "en",
-        // HelpGetConfig() is ACTUAL request, but wrapped in IvokeWithLayer
+        // HelpGetConfig() is ACTUAL request, but wrapped in InvokeWithLayer
         Query:          &telegram.HelpGetConfigParams{},
     })
 ```
@@ -192,14 +192,20 @@ Technically — yes. In practice — components don't require specific architect
 
 ## Contributing
 
-Please read [contributing guide](https://github.com/xelaj/mtproto/blob/master/docs/en_US/CONTRIBUTING.md) if you want to help. And the help is very necessary!
+Please read [contributing guide](https://github.com/xelaj/mtproto/blob/master/.github/CONTRIBUTING.md) if you want to help. And the help is very necessary!
+
+**Don't want code?** Read [this](https://github.com/xelaj/mtproto/blob/master/.github/SUPPORT.md) page! We love nocoders!
+
+## Security bugs?
+
+Please, don't create issue which is describe security bug, this can be too offensive! Instead, please read [this notifiaction](https://github.com/xelaj/mtproto/blob/master/.github/SECURITY.md) and follow that steps to notify us about problem.
 
 ## TODO
 
 - [x] Basic MTProto implementation
 - [x] Implement all Methods for latest layer
 - [x] Make TL Encoder/Decoder
-- [ ] Get away from panics in parsing TL
+- [x] Get away from panics in parsing TL
 - [ ] Support MTProxy
 - [ ] Support socks5 as well
 - [ ] Multiple tests
@@ -222,6 +228,18 @@ Please read [contributing guide](https://github.com/xelaj/mtproto/blob/master/do
 
 ## License
 
-**WARNING!** This project is only maintained by Xelaj inc., however copyright of this source code **IS NOT** owned by Xelaj inc. at all. If you want to connect with code owners, write mail to <a href="mailto:up@khsfilms.ru">this email</a>. For all other questions like any issues, PRs, questions, etc. Use GitHub issues, or find email on official website.
+**WARNING!** This project is only maintained by Xelaj inc., however copyright of this source code **IS NOT** owned by Xelaj inc. at all. If you want to connect with code owners, write mail to [this email](mailto:up@khsfilms.rux). For all other questions like any issues, PRs, questions, etc. Use GitHub issues, or find email on official website.
 
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/xelaj/mtproto/blob/master/LICENSE.md) file for details
+
+<!--
+
+V2UndmUga25vd24gZWFjaCBvdGhlciBmb3Igc28gbG9uZwpZb3
+VyIGhlYXJ0J3MgYmVlbiBhY2hpbmcgYnV0IHlvdSdyZSB0b28g
+c2h5IHRvIHNheSBpdApJbnNpZGUgd2UgYm90aCBrbm93IHdoYX
+QncyBiZWVuIGdvaW5nIG9uCldlIGtub3cgdGhlIGdhbWUgYW5k
+IHdlJ3JlIGdvbm5hIHBsYXkgaXQKQW5kIGlmIHlvdSBhc2sgbW
+UgaG93IEknbSBmZWVsaW5nCkRvbid0IHRlbGwgbWUgeW91J3Jl
+IHRvbyBibGluZCB0byBzZWU=
+
+-->

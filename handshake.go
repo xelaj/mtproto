@@ -1,3 +1,8 @@
+// Copyright (c) 2020 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package mtproto
 
 import (
@@ -10,17 +15,18 @@ import (
 	"github.com/pkg/errors"
 	"github.com/xelaj/go-dry"
 
-	ige "github.com/xelaj/mtproto/aes_ige"
-	"github.com/xelaj/mtproto/keys"
-	"github.com/xelaj/mtproto/serialize"
+	ige "github.com/xelaj/mtproto/internal/aes_ige"
+	"github.com/xelaj/mtproto/internal/encoding/tl"
+	"github.com/xelaj/mtproto/internal/keys"
+	"github.com/xelaj/mtproto/internal/mtproto/objects"
 )
 
 // https://tlgrm.ru/docs/mtproto/auth_key
 // https://core.telegram.org/mtproto/auth_key
 func (m *MTProto) makeAuthKey() error {
 	m.serviceModeActivated = true
-	nonceFirst := serialize.RandomInt128()
-	res, err := m.ReqPQ(nonceFirst)
+	nonceFirst := tl.RandomInt128()
+	res, err := m.reqPQ(nonceFirst)
 	if err != nil {
 		return errors.Wrap(err, "requesting first pq")
 	}
@@ -42,17 +48,18 @@ func (m *MTProto) makeAuthKey() error {
 	// (encoding) p_q_inner_data
 	pq := big.NewInt(0).SetBytes(res.Pq)
 	p, q := splitPQ(pq)
-	nonceSecond := serialize.RandomInt256()
+	nonceSecond := tl.RandomInt256()
 	nonceServer := res.ServerNonce
 
-	message := (&serialize.PQInnerData{
+	message, err := tl.Marshal(&objects.PQInnerData{
 		Pq:          res.Pq,
 		P:           p.Bytes(),
 		Q:           q.Bytes(),
 		Nonce:       nonceFirst,
 		ServerNonce: nonceServer,
 		NewNonce:    nonceSecond,
-	}).Encode()
+	})
+	check(err) // ну я не знаю что во вселенной произойдет чтоб тут словилась паника
 
 	hashAndMsg := make([]byte, 255)
 	copy(hashAndMsg, append(dry.Sha1(string(message)), message...))
@@ -60,11 +67,11 @@ func (m *MTProto) makeAuthKey() error {
 	encryptedMessage := doRSAencrypt(hashAndMsg, m.publicKey)
 
 	keyFingerprint := int64(binary.LittleEndian.Uint64(keys.RSAFingerprint(m.publicKey)))
-	dhResponse, err := m.ReqDHParams(nonceFirst, nonceServer, p.Bytes(), q.Bytes(), keyFingerprint, encryptedMessage)
+	dhResponse, err := m.reqDHParams(nonceFirst, nonceServer, p.Bytes(), q.Bytes(), keyFingerprint, encryptedMessage)
 	if err != nil {
 		return errors.Wrap(err, "sending ReqDHParams")
 	}
-	dhParams, ok := dhResponse.(*serialize.ServerDHParamsOk)
+	dhParams, ok := dhResponse.(*objects.ServerDHParamsOk)
 	if !ok {
 		return errors.New("handshake: Need ServerDHParamsOk")
 	}
@@ -78,10 +85,12 @@ func (m *MTProto) makeAuthKey() error {
 
 	// проверку по хешу, удаление рандомных байт происходит в этой функции
 	decodedMessage := ige.DecryptMessageWithTempKeys(dhParams.EncryptedAnswer, nonceSecond.Int, nonceServer.Int)
-	buf := serialize.NewDecoder(decodedMessage)
-	data := buf.PopObj()
+	data, err := tl.DecodeUnknownObject(decodedMessage)
+	if err != nil {
+		return errors.Wrap(err, "decoding response from server")
+	}
 
-	dhi, ok := data.(*serialize.ServerDHInnerData)
+	dhi, ok := data.(*objects.ServerDHInnerData)
 	if !ok {
 		return errors.New("Handshake: Need server_DH_inner_data")
 	}
@@ -108,22 +117,23 @@ func (m *MTProto) makeAuthKey() error {
 	t4[32] = 1
 	copy(t4[33:], dry.Sha1Byte(m.GetAuthKey())[0:8])
 	nonceHash1 := dry.Sha1Byte(t4)[4:20]
-	salt := make([]byte, serialize.LongLen)
+	salt := make([]byte, tl.LongLen)
 	copy(salt, nonceSecond.Bytes()[:8])
 	xor(salt, nonceServer.Bytes()[:8])
 	m.serverSalt = int64(binary.LittleEndian.Uint64(salt))
 
 	// (encoding) client_DH_inner_data
-	clientDHData := &serialize.ClientDHInnerData{nonceFirst, nonceServer, 0, g_b.Bytes()}
+	clientDHData, err := tl.Marshal(&objects.ClientDHInnerData{nonceFirst, nonceServer, 0, g_b.Bytes()})
+	check(err) // ну я не знаю что во вселенной произойдет чтоб тут словилась паника
 
-	encryptedMessage = ige.EncryptMessageWithTempKeys(clientDHData.Encode(), nonceSecond.Int, nonceServer.Int)
+	encryptedMessage = ige.EncryptMessageWithTempKeys(clientDHData, nonceSecond.Int, nonceServer.Int)
 
-	dhGenStatus, err := m.SetClientDHParams(nonceFirst, nonceServer, encryptedMessage)
+	dhGenStatus, err := m.setClientDHParams(nonceFirst, nonceServer, encryptedMessage)
 	if err != nil {
 		return errors.Wrap(err, "sending clientDHParams")
 	}
 
-	dhg, ok := dhGenStatus.(*serialize.DHGenOk)
+	dhg, ok := dhGenStatus.(*objects.DHGenOk)
 	if !ok {
 		return errors.New("Handshake: Need DHGenOk")
 	}
