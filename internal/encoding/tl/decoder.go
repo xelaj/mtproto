@@ -21,7 +21,10 @@ func Decode(data []byte, res any) error {
 		return fmt.Errorf("res value is not pointer as expected. got %v", reflect.TypeOf(res))
 	}
 
-	d := NewDecoder(bytes.NewReader(data))
+	d, err := NewDecoder(bytes.NewReader(data))
+	if err != nil {
+		return err
+	}
 
 	d.decodeValue(reflect.ValueOf(res))
 	if d.err != nil {
@@ -39,7 +42,10 @@ func Decode(data []byte, res any) error {
 // expectNextTypes is your predictions how decoder must parse objects hidden under interfaces.
 // See Decoder.ExpectTypesInInterface description
 func DecodeUnknownObject(data []byte, expectNextTypes ...reflect.Type) (Object, error) {
-	d := NewDecoder(bytes.NewReader(data))
+	d, err := NewDecoder(bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
 	if len(expectNextTypes) > 0 {
 		d.ExpectTypesInInterface(expectNextTypes...)
 	}
@@ -48,7 +54,6 @@ func DecodeUnknownObject(data []byte, expectNextTypes ...reflect.Type) (Object, 
 	if d.err != nil {
 		return nil, errors.Wrap(d.err, "decoding predicted object")
 	}
-
 	return obj, nil
 }
 

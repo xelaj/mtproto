@@ -16,8 +16,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/xelaj/go-dry"
 
-	"github.com/xelaj/mtproto/internal/encoding/tl"
 	ige "github.com/xelaj/mtproto/internal/aes_ige"
+	"github.com/xelaj/mtproto/internal/encoding/tl"
 	"github.com/xelaj/mtproto/internal/utils"
 )
 
@@ -60,7 +60,10 @@ func DeserializeEncrypted(data, authKey []byte) (*Encrypted, error) {
 	msg := new(Encrypted)
 
 	buf := bytes.NewBuffer(data)
-	d := tl.NewDecoder(buf)
+	d, err := tl.NewDecoder(buf)
+	if err != nil {
+		return nil, err
+	}
 	keyHash := d.PopRawBytes(tl.LongLen)
 	if !bytes.Equal(keyHash, utils.AuthKeyHash(authKey)) {
 		return nil, errors.New("wrong encryption key")
@@ -73,7 +76,10 @@ func DeserializeEncrypted(data, authKey []byte) (*Encrypted, error) {
 		return nil, errors.Wrap(err, "decrypting message")
 	}
 	buf = bytes.NewBuffer(decrypted)
-	d = tl.NewDecoder(buf)
+	d, err = tl.NewDecoder(buf)
+	if err != nil {
+		return nil, err
+	}
 	msg.Salt = d.PopLong()
 	msg.SessionID = d.PopLong()
 	msg.MsgID = d.PopLong()
@@ -129,7 +135,7 @@ func (msg *Unencrypted) Serialize(client MessageInformator) ([]byte, error) {
 
 func DeserializeUnencrypted(data []byte) (*Unencrypted, error) {
 	msg := new(Unencrypted)
-	d := tl.NewDecoder(bytes.NewBuffer(data))
+	d, _ := tl.NewDecoder(bytes.NewBuffer(data))
 	_ = d.PopRawBytes(tl.LongLen) // authKeyHash, always 0 if unencrypted
 
 	msg.MsgID = d.PopLong()
