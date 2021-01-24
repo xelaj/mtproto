@@ -258,3 +258,34 @@ type ResPQ struct {
 func (*ResPQ) CRC() uint32 {
 	return 0x05162463
 }
+
+// issue #59 fixtures
+
+type Poll struct {
+	ID             int64
+	Closed         bool `tl:"flag:0,encoded_in_bitflags"`
+	PublicVoters   bool `tl:"flag:1,encoded_in_bitflags"`
+	MultipleChoice bool `tl:"flag:2,encoded_in_bitflags"`
+	Quiz           bool `tl:"flag:3,encoded_in_bitflags"`
+	Question       string
+	Answers        []*PollAnswer
+	ClosePeriod    int32 `tl:"flag:4"`
+	CloseDate      int32 `tl:"flag:5"`
+}
+
+func (*Poll) CRC() uint32 {
+	return 0x86e18161
+}
+
+func (*Poll) FlagIndex() int {
+	return 1
+}
+
+type PollAnswer struct {
+	Text   string
+	Option []byte
+}
+
+func (*PollAnswer) CRC() uint32 {
+	return 0x6ca9c2e9
+}

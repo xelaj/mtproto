@@ -87,21 +87,45 @@ func (d *Decoder) decodeObject(o Object, ignoreCRC bool) {
 
 	vtyp := value.Type()
 	var optionalBitSet uint32
+	var flagsetIndex = -1
 	if haveFlag(value.Interface()) {
-		bitset := d.PopUint()
-		if d.err != nil {
-			d.err = errors.Wrap(d.err, "read bitset")
-			return
+		// getting new cause we need idempotent response
+		indexGetter, ok := reflect.New(vtyp).Interface().(FlagIndexGetter)
+		if !ok {
+			panic("type " + value.Type().String() + " has type bit flag tags, but doesn't inplement tl.FlagIndexGetter")
+		}
+		flagsetIndex = indexGetter.FlagIndex()
+		if flagsetIndex < 0 {
+			panic("flag index is below zero, must be index of parameters")
 		}
 
-		optionalBitSet = bitset
 	}
 
-	for i := 0; i < value.NumField(); i++ {
-		field := value.Field(i)
+	var bitsetParsed bool
+	loopCycles := value.NumField()
+	if flagsetIndex >= 0 {
+		loopCycles++
+	}
+	for i := 0; i < loopCycles; i++ {
+		// parsing flag is necessary
+		if flagsetIndex == i {
+			optionalBitSet = d.PopUint()
+			if d.err != nil {
+				d.err = errors.Wrap(d.err, "read bitset")
+				return
+			}
+			bitsetParsed = true
+			continue
+		}
 
-		if _, found := vtyp.Field(i).Tag.Lookup(tagName); found {
-			info, err := parseTag(vtyp.Field(i).Tag)
+		fieldIndex := i
+		if bitsetParsed {
+			fieldIndex--
+		}
+		field := value.Field(fieldIndex)
+
+		if _, found := vtyp.Field(fieldIndex).Tag.Lookup(tagName); found {
+			info, err := parseTag(vtyp.Field(fieldIndex).Tag)
 			if err != nil {
 				d.err = errors.Wrap(err, "parse tag")
 				return
@@ -124,7 +148,7 @@ func (d *Decoder) decodeObject(o Object, ignoreCRC bool) {
 
 		d.decodeValue(field)
 		if d.err != nil {
-			d.err = errors.Wrapf(d.err, "decode field '%s'", vtyp.Field(i).Name)
+			d.err = errors.Wrapf(d.err, "decode field '%s'", vtyp.Field(fieldIndex).Name)
 			break
 		}
 	}

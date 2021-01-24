@@ -31,6 +31,8 @@ func tearup() {
 		&ResPQ{},
 		&AnyStructWithAnyType{},
 		&AnyStructWithAnyObject{},
+		&Poll{},
+		&PollAnswer{},
 	)
 
 	tl.RegisterEnums(
