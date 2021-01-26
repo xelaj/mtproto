@@ -3,7 +3,7 @@
 [![godoc reference](https://pkg.go.dev/badge/github.com/xelaj/mtproto?status.svg)](https://pkg.go.dev/github.com/xelaj/mtproto)
 [![Go Report Card](https://goreportcard.com/badge/github.com/xelaj/mtproto)](https://goreportcard.com/report/github.com/xelaj/mtproto)
 [![codecov](https://codecov.io/gh/xelaj/mtproto/branch/master/graph/badge.svg)](https://codecov.io/gh/xelaj/mtproto)
-[![license MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/xelaj/mtproto/blob/master/README.md)
+[![license MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/xelaj/mtproto/blob/main/README.md)
 [![chat telegram](https://img.shields.io/badge/chat-telegram-0088cc)](https://bit.ly/2xlsVsQ)
 ![version v1.0.0](https://img.shields.io/badge/version-v1.0.0-success)
 ![unstable](https://img.shields.io/badge/stability-stable-success)
@@ -15,7 +15,7 @@ gitlab pipelines
 
 ![FINALLY!](docs/assets/finally.jpg) Full-native implementation of MTProto protocol on Golang!
 
-**english** [русский](https://github.com/xelaj/mtproto/blob/master/docs/ru_RU/README.md)
+**english** [русский](https://github.com/xelaj/mtproto/blob/main/docs/ru_RU/README.md)
 
 <p align="center">
 <img src="https://i.ibb.co/yYsPxhW/Muffin-Man-Ag-ADRAADO2-Ak-FA.gif"/>
@@ -104,7 +104,7 @@ func main() {
 
 You do not need to think about encryption, key exchange, saving and restoring session, and more routine things. It is already implemented just for you.
 
-**Code examples are [here](https://github.com/xelaj/mtproto/blob/master/examples)**
+**Code examples are [here](https://github.com/xelaj/mtproto/blob/main/examples)**
 
 **Full docs are [here](https://pkg.go.dev/github.com/xelaj/mtproto)**
 
@@ -148,7 +148,7 @@ Why? We don't know! This method is described in Telegram API docs, any other sta
 
 ### How to use phone authorization?
 
-**Example [here](https://github.com/xelaj/mtproto/blob/master/examples/auth)**
+**Example [here](https://github.com/xelaj/mtproto/blob/main/examples/auth)**
 
 
 ```go
@@ -186,17 +186,38 @@ There is a pretty huge chunk of documentation. We are ready to describe every me
 
 Technically — yes. In practice — components don't require specific architecture, but we didn't test it yet. If you have any problems running it, just create an issue, we will try to help.
 
+### Telegram Deeplinks
+
+Want to deal those freaky `tg://` links? See [`deeplinks` package](https://github.com/xelaj/mtproto/blob/main/telegram/deeplinks), here is simplest how-to:
+
+``` go
+package main
+
+import (
+    "fmt"
+
+    "github.com/xelaj/mtproto/telegram/deeplinks"
+)
+
+func main() {
+    link, _ := deeplinks.Resolve("t.me/xelaj_developers")
+    // btw, ResolveParameters is just struct for tg://resolve links, not all links are resolve
+    resolve := link.(*deeplinks.ResolveParameters)
+    fmt.Printf("Oh! Looks like @%v is the best developers channel in telegram!\n", resolve.Domain)
+}
+```
+
 ## Who use it
 
 ## Contributing
 
-Please read [contributing guide](https://github.com/xelaj/mtproto/blob/master/.github/CONTRIBUTING.md) if you want to help. And the help is very necessary!
+Please read [contributing guide](https://github.com/xelaj/mtproto/blob/main/.github/CONTRIBUTING.md) if you want to help. And the help is very necessary!
 
-**Don't want code?** Read [this](https://github.com/xelaj/mtproto/blob/master/.github/SUPPORT.md) page! We love nocoders!
+**Don't want code?** Read [this](https://github.com/xelaj/mtproto/blob/main/.github/SUPPORT.md) page! We love nocoders!
 
 ## Security bugs?
 
-Please, don't create issue which is describe security bug, this can be too offensive! Instead, please read [this notifiaction](https://github.com/xelaj/mtproto/blob/master/.github/SECURITY.md) and follow that steps to notify us about problem.
+Please, don't create issue which is describe security bug, this can be too offensive! Instead, please read [this notifiaction](https://github.com/xelaj/mtproto/blob/main/.github/SECURITY.md) and follow that steps to notify us about problem.
 
 ## TODO
 
@@ -228,7 +249,7 @@ Please, don't create issue which is describe security bug, this can be too offen
 
 **WARNING!** This project is only maintained by Xelaj inc., however copyright of this source code **IS NOT** owned by Xelaj inc. at all. If you want to connect with code owners, write mail to [this email](mailto:up@khsfilms.rux). For all other questions like any issues, PRs, questions, etc. Use GitHub issues, or find email on official website.
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/xelaj/mtproto/blob/master/LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/xelaj/mtproto/blob/main/LICENSE.md) file for details
 
 <!--
 
