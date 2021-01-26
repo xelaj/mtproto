@@ -7,7 +7,6 @@ import (
 
 	"github.com/gorilla/schema"
 	"github.com/pkg/errors"
-	"github.com/xelaj/go-dry"
 )
 
 var decoder = schema.NewDecoder()
@@ -33,7 +32,7 @@ func resolveHttpLink(u *url.URL) (Deeplink, error) {
 	fixURLHost(u)
 
 	//? Hostname(), cause MAYBE someone want add port for unknown reason. Logically it's better than u.Host
-	if !dry.SliceContains(ReservedHosts(), u.Hostname()) {
+	if !stringListContains(ReservedHosts(), u.Hostname()) {
 		return nil, fmt.Errorf("'%v' hostname is not owned by telegram", u.Hostname())
 	}
 
@@ -141,4 +140,13 @@ func fixURLHost(u *url.URL) {
 	i := strings.IndexRune(u.Path, '/')
 	u.Host = u.Path[:i]
 	u.Path = u.Path[i:]
+}
+
+func stringListContains(l []string, s string) bool {
+	for i := range l {
+		if l[i] == s {
+			return true
+		}
+	}
+	return false
 }
