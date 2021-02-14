@@ -46,7 +46,7 @@ func main() {
 	utils.ReadWarningsToStdErr(client.Warnings)
 
 	// Please, don't spam auth too often, if you have session file, don't repeat auth process, please.
-	if !dry.FileExists(sessionFile) {
+	if dry.FileExists(sessionFile) {
 		println("You've already signed in!")
 		os.Exit(0)
 	}
