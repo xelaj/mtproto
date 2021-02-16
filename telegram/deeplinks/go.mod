@@ -1,4 +1,4 @@
-module github.com/xelaj/mtproto/telegram/internal/deeplinks
+module github.com/xelaj/mtproto/telegram/deeplinks
 
 go 1.13
 

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/xelaj/mtproto/telegram/internal/deeplinks"
+	"github.com/xelaj/mtproto/telegram/deeplinks"
 )
 
 func TestResolveLink(t *testing.T) {
