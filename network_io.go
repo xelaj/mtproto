@@ -9,6 +9,8 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
+	"io"
+	"net"
 	"reflect"
 	"strconv"
 	"time"
@@ -140,6 +142,16 @@ func (m *MTProto) readFromConn(ctx context.Context) (data []byte, err error) {
 	sizeInBytes := make([]byte, 4)
 	n, err := reader.Read(sizeInBytes)
 	if err != nil {
+		if e, ok := err.(*net.OpError); ok {
+			if e.Err.Error() == "i/o timeout" {
+				// timeout? no worries, but we must reconnect tcp connection
+				return nil, nil
+			}
+		}
+		switch err {
+		case io.EOF, context.Canceled:
+			return nil, err
+		}
 		return nil, errors.Wrap(err, "reading length")
 	}
 	if n != 4 {

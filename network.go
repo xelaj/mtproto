@@ -33,7 +33,7 @@ func isNullableResponse(t tl.Object) bool {
 }
 
 const (
-	readTimeout = 300 * time.Second
+	readTimeout = 2 * time.Second
 )
 
 func CatchResponseErrorCode(data []byte) error {

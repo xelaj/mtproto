@@ -8,6 +8,7 @@ package mtproto
 import (
 	"context"
 	"crypto/rsa"
+	"io"
 	"net"
 	"reflect"
 	"sync"
@@ -127,20 +128,6 @@ func (m *MTProto) SetDCStorages(in map[int]string) {
 	}
 }
 
-// Stop останавливает текущее соединение
-func (m *MTProto) Stop() error {
-	m.stopRoutines()
-	m.routineswg.Wait()
-
-	err := m.conn.Close()
-	if err != nil {
-		return errors.Wrap(err, "closing connection")
-	}
-
-	// все остановили, погнали пересоздаваться
-	return nil
-}
-
 func (m *MTProto) CreateConnection() error {
 	// connect
 	tcpAddr, err := net.ResolveTCPAddr("tcp", m.addr)
@@ -166,7 +153,6 @@ func (m *MTProto) CreateConnection() error {
 
 	// get new authKey if need
 	if !m.encrypted {
-		println("not encrypted, creating auth key")
 		err = m.makeAuthKey()
 		if err != nil {
 			return errors.Wrap(err, "making auth key")
@@ -230,6 +216,16 @@ func (m *MTProto) Disconnect() error {
 	return nil
 }
 
+func (m *MTProto) Reconnect() error {
+	err := m.Disconnect()
+	if err != nil {
+		return errors.Wrap(err, "disconnecting")
+	}
+
+	err = m.CreateConnection()
+	return errors.Wrap(err, "recreating connection")
+}
+
 // startPinging пингует сервер что все хорошо, клиент в сети
 // нужно просто запустить
 func (m *MTProto) startPinging(ctx context.Context) {
@@ -264,8 +260,22 @@ func (m *MTProto) startReadingResponses(ctx context.Context) {
 			default:
 				data, err := m.readFromConn(ctx)
 				if err != nil {
+					if err == io.EOF {
+						m.Reconnect()
+						return
+						// returning cuz we need to break all goroutine
+					}
+					if err == context.Canceled {
+						return
+					}
+
 					m.warnError(errors.Wrap(err, "reading from connection"))
 					break // select
+				}
+				if data == nil {
+					// looks like we got timeout without error
+					// no worries, but start a new iteration
+					break
 				}
 
 				response, err := m.decodeRecievedData(data)
@@ -306,6 +316,7 @@ func (m *MTProto) processResponse(msg messages.Common) error {
 	if err != nil {
 		return errors.Wrap(err, "unmarshaling response")
 	}
+messageTypeSwitching:
 	switch message := data.(type) {
 	case *objects.MessageContainer:
 		for _, v := range *message {
@@ -357,6 +368,12 @@ func (m *MTProto) processResponse(msg messages.Common) error {
 			return errors.Wrap(err, "writing RPC response")
 		}
 
+	case *objects.GzipPacked:
+		// sometimes telegram server returns gzip for unknown reason. so, we are extracting data from gzip and
+		// reprocess it again
+		data = message.Obj
+		goto messageTypeSwitching
+
 	default:
 		processed := false
 		for _, f := range m.serverRequestHandlers {
@@ -392,19 +409,10 @@ func (m *MTProto) tryToProcessErr(e *ErrResponseCode) error {
 		if !found {
 			return errors.Wrapf(e, "DC with id %v not found", e.AdditionalInfo)
 		}
-		err := m.Stop()
-		if err != nil {
-			return errors.Wrap(err, "stopping session")
-		}
 
 		m.addr = newIP
-
-		err = m.CreateConnection()
-		if err != nil {
-			return errors.Wrap(err, "recreating session")
-		}
-
-		return nil
+		err := m.Reconnect()
+		return err
 
 	default:
 		return e
