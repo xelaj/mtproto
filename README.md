@@ -178,17 +178,9 @@ func AuthByPhone() {
 
 That's it! You don't need any cycles, code is ready-to-go for async execution. You just need to follow the official Telegram API documentation.
 
-### Docs are empty. Why?
-
-There is a pretty huge chunk of documentation. We are ready to describe every method and object, but its requires a lot of work. Although **all** methods are **already** described [here](https://core.telegram.org/methods).
-
-### Does this project support Windows?
-
-Technically — yes. In practice — components don't require specific architecture, but we didn't test it yet. If you have any problems running it, just create an issue, we will try to help.
-
 ### Telegram Deeplinks
 
-Want to deal those freaky `tg://` links? See [`deeplinks` package](https://github.com/xelaj/mtproto/blob/main/telegram/deeplinks), here is simplest how-to:
+Want to deal those freaky `tg://` links? See [`deeplinks` package](https://github.com/xelaj/mtproto/blob/main/telegram/deeplinks), here is the simplest how-to:
 
 ``` go
 package main
@@ -206,6 +198,18 @@ func main() {
     fmt.Printf("Oh! Looks like @%v is the best developers channel in telegram!\n", resolve.Domain)
 }
 ```
+
+### Docs are empty. Why?
+
+There is a pretty huge chunk of documentation. We are ready to describe every method and object, but its requires a lot of work. Although **all** methods are **already** described [here](https://core.telegram.org/methods).
+
+### Does this project support Windows?
+
+Technically — yes. In practice — components don't require specific architecture, but we didn't test it yet. If you have any problems running it, just create an issue, we will try to help.
+
+### Why Telegram API soooo unusable?
+
+Well... Read [this issue](https://github.com/ton-blockchain/ton/issues/31) about TON source code. Use google translate, this issue will answer to all your questions.
 
 ## Who use it
 
