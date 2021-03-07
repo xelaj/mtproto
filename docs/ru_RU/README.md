@@ -107,9 +107,9 @@ func main() {
 
 Вам не стоит задумываться о реализации шифрования, обмена ключами, сохранении и восстановлении сессии, все уже сделано за вас.
 
-**Code examples are [here](https://github.com/xelaj/mtproto/blob/master/examples)**
+**Примеры кода [здесь](https://github.com/xelaj/mtproto/blob/master/examples)**
 
-**Full docs are [here](https://pkg.go.dev/github.com/xelaj/mtproto)**
+**Полная документация [здесь](https://pkg.go.dev/github.com/xelaj/mtproto)**
 
 ## Getting started
 
@@ -129,7 +129,7 @@ go generate github.com/xelaj/mtproto
 
 Все! Больше ничего и не надо!
 
-### что за InvokeWithLayer?
+### Что за InvokeWithLayer?
 
 Это специфическая особенность Telegram, для создания соединения и получения информации о текущей конфигурации серверов, нужно сделать что-то подобное:
 
@@ -147,6 +147,8 @@ go generate github.com/xelaj/mtproto
         Query:          &telegram.HelpGetConfigParams{},
     })
 ```
+
+Почему? А хер его знает! Этот метод описан в документации Telegram API, любые другие стартовые запросы получат ошибку.
 
 ### Как произвести авторизацию по телефону?
 
@@ -177,6 +179,27 @@ func AuthByPhone() {
 
 Все! вам не требуется никаких циклов или чего-то подобного, код уже готов к асинхронному выполнению, вам нужно только выполнить действия прописанные в документации к Telegram API
 
+### Telegram Deeplinks
+
+Нужно работать с этими стрёмными `tg://` ссылками? Загляните в [пакет `deeplinks`](https://github.com/xelaj/mtproto/blob/main/telegram/deeplinks), вот самый простейший пример:
+
+``` go
+package main
+
+import (
+    "fmt"
+
+    "github.com/xelaj/mtproto/telegram/deeplinks"
+)
+
+func main() {
+    link, _ := deeplinks.Resolve("t.me/xelaj_developers")
+    // кстати говоря, ResolveParameters это просто структура для ссылок tg://resolve, не все ссылки это исключительно ResolveParameters
+    resolve := link.(*deeplinks.ResolveParameters)
+    fmt.Printf("Ого! похоже что @%v это лучший девелоперский чат в телеге!\n", resolve.Domain)
+}
+```
+
 ### Документация пустует! Почему?
 
 Объем документации невероятно огромен. Мы бы готовы задокументировать каждый метод и объект, но это огромное количество работы. Несмотря на это, **все** методы **уже** описаны [здесь](https://core.telegram.org/methods), вы можете так же спокойно их
@@ -185,22 +208,63 @@ func AuthByPhone() {
 
 Технически — да. Компоненты не были заточены под определенную архитектуру. Однако, возможности протестировать у разработчиков не было. Если у вас возникли проблемы, напишите в issues, мы постараемся помочь
 
+
+### Почему Telegram API НАСТОЛЬКО нестабильное?
+
+Ну... Как сказать... А гляньте лучше [вот это ишью](https://github.com/ton-blockchain/ton/issues/31) про исходники TON (ныне закрытый проект telegram). Оно вам расскажет обо всех проблемах и самого телеграма, и его апи. И его разработчиках.
+
 ## Who use it
 
 ## Contributing
 
 Please read [contributing guide](https://github.com/xelaj/mtproto/blob/master/doc/en_US/CONTRIBUTING.md) if you want to help. And the help is very necessary!
 
+
+## Критические уязвимости?
+
+Ага, мы стараемся подходить к ним серьезно. Пожалуйста, не создавайте ищью, описывающие ошибку безопасности, это может быть ОЧЕНЬ небезопасно! Вместо этого рекомендуем глянуть на [эту страничку](https://github.com/xelaj/mtproto/blob/main/.github/SECURITY.md) и следовать инструкции по уведомлению.
+
 ## TODO
 
-[ ]
+- [x] Базовая реализация MTProto
+- [x] Реализовать все методы для последнего слоя
+- [x] Сделать TL Encoder/Decoder
+- [x] Убрать все паники при парсинге TL
+- [ ] Поддержка MTProxy
+- [ ] Поддержка Socks5 из коробки (вообще вы и так можете гнать запросы через socks5)
+- [ ] Капитальное тестирование (80%+)
+- [ ] Написать **свою** суперскую документацию
+
 
 ## Authors
 
 * **Richard Cooper** <[rcooper.xelaj@protonmail.com](mailto:rcooper.xelaj@protonmail.com)>
+* **Anton Larionov** <[Anton.Larionov@infobip.com](mailto:Anton.Larionov@infobip.com)>
+* **Arthur Petukhovsky** <[petuhovskiy@yandex.ru](mailto:petuhovskiy@yandex.ru)>
+* **Roman Timofeev** <[timofeev@uteka.ru](mailto:timofeev@uteka.ru)>
+* **Artem** <[webgutar@gmail.com](mailto:webgutar@gmail.com)>
+* **Bo-Yi Wu** <[appleboy.tw@gmail.com](mailto:appleboy.tw@gmail.com)>
+* **0xflotus** <[0xflotus@gmail.com](mailto:0xflotus@gmail.com)>
+* **Luclu7** <[me@luclu7.fr](mailto:me@luclu7.fr)>
+* **Vladimir Stolyarov** <[xakep6666@gmail.com](mailto:xakep6666@gmail.com)>
+* **grinrill** [@grinrill](https://github.com/grinrill)
+* **kulallador** <[ilyastalk@bk.ru](ilyastalk@bk.ru)>
+* **rs** <[yuiop1955@mail.ru](mailto:yuiop1955@mail.ru)>
 
 ## License
 
 <b style="color:red">WARNING!</b> This project is only maintained by Xelaj inc., however copyright of this source code **IS NOT** owned by Xelaj inc. at all. If you want to connect with code owners, write mail to <a href="mailto:up@khsfilms.ru">this email</a>. For all other questions like any issues, PRs, questions, etc. Use GitHub issues, or find email on official website.
 
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/xelaj/mtproto/blob/master/doc/en_US/LICENSE.md) file for details
+
+<!--
+
+V2UndmUga25vd24gZWFjaCBvdGhlciBmb3Igc28gbG9uZwpZb3
+VyIGhlYXJ0J3MgYmVlbiBhY2hpbmcgYnV0IHlvdSdyZSB0b28g
+c2h5IHRvIHNheSBpdApJbnNpZGUgd2UgYm90aCBrbm93IHdoYX
+QncyBiZWVuIGdvaW5nIG9uCldlIGtub3cgdGhlIGdhbWUgYW5k
+IHdlJ3JlIGdvbm5hIHBsYXkgaXQKQW5kIGlmIHlvdSBhc2sgbW
+UgaG93IEknbSBmZWVsaW5nCkRvbid0IHRlbGwgbWUgeW91J3Jl
+IHRvbyBibGluZCB0byBzZWU=
+
+-->
