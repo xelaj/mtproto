@@ -23,7 +23,7 @@ import (
 
 // https://tlgrm.ru/docs/mtproto/auth_key
 // https://core.telegram.org/mtproto/auth_key
-func (m *MTProto) makeAuthKey() error {
+func (m *MTProto) makeAuthKey() error { // nolint don't know how to make method smaller
 	m.serviceModeActivated = true
 	nonceFirst := tl.RandomInt128()
 	res, err := m.reqPQ(nonceFirst)
@@ -92,19 +92,19 @@ func (m *MTProto) makeAuthKey() error {
 
 	dhi, ok := data.(*objects.ServerDHInnerData)
 	if !ok {
-		return errors.New("Handshake: Need server_DH_inner_data")
+		return errors.New("handshake: Need server_DH_inner_data")
 	}
 	if nonceFirst.Cmp(dhi.Nonce.Int) != 0 {
-		return errors.New("Handshake: Wrong nonce")
+		return errors.New("handshake: Wrong nonce")
 	}
 	if nonceServer.Cmp(dhi.ServerNonce.Int) != 0 {
-		return errors.New("Handshake: Wrong server_nonce")
+		return errors.New("handshake: Wrong server_nonce")
 	}
 
 	// вот это видимо как раз и есть часть диффи хеллмана, поэтому просто оставим как есть надеюсь сработает
-	_, g_b, g_ab := makeGAB(dhi.G, big.NewInt(0).SetBytes(dhi.GA), big.NewInt(0).SetBytes(dhi.DhPrime))
+	_, gB, gAB := makeGAB(dhi.G, big.NewInt(0).SetBytes(dhi.GA), big.NewInt(0).SetBytes(dhi.DhPrime))
 
-	authKey := g_ab.Bytes()
+	authKey := gAB.Bytes()
 	if authKey[0] == 0 {
 		authKey = authKey[1:]
 	}
@@ -112,7 +112,7 @@ func (m *MTProto) makeAuthKey() error {
 	m.SetAuthKey(authKey)
 
 	// что это я пока не знаю, видимо какой то очень специфичный способ сгенерить ключи
-	t4 := make([]byte, 32+1+8)
+	t4 := make([]byte, 32+1+8) // nolint:gomnd ALL PROTOCOL IS A MAGIC
 	copy(t4[0:], nonceSecond.Bytes())
 	t4[32] = 1
 	copy(t4[33:], dry.Sha1Byte(m.GetAuthKey())[0:8])
@@ -123,7 +123,12 @@ func (m *MTProto) makeAuthKey() error {
 	m.serverSalt = int64(binary.LittleEndian.Uint64(salt))
 
 	// (encoding) client_DH_inner_data
-	clientDHData, err := tl.Marshal(&objects.ClientDHInnerData{nonceFirst, nonceServer, 0, g_b.Bytes()})
+	clientDHData, err := tl.Marshal(&objects.ClientDHInnerData{
+		Nonce:       nonceFirst,
+		ServerNonce: nonceServer,
+		Retry:       0,
+		GB:          gB.Bytes(),
+	})
 	check(err) // ну я не знаю что во вселенной произойдет чтоб тут словилась паника
 
 	encryptedMessage = ige.EncryptMessageWithTempKeys(clientDHData, nonceSecond.Int, nonceServer.Int)
@@ -135,13 +140,13 @@ func (m *MTProto) makeAuthKey() error {
 
 	dhg, ok := dhGenStatus.(*objects.DHGenOk)
 	if !ok {
-		return errors.New("Handshake: Need DHGenOk")
+		return errors.New("handshake: Need DHGenOk")
 	}
 	if nonceFirst.Cmp(dhg.Nonce.Int) != 0 {
-		return fmt.Errorf("Handshake: Wrong nonce: %v, %v", nonceFirst, dhg.Nonce)
+		return fmt.Errorf("handshake: Wrong nonce: %v, %v", nonceFirst, dhg.Nonce)
 	}
 	if nonceServer.Cmp(dhg.ServerNonce.Int) != 0 {
-		return fmt.Errorf("Handshake: Wrong server_nonce: %v, %v", nonceServer, dhg.ServerNonce)
+		return fmt.Errorf("handshake: Wrong server_nonce: %v, %v", nonceServer, dhg.ServerNonce)
 	}
 	if !bytes.Equal(nonceHash1, dhg.NewNonceHash1.Bytes()) {
 		return fmt.Errorf(

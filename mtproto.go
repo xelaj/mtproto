@@ -44,8 +44,8 @@ type MTProto struct {
 	// общий мьютекс
 	mutex *sync.Mutex
 
-	msgsIdToResp  map[int64]chan tl.Object
-	idsToAck   *utils.SyncSetInt
+	msgsIdToResp map[int64]chan tl.Object
+	idsToAck     *utils.SyncSetInt
 
 	// каналы, которые ожидают ответа rpc. ответ записывается в канал и удаляется
 	responseChannels map[int64]chan tl.Object
@@ -95,13 +95,17 @@ func NewMTProto(c Config) (*MTProto, error) {
 	m.tokensStorage = c.AuthKeyFile
 
 	err := m.LoadSession()
-	if err == nil {
+	switch {
+	case err == nil:
 		m.encrypted = true
-	} else if errs.IsNotFound(err) {
+
+	case errs.IsNotFound(err):
 		m.addr = c.ServerHost
 		m.encrypted = false
-	} else {
+
+	default:
 		return nil, errors.Wrap(err, "loading session")
+
 	}
 
 	m.sessionId = utils.GenerateSessionID()
@@ -316,6 +320,7 @@ func (m *MTProto) processResponse(msg messages.Common) error {
 	if err != nil {
 		return errors.Wrap(err, "unmarshaling response")
 	}
+
 messageTypeSwitching:
 	switch message := data.(type) {
 	case *objects.MessageContainer:

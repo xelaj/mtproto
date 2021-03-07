@@ -125,6 +125,22 @@ func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not 
 	return client, nil
 }
 
+func (m *Client) IsSessionRegistred() (bool, error) {
+	_, err := m.UsersGetFullUser(&InputUserSelf{})
+	if err == nil {
+		return true, nil
+	}
+	var errCode *mtproto.ErrResponseCode
+	if errors.As(err, &errCode) {
+		if errCode.Message == "AUTH_KEY_UNREGISTERED" {
+			return false, nil
+		}
+		return false, err
+	} else {
+		return false, err
+	}
+}
+
 /*
 func (c *Client) handleSpecialRequests() func(any) bool {
 	return func(i any) bool {

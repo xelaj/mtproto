@@ -46,7 +46,12 @@ func main() {
 	utils.ReadWarningsToStdErr(client.Warnings)
 
 	// Please, don't spam auth too often, if you have session file, don't repeat auth process, please.
-	if dry.FileExists(sessionFile) {
+	signedIn, err := client.IsSessionRegistred()
+	if err != nil {
+		panic(errors.Wrap(err, "can't check that session is registred"))
+	}
+
+	if signedIn {
 		println("You've already signed in!")
 		os.Exit(0)
 	}
