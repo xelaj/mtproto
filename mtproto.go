@@ -45,8 +45,7 @@ type MTProto struct {
 	mutex *sync.Mutex
 
 	msgsIdToResp  map[int64]chan tl.Object
-	idsToAck      map[int64]null
-	idsToAckMutex sync.Mutex
+	idsToAck   *utils.SyncSetInt
 
 	// каналы, которые ожидают ответа rpc. ответ записывается в канал и удаляется
 	responseChannels map[int64]chan tl.Object
@@ -111,6 +110,7 @@ func NewMTProto(c Config) (*MTProto, error) {
 	m.responseChannels = make(map[int64]chan tl.Object)
 	m.expectedTypes = make(map[int64][]reflect.Type)
 	m.serverRequestHandlers = make([]customHandlerFunc, 0)
+	m.idsToAck = utils.NewSyncSetInt()
 	// копируем мапу, т.к. все таки дефолтный список нельзя менять, вдруг его использует несколько клиентов
 	m.SetDCStorages(defaultDCList)
 

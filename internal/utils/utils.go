@@ -1,4 +1,4 @@
-// Copyright (c) 2020 KHS Films
+// Copyright (c) 2020-2021 KHS Films
 //
 // This file is a part of mtproto package.
 // See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
@@ -8,6 +8,7 @@
 package utils
 
 import (
+	"crypto/sha1"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -15,8 +16,6 @@ import (
 	"os"
 	"runtime"
 	"time"
-
-	"github.com/xelaj/go-dry"
 )
 
 const (
@@ -39,7 +38,7 @@ func GenerateMessageId() int64 {
 }
 
 func AuthKeyHash(key []byte) []byte {
-	return dry.Sha1Byte(key)[12:20]
+	return Sha1Byte(key)[12:20]
 }
 
 func PacketLengthMTProtoCompatible(data []byte) []byte {
@@ -94,4 +93,9 @@ func FullStack() {
 		}
 		buf = make([]byte, 2*len(buf))
 	}
+}
+
+func Sha1Byte(input []byte) []byte {
+	r := sha1.Sum(input)
+	return r[:]
 }

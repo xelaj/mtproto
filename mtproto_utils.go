@@ -21,24 +21,18 @@ import (
 // waitAck добавляет в список id сообщения, которому нужно подтверждение
 // возвращает true, если ранее этого id не было
 func (m *MTProto) waitAck(msgID int64) bool {
-	_, ok := m.idsToAck[msgID]
-	m.idsToAck[msgID] = null{}
-	return !ok
+	return m.idsToAck.Add(int(msgID))
 }
 
 // gotAck удаляет элемент из списка id сообщений, на который ожидается ack.
 // возвращается true, если id был найден
 func (m *MTProto) gotAck(msgID int64) bool {
-	m.idsToAckMutex.Lock()
-	_, ok := m.idsToAck[msgID]
-	delete(m.idsToAck, msgID)
-	m.idsToAckMutex.Unlock()
-	return ok
+	return m.idsToAck.Delete(int(msgID))
 }
 
 // resetAck сбрасывает целиком список сообщений, которым нужен ack
 func (m *MTProto) resetAck() {
-	m.idsToAck = make(map[int64]null)
+	m.idsToAck.Reset()
 }
 
 // получает текущий идентификатор сессии
