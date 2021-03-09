@@ -18,7 +18,7 @@ gitlab pipelines
 ![FINALLY!](/docs/assets/finally.jpg) Полностью нативная имплементация MTProto на Golang!
 
 
-[english](https://github.com/xelaj/mtproto/blob/master/docs/en_US/README.md) **русский**
+[english](https://github.com/xelaj/mtproto/blob/master/docs/en_US/README.md) **русский** [简体中文](https://github.com/xelaj/mtproto/blob/main/docs/zh_CN/README.md)
 
 <p align="center">
 <img src="/docs/assets/MuffinMan-AgADRAADO2AkFA.gif"/>
