@@ -15,7 +15,7 @@ gitlab pipelines
 
 ![FINALLY!](/docs/assets/finally.jpg) MTProto 协议的原生 Go 实现！
 
-[english](https://github.com/xelaj/mtproto/blob/master/docs/README.md) [русский](https://github.com/xelaj/mtproto/blob/main/docs/ru_RU/README.md) **简体中文**
+[english](https://github.com/xelaj/mtproto/blob/master/README.md) [русский](https://github.com/xelaj/mtproto/blob/main/docs/ru_RU/README.md) **简体中文**
 
 <p align="center">
 <img src="https://i.ibb.co/yYsPxhW/Muffin-Man-Ag-ADRAADO2-Ak-FA.gif"/>
