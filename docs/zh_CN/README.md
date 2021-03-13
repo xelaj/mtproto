@@ -242,11 +242,9 @@ func main() {
 
 ## 许可证
 
-警告！这个项目由 Xelaj inc. 负责维护，但是其代码版权并非 Xelaj inc. 所有。如果你想与代码所有者取得联系，请先联系[这个邮箱](up@khsfilms.rux)。对于其他任何问题，请使用 GitHub Issues，或者在官网取得邮箱。
+**WARNING!** This project is only maintained by Xelaj inc., however copyright of this source code **IS NOT** owned by Xelaj inc. at all. If you want to connect with code owners, write mail to [this email](mailto:up@khsfilms.rux). For all other questions like any issues, PRs, questions, etc. Use GitHub issues, or find email on official website.
 
-该项目是基于 MIT 许可证发布的。
-
-许可证可以在[这里](https://github.com/xelaj/mtproto/blob/main/LICENSE.md)找到。
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/xelaj/mtproto/blob/main/LICENSE.md) file for detailsLi
 
 <!--
 
