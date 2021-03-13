@@ -184,7 +184,7 @@ import (
 
 func main() {
     link, _ := deeplinks.Resolve("t.me/xelaj_developers")
-    // 顺便说一下，ResolveParameters 只是 tg://resolve 链接的结构体，并非所有链接都可解析
+    // 顺便说一下，ResolveParameters 只是 tg://resolve 链接的结构体，并非所有链接都是 resolve 的
     resolve := link.(*deeplinks.ResolveParameters)
     fmt.Printf("Oh! Looks like @%v is the best developers channel in telegram!\n", resolve.Domain)
 }
