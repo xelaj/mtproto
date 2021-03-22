@@ -115,19 +115,18 @@ func NewMTProto(c Config) (*MTProto, error) {
 	m.expectedTypes = make(map[int64][]reflect.Type)
 	m.serverRequestHandlers = make([]customHandlerFunc, 0)
 	m.idsToAck = utils.NewSyncSetInt()
-	// копируем мапу, т.к. все таки дефолтный список нельзя менять, вдруг его использует несколько клиентов
-	m.SetDCStorages(defaultDCList)
+	m.dclist = defaultDCList()
 
 	m.resetAck()
 
 	return m, nil
 }
 
-func (m *MTProto) SetDCStorages(in map[int]string) {
+func (m *MTProto) SetDCList(in map[int]string) {
 	if m.dclist == nil {
 		m.dclist = make(map[int]string)
 	}
-	for k, v := range defaultDCList {
+	for k, v := range in {
 		m.dclist[k] = v
 	}
 }
