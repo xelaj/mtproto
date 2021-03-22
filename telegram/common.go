@@ -121,7 +121,7 @@ func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not 
 
 		dcList[int(dc.ID)] = dc.IpAddress
 	}
-	client.SetDCStorages(dcList)
+	client.SetDCList(dcList)
 	return client, nil
 }
 
