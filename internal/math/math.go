@@ -1,10 +1,10 @@
-// Copyright (c) 2020 KHS Films
+// Copyright (c) 2020-2021 KHS Films
 //
 // This file is a part of mtproto package.
 // See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
 
 //nolint:gochecknoglobals using it just for simplification and more readable
-package mtproto
+package math
 
 import (
 	"crypto/rsa"
@@ -17,17 +17,17 @@ import (
 )
 
 var (
-	// числа используются только для алгоритмов
+	// all of them uses just for code simplification
 	big0  = big.NewInt(0)
 	big1  = big.NewInt(1)
 	big15 = big.NewInt(15)
 	big17 = big.NewInt(17)
 )
 
-// doRSAencrypt шифрует ровно 1 блок сообщения длиной 255 байт публичным ключом.
-// специфический алгоритм для мтпрото, т.к. документация не указывает, шифрование
-// по OAEP или как-то еще
-func doRSAencrypt(block []byte, key *rsa.PublicKey) []byte {
+// DoRSAencrypt encrypts exactly 1 message block of size 255 with the public key.
+// Specific algorithm for mtproto, because the documentation does not indicate is
+// this encryption working by OAEP spec or any else
+func DoRSAencrypt(block []byte, key *rsa.PublicKey) []byte {
 	dry.PanicIf(len(block) != math.MaxUint8, "block size isn't equal 255 bytes")
 	z := big.NewInt(0).SetBytes(block)
 	exponent := big.NewInt(int64(key.E))
@@ -40,9 +40,9 @@ func doRSAencrypt(block []byte, key *rsa.PublicKey) []byte {
 	return res
 }
 
-// splitPQ раскладывает число на два простых, при том таким образом, что p1 < p2
-// Часть алгоритма диффи хеллмана, как работает — без понятия
-func splitPQ(pq *big.Int) (p1, p2 *big.Int) {
+// SplitPQ splits a number into two primes, while p1 < p2
+// Part of diffie hellman's algorithm, how it works - no idea
+func SplitPQ(pq *big.Int) (p1, p2 *big.Int) {
 	rndmax := big.NewInt(0).SetBit(big.NewInt(0), 64, 1)
 
 	what := big.NewInt(0).Set(pq)
@@ -117,7 +117,7 @@ func splitPQ(pq *big.Int) (p1, p2 *big.Int) {
 	return p1, p2
 }
 
-func makeGAB(g int32, g_a, dh_prime *big.Int) (b, g_b, g_ab *big.Int) {
+func MakeGAB(g int32, g_a, dh_prime *big.Int) (b, g_b, g_ab *big.Int) {
 	rnd := rand.New(rand.NewSource(time.Now().UnixNano())) //nolint: gosec зачем
 	rndmax := big.NewInt(0).SetBit(big.NewInt(0), 2048, 1)
 	b = big.NewInt(0).Rand(rnd, rndmax)
@@ -127,7 +127,7 @@ func makeGAB(g int32, g_a, dh_prime *big.Int) (b, g_b, g_ab *big.Int) {
 	return
 }
 
-func xor(dst, src []byte) {
+func Xor(dst, src []byte) {
 	for i := range dst {
 		dst[i] ^= src[i]
 	}

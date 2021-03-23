@@ -18,6 +18,7 @@ import (
 	ige "github.com/xelaj/mtproto/internal/aes_ige"
 	"github.com/xelaj/mtproto/internal/encoding/tl"
 	"github.com/xelaj/mtproto/internal/keys"
+	"github.com/xelaj/mtproto/internal/math"
 	"github.com/xelaj/mtproto/internal/mtproto/objects"
 )
 
@@ -47,7 +48,7 @@ func (m *MTProto) makeAuthKey() error { // nolint don't know how to make method 
 
 	// (encoding) p_q_inner_data
 	pq := big.NewInt(0).SetBytes(res.Pq)
-	p, q := splitPQ(pq)
+	p, q := math.SplitPQ(pq)
 	nonceSecond := tl.RandomInt256()
 	nonceServer := res.ServerNonce
 
@@ -64,7 +65,7 @@ func (m *MTProto) makeAuthKey() error { // nolint don't know how to make method 
 	hashAndMsg := make([]byte, 255)
 	copy(hashAndMsg, append(dry.Sha1(string(message)), message...))
 
-	encryptedMessage := doRSAencrypt(hashAndMsg, m.publicKey)
+	encryptedMessage := math.DoRSAencrypt(hashAndMsg, m.publicKey)
 
 	keyFingerprint := int64(binary.LittleEndian.Uint64(keys.RSAFingerprint(m.publicKey)))
 	dhResponse, err := m.reqDHParams(nonceFirst, nonceServer, p.Bytes(), q.Bytes(), keyFingerprint, encryptedMessage)
@@ -102,7 +103,7 @@ func (m *MTProto) makeAuthKey() error { // nolint don't know how to make method 
 	}
 
 	// вот это видимо как раз и есть часть диффи хеллмана, поэтому просто оставим как есть надеюсь сработает
-	_, gB, gAB := makeGAB(dhi.G, big.NewInt(0).SetBytes(dhi.GA), big.NewInt(0).SetBytes(dhi.DhPrime))
+	_, gB, gAB := math.MakeGAB(dhi.G, big.NewInt(0).SetBytes(dhi.GA), big.NewInt(0).SetBytes(dhi.DhPrime))
 
 	authKey := gAB.Bytes()
 	if authKey[0] == 0 {
@@ -119,7 +120,7 @@ func (m *MTProto) makeAuthKey() error { // nolint don't know how to make method 
 	nonceHash1 := dry.Sha1Byte(t4)[4:20]
 	salt := make([]byte, tl.LongLen)
 	copy(salt, nonceSecond.Bytes()[:8])
-	xor(salt, nonceServer.Bytes()[:8])
+	math.Xor(salt, nonceServer.Bytes()[:8])
 	m.serverSalt = int64(binary.LittleEndian.Uint64(salt))
 
 	// (encoding) client_DH_inner_data

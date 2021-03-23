@@ -1,13 +1,15 @@
-// Copyright (c) 2020 KHS Films
+// Copyright (c) 2020-2021 KHS Films
 //
 // This file is a part of mtproto package.
 // See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
 
-package mtproto
+package math_test
 
 import (
 	"math/big"
 	"testing"
+
+	"github.com/xelaj/mtproto/internal/math"
 )
 
 func TestSplitPQ(t *testing.T) {
@@ -20,7 +22,7 @@ func TestSplitPQ(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		r1, r2 := splitPQ(c.pq)
+		r1, r2 := math.SplitPQ(c.pq)
 		if c.p.Cmp(r1) != 0 || c.q.Cmp(r2) != 0 {
 			t.Errorf("PQ mismatch: %v %v, want %v %v", r1, r2, c.p, c.q)
 		}

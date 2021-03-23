@@ -3,7 +3,6 @@ package main
 import (
 	"path/filepath"
 	"sync"
-	"time"
 
 	"github.com/k0kubun/pp"
 	"github.com/xelaj/go-dry"
@@ -44,13 +43,6 @@ func main() {
 	dry.PanicIfErr(err)
 	// this state could be useful, if you want to get old unread updates
 	pp.Println(state)
-
-	go func() {
-		for {
-			time.Sleep(3 * time.Second)
-			pp.Println(client.Reconnect())
-		}
-	}()
 
 	var wg sync.WaitGroup
 	wg.Add(1)
