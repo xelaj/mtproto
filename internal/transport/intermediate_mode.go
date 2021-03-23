@@ -15,7 +15,7 @@ type intermediateMode struct {
 
 var transportModeIntermediate = [...]byte{0xee, 0xee, 0xee, 0xee} // meta:immutable
 
-func NewIntermediateMode(conn io.ReadWriter) (Transport, error) {
+func NewIntermediateMode(conn io.ReadWriter) (Mode, error) {
 	if conn == nil {
 		return nil, errors.New("conn is nil")
 	}

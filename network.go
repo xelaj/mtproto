@@ -8,18 +8,12 @@ package mtproto
 import (
 	"encoding/binary"
 	"fmt"
-	"time"
 
 	"github.com/pkg/errors"
 
 	"github.com/xelaj/mtproto/internal/encoding/tl"
 	"github.com/xelaj/mtproto/internal/mtproto/messages"
 	"github.com/xelaj/mtproto/internal/mtproto/objects"
-)
-
-const (
-	// если длина пакета больше или равн 127 слов, то кодируем 4 байтами, 1 это магическое число, оставшиеся 3 — дилна
-	magicValueSizeMoreThanSingleByte = 0x7f
 )
 
 // проверяет, надо ли ждать от сервера пинга
@@ -32,12 +26,8 @@ func isNullableResponse(t tl.Object) bool {
 	}
 }
 
-const (
-	readTimeout = 2 * time.Second
-)
-
 func CatchResponseErrorCode(data []byte) error {
-	if len(data) == 4 {
+	if len(data) == tl.WordLen {
 		code := int(binary.LittleEndian.Uint32(data))
 		return &ErrResponseCode{Code: code}
 	}
@@ -70,11 +60,9 @@ func (m *MTProto) decodeRecievedData(data []byte) (messages.Common, error) {
 		return nil, errors.Wrap(err, "parsing message")
 	}
 
-	m.msgId = int64(msg.GetMsgID())
-	m.seqNo = int32(msg.GetSeqNo())
-	mod := m.msgId & 3
+	mod := msg.GetMsgID() & 3
 	if mod != 1 && mod != 3 {
-		return nil, fmt.Errorf("Wrong bits of message_id: %d", mod)
+		return nil, fmt.Errorf("wrong bits of message_id: %d", mod)
 	}
 
 	return msg, nil

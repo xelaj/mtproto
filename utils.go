@@ -6,6 +6,9 @@
 package mtproto
 
 import (
+	"context"
+	"io"
+
 	"github.com/xelaj/mtproto/internal/encoding/tl"
 	"github.com/xelaj/mtproto/internal/mtproto/objects"
 )
@@ -23,14 +26,6 @@ func defaultDCList() map[int]string {
 	}
 }
 
-// https://core.telegram.org/mtproto/mtproto-transports
-var (
-	transportModeAbridged           = [...]byte{0xef}                   // meta:immutable
-	transportModeIntermediate       = [...]byte{0xee, 0xee, 0xee, 0xee} // meta:immutable
-	transportModePaddedIntermediate = [...]byte{0xdd, 0xdd, 0xdd, 0xdd} // meta:immutable
-	transportModeFull               = [...]byte{}                       // meta:immutable
-)
-
 func MessageRequireToAck(msg tl.Object) bool {
 	switch msg.(type) {
 	case /**objects.Ping,*/ *objects.MsgsAck:
@@ -38,4 +33,11 @@ func MessageRequireToAck(msg tl.Object) bool {
 	default:
 		return true
 	}
+}
+
+func CloseOnCancel(ctx context.Context, c io.Closer) {
+	go func() {
+		<-ctx.Done()
+		c.Close()
+	}()
 }

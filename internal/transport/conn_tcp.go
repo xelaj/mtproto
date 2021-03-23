@@ -17,7 +17,7 @@ type tcpConn struct {
 }
 
 func NewTCP(host string, timeout time.Duration) (Conn, error) {
-	return NewTCPWithCtx(nil, host, timeout)
+	return NewTCPWithCtx(context.Background(), host, timeout)
 }
 
 func NewTCPWithCtx(ctx context.Context, host string, timeout time.Duration) (Conn, error) {
@@ -28,10 +28,6 @@ func NewTCPWithCtx(ctx context.Context, host string, timeout time.Duration) (Con
 	conn, err := net.DialTCP("tcp", nil, tcpAddr)
 	if err != nil {
 		return nil, errors.Wrap(err, "dialing tcp")
-	}
-
-	if ctx == nil {
-		ctx = context.Background()
 	}
 
 	return &tcpConn{
