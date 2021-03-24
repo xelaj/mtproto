@@ -156,9 +156,10 @@ func (m *MTProto) makeAuthKey() error { // nolint don't know how to make method 
 			hex.EncodeToString(dhg.NewNonceHash1.Bytes()),
 		)
 	}
-	m.serviceModeActivated = false
 
 	// (all ok)
+	m.serviceModeActivated = false
+	m.encrypted = true
 	err = m.SaveSession()
 	return errors.Wrap(err, "saving session")
 }

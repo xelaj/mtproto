@@ -16,12 +16,14 @@ type tcpConn struct {
 	timeout      time.Duration
 }
 
-func NewTCP(host string, timeout time.Duration) (Conn, error) {
-	return NewTCPWithCtx(context.Background(), host, timeout)
+type TCPConnConfig struct {
+	Ctx     context.Context
+	Host    string
+	Timeout time.Duration
 }
 
-func NewTCPWithCtx(ctx context.Context, host string, timeout time.Duration) (Conn, error) {
-	tcpAddr, err := net.ResolveTCPAddr("tcp", host)
+func NewTCP(cfg TCPConnConfig) (Conn, error) {
+	tcpAddr, err := net.ResolveTCPAddr("tcp", cfg.Host)
 	if err != nil {
 		return nil, errors.Wrap(err, "resolving tcp")
 	}
@@ -31,9 +33,9 @@ func NewTCPWithCtx(ctx context.Context, host string, timeout time.Duration) (Con
 	}
 
 	return &tcpConn{
-		cancelReader: ioutil.NewCancelableReader(ctx, conn),
+		cancelReader: ioutil.NewCancelableReader(cfg.Ctx, conn),
 		conn:         conn,
-		timeout:      timeout,
+		timeout:      cfg.Timeout,
 	}, nil
 }
 

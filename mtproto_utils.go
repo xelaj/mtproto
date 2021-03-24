@@ -20,14 +20,14 @@ import (
 
 // waitAck добавляет в список id сообщения, которому нужно подтверждение
 // возвращает true, если ранее этого id не было
-func (m *MTProto) waitAck(msgID int64) bool {
-	return m.idsToAck.Add(int(msgID))
+func (m *MTProto) waitAck(msgID int) bool {
+	return m.idsToAck.Add(msgID)
 }
 
 // gotAck удаляет элемент из списка id сообщений, на который ожидается ack.
 // возвращается true, если id был найден
-func (m *MTProto) gotAck(msgID int64) bool {
-	return m.idsToAck.Delete(int(msgID))
+func (m *MTProto) gotAck(msgID int) bool {
+	return m.idsToAck.Delete(msgID)
 }
 
 // resetAck сбрасывает целиком список сообщений, которым нужен ack
@@ -42,7 +42,7 @@ func (m *MTProto) GetSessionID() int64 {
 
 // Получает lastSeqNo
 func (m *MTProto) GetLastSeqNo() int32 {
-	return m.lastSeqNo
+	return m.seqNo
 }
 
 // получает соль

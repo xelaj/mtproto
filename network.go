@@ -6,15 +6,98 @@
 package mtproto
 
 import (
-	"encoding/binary"
-	"fmt"
+	"reflect"
+	"strconv"
 
 	"github.com/pkg/errors"
+	"github.com/xelaj/errs"
 
 	"github.com/xelaj/mtproto/internal/encoding/tl"
 	"github.com/xelaj/mtproto/internal/mtproto/messages"
 	"github.com/xelaj/mtproto/internal/mtproto/objects"
+	"github.com/xelaj/mtproto/internal/utils"
 )
+
+func (m *MTProto) sendPacket(request tl.Object, expectedTypes ...reflect.Type) (chan tl.Object, error) {
+	msg, err := tl.Marshal(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "encoding request message")
+	}
+
+	var (
+		data  messages.Common
+		msgID = utils.GenerateMessageId()
+	)
+
+	// adding types for parser if required
+	if len(expectedTypes) > 0 {
+		m.expectedTypes.Add(int(msgID), expectedTypes)
+	}
+
+	// checking, that we expect ack
+	requireToAck := MessageRequireToAck(request)
+	if requireToAck {
+		m.waitAck(int(msgID))
+	}
+
+	// dealing with response channel
+	resp := m.getRespChannel()
+	if isNullableResponse(request) {
+		go func() { resp <- &objects.Null{} }() // goroutine cuz we don't read from it RIGHT NOW
+	} else {
+		m.responseChannels.Add(int(msgID), resp)
+	}
+
+	// must write synchroniously, cuz seqno must be upper each request
+	m.seqNoMutex.Lock()
+	defer m.seqNoMutex.Unlock()
+
+	if m.encrypted {
+		data = &messages.Encrypted{
+			Msg:         msg,
+			MsgID:       msgID,
+			AuthKeyHash: m.authKeyHash,
+		}
+
+		// since we sending this message, we are incrementing the seqno BUT ONLY when we
+		// are sending an encrypted message. why? I don’t know. But the fact remains:
+		// we must to block seqno, cause messages with a bigger seqno can go faster than
+		// messages with a smaller one.
+		m.seqNo += 2
+	} else {
+		data = &messages.Unencrypted{ //nolint: errcheck нешифрованое не отправляет ошибки
+			Msg:   msg,
+			MsgID: msgID,
+		}
+	}
+
+	err = m.transport.WriteMsg(data, requireToAck)
+	if err != nil {
+		return nil, errors.Wrap(err, "sending request")
+	}
+
+	return resp, nil
+}
+
+func (m *MTProto) writeRPCResponse(msgID int, data tl.Object) error {
+	v, ok := m.responseChannels.Get(msgID)
+	if !ok {
+		return errs.NotFound("msgID", strconv.Itoa(msgID))
+	}
+
+	v <- data
+
+	m.responseChannels.Delete(msgID)
+	m.expectedTypes.Delete(msgID)
+	return nil
+}
+
+func (m *MTProto) getRespChannel() chan tl.Object {
+	if m.serviceModeActivated {
+		return m.serviceChannel
+	}
+	return make(chan tl.Object)
+}
 
 // проверяет, надо ли ждать от сервера пинга
 func isNullableResponse(t tl.Object) bool {
@@ -24,46 +107,4 @@ func isNullableResponse(t tl.Object) bool {
 	default:
 		return false
 	}
-}
-
-func CatchResponseErrorCode(data []byte) error {
-	if len(data) == tl.WordLen {
-		code := int(binary.LittleEndian.Uint32(data))
-		return &ErrResponseCode{Code: code}
-	}
-	return nil
-}
-
-func IsPacketEncrypted(data []byte) bool {
-	if len(data) < tl.DoubleLen {
-		return false
-	}
-	authKeyHash := data[:tl.DoubleLen]
-	return binary.LittleEndian.Uint64(authKeyHash) != 0
-}
-
-func (m *MTProto) decodeRecievedData(data []byte) (messages.Common, error) {
-	// проверим, что это не код ошибки
-	err := CatchResponseErrorCode(data)
-	if err != nil {
-		return nil, errors.Wrap(err, "Server response error")
-	}
-
-	var msg messages.Common
-
-	if IsPacketEncrypted(data) {
-		msg, err = messages.DeserializeEncrypted(data, m.GetAuthKey())
-	} else {
-		msg, err = messages.DeserializeUnencrypted(data)
-	}
-	if err != nil {
-		return nil, errors.Wrap(err, "parsing message")
-	}
-
-	mod := msg.GetMsgID() & 3
-	if mod != 1 && mod != 3 {
-		return nil, fmt.Errorf("wrong bits of message_id: %d", mod)
-	}
-
-	return msg, nil
 }

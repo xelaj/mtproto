@@ -9,7 +9,6 @@ import (
 	"context"
 	"crypto/rsa"
 	"io"
-	"net"
 	"reflect"
 	"sync"
 	"time"
@@ -21,12 +20,14 @@ import (
 	"github.com/xelaj/mtproto/internal/encoding/tl"
 	"github.com/xelaj/mtproto/internal/mtproto/messages"
 	"github.com/xelaj/mtproto/internal/mtproto/objects"
+	"github.com/xelaj/mtproto/internal/session"
+	"github.com/xelaj/mtproto/internal/transport"
 	"github.com/xelaj/mtproto/internal/utils"
 )
 
 type MTProto struct {
 	addr         string
-	conn         *net.TCPConn
+	transport    transport.Transport
 	stopRoutines context.CancelFunc // остановить ping, read, и подобные горутины
 	routineswg   sync.WaitGroup     // WaitGroup что бы быть уверенным, что все рутины остановились
 
@@ -42,21 +43,16 @@ type MTProto struct {
 	sessionId  int64
 
 	// общий мьютекс
-	mutex *sync.Mutex
-
-	msgsIdToResp map[int64]chan tl.Object
-	idsToAck     *utils.SyncSetInt
+	mutex sync.Mutex
 
 	// каналы, которые ожидают ответа rpc. ответ записывается в канал и удаляется
-	responseChannels map[int64]chan tl.Object
-	expectedTypes    map[int64][]reflect.Type // uses for parcing bool values in rpc result for example
+	responseChannels *utils.SyncIntObjectChan
+	expectedTypes    *utils.SyncIntReflectTypes // uses for parcing bool values in rpc result for example
+	idsToAck         *utils.SyncSetInt
 
 	// идентификаторы сообщений, нужны что бы посылать и принимать сообщения.
-	seqNo int32
-	msgId int64
-
-	// не знаю что это но как-то используется
-	lastSeqNo int32
+	seqNoMutex sync.Mutex
+	seqNo      int32
 
 	// айдишники DC для КОНКРЕТНОГО Приложения и клиента. Может меняться, но фиксирована для
 	// связки приложение+клиент
@@ -91,33 +87,29 @@ type Config struct {
 }
 
 func NewMTProto(c Config) (*MTProto, error) {
-	m := new(MTProto)
-	m.tokensStorage = c.AuthKeyFile
-
-	err := m.LoadSession()
-	switch {
-	case err == nil:
-		m.encrypted = true
-
-	case errs.IsNotFound(err):
-		m.addr = c.ServerHost
-		m.encrypted = false
-
-	default:
-		return nil, errors.Wrap(err, "loading session")
-
+	s, err := session.LoadSession(c.AuthKeyFile)
+	if !errs.IsNotFound(err) {
+		check(err)
 	}
 
-	m.sessionId = utils.GenerateSessionID()
-	m.serviceChannel = make(chan tl.Object)
-	m.publicKey = c.PublicKey
-	m.responseChannels = make(map[int64]chan tl.Object)
-	m.expectedTypes = make(map[int64][]reflect.Type)
-	m.serverRequestHandlers = make([]customHandlerFunc, 0)
-	m.idsToAck = utils.NewSyncSetInt()
-	m.dclist = defaultDCList()
+	m := &MTProto{
+		tokensStorage:         c.AuthKeyFile,
+		addr:                  c.ServerHost,
+		encrypted:             s != nil, // if not nil, then it's already encrypted, otherwise makes no sense
+		sessionId:             utils.GenerateSessionID(),
+		serviceChannel:        make(chan tl.Object),
+		publicKey:             c.PublicKey,
+		responseChannels:      utils.NewSyncIntObjectChan(),
+		expectedTypes:         utils.NewSyncIntReflectTypes(),
+		serverRequestHandlers: make([]customHandlerFunc, 0),
+		idsToAck:              utils.NewSyncSetInt(),
+		dclist:                defaultDCList(),
+	}
 
 	m.resetAck()
+	if s != nil {
+		m.LoadSession(s)
+	}
 
 	return m, nil
 }
@@ -132,24 +124,13 @@ func (m *MTProto) SetDCList(in map[int]string) {
 }
 
 func (m *MTProto) CreateConnection() error {
-	// connect
-	tcpAddr, err := net.ResolveTCPAddr("tcp", m.addr)
-	if err != nil {
-		return errors.Wrap(err, "resolving tcp")
-	}
-	m.conn, err = net.DialTCP("tcp", nil, tcpAddr)
-	if err != nil {
-		return errors.Wrap(err, "dialing tcp")
-	}
-
-	// https://core.telegram.org/mtproto/mtproto-transports#intermediate
-	_, err = m.conn.Write(transportModeIntermediate[:])
-	if err != nil {
-		return errors.Wrap(err, "writing first byte")
-	}
-
 	ctx, cancelfunc := context.WithCancel(context.Background())
 	m.stopRoutines = cancelfunc
+
+	err := m.connect(ctx)
+	if err != nil {
+		return err
+	}
 
 	// start reading responses from the server
 	m.startReadingResponses(ctx)
@@ -162,19 +143,36 @@ func (m *MTProto) CreateConnection() error {
 		}
 	}
 
-	// start goroutines
-	m.msgsIdToResp = make(map[int64]chan tl.Object)
-	m.mutex = &sync.Mutex{}
-
 	// start keepalive pinging
 	m.startPinging(ctx)
 
 	return nil
 }
 
+const defaultTimeout = 65 * time.Second // 60 seconds is maximum timeouts without pings
+
+func (m *MTProto) connect(ctx context.Context) error {
+	var err error
+	m.transport, err = transport.NewTransport(
+		m,
+		transport.TCPConnConfig{
+			Ctx:     ctx,
+			Host:    m.addr,
+			Timeout: defaultTimeout,
+		},
+		transport.NewIntermediateMode,
+	)
+	if err != nil {
+		return errors.Wrap(err, "can't connect")
+	}
+
+	CloseOnCancel(ctx, m.transport)
+	return nil
+}
+
 // отправить запрос
 func (m *MTProto) makeRequest(data tl.Object, expectedTypes ...reflect.Type) (any, error) {
-	resp, err := m.sendPacketNew(data, expectedTypes...)
+	resp, err := m.sendPacket(data, expectedTypes...)
 	if err != nil {
 		return nil, errors.Wrap(err, "sending message")
 	}
@@ -205,16 +203,7 @@ func (m *MTProto) Disconnect() error {
 	// stop all routines
 	m.stopRoutines()
 
-	err := m.conn.Close()
-	if err != nil {
-		return errors.Wrap(err, "closing TCP connection")
-	}
-
 	// TODO: закрыть каналы
-
-	// возвращаем в false, потому что мы теряем конфигурацию
-	// сессии, и можем ее потерять во время отключения.
-	m.encrypted = false
 
 	return nil
 }
@@ -233,15 +222,17 @@ func (m *MTProto) Reconnect() error {
 // нужно просто запустить
 func (m *MTProto) startPinging(ctx context.Context) {
 	m.routineswg.Add(1)
-	ticker := time.Tick(time.Minute)
+
 	go func() {
-		defer m.recoverGoroutine()
+		ticker := time.NewTicker(time.Minute)
+		defer ticker.Stop()
+		defer m.routineswg.Done()
+
 		for {
 			select {
 			case <-ctx.Done():
-				m.routineswg.Done()
 				return
-			case <-ticker:
+			case <-ticker.C:
 				_, err := m.ping(0xCADACADA) //nolint:gomnd not magic
 				if err != nil {
 					m.warnError(errors.Wrap(err, "ping unsuccsesful"))
@@ -254,64 +245,71 @@ func (m *MTProto) startPinging(ctx context.Context) {
 func (m *MTProto) startReadingResponses(ctx context.Context) {
 	m.routineswg.Add(1)
 	go func() {
-		defer m.recoverGoroutine()
+		defer m.routineswg.Done()
+
 		for {
 			select {
 			case <-ctx.Done():
-				m.routineswg.Done()
 				return
 			default:
-				data, err := m.readFromConn(ctx)
-				if err != nil {
-					if err == io.EOF {
-						m.Reconnect()
-						return
-						// returning cuz we need to break all goroutine
-					}
-					if err == context.Canceled {
-						return
-					}
-
-					m.warnError(errors.Wrap(err, "reading from connection"))
-					break // select
-				}
-				if data == nil {
-					// looks like we got timeout without error
-					// no worries, but start a new iteration
-					break
-				}
-
-				response, err := m.decodeRecievedData(data)
-				if err != nil {
-					m.warnError(errors.Wrap(err, "decoding received data"))
-					break // select
-				}
-
-				if m.serviceModeActivated {
-					var obj tl.Object
-					// сервисные сообщения ГАРАНТИРОВАННО в теле содержат TL.
-					obj, err = tl.DecodeUnknownObject(response.GetMsg())
+				err := m.readMsg()
+				switch err {
+				case nil: // skip
+				case context.Canceled:
+					return
+				case io.EOF:
+					err = m.Reconnect()
 					if err != nil {
-						m.warnError(errors.Wrap(err, "parsing object"))
-						break
+						m.warnError(errors.Wrap(err, "can't reconnect"))
 					}
-					m.serviceChannel <- obj
-					break
-				}
-
-				err = m.processResponse(response)
-				if err != nil {
-					m.warnError(errors.Wrap(err, "processing response"))
+				default:
+					check(err)
 				}
 			}
 		}
 	}()
 }
 
+func (m *MTProto) readMsg() error {
+	if m.transport == nil {
+		return errors.New("must setup connection before reading messages")
+	}
+
+	response, err := m.transport.ReadMsg()
+	if err != nil {
+		if e, ok := err.(transport.ErrCode); ok {
+			return &ErrResponseCode{Code: int(e)}
+		}
+		switch err {
+		case io.EOF, context.Canceled:
+			return err
+		default:
+			return errors.Wrap(err, "reading message")
+		}
+	}
+
+	if m.serviceModeActivated {
+		var obj tl.Object
+		// сервисные сообщения ГАРАНТИРОВАННО в теле содержат TL.
+		obj, err = tl.DecodeUnknownObject(response.GetMsg())
+		if err != nil {
+			return errors.Wrap(err, "parsing object")
+		}
+		m.serviceChannel <- obj
+		return nil
+	}
+
+	err = m.processResponse(response)
+	if err != nil {
+		return errors.Wrap(err, "processing response")
+	}
+	return nil
+}
+
 func (m *MTProto) processResponse(msg messages.Common) error {
 	var data tl.Object
 	var err error
-	if et, ok := m.expectedTypes[int64(msg.GetMsgID())]; ok && len(et) > 0 {
+	if et, ok := m.expectedTypes.Get(msg.GetMsgID()); ok && len(et) > 0 {
 		data, err = tl.DecodeUnknownObject(msg.GetMsg(), et...)
 	} else {
 		data, err = tl.DecodeUnknownObject(msg.GetMsg())
@@ -336,7 +334,8 @@ messageTypeSwitching:
 		check(err)
 
 		m.mutex.Lock()
-		for _, v := range m.responseChannels {
+		for _, k := range m.responseChannels.Keys() {
+			v, _ := m.responseChannels.Get(k)
 			v <- &errorSessionConfigsChanged{}
 		}
 		m.mutex.Unlock()
@@ -353,7 +352,7 @@ messageTypeSwitching:
 
 	case *objects.MsgsAck:
 		for _, id := range message.MsgIDs {
-			m.gotAck(id)
+			m.gotAck(int(id))
 		}
 
 	case *objects.BadMsgNotification:
