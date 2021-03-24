@@ -1,4 +1,4 @@
-// Copyright (c) 2020 KHS Films
+// Copyright (c) 2020-2021 KHS Films
 //
 // This file is a part of mtproto package.
 // See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
@@ -12,6 +12,9 @@ import (
 	"github.com/xelaj/mtproto/internal/encoding/tl"
 	"github.com/xelaj/mtproto/internal/mtproto/objects"
 )
+
+type any = interface{}
+type null = struct{}
 
 // это неофициальная информация, но есть подозрение, что список датацентров АБСОЛЮТНО идентичный для всех
 // приложений. Несмотря на это, любой клиент ОБЯЗАН явно указывать список датацентров, ради надежности.
@@ -40,4 +43,10 @@ func CloseOnCancel(ctx context.Context, c io.Closer) {
 		<-ctx.Done()
 		c.Close()
 	}()
+}
+
+func check(err error) {
+	if err != nil {
+		panic(err)
+	}
 }

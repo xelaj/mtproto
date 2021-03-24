@@ -1,4 +1,4 @@
-// Copyright (c) 2020 KHS Films
+// Copyright (c) 2020-2021 KHS Films
 //
 // This file is a part of mtproto package.
 // See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
@@ -26,7 +26,7 @@ func (d *DummyClient) GetSessionID() int64 {
 	return d.sessionID
 }
 
-func (d *DummyClient) GetLastSeqNo() int32 {
+func (d *DummyClient) GetSeqNo() int32 {
 	return d.lastSeqNo
 }
 

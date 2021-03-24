@@ -1,4 +1,4 @@
-// Copyright (c) 2020 KHS Films
+// Copyright (c) 2020-2021 KHS Films
 //
 // This file is a part of mtproto package.
 // See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
@@ -60,7 +60,7 @@ func (m *MTProto) makeAuthKey() error { // nolint don't know how to make method 
 		ServerNonce: nonceServer,
 		NewNonce:    nonceSecond,
 	})
-	check(err) // ну я не знаю что во вселенной произойдет чтоб тут словилась паника
+	check(err) // well, I don’t know what will happen in the universe so that there will panic
 
 	hashAndMsg := make([]byte, 255)
 	copy(hashAndMsg, append(dry.Sha1(string(message)), message...))
@@ -84,7 +84,7 @@ func (m *MTProto) makeAuthKey() error { // nolint don't know how to make method 
 		return errors.New("handshake: Wrong server_nonce")
 	}
 
-	// проверку по хешу, удаление рандомных байт происходит в этой функции
+	// check of hash, trandom bytes trail removing occurs in this func already
 	decodedMessage := ige.DecryptMessageWithTempKeys(dhParams.EncryptedAnswer, nonceSecond.Int, nonceServer.Int)
 	data, err := tl.DecodeUnknownObject(decodedMessage)
 	if err != nil {
@@ -102,7 +102,7 @@ func (m *MTProto) makeAuthKey() error { // nolint don't know how to make method 
 		return errors.New("handshake: Wrong server_nonce")
 	}
 
-	// вот это видимо как раз и есть часть диффи хеллмана, поэтому просто оставим как есть надеюсь сработает
+	// this apparently is just part of diffie hellman, so just leave it as it is, hope that it will just work
 	_, gB, gAB := math.MakeGAB(dhi.G, big.NewInt(0).SetBytes(dhi.GA), big.NewInt(0).SetBytes(dhi.DhPrime))
 
 	authKey := gAB.Bytes()
@@ -112,7 +112,7 @@ func (m *MTProto) makeAuthKey() error { // nolint don't know how to make method 
 
 	m.SetAuthKey(authKey)
 
-	// что это я пока не знаю, видимо какой то очень специфичный способ сгенерить ключи
+	// I don't know what it is, apparently some very specific way to generate keys
 	t4 := make([]byte, 32+1+8) // nolint:gomnd ALL PROTOCOL IS A MAGIC
 	copy(t4[0:], nonceSecond.Bytes())
 	t4[32] = 1
@@ -130,7 +130,7 @@ func (m *MTProto) makeAuthKey() error { // nolint don't know how to make method 
 		Retry:       0,
 		GB:          gB.Bytes(),
 	})
-	check(err) // ну я не знаю что во вселенной произойдет чтоб тут словилась паника
+	check(err) // well, I don’t know what will happen in the universe so that there will panic
 
 	encryptedMessage = ige.EncryptMessageWithTempKeys(clientDHData, nonceSecond.Int, nonceServer.Int)
 

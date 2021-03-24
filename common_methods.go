@@ -1,13 +1,13 @@
-// Copyright (c) 2020 KHS Films
+// Copyright (c) 2020-2021 KHS Films
 //
 // This file is a part of mtproto package.
 // See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
 
 package mtproto
 
-// методы (ну или функции, you name it), которые взяты отсюда https://core.telegram.org/schema/mtproto
-// по сути это такие "алиасы" методов описанных объектов (которые в internal/mtproto/objects), идея взята
-// из github.com/xelaj/vk
+// methods (or functions, you name it), which are taken from here https://core.telegram.org/schema/mtproto
+// in fact, these ones are "aliases" of the methods of the described objects (which
+// are in internal/mtproto/objects). The idea is taken from github.com/xelaj/vk
 
 import (
 	"github.com/xelaj/mtproto/internal/encoding/tl"

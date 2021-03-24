@@ -18,7 +18,7 @@ GENERATION, DO NOT GENERATE FILES BY HAND!
 No, seriously. Don't. go generate is amazing. You
 are amazing too, but lesser 😏
 `
-const license = `Copyright (c) 2020 KHS Films
+const license = `Copyright (c) 2020-2021 KHS Films
 
 This file is a part of mtproto package.
 See https://github.com/xelaj/mtproto/blob/master/LICENSE for details

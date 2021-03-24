@@ -1,4 +1,4 @@
-// Copyright (c) 2020 KHS Films
+// Copyright (c) 2020-2021 KHS Films
 //
 // This file is a part of mtproto package.
 // See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
@@ -178,7 +178,7 @@ func (msg *Unencrypted) GetSeqNo() int {
 // по факту это *MTProto структура
 type MessageInformator interface {
 	GetSessionID() int64
-	GetLastSeqNo() int32
+	GetSeqNo() int32
 	GetServerSalt() int64
 	GetAuthKey() []byte
 }
@@ -193,9 +193,9 @@ func serializePacket(client MessageInformator, msg []byte, messageID int64, requ
 	d.PutLong(client.GetSessionID())
 	d.PutLong(messageID)
 	if requireToAck { // не спрашивай, как это работает
-		d.PutInt(client.GetLastSeqNo() | 1) // почему тут добавляется бит не ебу
+		d.PutInt(client.GetSeqNo() | 1) // почему тут добавляется бит не ебу
 	} else {
-		d.PutInt(client.GetLastSeqNo())
+		d.PutInt(client.GetSeqNo())
 	}
 	d.PutInt(int32(len(msg)))
 	d.PutRawBytes(msg)

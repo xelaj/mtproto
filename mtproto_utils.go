@@ -1,4 +1,4 @@
-// Copyright (c) 2020 KHS Films
+// Copyright (c) 2020-2021 KHS Films
 //
 // This file is a part of mtproto package.
 // See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
@@ -6,51 +6,32 @@
 package mtproto
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/pkg/errors"
-	"github.com/xelaj/go-dry"
-
 	"github.com/xelaj/mtproto/internal/encoding/tl"
+	"github.com/xelaj/mtproto/internal/session"
 	"github.com/xelaj/mtproto/internal/utils"
 )
 
-// мелкие методы, которые сделаны для понимания алгоритмов и кода вцелом
+// helper methods
 
-// waitAck добавляет в список id сообщения, которому нужно подтверждение
-// возвращает true, если ранее этого id не было
-func (m *MTProto) waitAck(msgID int) bool {
-	return m.idsToAck.Add(msgID)
-}
-
-// gotAck удаляет элемент из списка id сообщений, на который ожидается ack.
-// возвращается true, если id был найден
-func (m *MTProto) gotAck(msgID int) bool {
-	return m.idsToAck.Delete(msgID)
-}
-
-// resetAck сбрасывает целиком список сообщений, которым нужен ack
-func (m *MTProto) resetAck() {
-	m.idsToAck.Reset()
-}
-
-// получает текущий идентификатор сессии
+// GetSessionID returns the current session id 🧐
 func (m *MTProto) GetSessionID() int64 {
 	return m.sessionId
 }
 
-// Получает lastSeqNo
-func (m *MTProto) GetLastSeqNo() int32 {
+// GetSeqNo returns seqno 🧐
+func (m *MTProto) GetSeqNo() int32 {
 	return m.seqNo
 }
 
-// получает соль
+// GetServerSalt returns current server salt 🧐
 func (m *MTProto) GetServerSalt() int64 {
 	return m.serverSalt
 }
 
-// получает ключ авторизации
+// GetAuthKey returns decryption key of current session salt 🧐
 func (m *MTProto) GetAuthKey() []byte {
 	return m.authKey
 }
@@ -71,26 +52,28 @@ func (m *MTProto) MakeRequestWithHintToDecoder(msg tl.Object, expectedTypes ...r
 	return m.makeRequest(msg, expectedTypes...)
 }
 
-func (m *MTProto) recoverGoroutine() {
-	if r := recover(); r != nil {
-		if m.RecoverFunc != nil {
-			fmt.Println(dry.StackTrace(0))
-			m.RecoverFunc(r)
-		} else {
-			panic(r)
-		}
-	}
-}
-
 func (m *MTProto) AddCustomServerRequestHandler(handler customHandlerFunc) {
 	m.serverRequestHandlers = append(m.serverRequestHandlers, handler)
 }
 
 func (m *MTProto) warnError(err error) {
-	if err == nil {
-		return
-	}
-	if m.Warnings != nil {
+	if m.Warnings != nil && err != nil {
 		m.Warnings <- err
 	}
+}
+
+func (m *MTProto) SaveSession() (err error) {
+	s := new(session.Session)
+	s.Key = m.authKey
+	s.Hash = m.authKeyHash
+	s.Salt = m.serverSalt
+	s.Hostname = m.addr
+	return session.SaveSession(s, m.tokensStorage)
+}
+
+func (m *MTProto) LoadSession(s *session.Session) {
+	m.authKey = s.Key
+	m.authKeyHash = s.Hash
+	m.serverSalt = s.Salt
+	m.addr = s.Hostname
 }

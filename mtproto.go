@@ -1,4 +1,4 @@
-// Copyright (c) 2020 KHS Films
+// Copyright (c) 2020-2021 KHS Films
 //
 // This file is a part of mtproto package.
 // See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
@@ -28,8 +28,8 @@ import (
 type MTProto struct {
 	addr         string
 	transport    transport.Transport
-	stopRoutines context.CancelFunc // остановить ping, read, и подобные горутины
-	routineswg   sync.WaitGroup     // WaitGroup что бы быть уверенным, что все рутины остановились
+	stopRoutines context.CancelFunc // stopping ping, read, etc. routines
+	routineswg   sync.WaitGroup     // WaitGroup for being sure that all routines are stopped
 
 	// ключ авторизации. изменять можно только через setAuthKey
 	authKey []byte
@@ -72,7 +72,7 @@ type MTProto struct {
 
 	//! DEPRECATED RecoverFunc используется только до того момента, когда из пакета будут убраны все паники
 	RecoverFunc func(i any)
-	// если задан, то в канал пишутся ошибки
+	// if set, all critical errors writing to this channel
 	Warnings chan error
 
 	serverRequestHandlers []customHandlerFunc
@@ -106,7 +106,7 @@ func NewMTProto(c Config) (*MTProto, error) {
 		dclist:                defaultDCList(),
 	}
 
-	m.resetAck()
+	m.idsToAck.Reset()
 	if s != nil {
 		m.LoadSession(s)
 	}
@@ -170,7 +170,6 @@ func (m *MTProto) connect(ctx context.Context) error {
 	return nil
 }
 
-// отправить запрос
 func (m *MTProto) makeRequest(data tl.Object, expectedTypes ...reflect.Type) (any, error) {
 	resp, err := m.sendPacket(data, expectedTypes...)
 	if err != nil {
@@ -203,7 +202,7 @@ func (m *MTProto) Disconnect() error {
 	// stop all routines
 	m.stopRoutines()
 
-	// TODO: закрыть каналы
+	// TODO: close ALL CHANNELS
 
 	return nil
 }
@@ -218,8 +217,8 @@ func (m *MTProto) Reconnect() error {
 	return errors.Wrap(err, "recreating connection")
 }
 
-// startPinging пингует сервер что все хорошо, клиент в сети
-// нужно просто запустить
+// startPinging pings the server that everything is fine, the client is online
+// you just need to run and forget about it
 func (m *MTProto) startPinging(ctx context.Context) {
 	m.routineswg.Add(1)
 
@@ -352,7 +351,7 @@ messageTypeSwitching:
 
 	case *objects.MsgsAck:
 		for _, id := range message.MsgIDs {
-			m.gotAck(int(id))
+			m.idsToAck.Delete(int(id))
 		}
 
 	case *objects.BadMsgNotification:
