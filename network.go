@@ -48,10 +48,6 @@ func (m *MTProto) sendPacket(request tl.Object, expectedTypes ...reflect.Type) (
 		m.responseChannels.Add(int(msgID), resp)
 	}
 
-	// must write synchroniously, cuz seqno must be upper each request
-	m.seqNoMutex.Lock()
-	defer m.seqNoMutex.Unlock()
-
 	if m.encrypted {
 		data = &messages.Encrypted{
 			Msg:         msg,
@@ -70,6 +66,10 @@ func (m *MTProto) sendPacket(request tl.Object, expectedTypes ...reflect.Type) (
 			MsgID: msgID,
 		}
 	}
+
+	// must write synchroniously, cuz seqno must be upper each request
+	m.seqNoMutex.Lock()
+	defer m.seqNoMutex.Unlock()
 
 	err = m.transport.WriteMsg(data, requireToAck)
 	if err != nil {
