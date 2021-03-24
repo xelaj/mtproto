@@ -54,12 +54,6 @@ func (m *MTProto) sendPacket(request tl.Object, expectedTypes ...reflect.Type) (
 			MsgID:       msgID,
 			AuthKeyHash: m.authKeyHash,
 		}
-
-		// since we sending this message, we are incrementing the seqno BUT ONLY when we
-		// are sending an encrypted message. why? I don’t know. But the fact remains:
-		// we must to block seqno, cause messages with a bigger seqno can go faster than
-		// messages with a smaller one.
-		m.seqNo += 2
 	} else {
 		data = &messages.Unencrypted{ //nolint: errcheck нешифрованое не отправляет ошибки
 			Msg:   msg,
@@ -74,6 +68,14 @@ func (m *MTProto) sendPacket(request tl.Object, expectedTypes ...reflect.Type) (
 	err = m.transport.WriteMsg(data, requireToAck)
 	if err != nil {
 		return nil, errors.Wrap(err, "sending request")
+	}
+
+	if m.encrypted {
+		// since we sending this message, we are incrementing the seqno BUT ONLY when we
+		// are sending an encrypted message. why? I don’t know. But the fact remains:
+		// we must to block seqno, cause messages with a bigger seqno can go faster than
+		// messages with a smaller one.
+		m.seqNo += 2
 	}
 
 	return resp, nil
