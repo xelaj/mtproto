@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	println("firstly, you need to authorize. after exapmle 'auth', uo will signin")
+	println("firstly, you need to authorize. after example 'auth', you will sign in")
 
 	// helper variables
 	appStorage := utils.PrepareAppStorageForExamples()
@@ -21,13 +21,13 @@ func main() {
 	client, err := telegram.NewClient(telegram.ClientConfig{
 		// where to store session configuration. must be set
 		SessionFile: sessionFile,
-		// host address of mtproto server. Actually, it can'be mtproxy, not only official
+		// host address of mtproto server. Actually, it can be any mtproxy, not only official
 		ServerHost: "149.154.167.50:443",
-		// public keys file is patrh to file with public keys, which you must get from https://my.telelgram.org
-		PublicKeysFile: publicKeys,
-		AppID:          94575,                              // app id, could be find at https://my.telegram.org
-		AppHash:        "a3406de8d171bb422bb6ddf3bbd800e2", // app hash, could be find at https://my.telegram.org
-		InitWarnChannel: true, // if we want to get errors, otherwise, client.Warnings will be set nil
+		// public keys file is path to file with public keys, which you must get from https://my.telelgram.org
+		PublicKeysFile:  publicKeys,
+		AppID:           94575,                              // app id, could be find at https://my.telegram.org
+		AppHash:         "a3406de8d171bb422bb6ddf3bbd800e2", // app hash, could be find at https://my.telegram.org
+		InitWarnChannel: true,                               // if we want to get errors, otherwise, client.Warnings will be set nil
 	})
 	utils.ReadWarningsToStdErr(client.Warnings)
 	dry.PanicIfErr(err)

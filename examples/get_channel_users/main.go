@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	println("firstly, you need to authorize. after exapmle 'auth', uo will signin")
+	println("firstly, you need to authorize. after example 'auth', you will sign in")
 
 	// helper variables
 	appStorage := utils.PrepareAppStorageForExamples()
@@ -22,9 +22,9 @@ func main() {
 	client, err := telegram.NewClient(telegram.ClientConfig{
 		// where to store session configuration. must be set
 		SessionFile: sessionFile,
-		// host address of mtproto server. Actually, it can'be mtproxy, not only official
+		// host address of mtproto server. Actually, it can be any mtproxy, not only official
 		ServerHost: "149.154.167.50:443",
-		// public keys file is patrh to file with public keys, which you must get from https://my.telelgram.org
+		// public keys file is path to file with public keys, which you must get from https://my.telelgram.org
 		PublicKeysFile:  publicKeys,
 		AppID:           94575,                              // app id, could be find at https://my.telegram.org
 		AppHash:         "a3406de8d171bb422bb6ddf3bbd800e2", // app hash, could be find at https://my.telegram.org
@@ -35,7 +35,6 @@ func main() {
 
 	// get this hash from channel invite link (after t.me/join/<HASH>)
 	hash := "AAAAAEkCCtoerhjfii34iiii" // add here any link that you are ADMINISTRATING cause participants can be viewed only by admins
-	print("test")
 	// syntax sugared method, more easy to read than default ways to solve some troubles
 	peer, err := client.GetChatInfoByHashLink(hash)
 	dry.PanicIfErr(err)
@@ -47,7 +46,6 @@ func main() {
 
 	dry.PanicIfErr(err)
 	pp.Println(total, len(total))
-	return
 	println("this is partial users in CHANNEL. In supergroup you can use more easy way to find, see below")
 
 	resolved, err := client.ContactsResolveUsername("gogolang")
@@ -63,7 +61,13 @@ func main() {
 	totalCount := 100 // at least 100
 	offset := 0
 	for offset < totalCount {
-		resp, err := client.ChannelsGetParticipants(inCh, telegram.ChannelParticipantsFilter(&telegram.ChannelParticipantsRecent{}), 100, int32(offset), 0)
+		resp, err := client.ChannelsGetParticipants(
+			inCh,
+			telegram.ChannelParticipantsFilter(&telegram.ChannelParticipantsRecent{}),
+			100,
+			int32(offset),
+			0,
+		)
 		dry.PanicIfErr(err)
 		data := resp.(*telegram.ChannelsChannelParticipantsObj)
 		totalCount = int(data.Count)
