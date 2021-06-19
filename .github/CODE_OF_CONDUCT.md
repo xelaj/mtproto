@@ -27,7 +27,7 @@ As organizers, we have our rights and responsibilities.
 
 We are obliged:
 1. Explain to each of these rules of conduct, and make sure that everyone in the community performs them <sub><sup><sub><sup>read as: do not shitholing</sup></sub></sup></sub>
-2. Reject any commits, comments, ischuses, pool requests, anything that contradicts these rules.
+2. Reject any commits, comments, issues, pool requests, anything that contradicts these rules.
 3. Prevent any violations of these rules by the user, in the form of a ban, mute, or any other action that the platform allows.
 
 ## Where do these rules apply

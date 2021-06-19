@@ -130,7 +130,7 @@ That's it! You don't need to do anything more!
 
 ### What is InvokeWithLayer?
 
-It's Telegram specific feature. I you want to create client instance and get information about the current servers configuration, you need to do something like this:
+It's Telegram specific feature. If you want to create client instance and get information about the current server's configuration, you need to do something like this:
 
 ```go
 resp, err := client.InvokeWithLayer(apiVersion, &telegram.InitConnectionParams{
@@ -201,7 +201,7 @@ func main() {
 
 ### Docs are empty. Why?
 
-There is a pretty huge chunk of documentation. We are ready to describe every method and object, but its requires a lot of work. Although **all** methods are **already** described [here](https://core.telegram.org/methods).
+There is a pretty huge chunk of documentation. We are ready to describe every method and object, but it requires a lot of work. Although **all** methods are **already** described [here](https://core.telegram.org/methods).
 
 ### Does this project support Windows?
 
@@ -221,7 +221,7 @@ Please read [contributing guide](https://github.com/xelaj/mtproto/blob/main/.git
 
 ## Security bugs?
 
-Please, don't create issue which is describe security bug, this can be too offensive! Instead, please read [this notifiaction](https://github.com/xelaj/mtproto/blob/main/.github/SECURITY.md) and follow that steps to notify us about problem.
+Please, don't create issue which describes security bug, this can be too offensive! Instead, please read [this notification](https://github.com/xelaj/mtproto/blob/main/.github/SECURITY.md) and follow that steps to notify us about problem.
 
 ## TODO
 
