@@ -15,7 +15,7 @@ gitlab pipelines
 
 ![FINALLY!](/docs/assets/finally.jpg) MTProto 协议的原生 Go 实现！
 
-[english](https://github.com/xelaj/mtproto/blob/master/README.md) [русский](https://github.com/xelaj/mtproto/blob/main/docs/ru_RU/README.md) **简体中文**
+[english](https://github.com/xelaj/mtproto/blob/main/README.md) [русский](https://github.com/xelaj/mtproto/blob/main/docs/ru_RU/README.md) **简体中文**
 
 <p align="center">
 <img src="https://i.ibb.co/yYsPxhW/Muffin-Man-Ag-ADRAADO2-Ak-FA.gif"/>
@@ -27,35 +27,35 @@ gitlab pipelines
 <h3>原生实现</h3>
 <img src="https://i.ibb.co/9Vfz6hj/ezgif-3-a6bd45965060.gif" align="right"/>
 从发送请求到加密序列化的所有代码均是使用纯 Go 编写，你无需额外拉取任何依赖。
-</br></br></br></br></br></br></br></br>
+<br/><br/><br/><br/><br/><br/><br/><br/>
 </div>
 
 <div align="left">
 <h3>最新的 API 版本（117+）</h3>
 <img src="https://i.ibb.co/nw84W4h/ezgif-3-19ced73bc71f.gif" align="left"/>
 支持所有的 API 和 MTProto 功能，包括视频通话和发表评论。如果你愿意的话，你也可以通过创建 PR 来更新这些 API！
-</br></br></br></br></br></br></br>
+<br/><br/><br/><br/><br/><br/><br/>
 </div>
 
 <div align="right">
 <h3>响应式 API 更新（生成自 TL schema）</h3>
 <img src="https://i.ibb.co/9WXrHq8/ezgif-3-5b6a808d2774.gif" align="right"/>
 TDLib 和 Android 客户端的所有改动都在监控当中，确保了最新的功能和 TL schemas 中的变动都能够即时地同步进来。
-</br></br></br></br></br>
+<br/><br/><br/><br/><br/>
 </div>
 
 <div align="left">
 <h3>仅是一个网络工具</h3>
 <img src="https://i.ibb.co/bLj3PHx/ezgif-3-3ac8a3ea5713.gif" align="left"/>
 不再需要 SQLite 数据库和其他多余的缓存文件。你还可以控制会话的存储方式和身份验证等一切内容！
-</br></br></br></br></br></br></br></br>
+<br/><br/><br/><br/><br/><br/><br/><br/>
 </div>
 
 <div align="right">
 <h3>多账户，网关模式</h3>
 <img src="https://i.ibb.co/8XbKRPG/ezgif-3-7bcf6dc78388.gif" align="right"/>
 你可以同时使用多达 10 余个账户！<i>xelaj/MTProto</i> 不会像 TDLib 那样在内存或 CPU 消耗方面产生巨大的开销。因此，你可以创建大量的连接实例，而不必担心内存过载！
-</br></br></br></br></br>
+<br/><br/><br/><br/><br/>
 </div>
 
 ## 如何使用
@@ -131,7 +131,7 @@ resp, err := client.InvokeWithLayer(apiVersion, &telegram.InitConnectionParams{
     DeviceModel:    "Unknown",
     SystemVersion:  "linux/amd64",
     AppVersion:     "0.1.0",
-    // 请使用“en”，其他任何值都会导致错误产生
+    // 请使用"en"，其他任何值都会导致错误产生
     SystemLangCode: "en",
     LangCode:       "en",
     // HelpGetConfig() 是一个确切的包含在 InvokeWithLayer 内的请求
@@ -244,7 +244,7 @@ func main() {
 
 **WARNING!** This project is only maintained by Xelaj inc., however copyright of this source code **IS NOT** owned by Xelaj inc. at all. If you want to connect with code owners, write mail to [this email](mailto:up@khsfilms.rux). For all other questions like any issues, PRs, questions, etc. Use GitHub issues, or find email on official website.
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/xelaj/mtproto/blob/main/LICENSE.md) file for detailsLi
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/xelaj/mtproto/blob/main/LICENSE.md) file for details
 
 <!--
 

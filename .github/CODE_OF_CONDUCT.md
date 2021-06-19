@@ -1,6 +1,6 @@
 # Behavior rules
 
-**english** [русский](https://github.com/xelaj/mtproto/blob/master/doc/ru_RU/CODE_OF_CONDUCT.md)
+**english** [русский](https://github.com/xelaj/mtproto/blob/main/docs/ru_RU/CODE_OF_CONDUCT.md)
 
 In order to organize an productive communication and development environment (rather than acidic and destructive), we want to tell you about the rules of behavior in our community. there is nothing out of the ordinary here, just to remind you how good girls and boys behave.
 
