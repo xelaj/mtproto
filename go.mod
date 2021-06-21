@@ -11,7 +11,7 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/tj/assert v0.0.3
 	github.com/xelaj/errs v0.0.0-20200831133608-d1c11863e019
-	github.com/xelaj/go-dry v0.0.0-20201104165138-61a25872c05a
+	github.com/xelaj/go-dry v0.0.0-20210621215431-21c77821487c
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 )

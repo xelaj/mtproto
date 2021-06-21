@@ -33,7 +33,7 @@ func PrepareAppStorageForExamples() (appStoragePath string) {
 	dry.PanicIfErr(err)
 
 	if !dry.FileExists(appStorage) {
-		if !dry.PathIsWirtable(appStorage) {
+		if !dry.PathIsWritable(appStorage) {
 			fmt.Printf("cant create app local storage at %v\n", appStorage)
 			os.Exit(1)
 		}
