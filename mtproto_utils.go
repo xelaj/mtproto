@@ -63,12 +63,12 @@ func (m *MTProto) warnError(err error) {
 }
 
 func (m *MTProto) SaveSession() (err error) {
-	s := new(session.Session)
-	s.Key = m.authKey
-	s.Hash = m.authKeyHash
-	s.Salt = m.serverSalt
-	s.Hostname = m.addr
-	return session.SaveSession(s, m.tokensStorage)
+	return m.tokensStorage.Store(&session.Session{
+		Key:      m.authKey,
+		Hash:     m.authKeyHash,
+		Salt:     m.serverSalt,
+		Hostname: m.addr,
+	})
 }
 
 func (m *MTProto) LoadSession(s *session.Session) {
