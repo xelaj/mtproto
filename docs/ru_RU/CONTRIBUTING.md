@@ -20,7 +20,7 @@ based on [Xelaj styleguides](https://github.com/xelaj/birch/blob/master/CONTRIBU
 
 У нас есть официальный чат Xelaj в Telegram: [@xelaj_developers](http://t.me/xelaj_developers). В нем вы можете оперативно уточнить интересующую вас информацию.
 
-А еще мы вообще-то хотим сделать [ЧеКаво](https://github.com/xelaj/mtproto/blob/main/.github/CONTRIBUTING.md), но не знаем, какие вопросы туда писать, так что, если вы это читаете, наверное, пишите пока в телегу, там разберемся :)
+А еще мы вообще-то хотим сделать [ЧеКаво](https://github.com/xelaj/mtproto/discussions/categories/q-a), но не знаем, какие вопросы туда писать, так что, если вы это читаете, наверное, пишите пока в телегу, там разберемся :)
 
 ## Что мне нужно знать, перед тем, как я буду помогать?
 
