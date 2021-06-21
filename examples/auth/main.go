@@ -41,8 +41,9 @@ func main() {
 		AppHash:         "a3406de8d171bb422bb6ddf3bbd800e2", // app hash, could be find at https://my.telegram.org
 		InitWarnChannel: true,                               // if we want to get errors, otherwise, client.Warnings will be set nil
 	})
-	utils.ReadWarningsToStdErr(client.Warnings)
 	dry.PanicIfErr(err)
+	client.Warnings = make(chan error) // required to initialize, if we want to get errors
+	utils.ReadWarningsToStdErr(client.Warnings)
 
 	// Please, don't spam auth too often, if you have session file, don't repeat auth process, please.
 	signedIn, err := client.IsSessionRegistred()
