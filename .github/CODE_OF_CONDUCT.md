@@ -1,6 +1,6 @@
 # Behavior rules
 
-**english** [русский](https://github.com/xelaj/mtproto/blob/master/doc/ru_RU/CODE_OF_CONDUCT.md)
+**english** [русский](https://github.com/xelaj/mtproto/blob/main/docs/ru_RU/CODE_OF_CONDUCT.md)
 
 In order to organize an productive communication and development environment (rather than acidic and destructive), we want to tell you about the rules of behavior in our community. there is nothing out of the ordinary here, just to remind you how good girls and boys behave.
 
@@ -27,7 +27,7 @@ As organizers, we have our rights and responsibilities.
 
 We are obliged:
 1. Explain to each of these rules of conduct, and make sure that everyone in the community performs them <sub><sup><sub><sup>read as: do not shitholing</sup></sub></sup></sub>
-2. Reject any commits, comments, ischuses, pool requests, anything that contradicts these rules.
+2. Reject any commits, comments, issues, pool requests, anything that contradicts these rules.
 3. Prevent any violations of these rules by the user, in the form of a ban, mute, or any other action that the platform allows.
 
 ## Where do these rules apply

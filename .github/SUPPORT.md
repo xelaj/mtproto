@@ -12,15 +12,15 @@ Fear not! There are lots of things you can do to help the project, and here we c
 * Tell your friends! I mean, literally, tell someone in person, or (if Covid is still around) via some digital mechanism like chat or Zoom. If your company or team works with telegram api, tell them about it! it's dead simple, but can really help!
 * Share on Twitter, Reddit, Facebook, or odnoklassniki or even Friendster (jk). Anyway, post your review with link to this repo.
 
-The more people that use the package - the better it will get. I can share with you (don't tell anyone!) that this package uses 10-50 unique people every day. it can grow up up to hundreds or even thousands. So int this community we can find amazing developers which can improve this project!
+The more people that use the package - the better it will get. I can share with you (don't tell anyone!) that this package uses 10-50 unique people every day. it can grow up to hundreds or even thousands. So int this community we can find amazing developers which can improve this project!
 
 ## Send bug reports and ask questions
 
-This is one of the most important contributions in any package for improving stability. Found bug? Create issue. Have some problems? ask it! (just don't ask about what food does love your cat, i mean, problems with this package)
+This is one of the most important contributions in any package for improving stability. Found bug? Create issue. Have some problems? ask it! (just don't ask about what food does love your cat, I mean, problems with this package)
 
 ## Improve docs or tell us about hacking package
 
-* Did you learn how to do something cool in mtproto but it wasn't obvious on first try? You can contribute to our documentation!
+* Did you learn how to do something cool in mtproto, but it wasn't obvious on first try? You can contribute to our documentation!
 * Docs doesn't cover some specific things? tell us about that!
 * you know how to do something, which this package doesn't fit? Cool, share this info about that!
 
@@ -30,4 +30,4 @@ Unfortunately, native telegram tl schema doesn't have docs. But we love docs! So
 
 ## Another ways to contribute
 
-This is not **full** list of ideas, how to help this project. Wait, i got another one idea: if you have more nocode contributing ideas: **make PR, post this idea here!** No seriously, we can even make standard guide how to contribute for nocoders like code of conduct but in another way, you know, "code of nocode contributors" 🙃
+This is not **full** list of ideas, how to help this project. Wait, I got another one idea: if you have more nocode contributing ideas: **make PR, post this idea here!** No seriously, we can even make standard guide how to contribute for nocoders like code of conduct but in another way, you know, "code of nocode contributors" 🙃

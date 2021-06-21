@@ -2,7 +2,7 @@
 
 based on [Xelaj styleguides](https://github.com/xelaj/birch/blob/master/CONTRIBUTING.md).
 
-**english** [русский](https://github.com/xelaj/mtproto/blob/master/doc/ru_RU/CONTRIBUTING.md)
+**english** [русский](https://github.com/xelaj/mtproto/blob/main/docs/ru_RU/CONTRIBUTING.md)
 
 🌚🌚 First of all, thanks for your helping! 🌝🌝
 
@@ -10,19 +10,19 @@ This page briefly describes the process of developing both the specific MTProto 
 
 ## Code of conduct
 
-We all want make other people happy! We believe that you are a good guy, but please, just in case, read our [code of conduct](https://github.com/xelaj/mtproto/blob/master/doc/en_US/CODE_OF_CONDUCT.md). They will help you understand what ideals we adhere to, among other things, you will be even more cool!
+We all want to make other people happy! We believe that you are a good guy, but please, just in case, read our [code of conduct](https://github.com/xelaj/mtproto/blob/main/.github/CODE_OF_CONDUCT.md). They will help you understand what ideals we adhere to, among other things, you will be even more cool!
 
 By joining our community, you automatically agree to our rules _(even if you have not read them!)_. and if you saw their violation somewhere, write to rcooper.xelaj@protnmail.com, we will help!
 
 ## I don't want to read anything, I have a question!
 
-> **Just remind:** you just don’t need to ask anything right to issues, okay? just not necessary. you will quickly solve your problem if you find the answer below
+> **Just remind:** you just don’t need to ask anything right to the issues, okay? just not necessary. you will quickly solve your problem if you find the answer below
 
 We have the official Xelaj chat in Telegram: [@xelaj_developers](http://t.me/xelaj_developers). In this chat you can promptly clarify the information of interest to you.
 
 Also, github create discussions page! Ask in discussions, that's why this feature released. It's like stack overflow for **any** repo like this one!
 
-And we also actually want to do [FAQ](https://github.com/xelaj/mtproto/blob/master/doc/en_US/FAQ.md), but we don’t know what questions to write there, so, if you are reading this, probably write while in the Telegram, we'll figure it out :)
+And we also actually want to do [FAQ](https://github.com/xelaj/mtproto/discussions/categories/q-a), but we don’t know what questions to write there, so, if you are reading this, probably write while in the Telegram, we'll figure it out :)
 
 ## What do I need to know before I can help?
 
@@ -43,9 +43,9 @@ We love to add new features! Use the New Feature issues template and fill in all
 
 ### and you can immediately offer a pull request!
 
-Here it is up to you, the only thing is: we are more willing to take pull requests based on a specific issue (i.e. created pull request based on issue #100500 or something like this) This will help us understand what problem your request solves.
+Here it is up to you, the only thing is: we are more willing to take pull requests based on a specific issue (i.e., created pull request based on issue #100500 or something like this) This will help us understand what problem your request solves.
 
-## Styleguides
+## Styleguide
 
 ### commit comments
 
