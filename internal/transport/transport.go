@@ -9,6 +9,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/xelaj/mtproto/internal/encoding/tl"
+	"github.com/xelaj/mtproto/internal/mode"
 	"github.com/xelaj/mtproto/internal/mtproto/messages"
 )
 
@@ -24,7 +25,7 @@ type transport struct {
 	m    messages.MessageInformator
 }
 
-func NewTransport(m messages.MessageInformator, conn ConnConfig, mode ModeConfig) (Transport, error) {
+func NewTransport(m messages.MessageInformator, conn ConnConfig, modeVariant mode.Variant) (Transport, error) {
 	t := &transport{
 		m: m,
 	}
@@ -40,7 +41,7 @@ func NewTransport(m messages.MessageInformator, conn ConnConfig, mode ModeConfig
 		return nil, errors.Wrap(err, "setup connection")
 	}
 
-	t.mode, err = mode(t.conn)
+	t.mode, err = mode.New(modeVariant, t.conn)
 	if err != nil {
 		return nil, errors.Wrap(err, "setup mode")
 	}

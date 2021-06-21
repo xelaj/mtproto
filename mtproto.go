@@ -18,6 +18,7 @@ import (
 	"github.com/xelaj/errs"
 
 	"github.com/xelaj/mtproto/internal/encoding/tl"
+	"github.com/xelaj/mtproto/internal/mode"
 	"github.com/xelaj/mtproto/internal/mtproto/messages"
 	"github.com/xelaj/mtproto/internal/mtproto/objects"
 	"github.com/xelaj/mtproto/internal/session"
@@ -160,7 +161,7 @@ func (m *MTProto) connect(ctx context.Context) error {
 			Host:    m.addr,
 			Timeout: defaultTimeout,
 		},
-		transport.NewIntermediateMode,
+		mode.Intermediate,
 	)
 	if err != nil {
 		return errors.Wrap(err, "can't connect")
