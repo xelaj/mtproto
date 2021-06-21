@@ -62,8 +62,8 @@ You can use more than 10 accounts at same time! <i>xelaj/MTProto</i> doesn't cre
 
 ## How to use
 
-<!--ode quali
-**HERE GOES asciinema DEMO**
+<!--
+TODO: **HERE GOES asciinema DEMO**
 ![preview]({{ .PreviewUrl }})
 -->
 
