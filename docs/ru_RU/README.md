@@ -216,7 +216,7 @@ func main() {
 
 ## Contributing
 
-Please read [contributing guide](https://github.com/xelaj/mtproto/blob/main/.github/CONTRIBUTING.md) if you want to help. And the help is very necessary!
+Please read [contributing guide](https://github.com/xelaj/mtproto/blob/main/docs/ru_RU/CONTRIBUTING.md) if you want to help. And the help is very necessary!
 
 **Don't want code?** Read [this](https://github.com/xelaj/mtproto/blob/main/.github/SUPPORT.md) page! We love nocoders!
 
@@ -255,7 +255,7 @@ Please read [contributing guide](https://github.com/xelaj/mtproto/blob/main/.git
 <b style="color:red">WARNING!</b> This project is only maintained by Xelaj inc., however copyright of this source code **IS NOT** owned by Xelaj inc. at all. If you want to connect with code owners, write mail to <a href="mailto:up@khsfilms.ru">this email</a>. For all other questions like any issues, PRs, questions, etc. Use GitHub issues, or find email on official website.
 
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/xelaj/mtproto/blob/main/docs/ru_RU/LICENSE.md) file for details
-~~~~
+
 <!--
 
 V2UndmUga25vd24gZWFjaCBvdGhlciBmb3Igc28gbG9uZwpZb3
