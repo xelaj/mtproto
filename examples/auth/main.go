@@ -33,9 +33,9 @@ func main() {
 	client, err := telegram.NewClient(telegram.ClientConfig{
 		// where to store session configuration. must be set
 		SessionFile: sessionFile,
-		// host address of mtproto server. Actually, it can'be mtproxy, not only official
+		// host address of mtproto server. Actually, it can be any mtproxy, not only official
 		ServerHost: "149.154.167.50:443",
-		// public keys file is patrh to file with public keys, which you must get from https://my.telelgram.org
+		// public keys file is path to file with public keys, which you must get from https://my.telelgram.org
 		PublicKeysFile:  publicKeys,
 		AppID:           94575,                              // app id, could be find at https://my.telegram.org
 		AppHash:         "a3406de8d171bb422bb6ddf3bbd800e2", // app hash, could be find at https://my.telegram.org
@@ -46,7 +46,12 @@ func main() {
 	utils.ReadWarningsToStdErr(client.Warnings)
 
 	// Please, don't spam auth too often, if you have session file, don't repeat auth process, please.
-	if !dry.FileExists(sessionFile) {
+	signedIn, err := client.IsSessionRegistred()
+	if err != nil {
+		panic(errors.Wrap(err, "can't check that session is registred"))
+	}
+
+	if signedIn {
 		println("You've already signed in!")
 		os.Exit(0)
 	}
@@ -65,7 +70,7 @@ func main() {
 			panic(err)
 		} else {
 			if errResponse.Message == "AUTH_RESTART" {
-				println("Oh crap! You accidentaly restart authorization process!")
+				println("Oh crap! You accidentally restart authorization process!")
 				println("You should login only once, if you'll spam 'AuthSendCode' method, you can be")
 				println("timeouted to loooooooong long time. You warned.")
 			} else if errResponse.Message == "FLOOD_WAIT_X" {

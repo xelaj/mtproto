@@ -1,9 +1,9 @@
-// Copyright (c) 2020 KHS Films
+// Copyright (c) 2020-2021 KHS Films
 //
 // This file is a part of mtproto package.
 // See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
 
-package mtproto
+package session
 
 import (
 	"encoding/base64"
@@ -16,39 +16,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
 	"github.com/xelaj/go-dry"
-
 	"github.com/xelaj/mtproto/internal/encoding/tl"
 )
-
-func (m *MTProto) SaveSession() (err error) {
-	m.encrypted = true
-	s := new(Session)
-	s.Key = m.authKey
-	s.Hash = m.authKeyHash
-	buf := make([]byte, tl.LongLen)
-	binary.LittleEndian.PutUint64(buf, uint64(m.serverSalt))
-	s.Salt = buf
-	s.Hostname = m.addr
-	err = SaveSession(s, m.tokensStorage)
-	check(err)
-
-	return nil
-}
-
-func (m *MTProto) LoadSession() (err error) {
-	s, err := LoadSession(m.tokensStorage)
-	if errs.IsNotFound(err) {
-		return err
-	}
-	check(err)
-
-	m.authKey = s.Key
-	m.authKeyHash = s.Hash
-	m.serverSalt = int64(binary.LittleEndian.Uint64(s.Salt)) // СОЛЬ ЭТО LONG
-	m.addr = s.Hostname
-
-	return nil
-}
 
 type tokenStorageFormat struct {
 	Key      string `json:"key"`
@@ -60,7 +29,7 @@ type tokenStorageFormat struct {
 type Session struct {
 	Key      []byte
 	Hash     []byte
-	Salt     []byte
+	Salt     int64
 	Hostname string
 }
 
@@ -90,10 +59,11 @@ func LoadSession(path string) (*Session, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "invalid binary data of 'hash'")
 	}
-	res.Salt, err = base64.StdEncoding.DecodeString(file.Salt)
+	buf, err := base64.StdEncoding.DecodeString(file.Salt)
 	if err != nil {
 		return nil, errors.Wrap(err, "invalid binary data of 'salt'")
 	}
+	res.Salt = int64(binary.LittleEndian.Uint64(buf))
 	res.Hostname = file.Hostname
 
 	return res, nil
@@ -103,7 +73,9 @@ func SaveSession(s *Session, path string) error {
 	file := new(tokenStorageFormat)
 	file.Key = base64.StdEncoding.EncodeToString(s.Key)
 	file.Hash = base64.StdEncoding.EncodeToString(s.Hash)
-	file.Salt = base64.StdEncoding.EncodeToString(s.Salt)
+	buf := make([]byte, tl.LongLen)
+	binary.LittleEndian.PutUint64(buf, uint64(s.Salt))
+	file.Salt = base64.StdEncoding.EncodeToString(buf)
 	file.Hostname = s.Hostname
 
 	data, _ := json.Marshal(file)

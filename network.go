@@ -1,4 +1,4 @@
-// Copyright (c) 2020 KHS Films
+// Copyright (c) 2020-2021 KHS Films
 //
 // This file is a part of mtproto package.
 // See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
@@ -6,21 +6,100 @@
 package mtproto
 
 import (
-	"encoding/binary"
-	"fmt"
-	"time"
+	"reflect"
+	"strconv"
 
 	"github.com/pkg/errors"
+	"github.com/xelaj/errs"
 
 	"github.com/xelaj/mtproto/internal/encoding/tl"
 	"github.com/xelaj/mtproto/internal/mtproto/messages"
 	"github.com/xelaj/mtproto/internal/mtproto/objects"
+	"github.com/xelaj/mtproto/internal/utils"
 )
 
-const (
-	// если длина пакета больше или равн 127 слов, то кодируем 4 байтами, 1 это магическое число, оставшиеся 3 — дилна
-	magicValueSizeMoreThanSingleByte = 0x7f
-)
+func (m *MTProto) sendPacket(request tl.Object, expectedTypes ...reflect.Type) (chan tl.Object, error) {
+	msg, err := tl.Marshal(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "encoding request message")
+	}
+
+	var (
+		data  messages.Common
+		msgID = utils.GenerateMessageId()
+	)
+
+	// adding types for parser if required
+	if len(expectedTypes) > 0 {
+		m.expectedTypes.Add(int(msgID), expectedTypes)
+	}
+
+	// checking, that we expect ack
+	requireToAck := MessageRequireToAck(request)
+	if requireToAck {
+		m.idsToAck.Add(int(msgID))
+	}
+
+	// dealing with response channel
+	resp := m.getRespChannel()
+	if isNullableResponse(request) {
+		go func() { resp <- &objects.Null{} }() // goroutine cuz we don't read from it RIGHT NOW
+	} else {
+		m.responseChannels.Add(int(msgID), resp)
+	}
+
+	if m.encrypted {
+		data = &messages.Encrypted{
+			Msg:         msg,
+			MsgID:       msgID,
+			AuthKeyHash: m.authKeyHash,
+		}
+	} else {
+		data = &messages.Unencrypted{ //nolint: errcheck нешифрованое не отправляет ошибки
+			Msg:   msg,
+			MsgID: msgID,
+		}
+	}
+
+	// must write synchroniously, cuz seqno must be upper each request
+	m.seqNoMutex.Lock()
+	defer m.seqNoMutex.Unlock()
+
+	err = m.transport.WriteMsg(data, requireToAck)
+	if err != nil {
+		return nil, errors.Wrap(err, "sending request")
+	}
+
+	if m.encrypted {
+		// since we sending this message, we are incrementing the seqno BUT ONLY when we
+		// are sending an encrypted message. why? I don’t know. But the fact remains:
+		// we must to block seqno, cause messages with a bigger seqno can go faster than
+		// messages with a smaller one.
+		m.seqNo += 2
+	}
+
+	return resp, nil
+}
+
+func (m *MTProto) writeRPCResponse(msgID int, data tl.Object) error {
+	v, ok := m.responseChannels.Get(msgID)
+	if !ok {
+		return errs.NotFound("msgID", strconv.Itoa(msgID))
+	}
+
+	v <- data
+
+	m.responseChannels.Delete(msgID)
+	m.expectedTypes.Delete(msgID)
+	return nil
+}
+
+func (m *MTProto) getRespChannel() chan tl.Object {
+	if m.serviceModeActivated {
+		return m.serviceChannel
+	}
+	return make(chan tl.Object)
+}
 
 // проверяет, надо ли ждать от сервера пинга
 func isNullableResponse(t tl.Object) bool {
@@ -30,52 +109,4 @@ func isNullableResponse(t tl.Object) bool {
 	default:
 		return false
 	}
-}
-
-const (
-	readTimeout = 300 * time.Second
-)
-
-func CatchResponseErrorCode(data []byte) error {
-	if len(data) == 4 {
-		code := int(binary.LittleEndian.Uint32(data))
-		return &ErrResponseCode{Code: code}
-	}
-	return nil
-}
-
-func IsPacketEncrypted(data []byte) bool {
-	if len(data) < tl.DoubleLen {
-		return false
-	}
-	authKeyHash := data[:tl.DoubleLen]
-	return binary.LittleEndian.Uint64(authKeyHash) != 0
-}
-
-func (m *MTProto) decodeRecievedData(data []byte) (messages.Common, error) {
-	// проверим, что это не код ошибки
-	err := CatchResponseErrorCode(data)
-	if err != nil {
-		return nil, errors.Wrap(err, "Server response error")
-	}
-
-	var msg messages.Common
-
-	if IsPacketEncrypted(data) {
-		msg, err = messages.DeserializeEncrypted(data, m.GetAuthKey())
-	} else {
-		msg, err = messages.DeserializeUnencrypted(data)
-	}
-	if err != nil {
-		return nil, errors.Wrap(err, "parsing message")
-	}
-
-	m.msgId = int64(msg.GetMsgID())
-	m.seqNo = int32(msg.GetSeqNo())
-	mod := m.msgId & 3
-	if mod != 1 && mod != 3 {
-		return nil, fmt.Errorf("Wrong bits of message_id: %d", mod)
-	}
-
-	return msg, nil
 }

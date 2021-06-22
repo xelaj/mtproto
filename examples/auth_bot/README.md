@@ -1,6 +1,6 @@
 # Example of using Mtproto for Telegram bot
 
-Mtproto lib can be used with Telegram bot, that can acess to full Telegram API, not just the simplified Telegram Bot API.
+Mtproto lib can be used with Telegram bot, that can access to full Telegram API, not just the simplified Telegram Bot API.
 
 First, you need to create your telegram bot, like you did this in any another case. Don't know how? Read [this official guide](https://core.telegram.org/bots)
 

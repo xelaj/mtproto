@@ -1,4 +1,4 @@
-// Copyright (c) 2020 KHS Films
+// Copyright (c) 2020-2021 KHS Films
 //
 // This file is a part of mtproto package.
 // See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
@@ -18,12 +18,13 @@ import (
 	ige "github.com/xelaj/mtproto/internal/aes_ige"
 	"github.com/xelaj/mtproto/internal/encoding/tl"
 	"github.com/xelaj/mtproto/internal/keys"
+	"github.com/xelaj/mtproto/internal/math"
 	"github.com/xelaj/mtproto/internal/mtproto/objects"
 )
 
 // https://tlgrm.ru/docs/mtproto/auth_key
 // https://core.telegram.org/mtproto/auth_key
-func (m *MTProto) makeAuthKey() error {
+func (m *MTProto) makeAuthKey() error { // nolint don't know how to make method smaller
 	m.serviceModeActivated = true
 	nonceFirst := tl.RandomInt128()
 	res, err := m.reqPQ(nonceFirst)
@@ -47,7 +48,7 @@ func (m *MTProto) makeAuthKey() error {
 
 	// (encoding) p_q_inner_data
 	pq := big.NewInt(0).SetBytes(res.Pq)
-	p, q := splitPQ(pq)
+	p, q := math.SplitPQ(pq)
 	nonceSecond := tl.RandomInt256()
 	nonceServer := res.ServerNonce
 
@@ -59,12 +60,12 @@ func (m *MTProto) makeAuthKey() error {
 		ServerNonce: nonceServer,
 		NewNonce:    nonceSecond,
 	})
-	check(err) // ну я не знаю что во вселенной произойдет чтоб тут словилась паника
+	check(err) // well, I don’t know what will happen in the universe so that there will panic
 
 	hashAndMsg := make([]byte, 255)
 	copy(hashAndMsg, append(dry.Sha1(string(message)), message...))
 
-	encryptedMessage := doRSAencrypt(hashAndMsg, m.publicKey)
+	encryptedMessage := math.DoRSAencrypt(hashAndMsg, m.publicKey)
 
 	keyFingerprint := int64(binary.LittleEndian.Uint64(keys.RSAFingerprint(m.publicKey)))
 	dhResponse, err := m.reqDHParams(nonceFirst, nonceServer, p.Bytes(), q.Bytes(), keyFingerprint, encryptedMessage)
@@ -83,7 +84,7 @@ func (m *MTProto) makeAuthKey() error {
 		return errors.New("handshake: Wrong server_nonce")
 	}
 
-	// проверку по хешу, удаление рандомных байт происходит в этой функции
+	// check of hash, trandom bytes trail removing occurs in this func already
 	decodedMessage := ige.DecryptMessageWithTempKeys(dhParams.EncryptedAnswer, nonceSecond.Int, nonceServer.Int)
 	data, err := tl.DecodeUnknownObject(decodedMessage)
 	if err != nil {
@@ -92,39 +93,44 @@ func (m *MTProto) makeAuthKey() error {
 
 	dhi, ok := data.(*objects.ServerDHInnerData)
 	if !ok {
-		return errors.New("Handshake: Need server_DH_inner_data")
+		return errors.New("handshake: Need server_DH_inner_data")
 	}
 	if nonceFirst.Cmp(dhi.Nonce.Int) != 0 {
-		return errors.New("Handshake: Wrong nonce")
+		return errors.New("handshake: Wrong nonce")
 	}
 	if nonceServer.Cmp(dhi.ServerNonce.Int) != 0 {
-		return errors.New("Handshake: Wrong server_nonce")
+		return errors.New("handshake: Wrong server_nonce")
 	}
 
-	// вот это видимо как раз и есть часть диффи хеллмана, поэтому просто оставим как есть надеюсь сработает
-	_, g_b, g_ab := makeGAB(dhi.G, big.NewInt(0).SetBytes(dhi.GA), big.NewInt(0).SetBytes(dhi.DhPrime))
+	// this apparently is just part of diffie hellman, so just leave it as it is, hope that it will just work
+	_, gB, gAB := math.MakeGAB(dhi.G, big.NewInt(0).SetBytes(dhi.GA), big.NewInt(0).SetBytes(dhi.DhPrime))
 
-	authKey := g_ab.Bytes()
+	authKey := gAB.Bytes()
 	if authKey[0] == 0 {
 		authKey = authKey[1:]
 	}
 
 	m.SetAuthKey(authKey)
 
-	// что это я пока не знаю, видимо какой то очень специфичный способ сгенерить ключи
-	t4 := make([]byte, 32+1+8)
+	// I don't know what it is, apparently some very specific way to generate keys
+	t4 := make([]byte, 32+1+8) // nolint:gomnd ALL PROTOCOL IS A MAGIC
 	copy(t4[0:], nonceSecond.Bytes())
 	t4[32] = 1
 	copy(t4[33:], dry.Sha1Byte(m.GetAuthKey())[0:8])
 	nonceHash1 := dry.Sha1Byte(t4)[4:20]
 	salt := make([]byte, tl.LongLen)
 	copy(salt, nonceSecond.Bytes()[:8])
-	xor(salt, nonceServer.Bytes()[:8])
+	math.Xor(salt, nonceServer.Bytes()[:8])
 	m.serverSalt = int64(binary.LittleEndian.Uint64(salt))
 
 	// (encoding) client_DH_inner_data
-	clientDHData, err := tl.Marshal(&objects.ClientDHInnerData{nonceFirst, nonceServer, 0, g_b.Bytes()})
-	check(err) // ну я не знаю что во вселенной произойдет чтоб тут словилась паника
+	clientDHData, err := tl.Marshal(&objects.ClientDHInnerData{
+		Nonce:       nonceFirst,
+		ServerNonce: nonceServer,
+		Retry:       0,
+		GB:          gB.Bytes(),
+	})
+	check(err) // well, I don’t know what will happen in the universe so that there will panic
 
 	encryptedMessage = ige.EncryptMessageWithTempKeys(clientDHData, nonceSecond.Int, nonceServer.Int)
 
@@ -135,13 +141,13 @@ func (m *MTProto) makeAuthKey() error {
 
 	dhg, ok := dhGenStatus.(*objects.DHGenOk)
 	if !ok {
-		return errors.New("Handshake: Need DHGenOk")
+		return errors.New("handshake: Need DHGenOk")
 	}
 	if nonceFirst.Cmp(dhg.Nonce.Int) != 0 {
-		return fmt.Errorf("Handshake: Wrong nonce: %v, %v", nonceFirst, dhg.Nonce)
+		return fmt.Errorf("handshake: Wrong nonce: %v, %v", nonceFirst, dhg.Nonce)
 	}
 	if nonceServer.Cmp(dhg.ServerNonce.Int) != 0 {
-		return fmt.Errorf("Handshake: Wrong server_nonce: %v, %v", nonceServer, dhg.ServerNonce)
+		return fmt.Errorf("handshake: Wrong server_nonce: %v, %v", nonceServer, dhg.ServerNonce)
 	}
 	if !bytes.Equal(nonceHash1, dhg.NewNonceHash1.Bytes()) {
 		return fmt.Errorf(
@@ -150,9 +156,10 @@ func (m *MTProto) makeAuthKey() error {
 			hex.EncodeToString(dhg.NewNonceHash1.Bytes()),
 		)
 	}
-	m.serviceModeActivated = false
 
 	// (all ok)
+	m.serviceModeActivated = false
+	m.encrypted = true
 	err = m.SaveSession()
 	return errors.Wrap(err, "saving session")
 }

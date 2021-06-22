@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-We support this project from current version -2 minor updates. If any bugs, problems, exploits, etc. works **only** on go versions 1.12.x and less, they won't be fixed. Any problems with fresh versions (1.13+) are must to describe in issues. **Any security bugs must not writed to GitHub issues!** Instead, write description of these bugs on email below.
+We support this project from current version -2 minor updates. If any bugs, problems, exploits, etc. works **only** on go versions 1.12.x and less, they won't be fixed. Any problems with fresh versions (1.13+) are must describe in issues. **Any security bugs must not be written to GitHub issues!** Instead, write description of these bugs on email below.
 
 | Version | Supported |
 | ------- | --------- |

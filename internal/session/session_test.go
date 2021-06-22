@@ -1,9 +1,9 @@
-// Copyright (c) 2020 KHS Films
+// Copyright (c) 2020-2021 KHS Films
 //
 // This file is a part of mtproto package.
 // See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
 
-package mtproto
+package session_test
 
 import (
 	"io/ioutil"
@@ -12,22 +12,21 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/xelaj/mtproto/internal/session"
 )
 
 func TestMTProto_SaveSession(t *testing.T) {
 	storePath := filepath.Join(os.TempDir(), "session.json")
 	defer os.Remove(storePath)
 
-	m := &MTProto{
-		authKey:       []byte("some auth key"),
-		authKeyHash:   []byte("oooooh that's definitely a key hash!"),
-		serverSalt:    0,
-		addr:          "1337.228.1488.0",
-		tokensStorage: storePath,
-	}
-
 	os.Remove(storePath)
-	err := m.SaveSession()
+	err := session.SaveSession(&session.Session{
+		Key:      []byte("some auth key"),
+		Hash:     []byte("oooooh that's definitely a key hash!"),
+		Salt:     0,
+		Hostname: "1337.228.1488.0",
+	}, storePath)
 	assert.NoError(t, err)
 
 	data, err := ioutil.ReadFile(storePath)
@@ -44,18 +43,19 @@ func TestMTProto_LoadSession(t *testing.T) {
 	ioutil.WriteFile(storePath, []byte(tmpData), 0666)
 	defer os.Remove(storePath)
 
-	m := &MTProto{
-		tokensStorage: storePath,
+	sess, err := session.LoadSession(storePath)
+	require.NoError(t, err)
+
+	assert.Equal(t, &session.Session{
+		Key:      []byte("some auth key"),
+		Hash:     []byte("oooooh that's definitely a key hash!"),
+		Salt:     0,
+		Hostname: "1337.228.1488.0",
+	}, sess)
+}
+
+func check(err error) {
+	if err != nil {
+		panic(err)
 	}
-
-	err := m.LoadSession()
-	assert.NoError(t, err)
-
-	assert.Equal(t, &MTProto{
-		authKey:       []byte("some auth key"),
-		authKeyHash:   []byte("oooooh that's definitely a key hash!"),
-		serverSalt:    0,
-		addr:          "1337.228.1488.0",
-		tokensStorage: storePath,
-	}, m)
 }

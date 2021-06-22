@@ -1,4 +1,4 @@
-// Copyright (c) 2020 KHS Films
+// Copyright (c) 2020-2021 KHS Films
 //
 // This file is a part of mtproto package.
 // See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
@@ -121,8 +121,24 @@ func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not 
 
 		dcList[int(dc.ID)] = dc.IpAddress
 	}
-	client.SetDCStorages(dcList)
+	client.SetDCList(dcList)
 	return client, nil
+}
+
+func (m *Client) IsSessionRegistred() (bool, error) {
+	_, err := m.UsersGetFullUser(&InputUserSelf{})
+	if err == nil {
+		return true, nil
+	}
+	var errCode *mtproto.ErrResponseCode
+	if errors.As(err, &errCode) {
+		if errCode.Message == "AUTH_KEY_UNREGISTERED" {
+			return false, nil
+		}
+		return false, err
+	} else {
+		return false, err
+	}
 }
 
 /*

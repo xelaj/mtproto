@@ -1,4 +1,4 @@
-// Copyright (c) 2020 KHS Films
+// Copyright (c) 2020-2021 KHS Films
 //
 // This file is a part of mtproto package.
 // See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
@@ -185,14 +185,12 @@ func (c *Client) GetPossibleAllParticipantsOfGroup(ch InputChannel) ([]int, erro
 	return res, nil
 }
 
-var symbols = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k",
-	"l", "m", "n", "o", "p", "q", "r", "s", "t", "u",
-	"v", "w", "x", "y", "z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
+const symbols = "abcdefghijklmnopqrstuvwxyz0123456789"
 
 func getParticipants(c *Client, ch InputChannel, lastQuery string) (map[int]struct{}, error) {
 	idsStore := make(map[int]struct{})
 	for _, symbol := range symbols {
-		query := lastQuery + symbol
+		query := lastQuery + string([]rune{symbol})
 		filter := ChannelParticipantsFilter(&ChannelParticipantsSearch{Q: query})
 
 		// начинаем с 100-200, что бы проверить, может нам нужно дополнительный символ вставлять
@@ -239,7 +237,7 @@ func getParticipants(c *Client, ch InputChannel, lastQuery string) (map[int]stru
 func getUsersOfChannelBySearching(c *Client, ch InputChannel, lastQuery string) (map[int]User, error) {
 	idsStore := make(map[int]User)
 	for _, symbol := range symbols {
-		query := lastQuery + symbol
+		query := lastQuery + string([]rune{symbol})
 		filter := ChannelParticipantsFilter(&ChannelParticipantsSearch{Q: query})
 
 		// начинаем с 100-200, что бы проверить, может нам нужно дополнительный символ вставлять

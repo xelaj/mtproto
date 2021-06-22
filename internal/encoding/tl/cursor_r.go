@@ -1,4 +1,4 @@
-// Copyright (c) 2020 KHS Films
+// Copyright (c) 2020-2021 KHS Films
 //
 // This file is a part of mtproto package.
 // See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
@@ -19,7 +19,7 @@ import (
 
 // A Decoder reads and decodes TL values from an input stream.
 type Decoder struct {
-	r   io.Reader
+	buf *bytes.Reader
 	err error
 
 	// see Decoder.ExpectTypesInInterface description
@@ -27,8 +27,14 @@ type Decoder struct {
 }
 
 // NewDecoder returns a new decoder that reads from r.
-func NewDecoder(r io.Reader) *Decoder {
-	return &Decoder{r: r}
+// Unfortunately, decoder can't work with part of data, so reader must be read all before decoding.
+func NewDecoder(r io.Reader) (*Decoder, error) {
+	data, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, errors.Wrap(err, "reading data before decoding")
+	}
+
+	return &Decoder{buf: bytes.NewReader(data)}, nil
 }
 
 // ExpectTypesInInterface defines, how decoder must parse implicit objects.
@@ -49,15 +55,25 @@ func (d *Decoder) read(buf []byte) {
 		return
 	}
 
-	n, err := d.r.Read(buf)
+	n, err := d.buf.Read(buf)
 	if err != nil {
+		d.unread(n)
 		d.err = err
 		return
 	}
 
 	if n != len(buf) {
+		d.unread(n)
 		d.err = fmt.Errorf("buffer weren't fully read: want %v bytes, got %v", len(buf), n)
 		return
+	}
+}
+
+func (d *Decoder) unread(count int) {
+	for i := 0; i < count; i++ {
+		if d.buf.UnreadByte() != nil {
+			return
+		}
 	}
 }
 
@@ -139,19 +155,16 @@ func (d *Decoder) PopInt() int32 {
 }
 
 func (d *Decoder) GetRestOfMessage() ([]byte, error) {
-	return ioutil.ReadAll(d.r)
+	return ioutil.ReadAll(d.buf)
 }
 
 func (d *Decoder) DumpWithoutRead() ([]byte, error) {
-	data, err := ioutil.ReadAll(d.r)
+	data, err := ioutil.ReadAll(d.buf)
 	if err != nil {
 		return nil, err
 	}
 
-	cp := make([]byte, len(data))
-	copy(cp, data)
-	d.r = bytes.NewReader(cp)
-
+	d.unread(len(data))
 	return data, nil
 }
 
