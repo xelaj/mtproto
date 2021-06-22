@@ -20,8 +20,8 @@ github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5Cc
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/xelaj/errs v0.0.0-20200831133608-d1c11863e019 h1:3BHWVEmYnGFozw/ApnuOgqE0tvPmYIsuO58YogGjb0s=
 github.com/xelaj/errs v0.0.0-20200831133608-d1c11863e019/go.mod h1:ZRqZExT3DbVJwy4R3q2HEXCyMwGs/lUO52dA0uorbrg=
-github.com/xelaj/go-dry v0.0.0-20210221174141-040b89cd6129 h1:gIfFpTIQWxoFTJ3tevR7Jn/NUJ/RKGd8VCylpWdyIcE=
-github.com/xelaj/go-dry v0.0.0-20210221174141-040b89cd6129/go.mod h1:T4HQGApNb61ngPeYXsZXVNy3whgx7tN3eVhdTD2j2Zs=
+github.com/xelaj/go-dry v0.0.0-20210621215431-21c77821487c h1:Ae/w5g9I26DlCKzIGQwxVclGV4D2FG+2Kh3t6Csl/KQ=
+github.com/xelaj/go-dry v0.0.0-20210621215431-21c77821487c/go.mod h1:T4HQGApNb61ngPeYXsZXVNy3whgx7tN3eVhdTD2j2Zs=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=
 golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2 h1:It14KIkyBFYkHkwZ7k45minvA9aorojkyjGk9KJ5B/w=
