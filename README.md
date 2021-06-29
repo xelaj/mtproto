@@ -71,7 +71,7 @@ MTProto is really hard in implementation, but it's really easy to use. Basically
 
 ```go
 func main() {
-    client := &Telegram.NewClient()
+    client := &telegram.NewClient()
     // for each method there is specific struct for serialization (<method_name>Params{})
     result, err := client.MakeRequest(&telegram.GetSomeInfoParams{FromChatId: 12345})
     if err != nil {
@@ -89,7 +89,7 @@ Not so hard, huh? But there is even easier way to send request, which is include
 
 ```go
 func main() {
-    client := &Telegram.NewClient()
+    client := &telegram.NewClient()
     resp, err := client.GetSomeInfo(12345)
     if err != nil {
         panic(err)
