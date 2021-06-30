@@ -21,12 +21,14 @@ func TestMTProto_SaveSession(t *testing.T) {
 	defer os.Remove(storePath)
 
 	os.Remove(storePath)
-	err := session.SaveSession(&session.Session{
+
+	storage := session.NewFromFile(storePath)
+	err := storage.Store(&session.Session{
 		Key:      []byte("some auth key"),
 		Hash:     []byte("oooooh that's definitely a key hash!"),
 		Salt:     0,
 		Hostname: "1337.228.1488.0",
-	}, storePath)
+	})
 	assert.NoError(t, err)
 
 	data, err := ioutil.ReadFile(storePath)
@@ -43,7 +45,9 @@ func TestMTProto_LoadSession(t *testing.T) {
 	ioutil.WriteFile(storePath, []byte(tmpData), 0666)
 	defer os.Remove(storePath)
 
-	sess, err := session.LoadSession(storePath)
+	storage := session.NewFromFile(storePath)
+
+	sess, err := storage.Load()
 	require.NoError(t, err)
 
 	assert.Equal(t, &session.Session{

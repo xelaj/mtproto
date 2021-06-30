@@ -49,7 +49,6 @@ type MTProto struct {
 	// каналы, которые ожидают ответа rpc. ответ записывается в канал и удаляется
 	responseChannels *utils.SyncIntObjectChan
 	expectedTypes    *utils.SyncIntReflectTypes // uses for parcing bool values in rpc result for example
-	idsToAck         *utils.SyncSetInt
 
 	// идентификаторы сообщений, нужны что бы посылать и принимать сообщения.
 	seqNoMutex sync.Mutex
@@ -59,8 +58,8 @@ type MTProto struct {
 	// связки приложение+клиент
 	dclist map[int]string
 
-	// путь до файла токена сессии.
-	tokensStorage string
+	// storage of session for this instance
+	tokensStorage session.SessionLoader
 
 	// один из публичных ключей telegram. нужен только для создания сессии.
 	publicKey *rsa.PublicKey
@@ -82,19 +81,33 @@ type MTProto struct {
 type customHandlerFunc = func(i any) bool
 
 type Config struct {
-	AuthKeyFile string
-	ServerHost  string
-	PublicKey   *rsa.PublicKey
+	AuthKeyFile string //! DEPRECATED // use SessionStorage
+
+	// if SessionStorage is nil, AuthKeyFile is required, otherwise it will be ignored
+	SessionStorage session.SessionLoader
+
+	ServerHost string
+	PublicKey  *rsa.PublicKey
 }
 
 func NewMTProto(c Config) (*MTProto, error) {
-	s, err := session.LoadSession(c.AuthKeyFile)
-	if !errs.IsNotFound(err) {
-		check(err)
+	if c.SessionStorage == nil {
+		if c.AuthKeyFile == "" {
+			return nil, errors.New("AuthKeyFile is empty") //nolint:golint // its a field name, makes no sense
+		}
+
+		c.SessionStorage = session.NewFromFile(c.AuthKeyFile)
+	}
+
+	s, err := c.SessionStorage.Load()
+	switch {
+	case err == nil, errs.IsNotFound(err):
+	default:
+		return nil, errors.Wrap(err, "loading session")
 	}
 
 	m := &MTProto{
-		tokensStorage:         c.AuthKeyFile,
+		tokensStorage:         c.SessionStorage,
 		addr:                  c.ServerHost,
 		encrypted:             s != nil, // if not nil, then it's already encrypted, otherwise makes no sense
 		sessionId:             utils.GenerateSessionID(),
@@ -103,11 +116,9 @@ func NewMTProto(c Config) (*MTProto, error) {
 		responseChannels:      utils.NewSyncIntObjectChan(),
 		expectedTypes:         utils.NewSyncIntReflectTypes(),
 		serverRequestHandlers: make([]customHandlerFunc, 0),
-		idsToAck:              utils.NewSyncSetInt(),
 		dclist:                defaultDCList(),
 	}
 
-	m.idsToAck.Reset()
 	if s != nil {
 		m.LoadSession(s)
 	}
@@ -347,13 +358,8 @@ messageTypeSwitching:
 			m.warnError(errors.Wrap(err, "saving session"))
 		}
 
-	case *objects.Pong:
+	case *objects.Pong, *objects.MsgsAck:
 		// игнорим, пришло и пришло, че бубнить то
-
-	case *objects.MsgsAck:
-		for _, id := range message.MsgIDs {
-			m.idsToAck.Delete(int(id))
-		}
 
 	case *objects.BadMsgNotification:
 		pp.Println(message)

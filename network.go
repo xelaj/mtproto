@@ -34,12 +34,6 @@ func (m *MTProto) sendPacket(request tl.Object, expectedTypes ...reflect.Type) (
 		m.expectedTypes.Add(int(msgID), expectedTypes)
 	}
 
-	// checking, that we expect ack
-	requireToAck := MessageRequireToAck(request)
-	if requireToAck {
-		m.idsToAck.Add(int(msgID))
-	}
-
 	// dealing with response channel
 	resp := m.getRespChannel()
 	if isNullableResponse(request) {
@@ -65,7 +59,7 @@ func (m *MTProto) sendPacket(request tl.Object, expectedTypes ...reflect.Type) (
 	m.seqNoMutex.Lock()
 	defer m.seqNoMutex.Unlock()
 
-	err = m.transport.WriteMsg(data, requireToAck)
+	err = m.transport.WriteMsg(data, MessageRequireToAck(request))
 	if err != nil {
 		return nil, errors.Wrap(err, "sending request")
 	}
