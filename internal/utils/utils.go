@@ -16,14 +16,21 @@ import (
 	"time"
 )
 
+var lastMessageId int64
+
 // GenerateMessageId отдает по сути unix timestamp но ужасно специфическим образом
 // TODO: нахуя нужно битовое и на -4??
-func GenerateMessageId() int64 {
+func GenerateMessageId() (r int64) {
 	const billion = 1000 * 1000 * 1000
 	unixnano := time.Now().UnixNano()
 	seconds := unixnano / billion
 	nanoseconds := unixnano % billion
-	return (seconds << 32) | (nanoseconds & -4)
+	r = (seconds << 32) | (nanoseconds & -4)
+	if r == lastMessageId {
+		r += 4
+	}
+	lastMessageId = r
+	return r
 }
 
 func AuthKeyHash(key []byte) []byte {
