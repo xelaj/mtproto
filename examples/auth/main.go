@@ -56,6 +56,19 @@ func main() {
 		os.Exit(0)
 	}
 
+	resp, err := client.InvokeWithLayer(telegram.ApiVersion, &telegram.InitConnectionParams{
+		ApiID:         94575,
+		DeviceModel:   "Unknown",
+		SystemVersion: "linux/amd64",
+		AppVersion:    "0.1.0",
+		// just use "en", any other language codes will receive error. See telegram docs for more info.
+		SystemLangCode: "en",
+		LangCode:       "en",
+		// HelpGetConfig() is ACTUAL request, but wrapped in InvokeWithLayer
+		Query: &telegram.HelpGetConfigParams{},
+	})
+	fmt.Println(resp)
+
 	setCode, err := client.AuthSendCode(
 		phoneNumber, 94575, "a3406de8d171bb422bb6ddf3bbd800e2", &telegram.CodeSettings{},
 	)
