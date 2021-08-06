@@ -119,7 +119,7 @@ func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not 
 			continue
 		}
 
-		dcList[int(dc.ID)] = dc.IpAddress
+		dcList[int(dc.ID)] = dc.IpAddress + ":" + strconv.Itoa(int(dc.Port))
 	}
 	client.SetDCList(dcList)
 	return client, nil
