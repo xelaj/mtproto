@@ -6,8 +6,10 @@
 package telegram
 
 import (
+	"net"
 	"reflect"
 	"runtime"
+	"strconv"
 
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
@@ -119,7 +121,7 @@ func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not 
 			continue
 		}
 
-		dcList[int(dc.ID)] = dc.IpAddress + ":" + strconv.Itoa(int(dc.Port))
+		dcList[int(dc.ID)] = net.JoinHostPort(dc.IpAddress, strconv.Itoa(int(dc.Port)))
 	}
 	client.SetDCList(dcList)
 	return client, nil
