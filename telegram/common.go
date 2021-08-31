@@ -72,7 +72,7 @@ func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not 
 	m, err := mtproto.NewMTProto(mtproto.Config{
 		AuthKeyFile: c.SessionFile,
 		ServerHost:  c.ServerHost,
-		PublicKey:   publicKeys[0],
+		PublicKeys:  publicKeys,
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "setup common MTProto client")
