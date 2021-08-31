@@ -8,6 +8,8 @@ package ige
 import (
 	"bytes"
 	"crypto/aes"
+	"crypto/rand"
+	"crypto/sha256"
 	"math/big"
 
 	"github.com/xelaj/go-dry"
@@ -17,36 +19,73 @@ type AesBlock [aes.BlockSize]byte
 type AesKV [32]byte
 type AesIgeBlock [48]byte
 
-func MessageKey(msg []byte) []byte {
-	return dry.Sha1(string(msg))[4:20]
+func MessageKey(authKey, msgPadded []byte, decode bool) []byte {
+	var x int
+	if decode {
+		x = 8
+	} else {
+		x = 0
+	}
+
+	// `msg_key_large = SHA256 (substr (auth_key, 88+x, 32) + plaintext + random_padding);`
+	var msgKeyLarge [sha256.Size]byte
+	{
+		h := sha256.New()
+
+		substr := authKey[88+x:]
+		_, _ = h.Write(substr[:32])
+		_, _ = h.Write(msgPadded)
+
+		h.Sum(msgKeyLarge[:0])
+	}
+	r := make([]byte, 16)
+	// `msg_key = substr (msg_key_large, 8, 16);`
+	copy(r, msgKeyLarge[8:8+16])
+	return r
 }
 
-func Encrypt(msg, key []byte) ([]byte, error) {
-	msgKey := MessageKey(msg)
-	aesKey, aesIV := generateAESIGE(msgKey, key, false)
+func Encrypt(msg, authKey []byte) (out, msgKey []byte, _ error) {
+	return encrypt(msg, authKey, false)
+}
 
+func encrypt(msg, authKey []byte, decode bool) (out, msgKey []byte, _ error) {
 	// СУДЯ ПО ВСЕМУ вообще не уверен, но это видимо паддинг для добива блока, чтоб он делился на 256 бит
-	data := make([]byte, len(msg)+((16-(len(msg)%16))&15))
-	copy(data, msg)
+	padding := 16 + (16-(len(msg)%16))&15
+	data := make([]byte, len(msg)+padding)
+	n := copy(data, msg)
 
-	c, err := NewCipher(aesKey, aesIV)
+	// Fill padding using secure PRNG.
+	//
+	// See https://core.telegram.org/mtproto/description#encrypted-message-encrypted-data.
+	if _, err := rand.Read(data[n:]); err != nil {
+		return nil, nil, err
+	}
+
+	msgKey = MessageKey(authKey, data, decode)
+	aesKey, aesIV := aesKeys(msgKey[:], authKey, decode)
+
+	c, err := NewCipher(aesKey[:], aesIV[:])
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	out := make([]byte, len(data))
+	out = make([]byte, len(data))
 	if err := c.doAES256IGEencrypt(data, out); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return out, nil
+	return out, msgKey, nil
 }
 
 // checkData это msgkey в понятиях мтпрото, нужно что бы проверить, успешно ли прошла расшифровка
-func Decrypt(msg, key, checkData []byte) ([]byte, error) {
-	aesKey, aesIV := generateAESIGE(checkData, key, true)
+func Decrypt(msg, authKey, checkData []byte) ([]byte, error) {
+	return decrypt(msg, authKey, checkData, true)
+}
 
-	c, err := NewCipher(aesKey, aesIV)
+func decrypt(msg, authKey, msgKey []byte, decode bool) ([]byte, error) {
+	aesKey, aesIV := aesKeys(msgKey, authKey, decode)
+
+	c, err := NewCipher(aesKey[:], aesIV[:])
 	if err != nil {
 		return nil, err
 	}

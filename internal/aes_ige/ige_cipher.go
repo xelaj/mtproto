@@ -8,6 +8,7 @@ package ige
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/sha256"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -86,6 +87,53 @@ func isCorrectData(data []byte) error {
 }
 
 // --------------------------------------------------------------------------------------------------
+
+func aesKeys(msgKey, authKey []byte, decode bool) (aesKey, aesIv [32]byte) {
+	var x int
+	if decode {
+		x = 8
+	} else {
+		x = 0
+	}
+
+	// aes_key = substr (sha256_a, 0, 8) + substr (sha256_b, 8, 16) + substr (sha256_a, 24, 8);
+	computeAesKey := func(sha256a, sha256b []byte) (v [32]byte) {
+		n := copy(v[:], sha256a[:8])
+		n += copy(v[n:], sha256b[8:16+8])
+		copy(v[n:], sha256a[24:24+8])
+		return v
+	}
+	// aes_iv = substr (sha256_b, 0, 8) + substr (sha256_a, 8, 16) + substr (sha256_b, 24, 8);
+	computeAesIV := func(sha256b, sha256a []byte) (v [32]byte) {
+		n := copy(v[:], sha256a[:8])
+		n += copy(v[n:], sha256b[8:16+8])
+		copy(v[n:], sha256a[24:24+8])
+		return v
+	}
+
+	var sha256a, sha256b [256]byte
+	// sha256_a = SHA256 (msg_key + substr (auth_key, x, 36));
+	{
+		h := sha256.New()
+
+		_, _ = h.Write(msgKey)
+		_, _ = h.Write(authKey[x : x+36])
+
+		h.Sum(sha256a[:0])
+	}
+	// sha256_b = SHA256 (substr (auth_key, 40+x, 36) + msg_key);
+	{
+		h := sha256.New()
+
+		substr := authKey[40+x:]
+		_, _ = h.Write(substr[:36])
+		_, _ = h.Write(msgKey)
+
+		h.Sum(sha256b[:0])
+	}
+
+	return computeAesKey(sha256a[:], sha256b[:]), computeAesIV(sha256a[:], sha256b[:])
+}
 
 // generateAESIGEv2 это переписанная функция generateAESIGE, которая выглядить чуточку более понятно.
 func generateAESIGEv2(msgKey, authKey []byte, decode bool) (aesKey, aesIv []byte) { //nolint:deadcode wait for it

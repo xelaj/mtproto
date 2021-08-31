@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDoAES256IGEdecrypt(t *testing.T) {
@@ -237,29 +238,29 @@ func TestMessageKey(t *testing.T) {
 	}{
 		{
 			name: "empty",
-			msg:  Hexed(""),
-			// correct: http://craiccomputing.blogspot.com/2009/09/sha1-digest-of-empty-string.html
-			want: Hexed("5E6B4B0D3255BFEF95601890AFD80709"),
+			msg:  []byte(""),
+			want: Hexed("c5fbe78b7c52674af6786e1b6d3b0a89"),
 		},
 		{
 			name: "zeros",
 			msg:  Hexed("00000000000000000000000000000000"),
-			want: Hexed("5103BC5CC44BCDF0A15E160D445066FF"),
+			want: Hexed("62166edf89ef5a29523bba266a5c36a9"),
 		},
 		{
 			name: "randomized",
 			msg:  Hexed("5103BC5CC44BCDF0A15E160D445066FF"),
-			want: Hexed("F9D401E298F3EEEC1C927312AEB6B412"),
+			want: Hexed("2149a1cc4926af846e7ec6a36c75a3ba"),
 		},
 		{
 			name: "any words",
 			msg:  []byte("some cool message"),
-			want: Hexed("4170ED208083FAFD2DFA8507FD4A75B6"),
+			want: Hexed("65f2304bf99854b770168ccd9563dead"),
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, MessageKey(tt.msg))
+			assert.Equal(t, tt.want, MessageKey(testAuthKey[:], tt.msg, false))
 		})
 	}
 }
@@ -297,11 +298,9 @@ func TestEncryptMessageWithTempKeys(t *testing.T) {
 
 func TestEncryptDecrypt(t *testing.T) {
 	tests := []struct {
-		name    string
-		msg     []byte
-		key     []byte
-		want    []byte
-		wantErr assert.ErrorAssertionFunc
+		name string
+		msg  []byte
+		key  []byte
 	}{
 		{
 			name: "simple",
@@ -325,32 +324,17 @@ func TestEncryptDecrypt(t *testing.T) {
 				"5198EE022B2B81F388D281D5E5BC580107CA01A50665C32B552715F335FD7626" +
 				"4FAD00DDD5AE45B94832AC79CE7C511D194BC42B70EFA850BB15C2012C5215CA" +
 				"BFE97CE66B8D8734D0EE759A638AF013"),
-			want: Hexed("BABBC03F65F828E4B97DBC5A992394C2"),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			wantErr := tt.wantErr
-			if wantErr == nil {
-				wantErr = assert.NoError
-			}
-			got, err := Encrypt(tt.msg, tt.key)
-			if !wantErr(t, err) {
-				return
-			}
+			a := require.New(t)
+			got, msgKey, err := encrypt(tt.msg, tt.key, false)
+			a.NoError(err)
 
-			if !assert.Equal(t, tt.want, got) {
-				return
-			}
-
-			// TODO: почему-то расшифровка так легко не проходит
-			//msgkey := MessageKey(tt.msg)
-			//decrypted, err := Decrypt(got, tt.key, msgkey)
-			//if !wantErr(t, err) {
-			//	return
-			//}
-			//
-			//assert.Equal(t, tt.msg, decrypted)
+			decrypted, err := decrypt(got, tt.key, msgKey, false)
+			a.NoError(err)
+			a.Equal(tt.msg, decrypted[:len(tt.msg)])
 		})
 	}
 }
