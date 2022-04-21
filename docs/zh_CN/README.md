@@ -196,11 +196,11 @@ func main() {
 
 ### 这个项目支持 Windows 吗？
 
-从技术上讲，支持。在实践中，组件不需要具体的系统架构，但是我们目前并为测试这一点。如果你遇到了任何问题，请随时创建 issue 来反馈，我们会尽力帮助。
+从技术上讲，支持。在实践中，组件不需要具体的系统架构，但是我们目前并没有测试这一点。如果你遇到了任何问题，请随时创建 issue 来反馈，我们会尽力帮助。
 
 ### 为什么 Telegram 如此不稳定？
 
-[请使用](请使用) Google 翻译，[这个 issue](https://github.com/ton-blockchain/ton/issues/31) 可以回答你的所有问题。
+请使用 [ Google 翻译](https://translate.google.com/) 来查看 [这个 issue](https://github.com/ton-blockchain/ton/issues/31) 它可以回答你的所有问题。
 
 ## 谁在使用
 
@@ -212,7 +212,7 @@ func main() {
 
 ## 安全漏洞？
 
-请千万不要创建 issue 来反馈安全漏洞，因为那将影响很多人。请通过[阅读](https://github.com/xelaj/mtproto/blob/main/.github/SECURITY.md)这个并遵循里面提到的步骤来通知我们。
+请千万不要创建 issue 来反馈安全漏洞，因为这样会影响到很多人。请通过[阅读](https://github.com/xelaj/mtproto/blob/main/.github/SECURITY.md)这个并遵循里面提到的步骤来通知我们。
 
 ## TODO
 
@@ -242,9 +242,9 @@ func main() {
 
 ## 许可证
 
-**WARNING!** This project is only maintained by Xelaj inc., however copyright of this source code **IS NOT** owned by Xelaj inc. at all. If you want to connect with code owners, write mail to [this email](mailto:up@khsfilms.rux). For all other questions like any issues, PRs, questions, etc. Use GitHub issues, or find email on official website.
+**WARNING!** This project is only maintained by Xelaj inc., however copyright of this source code **IS NOT** owned by Xelaj inc. at all. If you want to connect with code owners, write mail to <a href="mailto:up@khsfilms.ru">this email</a>. For all other questions like any issues, PRs, questions, etc. Use GitHub issues, or find email on official website.
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/xelaj/mtproto/blob/main/LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/xelaj/mtproto/blob/main/docs/en_US/LICENSE.md) file for details
 
 <!--
 
