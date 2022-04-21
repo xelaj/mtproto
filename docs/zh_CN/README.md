@@ -242,9 +242,9 @@ func main() {
 
 ## 许可证
 
-<b style="color:red">WARNING!</b> This project is only maintained by Xelaj inc., however copyright of this source code **IS NOT** owned by Xelaj inc. at all. If you want to connect with code owners, write mail to <a href="mailto:up@khsfilms.ru">this email</a>. For all other questions like any issues, PRs, questions, etc. Use GitHub issues, or find email on official website.
+**WARNING!** This project is only maintained by Xelaj inc., however copyright of this source code **IS NOT** owned by Xelaj inc. at all. If you want to connect with code owners, write mail to <a href="mailto:up@khsfilms.ru">this email</a>. For all other questions like any issues, PRs, questions, etc. Use GitHub issues, or find email on official website.
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/xelaj/mtproto/blob/main/docs/ru_RU/LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/xelaj/mtproto/blob/main/docs/en_US/LICENSE.md) file for details
 
 <!--
 
