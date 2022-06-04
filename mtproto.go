@@ -214,7 +214,8 @@ func (m *MTProto) Disconnect() error {
 	// stop all routines
 	m.stopRoutines()
 
-	// TODO: close ALL CHANNELS
+	// close and clean all channels
+	m.responseChannels.Close()
 
 	return nil
 }
