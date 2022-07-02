@@ -363,7 +363,7 @@ messageTypeSwitching:
 		// игнорим, пришло и пришло, че бубнить то
 
 	case *objects.BadMsgNotification:
-		_, _ = pp.Println(message)
+		pp.Println(message)
 		// panic(message) // for debug, looks like this message is important
 		return BadMsgErrorFromNative(message)
 
