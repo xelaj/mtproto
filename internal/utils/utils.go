@@ -9,21 +9,13 @@ package utils
 
 import (
 	"crypto/sha1"
-	"fmt"
 	"math/rand"
-	"os"
-	"runtime"
 	"time"
 )
 
-// GenerateMessageId отдает по сути unix timestamp но ужасно специфическим образом
-// TODO: нахуя нужно битовое и на -4??
+// GenerateMessageId возвращает unix timestamp
 func GenerateMessageId() int64 {
-	const billion = 1000 * 1000 * 1000
-	unixnano := time.Now().UnixNano()
-	seconds := unixnano / billion
-	nanoseconds := unixnano % billion
-	return (seconds << 32) | (nanoseconds & -4)
+	return time.Now().UnixNano()
 }
 
 func AuthKeyHash(key []byte) []byte {
@@ -33,17 +25,6 @@ func AuthKeyHash(key []byte) []byte {
 func GenerateSessionID() int64 {
 	rand.Seed(time.Now().UnixNano())
 	return rand.Int63() // nolint: gosec потому что начерта?
-}
-
-func FullStack() {
-	buf := make([]byte, 1024)
-	for {
-		n := runtime.Stack(buf, true)
-		if n < len(buf) {
-			fmt.Fprintln(os.Stderr, string(buf[:n]))
-		}
-		buf = make([]byte, 2*len(buf))
-	}
 }
 
 func Sha1Byte(input []byte) []byte {

@@ -97,6 +97,16 @@ func (s *SyncIntObjectChan) Delete(key int) bool {
 	return ok
 }
 
+// Close закрывает каналы и удаляет их из мапы.
+func (s *SyncIntObjectChan) Close() {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	for k, v := range s.m {
+		close(v)
+		delete(s.m, k)
+	}
+}
+
 type SyncIntReflectTypes struct {
 	mutex sync.RWMutex
 	m     map[int][]reflect.Type

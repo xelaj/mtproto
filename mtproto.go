@@ -70,7 +70,7 @@ type MTProto struct {
 	serviceChannel       chan tl.Object
 	serviceModeActivated bool
 
-	//! DEPRECATED RecoverFunc используется только до того момента, когда из пакета будут убраны все паники
+	// ! DEPRECATED RecoverFunc используется только до того момента, когда из пакета будут убраны все паники
 	RecoverFunc func(i any)
 	// if set, all critical errors writing to this channel
 	Warnings chan error
@@ -81,7 +81,7 @@ type MTProto struct {
 type customHandlerFunc = func(i any) bool
 
 type Config struct {
-	AuthKeyFile string //! DEPRECATED // use SessionStorage
+	AuthKeyFile string // ! DEPRECATED // use SessionStorage
 
 	// if SessionStorage is nil, AuthKeyFile is required, otherwise it will be ignored
 	SessionStorage session.SessionLoader
@@ -214,7 +214,8 @@ func (m *MTProto) Disconnect() error {
 	// stop all routines
 	m.stopRoutines()
 
-	// TODO: close ALL CHANNELS
+	// close and clean all channels
+	m.responseChannels.Close()
 
 	return nil
 }
@@ -363,7 +364,7 @@ messageTypeSwitching:
 
 	case *objects.BadMsgNotification:
 		pp.Println(message)
-		panic(message) // for debug, looks like this message is important
+		// panic(message) // for debug, looks like this message is important
 		return BadMsgErrorFromNative(message)
 
 	case *objects.RpcResult:
