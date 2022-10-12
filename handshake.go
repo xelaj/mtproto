@@ -7,6 +7,7 @@ package mtproto
 
 import (
 	"bytes"
+	"crypto/rsa"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
@@ -35,14 +36,18 @@ func (m *MTProto) makeAuthKey() error { // nolint don't know how to make method 
 	if nonceFirst.Cmp(res.Nonce.Int) != 0 {
 		return errors.New("handshake: Wrong nonce")
 	}
-	found := false
-	for _, b := range res.Fingerprints {
-		if uint64(b) == binary.LittleEndian.Uint64(keys.RSAFingerprint(m.publicKey)) {
-			found = true
-			break
+
+	var key *rsa.PublicKey
+	for _, publicKey := range m.publicKeys {
+		fp := keys.RSAFingerprint(publicKey)
+		for _, b := range res.Fingerprints {
+			if uint64(b) == binary.LittleEndian.Uint64(fp) {
+				key = publicKey
+				break
+			}
 		}
 	}
-	if !found {
+	if key == nil {
 		return errors.New("handshake: Can't find fingerprint")
 	}
 
@@ -65,9 +70,9 @@ func (m *MTProto) makeAuthKey() error { // nolint don't know how to make method 
 	hashAndMsg := make([]byte, 255)
 	copy(hashAndMsg, append(dry.Sha1(string(message)), message...))
 
-	encryptedMessage := math.DoRSAencrypt(hashAndMsg, m.publicKey)
+	encryptedMessage := math.DoRSAencrypt(hashAndMsg, key)
 
-	keyFingerprint := int64(binary.LittleEndian.Uint64(keys.RSAFingerprint(m.publicKey)))
+	keyFingerprint := int64(binary.LittleEndian.Uint64(keys.RSAFingerprint(key)))
 	dhResponse, err := m.reqDHParams(nonceFirst, nonceServer, p.Bytes(), q.Bytes(), keyFingerprint, encryptedMessage)
 	if err != nil {
 		return errors.Wrap(err, "sending ReqDHParams")

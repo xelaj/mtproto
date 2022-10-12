@@ -62,7 +62,7 @@ type MTProto struct {
 	tokensStorage session.SessionLoader
 
 	// один из публичных ключей telegram. нужен только для создания сессии.
-	publicKey *rsa.PublicKey
+	publicKeys []*rsa.PublicKey
 
 	// serviceChannel нужен только на время создания ключей, т.к. это
 	// не RpcResult, поэтому все данные отдаются в один поток без
@@ -87,7 +87,8 @@ type Config struct {
 	SessionStorage session.SessionLoader
 
 	ServerHost string
-	PublicKey  *rsa.PublicKey
+	PublicKey  *rsa.PublicKey //! DEPRECATED // use PublicKeys
+	PublicKeys []*rsa.PublicKey
 }
 
 func NewMTProto(c Config) (*MTProto, error) {
@@ -112,7 +113,7 @@ func NewMTProto(c Config) (*MTProto, error) {
 		encrypted:             s != nil, // if not nil, then it's already encrypted, otherwise makes no sense
 		sessionId:             utils.GenerateSessionID(),
 		serviceChannel:        make(chan tl.Object),
-		publicKey:             c.PublicKey,
+		publicKeys:            append([]*rsa.PublicKey{c.PublicKey}, c.PublicKeys...),
 		responseChannels:      utils.NewSyncIntObjectChan(),
 		expectedTypes:         utils.NewSyncIntReflectTypes(),
 		serverRequestHandlers: make([]customHandlerFunc, 0),
