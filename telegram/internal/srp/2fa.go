@@ -1,14 +1,16 @@
-// Copyright (c) 2020-2021 KHS Films
+// Copyright (c) 2020-2022 KHS Films
 //
 // This file is a part of mtproto package.
 // See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
 
 package srp
 
-//! WARNING: if you want to understand this algorithm, go to https://core.telegram.org/api/srp, and try to
-//  open this code on right side, and algorith description on left side. Then, try to search via Cmd+F func
-//  descriptions in algo descriptions. Then bless your god and drink few whiskey. As far as this way i can help
-//  you to understand this secure-like shit created by telegram developers.
+//! WARNING: if you want to understand this algorithm, go to
+//  https://core.telegram.org/api/srp, and try to open this code on right side,
+//  and algorithm description on left side. Then, try to search via ⌘+F func
+//  descriptions in algo descriptions. Then bless your god and drink few
+//  whiskey. As far as this way i can help you to understand this secure-like
+//  shit created by telegram developers.
 
 import (
 	"crypto/sha256"
@@ -126,7 +128,7 @@ func validateCurrentAlgo(srpB []byte, mp *ModPow) error {
 	p := bytesToBig(mp.P)
 	gb := bytesToBig(srpB)
 
-	//?                        awwww so cute ref (^_^), try to guess ↓↓↓
+	//                         awwww so cute ref (^_^), try to guess ↓↓↓
 	if big.NewInt(0).Cmp(gb) != -1 || gb.Cmp(p) != -1 || len(srpB) < 248 || len(srpB) > 256 {
 		return errors.New("receive invalid value of B")
 	}

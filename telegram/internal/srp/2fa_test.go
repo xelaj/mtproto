@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021 KHS Films
+// Copyright (c) 2020-2022 KHS Films
 //
 // This file is a part of mtproto package.
 // See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
@@ -62,7 +62,8 @@ func Test2FA(t *testing.T) {
 	for i := range tests {
 		tcase := tests[i]
 		t.Run(fmt.Sprintf("#%v", i), func(t *testing.T) {
-			// random это байтовое представление big.NewInt(1), telegram doesn't care about real random
+			// random is a byteset of big.NewInt(1), telegram doesn't care about
+			// real random
 			random := setByte(randombyteLen, 1)
 			got, err := getInputCheckPassword(tcase.args.password, tcase.args.srpB, tcase.args.mp, random)
 			if !tcase.expectError(t, err) {

@@ -2,8 +2,8 @@ package main
 
 import (
 	"path/filepath"
+	"time"
 
-	"github.com/k0kubun/pp"
 	"github.com/xelaj/go-dry"
 	"github.com/xelaj/mtproto/telegram"
 
@@ -32,5 +32,11 @@ func main() {
 	utils.ReadWarningsToStdErr(client.Warnings)
 	dry.PanicIfErr(err)
 
-	pp.Println(client.AllUsersInChannel(-1001224870613))
+	for {
+		_, err := client.AllUsersInChannel(-1001224870613)
+		if err != nil {
+			panic(err)
+		}
+		time.Sleep(10 * time.Second)
+	}
 }

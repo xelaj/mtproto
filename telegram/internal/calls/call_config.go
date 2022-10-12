@@ -1,7 +1,13 @@
+// Copyright (c) 2020-2022 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package calls
 
-// CallConfig is UNOFFICIAL description of returned json for phone.getCallConfig method.
-// this code, honestly, stolen from telegramd repository of nebula project https://git.io/JtYG0
+// CallConfig is UNOFFICIAL description of returned json for phone.getCallConfig
+// method. this code, honestly, stolen from telegramd repository of nebula
+// project https://git.io/JtYG0
 // TODO: find official description of these parameters and add some more docs
 type CallConfig struct {
 	AudioFrameSize         int     `json:"audio_frame_size"`
