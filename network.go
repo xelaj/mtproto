@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021 KHS Films
+// Copyright (c) 2020-2022 KHS Films
 //
 // This file is a part of mtproto package.
 // See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
@@ -47,6 +47,7 @@ func (m *MTProto) sendPacket(request tl.Object, expectedTypes ...reflect.Type) (
 			Msg:         msg,
 			MsgID:       msgID,
 			AuthKeyHash: m.authKeyHash,
+			SeqNo:       m.seqNo,
 		}
 	} else {
 		data = &messages.Unencrypted{ //nolint: errcheck нешифрованое не отправляет ошибки

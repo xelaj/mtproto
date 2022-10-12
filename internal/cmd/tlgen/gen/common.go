@@ -1,10 +1,15 @@
+// Copyright (c) 2020-2022 KHS Films
+//
+// This file is a part of mtproto package.
+// See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
+
 package gen
 
 import (
 	"fmt"
 
 	"github.com/dave/jennifer/jen"
-	
+
 	"github.com/xelaj/mtproto/internal/cmd/tlgen/tlparser"
 )
 
