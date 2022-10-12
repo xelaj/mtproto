@@ -1,0 +1,45 @@
+name: ✨ Feature request
+description: Create a bug report to help us fix it
+title: '[FEAT]: '
+labels: [bug]
+assignees:
+  - quenbyako
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to create new feature request! Please fill the form below.
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature description
+      description: Is your feature request related to a problem? Please describe.
+      placeholder: A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+    validations:
+      required: true
+  - type: input
+    id: snippet
+    attributes:
+      label: Code snippet
+      description: "Use [Go Playground]https://go.dev/play). Even if your code doesn't work in playground, we need to understand, what do you want to propose 😊"
+      placeholder: 'https://go.dev/play/p/<snippet_id>'
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Requirements before submitting new issue
+      options:
+        - label: "I want to see this feature on latest version, and i'm sure, that this feature is still not implemented."
+          required: true
+        - label: I searched for other open and closed issues before opening this, and there is no one, describing this feature.
+          required: true
+        - label: I agree to follow this project's [Code of Conduct](https://github.com/goreleaser/.github/blob/main/CODE_OF_CONDUCT.md).
+          required: true
+  - type: textarea
+    id: ctx
+    attributes:
+      label: Additional context
+      description: Anything else you would like to add
+    validations:
+      required: false

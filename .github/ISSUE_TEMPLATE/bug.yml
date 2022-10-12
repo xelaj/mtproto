@@ -1,0 +1,44 @@
+name: 🐛 Bug Report
+description: Create a bug report to help us fix it
+title: '[BUG]: '
+labels: [bug]
+assignees:
+  - quenbyako
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please fill the form below.
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Also tell us, what did you expect to happen?
+    validations:
+      required: true
+  - type: input
+    id: snippet
+    attributes:
+      label: Code snippet
+      description: "Use [Go Playground]https://go.dev/play). Even if your code doesn't work in playground, we need to see, what have you done 😊"
+      placeholder: 'https://go.dev/play/p/<snippet_id>'
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Requirements before submitting new issue
+      options:
+        - label: 'I got this bug on latest version, and, if not, I updated library to latest version, and tested again.'
+          required: true
+        - label: I searched for other open and closed issues before opening this, and there is no one, describing this bug.
+          required: true
+        - label: I agree to follow this project's [Code of Conduct](https://github.com/goreleaser/.github/blob/main/CODE_OF_CONDUCT.md).
+          required: true
+  - type: textarea
+    id: ctx
+    attributes:
+      label: Additional context
+      description: Anything else you would like to add
+    validations:
+      required: false

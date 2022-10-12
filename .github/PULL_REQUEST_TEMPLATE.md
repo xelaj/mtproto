@@ -31,7 +31,6 @@ What is the purpose of this PR? Did you add amazing cool feature? Or you fixed a
 Can this PR possible broke something? Or it can offend some sjw creature? Tell us about that
 -->
 
-
 <!--
 LABELS!
 If you sure that maintainers require to add specific labels to this PR, please, describe it. If not,
