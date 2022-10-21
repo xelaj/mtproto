@@ -24,10 +24,13 @@ func (m *MTProto) sendPacket(request tl.Object, expectedTypes ...reflect.Type) (
 		return nil, errors.Wrap(err, "encoding request message")
 	}
 
+	m.lastMessageIDMutex.Lock()
 	var (
 		data  messages.Common
-		msgID = utils.GenerateMessageId()
+		msgID = utils.GenerateMessageId(m.lastMessageID)
 	)
+	m.lastMessageIDMutex.Unlock()
+	m.lastMessageID = msgID
 
 	// adding types for parser if required
 	if len(expectedTypes) > 0 {
