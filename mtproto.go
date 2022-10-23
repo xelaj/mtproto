@@ -360,7 +360,11 @@ messageTypeSwitching:
 		}
 
 	case *objects.Pong, *objects.MsgsAck:
-		// игнорим, пришло и пришло, че бубнить то
+		// ignoring, it's come and it's ok, who cares
+
+		// NOTE: looks like MsgsAck LITERALLY never returns in tcp transport except in unencrypted messages,
+		// i don't know who the fuck invented so stupid acknowledgement system, but he definitely need atone
+		// for sins
 
 	case *objects.BadMsgNotification:
 		pp.Println(message)
@@ -397,6 +401,15 @@ messageTypeSwitching:
 		}
 	}
 
+	// TODO: decide ARE WE FUCKIN NEED THIS SHITTY ACKS???
+	//       cause jesus christ, even telegram server doesn't send acks, who the fuck does implemented them in
+	//       protocol?
+	//
+	//       according to https://core.telegram.org/mtproto/service_messages_about_messages#acknowledgment-of-receipt,
+	//       "Receipt of virtually all messages <...> must be acknowledged", BUT: "with the exception of some
+	//       purely service ones"... What the fuck is a "purely service ones"??? Is there any list about what
+	//       message is "purely service" and what isn't? This is bullshit, better is to not ack at all, looks
+	//       like it works fine.
 	if (msg.GetSeqNo() & 1) != 0 {
 		_, err := m.MakeRequest(&objects.MsgsAck{MsgIDs: []int64{int64(msg.GetMsgID())}})
 		if err != nil {

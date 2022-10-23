@@ -1,223 +1,46 @@
-// unknown types, docs are not provided
-// these items exist in tl schema, but in real life, they aren't using anywhere
-// error#c4b9f9bb code:int text:string = Error;
-// ipPort#d433ad73 ipv4:int port:int = IpPort;
-// ipPortSecret#37982646 ipv4:int port:int secret:bytes = IpPort;
-// accessPointRule#4679b65f phone_prefix_rules:string dc_id:int ips:Vector<IpPort> = AccessPointRule;
-// help.configSimple#5a592a6c date:int expires:int rules:Vector<AccessPointRule> = help.ConfigSimple;
-
-//-----------//
-// InputPeer //
-//-----------//
-
-// @type Peer
-// @constructor An empty constructor, no user or chat is defined.
 inputPeerEmpty#7f3b18ea = InputPeer;
-
-// @constructor Defines the current user.
 inputPeerSelf#7da07ec9 = InputPeer;
-
-// @constructor Defines a chat for further interaction.
-// @param chat_id Chat idientifier
 inputPeerChat#179be863 chat_id:int = InputPeer;
-
-// @constructor Defines a user for further interaction.
-// @param user_id User identifier
-// @param access_hash **access_hash** value from the [user](https://core.telegram.org/constructor/user) constructor
 inputPeerUser#7b8e7de6 user_id:int access_hash:long = InputPeer;
-
-// @constructor Defines a channel for further interaction.
-// @param channel_id Channel identifier
-// @param access_hash **access_hash** value from the [channel](https://core.telegram.org/constructor/channel) constructor
 inputPeerChannel#20adaef8 channel_id:int access_hash:long = InputPeer;
-
-// @constructor Defines a [min](https://core.telegram.org/api/min) user that was seen in a certain message of a certain chat.
-// @param peer The chat where the user was seen
-// @param msg_id The message ID
-// @param user_id The identifier of the user that was seen
 inputPeerUserFromMessage#17bae2e6 peer:InputPeer msg_id:int user_id:int = InputPeer;
-
-// @constructor Defines a [min](https://core.telegram.org/api/min) channel that was seen in a certain message of a certain chat.
-// @param peer The chat where the channel's message was seen
-// @param msg_id The message ID
-// @param channel_id The identifier of the channel that was seen
 inputPeerChannelFromMessage#9c95f7bb peer:InputPeer msg_id:int channel_id:int = InputPeer;
 
-//-----------//
-// InputUser //
-//-----------//
-
-// @type Defines a user for subsequent interaction.
-// @constructor Empty constructor, does not define a user.
 inputUserEmpty#b98886cf = InputUser;
-
-// @constructor Defines the current user.
 inputUserSelf#f7c1b13f = InputUser;
-
-// @constructor Defines a user for further interaction.
-// @param access_hash access_hash value from the user constructor
-// @param user_id     User identifier
 inputUser#d8292816 user_id:int access_hash:long = InputUser;
-
-// @constructor Defines a min user that was seen in a certain message of a certain chat.
-// @param msg_id  The message ID
-// @param peer    The chat where the user was seen
-// @param user_id The identifier of the user that was seen
 inputUserFromMessage#2d117597 peer:InputPeer msg_id:int user_id:int = InputUser;
 
-//--------------//
-// InputContact //
-//--------------//
-
-// @type Object defines a contact from the user's phonebook.
-// @constructor Phone contact. The client_id is just an arbitrary contact ID: it should be set, for example, to an incremental number when using contacts.importContacts, in order to retry importing only the contacts that weren't imported successfully.
-// @param client_id  User identifier on the client
-// @param first_name Contact's first name
-// @param last_name  Contact's last name
-// @param phone      Phone number
 inputPhoneContact#f392b7f4 client_id:long phone:string first_name:string last_name:string = InputContact;
 
-//-----------//
-// InputFile //
-//-----------//
-
-// @type Defines a file uploaded by the client.
-// @constructor Defines a file saved in parts using the method upload.saveFilePart.
-// @param id           Random file identifier created by the client
-// @param md5_checksum In case the file's md5-hash was passed, contents of the file will be checked prior to use
-// @param name         Full name of the file
-// @param parts        Number of parts saved
 inputFile#f52ff27f id:long parts:int name:string md5_checksum:string = InputFile;
-// @constructor Assigns a big file (over 10Mb in size), saved in part using the method upload.saveBigFilePart.
-// @param id    Random file id, created by the client
-// @param name  Full file name
-// @param parts Number of parts saved
 inputFileBig#fa4f0bb5 id:long parts:int name:string = InputFile;
 
-//------------//
-// InputMedia //
-//------------//
-
-// @type Defines media content of a message.
-// @constructor Empty media content of a message.
 inputMediaEmpty#9664f57f = InputMedia;
-// @constructor Photo
-// @param file        The uploaded file
-// @param stickers    Attached mask stickers
-// @param ttl_seconds Time to live in seconds of self-destructing photo
 inputMediaUploadedPhoto#1e287d04 flags:# file:InputFile stickers:flags.0?Vector<InputDocument> ttl_seconds:flags.1?int = InputMedia;
-// @constructor
-// @param id          Photo to be forwarded
-// @param ttl_seconds Time to live in seconds of self-destructing photo
 inputMediaPhoto#b3ba0635 flags:# id:InputPhoto ttl_seconds:flags.0?int = InputMedia;
-// @constructor Map.
-// @param geo_point GeoPoint
 inputMediaGeoPoint#f9c44144 geo_point:InputGeoPoint = InputMedia;
-// @constructor Phonebook contact
-// @param first_name   Contact's first name
-// @param last_name    Contact's last name
-// @param phone_number Number of parts saved
-// @param vcard        Contact vcard
 inputMediaContact#f8ab7dfb phone_number:string first_name:string last_name:string vcard:string = InputMedia;
-// @constructor New document
-// @param nosound_video Whether the specified document is a video file with no audio tracks (a GIF animation (even as MPEG4), for example)
-// @param force_file    Force the media file to be uploaded as document
-// @param file          The uploaded file
-// @param thumb         Thumbnail of the document, uploaded as for the file
-// @param mime_type     MIME type of document
-// @param attributes    Attributes that specify the type of the document (video, audio, voice, sticker, etc.)
-// @param stickers      Attached stickers
-// @param ttl_seconds   Time to live in seconds of self-destructing document
 inputMediaUploadedDocument#5b38c6c1 flags:# nosound_video:flags.3?true force_file:flags.4?true file:InputFile thumb:flags.2?InputFile mime_type:string attributes:Vector<DocumentAttribute> stickers:flags.0?Vector<InputDocument> ttl_seconds:flags.1?int = InputMedia;
-// @constructor Forwarded document
-// @param id          The document to be forwarded.
-// @param ttl_seconds Time to live of self-destructing document
 inputMediaDocument#23ab23d2 flags:# id:InputDocument ttl_seconds:flags.0?int = InputMedia;
-// @constructor Can be used to send a venue geolocation.
-// @param geo_point  Geolocation
-// @param title      Venue name
-// @param address    Physical address of the venue
-// @param provider   Venue provider: currently only "foursquare" needs to be supported
-// @param venue_id   Venue ID in the provider's database
-// @param venue_type Venue type in the provider's database
 inputMediaVenue#c13d1c11 geo_point:InputGeoPoint title:string address:string provider:string venue_id:string venue_type:string = InputMedia;
-// @constructor New photo that will be uploaded by the server using the specified URL
-// @param url         URL of the photo"
-// @param ttl_seconds Self-destruct time to live of photo"
 inputMediaPhotoExternal#e5bbfe1a flags:# url:string ttl_seconds:flags.0?int = InputMedia;
-// @constructor Document that will be downloaded by the telegram servers
-// @param ttl_seconds Self-destruct time to live of document
-// @param url         URL of the document
 inputMediaDocumentExternal#fb52dc99 flags:# url:string ttl_seconds:flags.0?int = InputMedia;
-// @constructor A game
-// @param id The game to forward
 inputMediaGame#d33f43f3 id:InputGame = InputMedia;
-// @constructor Generated invoice of a bot payment
-// @param title         roduct name, 1-32 characters
-// @param description   Product description, 1-255 characters
-// @param photo         URL of the product photo for the invoice. Can be a photo of the goods or a marketing image for a service. People like it better when they see what they are paying for.
-// @param invoice       The actual invoice
-// @param payload       Bot-defined invoice payload, 1-128 bytes. This will not be displayed to the user, use for your internal processes.
-// @param provider      Payments provider token, obtained via Botfather
-// @param provider_data JSON-encoded data about the invoice, which will be shared with the payment provider. A detailed description of required fields should be provided by the payment provider.
-// @param start_param   Start parameter
 inputMediaInvoice#f4e096c3 flags:# title:string description:string photo:flags.0?InputWebDocument invoice:Invoice payload:bytes provider:string provider_data:DataJSON start_param:string = InputMedia;
-// @constructor Live geolocation
-// @param stopped                       Whether sending of the geolocation was stopped
-// @param geo_point                     Current geolocation
-// @param heading                       For live locations, a direction in which the location moves, in degrees; 1-360.
-// @param period                        Validity period of the current location
-// @param proximity_notification_radius For live locations, a maximum distance to another chat member for proximity alerts, in meters (0-100000)
 inputMediaGeoLive#971fa843 flags:# stopped:flags.0?true geo_point:InputGeoPoint heading:flags.2?int period:flags.1?int proximity_notification_radius:flags.3?int = InputMedia;
-// @constructor A poll
-// @param poll              The poll to send
-// @param correct_answers   Correct answer IDs (for quiz polls)
-// @param solution          Explanation of quiz solution
-// @param solution_entities Message entities for styled text
 inputMediaPoll#f94e5f1 flags:# poll:Poll correct_answers:flags.0?Vector<bytes> solution:flags.1?string solution_entities:flags.1?Vector<MessageEntity> = InputMedia;
-// @constructor Assigns a big file (over 10Mb in size), saved in part using the method upload.saveBigFilePart.
-// @param emoticon The emoji, for now 🏀, 🎲 and 🎯 are supported
 inputMediaDice#e66fbf7b emoticon:string = InputMedia;
 
-//----------------//
-// InputChatPhoto //
-//----------------//
-
-// @type Defines a new group profile photo.
-// @constructor Empty constructor, remove group photo.
 inputChatPhotoEmpty#1ca48f57 = InputChatPhoto;
-// @constructor New photo to be set as group profile photo.
-// @param file           File saved in parts using the method upload.saveFilePart
-// @param video          Square video for animated profile picture"
-// @param video_start_ts Timestamp that should be shown as static preview to the user (seconds)
 inputChatUploadedPhoto#c642724e flags:# file:flags.0?InputFile video:flags.1?InputFile video_start_ts:flags.2?double = InputChatPhoto;
-// @constructor Existing photo to be set as a chat profile photo.
-// @param id Existing photo
 inputChatPhoto#8953ad37 id:InputPhoto = InputChatPhoto;
 
-//---------------//
-// InputGeoPoint //
-//---------------//
-
-// @type Defines a GeoPoint.
-// @constructor Empty GeoPoint constructor.
 inputGeoPointEmpty#e4c123d6 = InputGeoPoint;
-// @constructor Defines a GeoPoint by its coordinates.
-// @param accuracy_radius The estimated horizontal accuracy of the location, in meters; as defined by the sender.
-// @param lat             Latitide
-// @param long            Longtitude
 inputGeoPoint#48222faf flags:# lat:double long:double accuracy_radius:flags.0?int = InputGeoPoint;
-
-//------------//
-// InputPhoto //
-//------------//
 
 inputPhotoEmpty#1cd7bf0d = InputPhoto;
 inputPhoto#3bb3b94a id:long access_hash:long file_reference:bytes = InputPhoto;
-
-//-------------------//
-// InputFileLocation //
-//-------------------//
 
 inputFileLocation#dfdaabe1 volume_id:long local_id:int secret:long file_reference:bytes = InputFileLocation;
 inputEncryptedFileLocation#f5235d55 id:long access_hash:long = InputFileLocation;
@@ -229,94 +52,26 @@ inputPhotoLegacyFileLocation#d83466f3 id:long access_hash:long file_reference:by
 inputPeerPhotoFileLocation#27d69997 flags:# big:flags.0?true peer:InputPeer volume_id:long local_id:int = InputFileLocation;
 inputStickerSetThumb#dbaeae9 stickerset:InputStickerSet volume_id:long local_id:int = InputFileLocation;
 
-//------//
-// Peer //
-//------//
-
-// @type Chat partner or group.
-// @constructor Chat partner
-// @param user_id User identifier
 peerUser#9db1bc6d user_id:int = Peer;
-// @constructor Group.
-// @param chat_id Group identifier
 peerChat#bad0e5bb chat_id:int = Peer;
-// @constructor Channel/supergroup
-// @param channel_id Channel ID
 peerChannel#bddde532 channel_id:int = Peer;
 
-//------------------//
-// storage.FileType //
-//------------------//
-
-// @type Object describes the file type.
-// @enum Unknown type.
 storage.fileUnknown#aa963b05 = storage.FileType;
-// @enum Part of a bigger file.
 storage.filePartial#40bc6f52 = storage.FileType;
-// @enum JPEG image. MIME type: image/jpeg.
 storage.fileJpeg#7efe0e = storage.FileType;
-// @enum GIF image. MIME type: image/gif.
 storage.fileGif#cae1aadf = storage.FileType;
-// @enum PNG image. MIME type: image/png.
 storage.filePng#a4f63c0 = storage.FileType;
-// @enum PDF document image. MIME type: application/pdf.
 storage.filePdf#ae1e508d = storage.FileType;
-// @enum Mp3 audio. MIME type: audio/mpeg.
 storage.fileMp3#528a0677 = storage.FileType;
-// @enum Quicktime video. MIME type: video/quicktime.
 storage.fileMov#4b09ebbc = storage.FileType;
-// @enum MPEG-4 video. MIME type: video/mp4.
 storage.fileMp4#b3cea0e4 = storage.FileType;
-// @enum WEBP image. MIME type: image/webp.
 storage.fileWebp#1081464c = storage.FileType;
 
-//------//
-// User //
-//------//
-
-// @type Object defines a user.
-// @constructor Empty constructor, non-existent user.
-// @param id User identifier or `0`
 userEmpty#200250ba id:int = User;
-// @constructor Indicates info about a certain user
-// @param self                   Whether this user indicates the currently logged in user
-// @param contact                Whether this user is a contact
-// @param mutual_contact         Whether this user is a mutual contact
-// @param deleted                Whether the account of this user was deleted
-// @param bot                    Is this user a bot?
-// @param bot_chat_history       Can the bot see all messages in groups?
-// @param bot_nochats            Can the bot be added to groups?
-// @param verified               Whether this user is verified
-// @param restricted             Access to this user must be restricted for the reason specified in restriction_reason
-// @param min                    see [min](https://core.telegram.org/api/min)
-// @param bot_inline_geo         Whether the bot can request our geolocation in inline mode
-// @param support                Whether this is an official support user
-// @param scam                   This may be a scam user
-// @param apply_min_photo        If set, the profile picture for this user should be refetched
-// @param id                     ID of the user
-// @param access_hash            Access hash of the user
-// @param first_name             First name
-// @param last_name              Last name
-// @param username               Username
-// @param phone                  Phone number
-// @param photo                  Profile picture of user
-// @param status                 Online status of user
-// @param bot_info_version       Version of the bot_info field in userFull, incremented every time it changes
-// @param restriction_reason     Contains the reason why access to this user must be restricted.
-// @param bot_inline_placeholder Inline placeholder for this inline bot
-// @param lang_code              Language code of the user
 user#938458c1 flags:# self:flags.10?true contact:flags.11?true mutual_contact:flags.12?true deleted:flags.13?true bot:flags.14?true bot_chat_history:flags.15?true bot_nochats:flags.16?true verified:flags.17?true restricted:flags.18?true min:flags.20?true bot_inline_geo:flags.21?true support:flags.23?true scam:flags.24?true apply_min_photo:flags.25?true id:int access_hash:flags.0?long first_name:flags.1?string last_name:flags.2?string username:flags.3?string phone:flags.4?string photo:flags.5?UserProfilePhoto status:flags.6?UserStatus bot_info_version:flags.14?int restriction_reason:flags.18?Vector<RestrictionReason> bot_inline_placeholder:flags.19?string lang_code:flags.22?string = User;
-
-//------------------//
-// UserProfilePhoto //
-//------------------//
 
 userProfilePhotoEmpty#4f11bae1 = UserProfilePhoto;
 userProfilePhoto#69d3ab26 flags:# has_video:flags.0?true photo_id:long photo_small:FileLocation photo_big:FileLocation dc_id:int = UserProfilePhoto;
-
-//------------//
-// UserStatus //
-//------------//
 
 userStatusEmpty#9d05049 = UserStatus;
 userStatusOnline#edb93949 expires:int = UserStatus;
@@ -325,117 +80,13 @@ userStatusRecently#e26f42f1 = UserStatus;
 userStatusLastWeek#7bf09fc = UserStatus;
 userStatusLastMonth#77ebc742 = UserStatus;
 
-//------//
-// Chat //
-//------//
-
-// @type Object defines a group.
-// @constructor
-// @param id Group identifier
 chatEmpty#9ba2d800 id:int = Chat;
-// @constructor Info about a group
-// @param creator               Whether the current user is the creator of the group
-// @param kicked                Whether the current user was kicked from the group
-// @param left                  Whether the current user has left the group
-// @param deactivated           Whether the group was migrated
-// @param id                    ID of the group
-// @param title                 Title
-// @param photo                 Chat photo
-// @param participants_count    Participant count
-// @param date                  Date of creation of the group
-// @param version               Used in basic groups to reorder updates and make sure that all of them were received.
-// @param migrated_to           Means this chat was upgraded to a supergroup
-// @param admin_rights          Admin rights of the user in the group
-// @param default_banned_rights Default banned rights of all users in the group
-chat#3bda1bde flags:# creator:flags.0?true kicked:flags.1?true left:flags.2?true deactivated:flags.5?true id:int title:string photo:ChatPhoto participants_count:int date:int version:int migrated_to:flags.6?InputChannel admin_rights:flags.14?ChatAdminRights default_banned_rights:flags.18?ChatBannedRights = Chat;
-// @constructor A group to which the user has no access. E.g., because the user was kicked from the group.
-// @param id    User identifier
-// @param title Group name
+chat#3bda1bde flags:# creator:flags.0?true kicked:flags.1?true left:flags.2?true deactivated:flags.5?true call_active:flags.23?true call_not_empty:flags.24?true id:int title:string photo:ChatPhoto participants_count:int date:int version:int migrated_to:flags.6?InputChannel admin_rights:flags.14?ChatAdminRights default_banned_rights:flags.18?ChatBannedRights = Chat;
 chatForbidden#7328bdb id:int title:string = Chat;
-// @constructor Channel/supergroup info
-// @param creator               Whether the current user is the creator of this channel
-// @param left                  Whether the current user has left this channel
-// @param broadcast             Is this a channel?
-// @param verified              Is this channel verified by telegram?
-// @param megagroup             Is this a supergroup?
-// @param restricted            Whether viewing/writing in this channel for a reason (see restriction_reason
-// @param signatures            Whether signatures are enabled (channels)
-// @param min                   See min
-// @param scam                  This channel/supergroup is probably a scam
-// @param has_link              Whether this channel has a private join link
-// @param has_geo               Whether this chanel has a geoposition
-// @param slowmode_enabled      Whether slow mode is enabled for groups to prevent flood in chat
-// @param id                    ID of the channel
-// @param access_hash           Access hash
-// @param title                 Title
-// @param username              Username
-// @param photo                 Profile photo
-// @param date                  Date when the user joined the supergroup/channel, or if the user isn't a member, its creation date
-// @param version               Version of the channel (always 0)
-// @param restriction_reason    Contains the reason why access to this channel must be restricted.
-// @param admin_rights          Admin rights of the user in this channel (see rights)
-// @param banned_rights         Banned rights of the user in this channel (see rights)
-// @param default_banned_rights Default chat rights (see rights)
-// @param participants_count    Participant count
-channel#d31a961e flags:# creator:flags.0?true left:flags.2?true broadcast:flags.5?true verified:flags.7?true megagroup:flags.8?true restricted:flags.9?true signatures:flags.11?true min:flags.12?true scam:flags.19?true has_link:flags.20?true has_geo:flags.21?true slowmode_enabled:flags.22?true call_active:flags.23?true id:int access_hash:flags.13?long title:string username:flags.6?string photo:ChatPhoto date:int version:int restriction_reason:flags.9?Vector<RestrictionReason> admin_rights:flags.14?ChatAdminRights banned_rights:flags.15?ChatBannedRights default_banned_rights:flags.18?ChatBannedRights participants_count:flags.17?int = Chat;
-// @constructor Indicates a channel/supergroup we can't access because we were banned, or for some other reason.
-// @param broadcast   Is this a channel
-// @param megagroup   Is this a supergroup
-// @param id          Channel ID
-// @param access_hash Access hash
-// @param title       Title
-// @param until_date  The ban is valid until the specified date
+channel#d31a961e flags:# creator:flags.0?true left:flags.2?true broadcast:flags.5?true verified:flags.7?true megagroup:flags.8?true restricted:flags.9?true signatures:flags.11?true min:flags.12?true scam:flags.19?true has_link:flags.20?true has_geo:flags.21?true slowmode_enabled:flags.22?true call_active:flags.23?true call_not_empty:flags.24?true id:int access_hash:flags.13?long title:string username:flags.6?string photo:ChatPhoto date:int version:int restriction_reason:flags.9?Vector<RestrictionReason> admin_rights:flags.14?ChatAdminRights banned_rights:flags.15?ChatBannedRights default_banned_rights:flags.18?ChatBannedRights participants_count:flags.17?int = Chat;
 channelForbidden#289da732 flags:# broadcast:flags.5?true megagroup:flags.8?true id:int access_hash:long title:string until_date:flags.16?int = Chat;
 
-// @type Object containing detailed group info
-// @constructor Detailed chat info
-// @param about            About string for this chat
-// @param bot_info         Info about bots that are in this chat
-// @param can_set_username Can we change the username of this chat
-// @param chat_photo       Chat photo
-// @param exported_invite  Chat invite
-// @param folder_id        Peer folder ID, for more info click here
-// @param has_scheduled    Whether scheduled messages are available
-// @param id               ID of the chat
-// @param notify_settings  Notification settings
-// @param participants     Participant list
-// @param pinned_msg_id    Message ID of the last pinned message
 chatFull#1b7c9db3 flags:# can_set_username:flags.7?true has_scheduled:flags.8?true id:int about:string participants:ChatParticipants chat_photo:flags.2?Photo notify_settings:PeerNotifySettings exported_invite:ExportedChatInvite bot_info:flags.3?Vector<BotInfo> pinned_msg_id:flags.6?int folder_id:flags.11?int = ChatFull;
-// @constructor Full info about a channel/supergroup
-// @param about                   Info about the channel
-// @param admins_count            Number of channel admins
-// @param available_min_id        Identifier of a maximum unavailable message in a channel due to hidden history.
-// @param banned_count            Number of users banned from the channel
-// @param blocked                 Whether any anonymous admin of this supergroup was blocked: if set, you won't receive messages from anonymous group admins in discussion replies via @replies
-// @param bot_info                Info about bots in the channel/supergrup
-// @param can_set_location        Can we set the geolocation of this group (for geogroups)
-// @param can_set_stickers        Can we associate a stickerpack to the supergroup?
-// @param can_set_username        Can we set the channel's username?
-// @param can_view_participants   Can we vew the participant list?
-// @param can_view_stats          Can the user view channel/supergroup statistics
-// @param chat_photo              Channel picture
-// @param exported_invite         Invite link
-// @param folder_id               Peer folder ID, for more info click here
-// @param has_scheduled           Whether scheduled messages are available
-// @param hidden_prehistory       Is the history before we joined hidden to us?
-// @param id                      ID of the channel
-// @param kicked_count            Number of users kicked from the channel
-// @param linked_chat_id          ID of the linked discussion chat for channels
-// @param location                Location of the geogroup
-// @param migrated_from_chat_id   The chat ID from which this group was migrated
-// @param migrated_from_max_id    The message ID in the original chat at which this group was migrated
-// @param notify_settings         Notification settings
-// @param online_count            Number of users currently online
-// @param participants_count      Number of participants of the channel
-// @param pinned_msg_id           Message ID of the last pinned message
-// @param pts                     Latest PTS for this channel
-// @param read_inbox_max_id       Position up to which all incoming messages are read.
-// @param read_outbox_max_id      Position up to which all outgoing messages are read.
-// @param slowmode_next_send_date Indicates when the user will be allowed to send another message in the supergroup (unixdate)
-// @param slowmode_seconds        If specified, users in supergroups will only be able to send one message every slowmode_seconds seconds
-// @param stats_dc                If set, specifies the DC to use for fetching channel statistics
-// @param stickerset              Associated stickerset
-// @param unread_count            Count of unread messages
 channelFull#f0e6672a flags:# can_view_participants:flags.3?true can_set_username:flags.6?true can_set_stickers:flags.7?true hidden_prehistory:flags.10?true can_set_location:flags.16?true has_scheduled:flags.19?true can_view_stats:flags.20?true blocked:flags.22?true id:int about:string participants_count:flags.0?int admins_count:flags.1?int kicked_count:flags.2?int banned_count:flags.2?int online_count:flags.13?int read_inbox_max_id:int read_outbox_max_id:int unread_count:int chat_photo:Photo notify_settings:PeerNotifySettings exported_invite:ExportedChatInvite bot_info:Vector<BotInfo> migrated_from_chat_id:flags.4?int migrated_from_max_id:flags.4?int pinned_msg_id:flags.5?int stickerset:flags.8?StickerSet available_min_id:flags.9?int folder_id:flags.11?int linked_chat_id:flags.14?int location:flags.15?ChannelLocation slowmode_seconds:flags.17?int slowmode_next_send_date:flags.18?int stats_dc:flags.12?int pts:int = ChatFull;
 
 chatParticipant#c8d7493e user_id:int inviter_id:int date:int = ChatParticipant;
@@ -448,52 +99,8 @@ chatParticipants#3f460fed chat_id:int participants:Vector<ChatParticipant> versi
 chatPhotoEmpty#37c1011c = ChatPhoto;
 chatPhoto#d20b9f3c flags:# has_video:flags.0?true photo_small:FileLocation photo_big:FileLocation dc_id:int = ChatPhoto;
 
-// @type Object describing a message.
-// @constructor Empty constructor, non-existent message.
-// @param Message identifier
 messageEmpty#83e5de54 id:int = Message;
-// @constructor A message
-// @param out                Is this an outgoing message
-// @param mentioned          Whether we were mentioned in this message
-// @param media_unread       Whether there are unread media attachments in this message
-// @param silent             Whether this is a silent message (no notification triggered)
-// @param post               Whether this is a channel post
-// @param from_scheduled     Whether this is a scheduled message
-// @param legacy             This is a legacy message: it has to be refetched with the new layer
-// @param edit_hide          Whether the message should be shown as not modified to the user, even if an edit date is present
-// @param pinned             Whether this message is pinned
-// @param id                 ID of the message
-// @param from_id            ID of the sender of the message
-// @param peer_id            Peer ID, the chat where this message was sent
-// @param fwd_from           Info about forwarded messages
-// @param via_bot_id         ID of the inline bot that generated the message
-// @param reply_to           Reply information
-// @param date               Date of the message
-// @param message            The message
-// @param media              Media attachment
-// @param reply_markup       Reply markup (bot/inline keyboards)
-// @param entities           Message entities for styled text
-// @param views              View count for channel posts
-// @param forwards           Forward counter
-// @param replies            Info about post comments (for channels) or message replies (for groups)
-// @param edit_date          Last edit date of this message
-// @param post_author        Name of the author of this message for channel posts (with signatures enabled)
-// @param grouped_id         Multiple media messages sent using messages.sendMultiMedia with the same grouped ID indicate an album or media group
-// @param restriction_reason Contains the reason why access to this message must be restricted.
 message#58ae39c9 flags:# out:flags.1?true mentioned:flags.4?true media_unread:flags.5?true silent:flags.13?true post:flags.14?true from_scheduled:flags.18?true legacy:flags.19?true edit_hide:flags.21?true pinned:flags.24?true id:int from_id:flags.8?Peer peer_id:Peer fwd_from:flags.2?MessageFwdHeader via_bot_id:flags.11?int reply_to:flags.3?MessageReplyHeader date:int message:string media:flags.9?MessageMedia reply_markup:flags.6?ReplyMarkup entities:flags.7?Vector<MessageEntity> views:flags.10?int forwards:flags.10?int replies:flags.23?MessageReplies edit_date:flags.15?int post_author:flags.16?string grouped_id:flags.17?long restriction_reason:flags.22?Vector<RestrictionReason> = Message;
-// @constructor Indicates a service message
-// @param out          Whether the message is outgoing
-// @param mentioned    Whether we were mentioned in the message
-// @param media_unread Whether the message contains unread media
-// @param silent       Whether the message is silent
-// @param post         Whether it's a channel post
-// @param legacy       This is a legacy message: it has to be refetched with the new layer
-// @param id           Message ID
-// @param from_id      ID of the sender of this message
-// @param peer_id      Sender of service message
-// @param reply_to     Reply (thread) information
-// @param date         Message date
-// @param action       Event connected with the service message
 messageService#286fa604 flags:# out:flags.1?true mentioned:flags.4?true media_unread:flags.5?true silent:flags.13?true post:flags.14?true legacy:flags.19?true id:int from_id:flags.8?Peer peer_id:Peer reply_to:flags.3?MessageReplyHeader date:int action:MessageAction = Message;
 
 messageMediaEmpty#3ded6320 = MessageMedia;
@@ -567,7 +174,7 @@ inputPeerNotifySettings#9c3d198e flags:# show_previews:flags.0?Bool silent:flags
 
 peerNotifySettings#af509d20 flags:# show_previews:flags.0?Bool silent:flags.1?Bool mute_until:flags.2?int sound:flags.3?string = PeerNotifySettings;
 
-peerSettings#733f2961 flags:# report_spam:flags.0?true add_contact:flags.1?true block_contact:flags.2?true share_contact:flags.3?true need_contacts_exception:flags.4?true report_geo:flags.5?true autoarchived:flags.7?true geo_distance:flags.6?int = PeerSettings;
+peerSettings#733f2961 flags:# report_spam:flags.0?true add_contact:flags.1?true block_contact:flags.2?true share_contact:flags.3?true need_contacts_exception:flags.4?true report_geo:flags.5?true autoarchived:flags.7?true invite_members:flags.8?true geo_distance:flags.6?int = PeerSettings;
 
 wallPaper#a437c3ed id:long flags:# creator:flags.0?true default:flags.1?true pattern:flags.3?true dark:flags.4?true access_hash:long slug:string document:Document settings:flags.2?WallPaperSettings = WallPaper;
 wallPaperNoFile#8af40b25 flags:# default:flags.1?true dark:flags.4?true settings:flags.2?WallPaperSettings = WallPaper;
@@ -588,13 +195,7 @@ importedContact#d0028438 user_id:int client_id:long = ImportedContact;
 
 contactStatus#d3680c61 user_id:int status:UserStatus = ContactStatus;
 
-// @type Info on the current user's contact list.
-// @constructor Contact list on the server is the same as the list on the client.
 contacts.contactsNotModified#b74ba9d2 = contacts.Contacts;
-// @constructor The current user's contact list and info on users.
-// @param contacts    Contact list
-// @param saved_count Number of contacts that were saved successfully
-// @param users       User list
 contacts.contacts#eae87e42 contacts:Vector<Contact> saved_count:int users:Vector<User> = contacts.Contacts;
 
 contacts.importedContacts#77d01c3b imported:Vector<ImportedContact> popular_invites:Vector<PopularContact> retry_contacts:Vector<long> users:Vector<User> = contacts.ImportedContacts;
@@ -618,254 +219,107 @@ messages.chatFull#e5d7d19c full_chat:ChatFull chats:Vector<Chat> users:Vector<Us
 
 messages.affectedHistory#b45c69d1 pts:int pts_count:int offset:int = messages.AffectedHistory;
 
-// @type Object describes message filter.
-// @constructor Filter is absent.
 inputMessagesFilterEmpty#57e2f66c = MessagesFilter;
-// @constructor Filter for messages containing photos.
 inputMessagesFilterPhotos#9609a51c = MessagesFilter;
-// @constructor Filter for messages containing videos.
 inputMessagesFilterVideo#9fc00e65 = MessagesFilter;
-// @constructor Filter for messages containing photos or videos.
 inputMessagesFilterPhotoVideo#56e9f0e4 = MessagesFilter;
-// @constructor Filter for messages containing documents.
 inputMessagesFilterDocument#9eddf188 = MessagesFilter;
-// @constructor Return only messages containing URLs
 inputMessagesFilterUrl#7ef0dd87 = MessagesFilter;
-// @constructor Return only messages containing gifs
 inputMessagesFilterGif#ffc86587 = MessagesFilter;
-// @constructor Return only messages containing voice notes
 inputMessagesFilterVoice#50f5c392 = MessagesFilter;
-// @constructor Return only messages containing audio files
 inputMessagesFilterMusic#3751b49e = MessagesFilter;
-// @constructor Return only chat photo changes
 inputMessagesFilterChatPhotos#3a20ecb8 = MessagesFilter;
-// @constructor Return only phone calls
-// @param missed Return only missed phone calls
 inputMessagesFilterPhoneCalls#80c99768 flags:# missed:flags.0?true = MessagesFilter;
-// @constructor Return only round videos and voice notes
 inputMessagesFilterRoundVoice#7a7c17a4 = MessagesFilter;
-// @constructor Return only round videos
 inputMessagesFilterRoundVideo#b549da53 = MessagesFilter;
-// @constructor Return only messages where the current user was mentioned
 inputMessagesFilterMyMentions#c1f8e69a = MessagesFilter;
-// @constructor Return only messages containing geolocations
 inputMessagesFilterGeo#e7026d0d = MessagesFilter;
-// @constructor Return only messages containing contacts
 inputMessagesFilterContacts#e062db83 = MessagesFilter;
-// @constructor Fetch only pinned messages
 inputMessagesFilterPinned#1bb00451 = MessagesFilter;
 
-// @type Object contains info on events occured.
-// @constructor New message.
 updateNewMessage#1f2b0afd message:Message pts:int pts_count:int = Update;
-// @constructor Sent message with random_id client identifier was assigned an identifier.
 updateMessageID#4e90bfd6 id:int random_id:long = Update;
-// @constructor Messages were deleted.
 updateDeleteMessages#a20db0e5 messages:Vector<int> pts:int pts_count:int = Update;
-// @constructor The user is preparing a message; typing, recording, uploading, etc. This update is valid for 6 seconds. If no repeated update received after 6 seconds, it should be considered that the user stopped doing whatever he's been doing.
 updateUserTyping#5c486927 user_id:int action:SendMessageAction = Update;
-// @constructor The user is preparing a message in a group; typing, recording, uploading, etc. This update is valid for 6 seconds. If no repeated update received after 6 seconds, it should be considered that the user stopped doing whatever he's been doing.
 updateChatUserTyping#9a65ea1f chat_id:int user_id:int action:SendMessageAction = Update;
-// @constructor Composition of chat participants changed.
 updateChatParticipants#7761198 participants:ChatParticipants = Update;
-// @constructor Contact status update.
 updateUserStatus#1bfbd823 user_id:int status:UserStatus = Update;
-// @constructor Changes the user's first name, last name and username.
 updateUserName#a7332b73 user_id:int first_name:string last_name:string username:string = Update;
-// @constructor Change of contact's profile photo.
 updateUserPhoto#95313b0c user_id:int date:int photo:UserProfilePhoto previous:Bool = Update;
-// @constructor New encrypted message.
 updateNewEncryptedMessage#12bcbd9a message:EncryptedMessage qts:int = Update;
-// @constructor Interlocutor is typing a message in an encrypted chat. Update period is 6 second. If upon this time there is no repeated update, it shall be considered that the interlocutor stopped typing.
 updateEncryptedChatTyping#1710f156 chat_id:int = Update;
-// @constructor Change of state in an encrypted chat.
 updateEncryption#b4a2e88d chat:EncryptedChat date:int = Update;
-// @constructor Communication history in an encrypted chat was marked as read.
 updateEncryptedMessagesRead#38fe25b7 chat_id:int max_date:int date:int = Update;
-// @constructor New group member.
 updateChatParticipantAdd#ea4b0e5c chat_id:int user_id:int inviter_id:int date:int version:int = Update;
-// @constructor A member has left the group.
 updateChatParticipantDelete#6e5f8c22 chat_id:int user_id:int version:int = Update;
-// @constructor Changes in the data center configuration options.
 updateDcOptions#8e5e9873 dc_options:Vector<DcOption> = Update;
-// @constructor Changes in notification settings.
 updateNotifySettings#bec268ef peer:NotifyPeer notify_settings:PeerNotifySettings = Update;
-// @constructor A service message for the user. The app must show the message to the user upon receiving this update. In case the popup parameter was passed, the text message must be displayed in a popup alert immediately upon receipt. It is recommended to handle the text as you would an ordinary message in terms of highlighting links, etc. The message must also be stored locally as part of the message history with the user id 777000 (Telegram Notifications).
 updateServiceNotification#ebe46819 flags:# popup:flags.0?true inbox_date:flags.1?int type:string message:string media:MessageMedia entities:Vector<MessageEntity> = Update;
-// @constructor Privacy rules were changed
 updatePrivacy#ee3b272a key:PrivacyKey rules:Vector<PrivacyRule> = Update;
-// @constructor A user's phone number was changed
 updateUserPhone#12b9417b user_id:int phone:string = Update;
-// @constructor Incoming messages were read
 updateReadHistoryInbox#9c974fdf flags:# folder_id:flags.0?int peer:Peer max_id:int still_unread_count:int pts:int pts_count:int = Update;
-// @constructor Outgoing messages were read
 updateReadHistoryOutbox#2f2f21bf peer:Peer max_id:int pts:int pts_count:int = Update;
-// @constructor An (IV) webpage preview was generated
 updateWebPage#7f891213 webpage:WebPage pts:int pts_count:int = Update;
-// @constructor Contents of messages in the common message box were read
 updateReadMessagesContents#68c13933 messages:Vector<int> pts:int pts_count:int = Update;
-// @constructor There are new updates in the specified channel, the client must fetch them, eventually starting the specified pts if the difference is too long or if the channel isn't currently in the states.
 updateChannelTooLong#eb0467fb flags:# channel_id:int pts:flags.0?int = Update;
-// @constructor A new channel is available
 updateChannel#b6d45656 channel_id:int = Update;
-// @constructor A new message was sent in a channel/supergroup
 updateNewChannelMessage#62ba04d9 message:Message pts:int pts_count:int = Update;
-// @constructor Incoming messages in a channel/supergroup were read
 updateReadChannelInbox#330b5424 flags:# folder_id:flags.0?int channel_id:int max_id:int still_unread_count:int pts:int = Update;
-// @constructor Some messages in a supergroup/channel were deleted
 updateDeleteChannelMessages#c37521c9 channel_id:int messages:Vector<int> pts:int pts_count:int = Update;
-// @constructor The view counter of a message in a channel has changed
 updateChannelMessageViews#98a12b4b channel_id:int id:int views:int = Update;
-// @constructor Admin permissions of a user in a legacy group were changed
 updateChatParticipantAdmin#b6901959 chat_id:int user_id:int is_admin:Bool version:int = Update;
-// @constructor A new stickerset was installed
 updateNewStickerSet#688a30aa stickerset:messages.StickerSet = Update;
-// @constructor The order of stickersets was changed
-updateStickerSetsOrder#bb2d201 flags:# masks:flags.0?true order:Vector<long> = Update;
-// @constructor Installed stickersets have changed, the client should refetch them using messages.getAllStickers
+updateStickerSetsOrder#bb2d201 flags:# masks:flags.0?true emojis:flags.1?true order:Vector<long> = Update;
 updateStickerSets#43ae3dec = Update;
-// @constructor The saved gif list has changed, the client should refetch it using messages.getSavedGifs
 updateSavedGifs#9375341e = Update;
-// @constructor An incoming inline query
 updateBotInlineQuery#54826690 flags:# query_id:long user_id:int query:string geo:flags.0?GeoPoint offset:string = Update;
-// @constructor The result of an inline query that was chosen by a user and sent to their chat partner. Please see our documentation on the feedback collecting for details on how to enable these updates for your bot.
 updateBotInlineSend#e48f964 flags:# user_id:int query:string geo:flags.0?GeoPoint id:string msg_id:flags.1?InputBotInlineMessageID = Update;
-// @constructor A message was edited in a channel/supergroup
 updateEditChannelMessage#1b3f4df7 message:Message pts:int pts_count:int = Update;
-// @constructor A callback button was pressed, and the button data was sent to the bot that created the button
 updateBotCallbackQuery#e73547e1 flags:# query_id:long user_id:int peer:Peer msg_id:int chat_instance:long data:flags.0?bytes game_short_name:flags.1?string = Update;
-// @constructor A message was edited
 updateEditMessage#e40370a3 message:Message pts:int pts_count:int = Update;
-// @constructor This notification is received by bots when a button is pressed
 updateInlineBotCallbackQuery#f9d27a5a flags:# query_id:long user_id:int msg_id:InputBotInlineMessageID chat_instance:long data:flags.0?bytes game_short_name:flags.1?string = Update;
-// @constructor Outgoing messages in a channel/supergroup were read
 updateReadChannelOutbox#25d6c9c7 channel_id:int max_id:int = Update;
-// @constructor Notifies a change of a message draft.
 updateDraftMessage#ee2bb969 peer:Peer draft:DraftMessage = Update;
-// @constructor Some featured stickers were marked as read
 updateReadFeaturedStickers#571d2742 = Update;
-// @constructor The recent sticker list was updated
 updateRecentStickers#9a422c20 = Update;
-// @constructor The server-side configuration has changed; the client should re-fetch the config using help.getConfig
 updateConfig#a229dd06 = Update;
-// @constructor Common message box sequence PTS has changed, state has to be refetched using updates.getState
 updatePtsChanged#3354678f = Update;
-// @constructor A webpage preview of a link in a channel/supergroup message was generated
 updateChannelWebPage#40771900 channel_id:int webpage:WebPage pts:int pts_count:int = Update;
-// @constructor A dialog was pinned/unpinned
 updateDialogPinned#6e6fe51c flags:# pinned:flags.0?true folder_id:flags.1?int peer:DialogPeer = Update;
-// @constructor Pinned dialogs were updated
 updatePinnedDialogs#fa0f3ca2 flags:# folder_id:flags.1?int order:flags.0?Vector<DialogPeer> = Update;
-// @constructor A new incoming event; for bots only
 updateBotWebhookJSON#8317c0c3 data:DataJSON = Update;
-// @constructor A new incoming query; for bots only
 updateBotWebhookJSONQuery#9b9240a6 query_id:long data:DataJSON timeout:int = Update;
-// @constructor This object contains information about an incoming shipping query.
 updateBotShippingQuery#e0cdc940 query_id:long user_id:int payload:bytes shipping_address:PostAddress = Update;
-// @constructor This object contains information about an incoming pre-checkout query.
 updateBotPrecheckoutQuery#5d2f3aa9 flags:# query_id:long user_id:int payload:bytes info:flags.0?PaymentRequestedInfo shipping_option_id:flags.1?string currency:string total_amount:long = Update;
-// @constructor An incoming phone call
 updatePhoneCall#ab0f6b1e phone_call:PhoneCall = Update;
-// @constructor A language pack has changed, the client should manually fetch the changed strings using langpack.getDifference
 updateLangPackTooLong#46560264 lang_code:string = Update;
-// @constructor Language pack updated
 updateLangPack#56022f4d difference:LangPackDifference = Update;
-// @constructor The list of favorited stickers was changed, the client should call messages.getFavedStickers to refetch the new list
 updateFavedStickers#e511996d = Update;
-// @constructor The specified channel/supergroup messages were read
 updateChannelReadMessagesContents#89893b45 channel_id:int messages:Vector<int> = Update;
-// @constructor All contacts were deleted
 updateContactsReset#7084a7be = Update;
-// @constructor The history of a channel/supergroup was hidden.
 updateChannelAvailableMessages#70db6837 channel_id:int available_min_id:int = Update;
-// @constructor The manual unread mark of a chat was changed
 updateDialogUnreadMark#e16459c3 flags:# unread:flags.0?true peer:DialogPeer = Update;
-// @constructor The results of a poll have changed
 updateMessagePoll#aca1657b flags:# poll_id:long poll:flags.0?Poll results:PollResults = Update;
-// @constructor Default banned rights in a normal chat were updated
 updateChatDefaultBannedRights#54c01850 peer:Peer default_banned_rights:ChatBannedRights version:int = Update;
-// @constructor The dialog list of a folder was changed
 updateFolderPeers#19360dc0 folder_peers:Vector<FolderPeer> pts:int pts_count:int = Update;
-// @constructor Settings of a certain peer have changed
 updatePeerSettings#6a7e7366 peer:Peer settings:PeerSettings = Update;
-// @constructor List of peers near you was updated
 updatePeerLocated#b4afcfb0 peers:Vector<PeerLocated> = Update;
-// @constructor New incoming scheduled message
 updateNewScheduledMessage#39a51dfb message:Message = Update;
-// @constructor Some scheduled messages were deleted
 updateDeleteScheduledMessages#90866cee peer:Peer messages:Vector<int> = Update;
-// @constructor A new cloud theme was installed
 updateTheme#8216fba3 theme:Theme = Update;
-// next are already described
-// @constructor Live geoposition message was viewed
-// @param peer   The user that viewed the live geoposition
-// @param msg_id Message ID of geoposition message
 updateGeoLiveViewed#871fb939 peer:Peer msg_id:int = Update;
-// @constructor A login token (for login via QR code) was generated
 updateLoginToken#564fe691 = Update;
-// @constructor A specific user has voted in a poll
-// @param poll_id Poll ID
-// @param user_id User ID
-// @param options Chosen option(s)
 updateMessagePollVote#42f88f2c poll_id:long user_id:int options:Vector<bytes> = Update;
-// @constructor A new folder was added
-// @param id     Folder ID
-// @param filter Folder info
 updateDialogFilter#26ffde7d flags:# id:int filter:flags.0?DialogFilter = Update;
-// @constructor New chat folders order
-// @param order Ordered folder IDs
 updateDialogFilterOrder#a5d72105 order:Vector<int> = Update;
-// @constructor Update folder list
 updateDialogFilters#3504914f = Update;
-// @constructor Incoming phone call signaling payload
-// @param phone_call_id Phone call ID
-// @param data          Signaling payload
 updatePhoneCallSignalingData#2661bf09 phone_call_id:long data:bytes = Update;
-// @constructor A participant has left/joined a channel or supergroup.
-// @param channel_id       Channel ID
-// @param date             Date of the event
-// @param user_id          User in question
-// @param prev_participant Previous participant status
-// @param new_participant  New participant status
-// @param qts              [PTS](https://core.telegram.org/api/updates)
-updateChannelParticipant#65d2b464 flags:# channel_id:int date:int user_id:int prev_participant:flags.0?ChannelParticipant new_participant:flags.1?ChannelParticipant qts:int = Update;
-// @constructor The forward counter of a message in a channel has changed
-// @param id       ID of the message
-// @param forwards New forward counter
 updateChannelMessageForwards#6e8a84df channel_id:int id:int forwards:int = Update;
-// @constructor Incoming messages were marked as read
-// @param channel_id     Discussion group ID
-// @param top_msg_id     ID of the group message that started the thread (message in linked discussion group)
-// @param read_max_id    Message ID of latest read incoming message for this thread
-// @param broadcast_id   If set, contains the ID of the channel that contains the post that started the comment thread in the discussion group (channel_id)
-// @param broadcast_post If set, contains the ID of the channel post that started the the comment thread
 updateReadChannelDiscussionInbox#1cc7de54 flags:# channel_id:int top_msg_id:int read_max_id:int broadcast_id:flags.0?int broadcast_post:flags.0?int = Update;
-// @constructor Outgoing comments in a discussion thread were marked as read
-// @param top_msg_id  ID of the group message that started the thread
-// @param read_max_id Message ID of latest read outgoing message for this thread
 updateReadChannelDiscussionOutbox#4638a26c channel_id:int top_msg_id:int read_max_id:int = Update;
-// @constructor A peer was blocked
-// @param blocked Whether the peer was blocked or unblocked
 updatePeerBlocked#246a4b22 peer_id:Peer blocked:Bool = Update;
-// @constructor user is typing in a supergroup, channel or message thread
-// @param channel_id Channel ID
-// @param top_msg_id Thread ID
-// @param user_id    User ID
-// @param action     Whether the user is typing, sending a media or doing something else
 updateChannelUserTyping#ff2abe9f flags:# channel_id:int top_msg_id:flags.0?int user_id:int action:SendMessageAction = Update;
-// @constructor Some messages were pinned in a chat
-// @param pinned    Whether the messages were pinned or unpinned
-// @param peer      Peer
-// @param messages  Message IDs
-// @param pts       Event count after generation
-// @param pts_count Number of events that were generated
 updatePinnedMessages#ed85eab5 flags:# pinned:flags.0?true peer:Peer messages:Vector<int> pts:int pts_count:int = Update;
-// @constructor Messages were pinned/unpinned in a channel/supergroup
-// @param pinned     Whether the messages were pinned or unpinned
-// @param channel_id Channel ID
-// @param messages   Messages
-// @param pts        Event count after generation
-// @param pts_count  Number of events that were generated
 updatePinnedChannelMessages#8588878b flags:# pinned:flags.0?true channel_id:int messages:Vector<int> pts:int pts_count:int = Update;
 
 updates.state#a56c2a3e pts:int qts:int date:int seq:int unread_count:int = updates.State;
@@ -891,62 +345,9 @@ photos.photo#20212ca8 photo:Photo users:Vector<User> = photos.Photo;
 upload.file#96a18d5 type:storage.FileType mtime:int bytes:bytes = upload.File;
 upload.fileCdnRedirect#f18cda44 dc_id:int file_token:bytes encryption_key:bytes encryption_iv:bytes file_hashes:Vector<FileHash> = upload.File;
 
-dcOption#18b7a10d flags:# ipv6:flags.0?true media_only:flags.1?true tcpo_only:flags.2?true cdn:flags.3?true static:flags.4?true id:int ip_address:string port:int secret:flags.10?bytes = DcOption;
+dcOption#18b7a10d flags:# ipv6:flags.0?true media_only:flags.1?true tcpo_only:flags.2?true cdn:flags.3?true static:flags.4?true this_port_only:flags.5?true id:int ip_address:string port:int secret:flags.10?bytes = DcOption;
 
-// @type Object contains info on API configuring parameters.
-// @constructor Current configuration
-// @param phonecalls_enabled         Whether phone calls can be used
-// @param default_p2p_contacts       Whether the client should use P2P by default for phone calls with contacts
-// @param preload_featured_stickers  Whether the client should preload featured stickers
-// @param ignore_phone_entities      Whether the client should ignore phone entities
-// @param revoke_pm_inbox            Whether incoming private messages can be deleted for both participants
-// @param blocked_mode               Indicates that telegram is probably censored by governments/ISPs in the current region
-// @param pfs_enabled                Whether pfs was used
-// @param date                       Current date at the server
-// @param expires                    Expiration date of this config: when it expires it'll have to be refetched using HelpGetConfig
-// @param test_mode                  Whether we're connected to the test DCs
-// @param this_dc                    ID of the DC that returned the reply
-// @param dc_options                 DC IP list
-// @param dc_txt_domain_name         Domain name for fetching encrypted DC list from DNS TXT record
-// @param chat_size_max              Maximum member count for normal groups
-// @param megagroup_size_max         Maximum member count for supergroups
-// @param forwarded_count_max        Maximum number of messages that can be forwarded at once using MessagesForwardMessages
-// @param online_update_period_ms    The client should update its online status every N milliseconds
-// @param offline_blur_timeout_ms    Delay before offline status needs to be sent to the server
-// @param offline_idle_timeout_ms    Time without any user activity after which it should be treated offline
-// @param online_cloud_timeout_ms    If we are offline, but were online from some other client in last online_cloud_timeout_ms milliseconds after we had gone offline, then delay offline notification for notify_cloud_delay_ms milliseconds.
-// @param notify_cloud_delay_ms      If we are offline, but online from some other client then delay sending the offline notification for notify_cloud_delay_ms milliseconds.
-// @param notify_default_delay_ms    If some other client is online, then delay notification for notification_default_delay_ms milliseconds
-// @param push_chat_period_ms        Not for client use
-// @param push_chat_limit            Not for client use
-// @param saved_gifs_limit           Maximum count of saved gifs
-// @param edit_time_limit            Only messages with age smaller than the one specified can be edited
-// @param revoke_time_limit          Only channel/supergroup messages with age smaller than the specified can be deleted
-// @param revoke_pm_time_limit       Only private messages with age smaller than the specified can be deleted
-// @param rating_e_decay             Exponential decay rate for computing top peer rating
-// @param stickers_recent_limit      Maximum number of recent stickers
-// @param stickers_faved_limit       Maximum number of faved stickers
-// @param channels_read_media_period Indicates that round videos (video notes) and voice messages sent in channels and older than the specified period must be marked as read
-// @param tmp_sessions               Temporary passport sessions
-// @param pinned_dialogs_count_max   Maximum count of pinned dialogs
-// @param pinned_infolder_count_max  Maximum count of dialogs per folder
-// @param call_receive_timeout_ms    Maximum allowed outgoing ring time in VoIP calls: if the user we're calling doesn't reply within the specified time (in milliseconds), we should hang up the call
-// @param call_ring_timeout_ms       Maximum allowed incoming ring time in VoIP calls: if the current user doesn't reply within the specified time (in milliseconds), the call will be automatically refused
-// @param call_connect_timeout_ms    VoIP connection timeout: if the instance of libtgvoip on the other side of the call doesn't connect to our instance of libtgvoip within the specified time (in milliseconds), the call must be aborted
-// @param call_packet_timeout_ms     If during a VoIP call a packet isn't received for the specified period of time, the call must be aborted
-// @param me_url_prefix              The domain to use to parse in-app links.For example t.me indicates that t.me/username links should parsed to @username, t.me/addsticker/name should be parsed to the appropriate stickerset and so on...
-// @param autoupdate_url_prefix      URL to use to auto-update the current app
-// @param gif_search_username        Username of the bot to use to search for GIFs
-// @param venue_search_username      Username of the bot to use to search for venues
-// @param img_search_username        Username of the bot to use for image search
-// @param static_maps_provider       ID of the map provider to use for venues
-// @param caption_length_max         Maximum length of caption (length in utf8 codepoints)
-// @param message_length_max         Maximum length of messages (length in utf8 codepoints)
-// @param webfile_dc_id              DC ID to use to download webfiles
-// @param suggested_lang_code        Suggested language code
-// @param lang_pack_version          Language pack version
-// @param base_lang_pack_version     Basic language pack version
-config#330b4067 flags:# phonecalls_enabled:flags.1?true default_p2p_contacts:flags.3?true preload_featured_stickers:flags.4?true ignore_phone_entities:flags.5?true revoke_pm_inbox:flags.6?true blocked_mode:flags.8?true pfs_enabled:flags.13?true date:int expires:int test_mode:Bool this_dc:int dc_options:Vector<DcOption> dc_txt_domain_name:string chat_size_max:int megagroup_size_max:int forwarded_count_max:int online_update_period_ms:int offline_blur_timeout_ms:int offline_idle_timeout_ms:int online_cloud_timeout_ms:int notify_cloud_delay_ms:int notify_default_delay_ms:int push_chat_period_ms:int push_chat_limit:int saved_gifs_limit:int edit_time_limit:int revoke_time_limit:int revoke_pm_time_limit:int rating_e_decay:int stickers_recent_limit:int stickers_faved_limit:int channels_read_media_period:int tmp_sessions:flags.0?int pinned_dialogs_count_max:int pinned_infolder_count_max:int call_receive_timeout_ms:int call_ring_timeout_ms:int call_connect_timeout_ms:int call_packet_timeout_ms:int me_url_prefix:string autoupdate_url_prefix:flags.7?string gif_search_username:flags.9?string venue_search_username:flags.10?string img_search_username:flags.11?string static_maps_provider:flags.12?string caption_length_max:int message_length_max:int webfile_dc_id:int suggested_lang_code:flags.2?string lang_pack_version:flags.2?int base_lang_pack_version:flags.2?int = Config;
+config#330b4067 flags:# phonecalls_enabled:flags.1?true default_p2p_contacts:flags.3?true preload_featured_stickers:flags.4?true ignore_phone_entities:flags.5?true revoke_pm_inbox:flags.6?true blocked_mode:flags.8?true pfs_enabled:flags.13?true force_try_ipv6:flags.14?true date:int expires:int test_mode:Bool this_dc:int dc_options:Vector<DcOption> dc_txt_domain_name:string chat_size_max:int megagroup_size_max:int forwarded_count_max:int online_update_period_ms:int offline_blur_timeout_ms:int offline_idle_timeout_ms:int online_cloud_timeout_ms:int notify_cloud_delay_ms:int notify_default_delay_ms:int push_chat_period_ms:int push_chat_limit:int saved_gifs_limit:int edit_time_limit:int revoke_time_limit:int revoke_pm_time_limit:int rating_e_decay:int stickers_recent_limit:int stickers_faved_limit:int channels_read_media_period:int tmp_sessions:flags.0?int pinned_dialogs_count_max:int pinned_infolder_count_max:int call_receive_timeout_ms:int call_ring_timeout_ms:int call_connect_timeout_ms:int call_packet_timeout_ms:int me_url_prefix:string autoupdate_url_prefix:flags.7?string gif_search_username:flags.9?string venue_search_username:flags.10?string img_search_username:flags.11?string static_maps_provider:flags.12?string caption_length_max:int message_length_max:int webfile_dc_id:int suggested_lang_code:flags.2?string lang_pack_version:flags.2?int base_lang_pack_version:flags.2?int = Config;
 
 nearestDc#8e1a1775 country:string this_dc:int nearest_dc:int = NearestDc;
 
@@ -1009,40 +410,22 @@ sendMessageUploadRoundAction#243e1c66 progress:int = SendMessageAction;
 
 contacts.found#b3134d9d my_results:Vector<Peer> results:Vector<Peer> chats:Vector<Chat> users:Vector<User> = contacts.Found;
 
-// @type Privacy key
-// @enum Whether we can see the exact last online timestamp of the user
 inputPrivacyKeyStatusTimestamp#4f96cb18 = InputPrivacyKey;
-// @enum Whether the user can be invited to chats
 inputPrivacyKeyChatInvite#bdfb0426 = InputPrivacyKey;
-// @enum Whether the user will accept phone calls
 inputPrivacyKeyPhoneCall#fabadc5f = InputPrivacyKey;
-// @enum Whether the user allows P2P communication during VoIP calls
 inputPrivacyKeyPhoneP2P#db9e70d2 = InputPrivacyKey;
-// @enum Whether messages forwarded from this user will be [anonymous](https://telegram.org/blog/unsend-privacy-emoji#anonymous-forwarding)
 inputPrivacyKeyForwards#a4dd4c08 = InputPrivacyKey;
-// @enum Whether people will be able to see the user's profile picture
 inputPrivacyKeyProfilePhoto#5719bacc = InputPrivacyKey;
-// @enum Whether people will be able to see the user's phone number
 inputPrivacyKeyPhoneNumber#352dafa = InputPrivacyKey;
-// @enum Whether people can add you to their contact list by your phone number
 inputPrivacyKeyAddedByPhone#d1219bdd = InputPrivacyKey;
 
-// @type Privacy key
-// @enum Whether we can see the last online timestamp
 privacyKeyStatusTimestamp#bc2eab30 = PrivacyKey;
-// @enum Whether the user can be invited to chats
 privacyKeyChatInvite#500e6dfa = PrivacyKey;
-// @enum Whether the user accepts phone calls
 privacyKeyPhoneCall#3d662b7b = PrivacyKey;
-// @enum Whether P2P connections in phone calls are allowed
 privacyKeyPhoneP2P#39491cc8 = PrivacyKey;
-// @enum Whether messages forwarded from the user will be anonymously forwarded
 privacyKeyForwards#69ec56a3 = PrivacyKey;
-// @enum Whether the profile picture of the user is visible
 privacyKeyProfilePhoto#96151fed = PrivacyKey;
-// @enum Whether the user allows us to see his phone number
 privacyKeyPhoneNumber#d19ae46d = PrivacyKey;
-// @enum Whether people can add you to their contact list by your phone number
 privacyKeyAddedByPhone#42ffd42b = PrivacyKey;
 
 inputPrivacyValueAllowContacts#d09e07b = InputPrivacyRule;
@@ -1085,41 +468,12 @@ messages.allStickers#edfd405f hash:int sets:Vector<StickerSet> = messages.AllSti
 
 messages.affectedMessages#84d19185 pts:int pts_count:int = messages.AffectedMessages;
 
-// @type Instant View webpage preview
-// @constructor No preview is available for the webpage
-// @param Preview ID
 webPageEmpty#eb1477e8 id:long = WebPage;
-// @constructor A preview of the webpage is currently being generated
-// @param date When was the processing started
-// @param id   ID of preview
 webPagePending#c586da1c id:long date:int = WebPage;
-// @constructor Webpage preview
-// @param attributes   Webpage attributes
-// @param author       Author of the content
-// @param cached_page  Page contents in instant view format
-// @param description  Content description
-// @param display_url  Webpage URL to be displayed to the user
-// @param document     Preview of the content as a media file
-// @param duration     Duration of the content, in seconds
-// @param embed_height Height of the embedded preview
-// @param embed_type   MIME type of the embedded preview, (e.g., text/html or video/mp4)
-// @param embed_url    URL to show in the embedded preview
-// @param embed_width  Width of the embedded preview
-// @param flags        Flags, see TL conditional fields
-// @param hash         Hash for pagination, for more info click here
-// @param id           Preview ID
-// @param photo        Image representing the content
-// @param site_name    Short name of the site (e.g., Google Docs, App Store)
-// @param title        Title of the content
-// @param type         Type of the web page. Can be: article, photo, audio, video, document, profile, app, or something else
-// @param url          URL of previewed webpage
 webPage#e89c45b2 flags:# id:long url:string display_url:string hash:int type:flags.0?string site_name:flags.1?string title:flags.2?string description:flags.3?string photo:flags.4?Photo embed_url:flags.5?string embed_type:flags.5?string embed_width:flags.6?int embed_height:flags.6?int duration:flags.7?int author:flags.8?string document:flags.9?Document cached_page:flags.10?Page attributes:flags.12?Vector<WebPageAttribute> = WebPage;
-// @constructor The preview of the webpage hasn't changed
-// @param cached_page_views Page view count
-// @param flags             Flags, see TL conditional fields
 webPageNotModified#7311ca11 flags:# cached_page_views:flags.0?int = WebPage;
 
-authorization#ad01d61d flags:# current:flags.0?true official_app:flags.1?true password_pending:flags.2?true hash:long device_model:string platform:string system_version:string api_id:int app_name:string app_version:string date_created:int date_active:int ip:string country:string region:string = Authorization;
+authorization#ad01d61d flags:# current:flags.0?true official_app:flags.1?true password_pending:flags.2?true encrypted_requests_disabled:flags.3?true call_requests_disabled:flags.4?true hash:long device_model:string platform:string system_version:string api_id:int app_name:string app_version:string date_created:int date_active:int ip:string country:string region:string = Authorization;
 
 account.authorizations#1250abde authorizations:Vector<Authorization> = account.Authorizations;
 
@@ -1259,14 +613,10 @@ messages.botResults#947ca848 flags:# gallery:flags.0?true query_id:long next_off
 
 exportedMessageLink#5dab1af4 link:string html:string = ExportedMessageLink;
 
-messageFwdHeader#5f777dce flags:# from_id:flags.0?Peer from_name:flags.5?string date:int channel_post:flags.2?int post_author:flags.3?string saved_from_peer:flags.4?Peer saved_from_msg_id:flags.4?int psa_type:flags.6?string = MessageFwdHeader;
+messageFwdHeader#5f777dce flags:# imported:flags.7?true from_id:flags.0?Peer from_name:flags.5?string date:int channel_post:flags.2?int post_author:flags.3?string saved_from_peer:flags.4?Peer saved_from_msg_id:flags.4?int psa_type:flags.6?string = MessageFwdHeader;
 
-// @type Type of verification code that will be sent next if you call the resendCode method
-// @enum Type of verification code that will be sent next if you call the resendCode method: SMS code
 auth.codeTypeSms#72a3158c = auth.CodeType;
-// @enum Type of verification code that will be sent next if you call the resendCode method: Phone call
 auth.codeTypeCall#741cd3e3 = auth.CodeType;
-// @enum Type of verification code that will be sent next if you call the resendCode method: Flash call
 auth.codeTypeFlashCall#226ccefb = auth.CodeType;
 
 auth.sentCodeTypeApp#3dbb5986 length:int = auth.SentCodeType;
@@ -1286,22 +636,13 @@ messages.peerDialogs#3371c354 dialogs:Vector<Dialog> messages:Vector<Message> ch
 
 topPeer#edcdc05b peer:Peer rating:double = TopPeer;
 
-// @type Top peer category
-// @enum Most used bots
 topPeerCategoryBotsPM#ab661b5b = TopPeerCategory;
-// @enum Most used inline bots
 topPeerCategoryBotsInline#148677e2 = TopPeerCategory;
-// @enum Users we've chatted most frequently with
 topPeerCategoryCorrespondents#637b7ed = TopPeerCategory;
-// @enum Often-opened groups and supergroups
 topPeerCategoryGroups#bd17a14a = TopPeerCategory;
-// @enum Most frequently visited channels
 topPeerCategoryChannels#161d9628 = TopPeerCategory;
-// @enum Most frequently called users
 topPeerCategoryPhoneCalls#1e76a78c = TopPeerCategory;
-// @enum Users to which the users often forwards messages to
 topPeerCategoryForwardUsers#a8406ca9 = TopPeerCategory;
-// @enum Chats to which the users often forwards messages to
 topPeerCategoryForwardChats#fbeec0f0 = TopPeerCategory;
 
 topPeerCategoryPeers#fb834291 category:TopPeerCategory count:int peers:Vector<TopPeer> = TopPeerCategoryPeers;
@@ -1388,14 +729,9 @@ pageBlockDetails#76768bed flags:# open:flags.0?true blocks:Vector<PageBlock> tit
 pageBlockRelatedArticles#16115a96 title:RichText articles:Vector<PageRelatedArticle> = PageBlock;
 pageBlockMap#a44f3ef6 geo:GeoPoint zoom:int w:int h:int caption:PageCaption = PageBlock;
 
-// @type Why was the phone call discarded?
-// @enum The phone call was missed
 phoneCallDiscardReasonMissed#85e42301 = PhoneCallDiscardReason;
-// @enum The phone call was disconnected
 phoneCallDiscardReasonDisconnect#e095c1a0 = PhoneCallDiscardReason;
-// @enum The phone call was ended normally
 phoneCallDiscardReasonHangup#57adc690 = PhoneCallDiscardReason;
-// @enum The phone call was discared because the user is busy in another call
 phoneCallDiscardReasonBusy#faf7e8c9 = PhoneCallDiscardReason;
 
 dataJSON#7d748d04 data:string = DataJSON;
@@ -1422,19 +758,6 @@ inputWebFileGeoPointLocation#9f2221c9 geo_point:InputGeoPoint access_hash:long w
 
 upload.webFile#21e753bc size:int mime_type:string file_type:storage.FileType mtime:int bytes:bytes = upload.WebFile;
 
-// @constructor Payment form
-// @param bot_id               Bot ID
-// @param can_save_credentials Whether the user can choose to save credentials.
-// @param flags                Flags, see TL conditional fields
-// @param invoice              Invoice
-// @param native_params        Contains information about the payment provider, if available, to support it natively without the need for opening the URL.A JSON object that can contain the following fields:- publishable_key: Stripe API publishable key- apple_pay_merchant_id: Apple Pay merchant ID- android_pay_public_key: Android Pay public key- android_pay_bgcolor: Android Pay form background color- android_pay_inverse: Whether to use the dark theme in the Android Pay form- need_country: True, if the user country must be provided,- need_zip: True, if the user ZIP/postal code must be provided,- need_cardholder_name: True, if the cardholder name must be provided
-// @param native_provider      Payment provider name.One of the following:- stripe
-// @param password_missing     Indicates that the user can save payment credentials, but only after setting up a 2FA password (currently the account doesn't have a 2FA password)
-// @param provider_id          Payment provider ID.
-// @param saved_credentials    Contains information about saved card credentials
-// @param saved_info           Saved server-side order information
-// @param url                  Payment form URL
-// @param users                Users
 payments.paymentForm#3f56aea3 flags:# can_save_credentials:flags.2?true password_missing:flags.3?true bot_id:int invoice:Invoice provider_id:int url:string native_provider:flags.4?string native_params:flags.4?DataJSON saved_info:flags.0?PaymentRequestedInfo saved_credentials:flags.1?PaymentSavedCredentials users:Vector<User> = payments.PaymentForm;
 
 payments.validatedRequestedInfo#d1451883 flags:# id:flags.0?string shipping_options:flags.1?Vector<ShippingOption> = payments.ValidatedRequestedInfo;
@@ -1514,7 +837,7 @@ channelAdminLogEvent#3b5a3e40 id:long date:int user_id:int action:ChannelAdminLo
 
 channels.adminLogResults#ed8af74d events:Vector<ChannelAdminLogEvent> chats:Vector<Chat> users:Vector<User> = channels.AdminLogResults;
 
-channelAdminLogEventsFilter#ea107ae4 flags:# join:flags.0?true leave:flags.1?true invite:flags.2?true ban:flags.3?true unban:flags.4?true kick:flags.5?true unkick:flags.6?true promote:flags.7?true demote:flags.8?true info:flags.9?true settings:flags.10?true pinned:flags.11?true edit:flags.12?true delete:flags.13?true = ChannelAdminLogEventsFilter;
+channelAdminLogEventsFilter#ea107ae4 flags:# join:flags.0?true leave:flags.1?true invite:flags.2?true ban:flags.3?true unban:flags.4?true kick:flags.5?true unkick:flags.6?true promote:flags.7?true demote:flags.8?true info:flags.9?true settings:flags.10?true pinned:flags.11?true edit:flags.12?true delete:flags.13?true group_call:flags.14?true invites:flags.15?true send:flags.16?true forums:flags.17?true = ChannelAdminLogEventsFilter;
 
 popularContact#5ce14175 client_id:long importers:int = PopularContact;
 
@@ -1567,32 +890,18 @@ secureData#8aeabec3 data:bytes data_hash:bytes secret:bytes = SecureData;
 securePlainPhone#7d6099dd phone:string = SecurePlainData;
 securePlainEmail#21ec5a5f email:string = SecurePlainData;
 
-// @type Secure value type
-// @enum Personal details
 secureValueTypePersonalDetails#9d2a81e3 = SecureValueType;
-// @enum Passport
 secureValueTypePassport#3dac6a00 = SecureValueType;
-// @enum Driver's license
 secureValueTypeDriverLicense#6e425c4 = SecureValueType;
-// @enum Identity card
 secureValueTypeIdentityCard#a0d0744b = SecureValueType;
-// @enum Internal [passport](https://core.telegram.org/passport)
 secureValueTypeInternalPassport#99a48f23 = SecureValueType;
-// @enum Address
 secureValueTypeAddress#cbe31e26 = SecureValueType;
-// @enum Utility bill
 secureValueTypeUtilityBill#fc36954e = SecureValueType;
-// @enum Bank statement
 secureValueTypeBankStatement#89137c0d = SecureValueType;
-// @enum Rental agreement
 secureValueTypeRentalAgreement#8b883488 = SecureValueType;
-// @enum Internal registration [passport](https://core.telegram.org/passport)
 secureValueTypePassportRegistration#99e3806a = SecureValueType;
-// @enum Temporary registration
 secureValueTypeTemporaryRegistration#ea02ec33 = SecureValueType;
-// @enum Phone
 secureValueTypePhone#b320aadb = SecureValueType;
-// @enum Email
 secureValueTypeEmail#8e3ca7ee = SecureValueType;
 
 secureValue#187fa0ca flags:# type:SecureValueType data:flags.0?SecureData front_side:flags.1?SecureFile reverse_side:flags.2?SecureFile selfie:flags.3?SecureFile translation:flags.6?Vector<SecureFile> files:flags.4?Vector<SecureFile> plain_data:flags.5?SecurePlainData hash:bytes = SecureValue;
@@ -1611,16 +920,8 @@ secureValueError#869d758f type:SecureValueType hash:bytes text:string = SecureVa
 secureValueErrorTranslationFile#a1144770 type:SecureValueType file_hash:bytes text:string = SecureValueError;
 secureValueErrorTranslationFiles#34636dd8 type:SecureValueType file_hash:Vector<bytes> text:string = SecureValueError;
 
-// @type Encrypted secure credentials
-// @constructor Encrypted credentials required to decrypt telegram passport data.
 secureCredentialsEncrypted#33f0ea47 data:bytes hash:bytes secret:bytes = SecureCredentialsEncrypted;
 
-// @type Authorization form
-// @constructor Telegram Passport authorization form
-// @param privacy_policy_url URL of the service's privacy policy
-// @param required_types     Required Telegram Passport¹ documents
-// @param users              Info about the bot to which the form will be submitted
-// @param values             Already submitted Telegram Passport¹ documents
 account.authorizationForm#ad2e1cd8 flags:# required_types:Vector<SecureRequiredType> values:Vector<SecureValue> errors:Vector<SecureValueError> users:Vector<User> privacy_policy_url:flags.0?string = account.AuthorizationForm;
 
 account.sentEmailCode#811f854f email_pattern:string length:int = account.SentEmailCode;
@@ -1694,7 +995,7 @@ chatOnlines#f041e250 onlines:int = ChatOnlines;
 
 statsURL#47a971e0 url:string = StatsURL;
 
-chatAdminRights#5fb224d5 flags:# change_info:flags.0?true post_messages:flags.1?true edit_messages:flags.2?true delete_messages:flags.3?true ban_users:flags.4?true invite_users:flags.5?true pin_messages:flags.7?true add_admins:flags.9?true anonymous:flags.10?true manage_call:flags.11?true = ChatAdminRights;
+chatAdminRights#5fb224d5 flags:# change_info:flags.0?true post_messages:flags.1?true edit_messages:flags.2?true delete_messages:flags.3?true ban_users:flags.4?true invite_users:flags.5?true pin_messages:flags.7?true add_admins:flags.9?true anonymous:flags.10?true manage_call:flags.11?true other:flags.12?true = ChatAdminRights;
 
 chatBannedRights#9f120418 flags:# view_messages:flags.0?true send_messages:flags.1?true send_media:flags.2?true send_stickers:flags.3?true send_gifs:flags.4?true send_games:flags.5?true send_inline:flags.6?true embed_links:flags.7?true send_polls:flags.8?true change_info:flags.10?true invite_users:flags.15?true pin_messages:flags.17?true until_date:int = ChatBannedRights;
 
@@ -1760,16 +1061,10 @@ account.contentSettings#57e28221 flags:# sensitive_enabled:flags.0?true sensitiv
 
 messages.inactiveChats#a927fec5 dates:Vector<int> chats:Vector<Chat> users:Vector<User> = messages.InactiveChats;
 
-// @type Basic theme settings
-// @enum Classic theme
 baseThemeClassic#c3a12462 = BaseTheme;
-// @enum Day theme
 baseThemeDay#fbd81688 = BaseTheme;
-// @enum Night theme
 baseThemeNight#b7b31ea8 = BaseTheme;
-// @enum Tinted theme
 baseThemeTinted#6d5f77ee = BaseTheme;
-// @enum Arctic theme
 baseThemeArctic#5b11125a = BaseTheme;
 
 inputThemeSettings#bd507cd1 flags:# base_theme:BaseTheme accent_color:int message_top_color:flags.0?int message_bottom_color:flags.0?int wallpaper:flags.1?InputWallPaper wallpaper_settings:flags.1?WallPaperSettings = InputThemeSettings;
@@ -1798,37 +1093,12 @@ statsAbsValueAndPrev#cb43acde current:double previous:double = StatsAbsValueAndP
 
 statsPercentValue#cbce2fe0 part:double total:double = StatsPercentValue;
 
-// @type Channel statistics graph
-// @constructor This [channel statistics graph](https://core.telegram.org/api/stats) must be generated asynchronously using StatsLoadAsyncGraph to reduce server load
-// @param token Token to use for fetching the async graph
 statsGraphAsync#4a27eb2d token:string = StatsGraph;
-// @constructor An error occurred while generating the statistics graph
-// @param error The error
 statsGraphError#bedc9822 error:string = StatsGraph;
-// @constructor
-// @param json       Statistics data
-// @param zoom_token Zoom token
 statsGraph#8ea464b6 flags:# json:DataJSON zoom_token:flags.0?string = StatsGraph;
 
 messageInteractionCounters#ad4fc9bd msg_id:int views:int forwards:int = MessageInteractionCounters;
 
-// @type Channel statistics
-// @constructor [Channel statistics](https://core.telegram.org/api/stats)
-// @param period                        Period in consideration
-// @param followers                     Follower count change for period in consideration
-// @param views_per_post                `total_viewcount/postcount`, for posts posted during the period in consideration (`views_per_post`). Note that in this case, `current` refers to the `period` in consideration (`min_date` till `max_date`), and `prev` refers to the previous period (`(min_date - (max_date - min_date))` till `min_date`)
-// @param shares_per_post               `total_viewcount/postcount`, for posts posted during the period in consideration (`views_per_post`). Note that in this case, `current` refers to the `period` in consideration (`min_date` till `max_date`), and `prev` refers to the previous period (`(min_date - (max_date - min_date))` till `min_date`)
-// @param enabled_notifications         Percentage of subscribers with enabled notifications
-// @param growth_graph                  Channel growth graph (absolute subscriber count)
-// @param followers_graph               Followers growth graph (relative subscriber count)
-// @param mute_graph                    Muted users graph (relative)
-// @param top_hours_graph               Views per hour graph (absolute)
-// @param interactions_graph            Interactions graph (absolute)
-// @param iv_interactions_graph         IV interactions graph (absolute)
-// @param views_by_source_graph         Views by source graph (absolute)
-// @param new_followers_by_source_graph New followers by source graph (absolute)
-// @param languages_graph               Subscriber language graph (piechart)
-// @param recent_message_interactions   Recent message interactions
 stats.broadcastStats#bdf78394 period:StatsDateRangeDays followers:StatsAbsValueAndPrev views_per_post:StatsAbsValueAndPrev shares_per_post:StatsAbsValueAndPrev enabled_notifications:StatsPercentValue growth_graph:StatsGraph followers_graph:StatsGraph mute_graph:StatsGraph top_hours_graph:StatsGraph interactions_graph:StatsGraph iv_interactions_graph:StatsGraph views_by_source_graph:StatsGraph new_followers_by_source_graph:StatsGraph languages_graph:StatsGraph recent_message_interactions:Vector<MessageInteractionCounters> = stats.BroadcastStats;
 
 help.promoDataEmpty#98f6ac75 expires:int = help.PromoData;
@@ -1859,7 +1129,7 @@ messages.messageViews#b6c4f543 views:Vector<MessageViews> chats:Vector<Chat> use
 
 messages.discussionMessage#f5dd8f9d flags:# messages:Vector<Message> max_id:flags.0?int read_inbox_max_id:flags.1?int read_outbox_max_id:flags.2?int chats:Vector<Chat> users:Vector<User> = messages.DiscussionMessage;
 
-messageReplyHeader#a6d57763 flags:# reply_to_msg_id:int reply_to_peer_id:flags.0?Peer reply_to_top_id:flags.1?int = MessageReplyHeader;
+messageReplyHeader#a6d57763 flags:# reply_to_scheduled:flags.2?true reply_to_msg_id:int reply_to_peer_id:flags.0?Peer reply_to_top_id:flags.1?int = MessageReplyHeader;
 
 messageReplies#4128faac flags:# comments:flags.0?true replies:int replies_pts:int recent_repliers:flags.1?Vector<Peer> channel_id:flags.0?int max_id:flags.2?int read_max_id:flags.3?int = MessageReplies;
 
@@ -1869,64 +1139,15 @@ stats.messageStats#8999f295 views_graph:StatsGraph = stats.MessageStats;
 
 ---functions---
 
-// WARN: next commented methods are too specific to generate it, as well as the parser doesn't support all TL
-//       features, so do not uncomment it, cause it is a part of telegram api, but you need to manually fix
-//       it, if they'll change
+invokeAfterMsg#cb9f372d {X:Type} msg_id:long query:!X = X;
+invokeAfterMsgs#3dc4b4f0 {X:Type} msg_ids:Vector<long> query:!X = X;
+initConnection#c1cd5ea9 {X:Type} flags:# api_id:int device_model:string system_version:string app_version:string system_lang_code:string lang_pack:string lang_code:string proxy:flags.0?InputClientProxy params:flags.1?JSONValue query:!X = X;
+invokeWithLayer#da9b0d0d {X:Type} layer:int query:!X = X;
+invokeWithoutUpdates#bf9459b7 {X:Type} query:!X = X;
+invokeWithMessagesRange#365275f2 {X:Type} range:MessageRange query:!X = X;
+invokeWithTakeout#aca9fd2e {X:Type} takeout_id:long query:!X = X;
 
-// @method Invokes a query after successfull completion of one of the previous queries.
-// @param msg_id Message identifier on which a current query depends
-// @param query The query itself
-// invokeAfterMsg#cb9f372d {X:Type} msg_id:long query:!X = X;
-
-// @method Invokes a query after a successfull completion of previous queries
-// @param msg_ids List of messages on which a current query depends
-// @param query The query itself
-// invokeAfterMsgs#3dc4b4f0 {X:Type} msg_ids:Vector<long> query:!X = X;
-
-// @method Initialize connection
-// @param flags Flags, see TL conditional fields
-// @param api_id Application identifier (see. App configuration)
-// @param device_model Device model
-// @param system_version Operation system version
-// @param app_version Application version
-// @param system_lang_code Code for the language used on the device's OS, ISO 639-1 standard
-// @param lang_pack Language pack to use
-// @param lang_code Code for the language used on the client, ISO 639-1 standard
-// @param proxy Info about an MTProto proxy
-// @param params Additional initConnection parameters. For now, only the tz_offset field is supported, for specifying timezone offset in seconds.
-// @param query The query itself
-// initConnection#c1cd5ea9 {X:Type} flags:# api_id:int device_model:string system_version:string app_version:string system_lang_code:string lang_pack:string lang_code:string proxy:flags.0?InputClientProxy params:flags.1?JSONValue query:!X = X;
-
-// @method Invoke the specified query using the specified API layer
-// @param layer The layer to use
-// @param query The query
-// invokeWithLayer#da9b0d0d {X:Type} layer:int query:!X = X;
-
-// @method Invoke a request without subscribing the used connection for updates (this is enabled by default for file queries).
-// @param query The query
-// invokeWithoutUpdates#bf9459b7 {X:Type} query:!X = X;
-
-// @method Invoke with the given message range
-// @param range Message range
-// @param query Query
-// invokeWithMessagesRange#365275f2 {X:Type} range:MessageRange query:!X = X;
-
-// @method Invoke a method within a takeout session
-// @param takeout_id Takeout session IDe
-// @param query Query
-// invokeWithTakeout#aca9fd2e {X:Type} takeout_id:long query:!X = X;
-
-// @method Send the verification code for login
-// @param phone_number Phone number in international format
-// @param api_id Application identifier (see App configuration)
-// @param api_hash Application secret hash (see App configuration)
-// @param settings Settings for the code type to send
 auth.sendCode#a677244f phone_number:string api_id:int api_hash:string settings:CodeSettings = auth.SentCode;
-// @method Registers a validated phone number in the system.
-// @param phone_number Phone number in international format
-// @param phone_code_hash SMS-message ID
-// @param first_name New user first name
-// @param last_name New user last name
 auth.signUp#80eee427 phone_number:string phone_code_hash:string first_name:string last_name:string = auth.Authorization;
 auth.signIn#bcd51581 phone_number:string phone_code_hash:string phone_code:string = auth.Authorization;
 auth.logOut#5717da40 = Bool;
@@ -2017,7 +1238,6 @@ users.getUsers#d91a548 id:Vector<InputUser> = Vector<User>;
 users.getFullUser#ca30a5b1 id:InputUser = UserFull;
 users.setSecureValueErrors#90c894b5 id:InputUser errors:Vector<SecureValueError> = Bool;
 
-// ***SPECIFIC RESPONSE***
 contacts.getContactIDs#2caa4a42 hash:int = Vector<int>;
 contacts.getStatuses#c4a353ee = Vector<ContactStatus>;
 contacts.getContacts#c023849f hash:int = contacts.Contacts;
@@ -2050,7 +1270,7 @@ messages.receivedMessages#5a954c0 max_id:int = Vector<ReceivedNotifyMessage>;
 messages.setTyping#58943ee2 flags:# peer:InputPeer top_msg_id:flags.0?int action:SendMessageAction = Bool;
 messages.sendMessage#520c3870 flags:# no_webpage:flags.1?true silent:flags.5?true background:flags.6?true clear_draft:flags.7?true peer:InputPeer reply_to_msg_id:flags.0?int message:string random_id:long reply_markup:flags.2?ReplyMarkup entities:flags.3?Vector<MessageEntity> schedule_date:flags.10?int = Updates;
 messages.sendMedia#3491eba9 flags:# silent:flags.5?true background:flags.6?true clear_draft:flags.7?true peer:InputPeer reply_to_msg_id:flags.0?int media:InputMedia message:string random_id:long reply_markup:flags.2?ReplyMarkup entities:flags.3?Vector<MessageEntity> schedule_date:flags.10?int = Updates;
-messages.forwardMessages#d9fee60e flags:# silent:flags.5?true background:flags.6?true with_my_score:flags.8?true from_peer:InputPeer id:Vector<int> random_id:Vector<long> to_peer:InputPeer schedule_date:flags.10?int = Updates;
+messages.forwardMessages#d9fee60e flags:# silent:flags.5?true background:flags.6?true with_my_score:flags.8?true drop_author:flags.11?true drop_media_captions:flags.12?true from_peer:InputPeer id:Vector<int> random_id:Vector<long> to_peer:InputPeer schedule_date:flags.10?int = Updates;
 messages.reportSpam#cf1592db peer:InputPeer = Bool;
 messages.getPeerSettings#3672e09c peer:InputPeer = PeerSettings;
 messages.report#bd82b658 peer:InputPeer id:Vector<int> reason:ReportReason = Bool;
@@ -2070,7 +1290,6 @@ messages.readEncryptedHistory#7f4b690a peer:InputEncryptedChat max_date:int = Bo
 messages.sendEncrypted#44fa7a15 flags:# silent:flags.0?true peer:InputEncryptedChat random_id:long data:bytes = messages.SentEncryptedMessage;
 messages.sendEncryptedFile#5559481d flags:# silent:flags.0?true peer:InputEncryptedChat random_id:long data:bytes file:InputEncryptedFile = messages.SentEncryptedMessage;
 messages.sendEncryptedService#32d439a4 peer:InputEncryptedChat random_id:long data:bytes = messages.SentEncryptedMessage;
-// ***SPECIFIC RESPONSE***
 messages.receivedQueue#55a5bb66 max_qts:int = Vector<long>;
 messages.reportEncryptedSpam#4b0c8c0f peer:InputEncryptedChat = Bool;
 messages.readMessageContents#36a73f77 id:Vector<int> = messages.AffectedMessages;
@@ -2088,7 +1307,7 @@ messages.getMessagesViews#5784d3e1 peer:InputPeer id:Vector<int> increment:Bool 
 messages.editChatAdmin#a9e69f2e chat_id:int user_id:InputUser is_admin:Bool = Bool;
 messages.migrateChat#15a3b8e3 chat_id:int = Updates;
 messages.searchGlobal#4bc6589a flags:# folder_id:flags.0?int q:string filter:MessagesFilter min_date:int max_date:int offset_rate:int offset_peer:InputPeer offset_id:int limit:int = messages.Messages;
-messages.reorderStickerSets#78337739 flags:# masks:flags.0?true order:Vector<long> = Bool;
+messages.reorderStickerSets#78337739 flags:# masks:flags.0?true emojis:flags.1?true order:Vector<long> = Bool;
 messages.getDocumentByHash#338e2464 sha256:bytes size:int mime_type:string = Document;
 messages.getSavedGifs#83bf3d52 hash:int = messages.SavedGifs;
 messages.saveGif#327a30cb id:InputDocument unsave:Bool = Bool;
@@ -2108,7 +1327,7 @@ messages.readFeaturedStickers#5b118126 id:Vector<long> = Bool;
 messages.getRecentStickers#5ea192c9 flags:# attached:flags.0?true hash:int = messages.RecentStickers;
 messages.saveRecentSticker#392718f8 flags:# attached:flags.0?true id:InputDocument unsave:Bool = Bool;
 messages.clearRecentStickers#8999602d flags:# attached:flags.0?true = Bool;
-messages.getArchivedStickers#57f17692 flags:# masks:flags.0?true offset_id:long limit:int = messages.ArchivedStickers;
+messages.getArchivedStickers#57f17692 flags:# masks:flags.0?true emojis:flags.1?true offset_id:long limit:int = messages.ArchivedStickers;
 messages.getMaskStickers#65b8c79f hash:int = messages.AllStickers;
 messages.getAttachedStickers#cc5b67cc media:InputStickeredMedia = Vector<StickerSetCovered>;
 messages.setGameScore#8ef8ecc0 flags:# edit_message:flags.0?true force:flags.1?true peer:InputPeer id:int user_id:InputUser score:int = Updates;
@@ -2141,7 +1360,6 @@ messages.updatePinnedMessage#d2aaf7ec flags:# silent:flags.0?true unpin:flags.1?
 messages.sendVote#10ea6184 peer:InputPeer msg_id:int options:Vector<bytes> = Updates;
 messages.getPollResults#73bb643b peer:InputPeer msg_id:int = Updates;
 messages.getOnlines#6e2be050 peer:InputPeer = ChatOnlines;
-messages.getStatsURL#812c2ae6 flags:# dark:flags.0?true peer:InputPeer params:string = StatsURL;
 messages.editChatAbout#def60797 peer:InputPeer about:string = Bool;
 messages.editChatDefaultBannedRights#a5866b41 peer:InputPeer banned_rights:ChatBannedRights = Updates;
 messages.getEmojiKeywords#35a0e062 lang_code:string = EmojiKeywordsDifference;
@@ -2174,7 +1392,6 @@ updates.getChannelDifference#3173d78 flags:# force:flags.0?true channel:InputCha
 
 photos.updateProfilePhoto#72d4742c id:InputPhoto = photos.Photo;
 photos.uploadProfilePhoto#89f30f69 flags:# file:flags.0?InputFile video:flags.1?InputFile video_start_ts:flags.2?double = photos.Photo;
-// ***SPECIFIC RESPONSE***
 photos.deletePhotos#87cf7f2f id:Vector<InputPhoto> = Vector<long>;
 photos.getUserPhotos#91cd32a8 user_id:InputUser offset:int max_id:long limit:int = photos.Photos;
 
@@ -2215,14 +1432,11 @@ channels.deleteMessages#84c1fd4e channel:InputChannel id:Vector<int> = messages.
 channels.deleteUserHistory#d10dd71b channel:InputChannel user_id:InputUser = messages.AffectedHistory;
 channels.reportSpam#fe087810 channel:InputChannel user_id:InputUser id:Vector<int> = Bool;
 channels.getMessages#ad8c9a23 channel:InputChannel id:Vector<InputMessage> = messages.Messages;
-// @method Get the participants of a channel
-// @param channel Channel
-// @param filter Which participant types to fetch
 channels.getParticipants#123e05e9 channel:InputChannel filter:ChannelParticipantsFilter offset:int limit:int hash:int = channels.ChannelParticipants;
 channels.getParticipant#546dd7a6 channel:InputChannel user_id:InputUser = channels.ChannelParticipant;
 channels.getChannels#a7f6bbb id:Vector<InputChannel> = messages.Chats;
 channels.getFullChannel#8736a09 channel:InputChannel = messages.ChatFull;
-channels.createChannel#3d5fb10f flags:# broadcast:flags.0?true megagroup:flags.1?true title:string about:string geo_point:flags.2?InputGeoPoint address:flags.2?string = Updates;
+channels.createChannel#3d5fb10f flags:# broadcast:flags.0?true megagroup:flags.1?true for_import:flags.3?true title:string about:string geo_point:flags.2?InputGeoPoint address:flags.2?string = Updates;
 channels.editAdmin#d33c8902 channel:InputChannel user_id:InputUser admin_rights:ChatAdminRights rank:string = Updates;
 channels.editTitle#566decd0 channel:InputChannel title:string = Updates;
 channels.editPhoto#f12e57c9 channel:InputChannel photo:InputChatPhoto = Updates;
