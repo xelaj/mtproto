@@ -8,14 +8,15 @@ package mtproto
 import (
 	"reflect"
 	"strconv"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
 
 	"github.com/xelaj/mtproto/internal/encoding/tl"
+	"github.com/xelaj/mtproto/internal/mtproto"
 	"github.com/xelaj/mtproto/internal/mtproto/messages"
 	"github.com/xelaj/mtproto/internal/mtproto/objects"
-	"github.com/xelaj/mtproto/internal/utils"
 )
 
 func (m *MTProto) sendPacket(request tl.Object, expectedTypes ...reflect.Type) (chan tl.Object, error) {
@@ -26,7 +27,7 @@ func (m *MTProto) sendPacket(request tl.Object, expectedTypes ...reflect.Type) (
 
 	var (
 		data  messages.Common
-		msgID = utils.GenerateMessageId()
+		msgID = mtproto.NewMsgID(time.Now(), mtproto.MsgClient)
 	)
 
 	// adding types for parser if required
