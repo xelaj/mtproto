@@ -18,6 +18,7 @@ import (
 
 	ige "github.com/xelaj/mtproto/internal/aes_ige"
 	"github.com/xelaj/mtproto/internal/encoding/tl"
+	"github.com/xelaj/mtproto/internal/mtproto"
 	"github.com/xelaj/mtproto/internal/utils"
 )
 
@@ -30,7 +31,7 @@ type Common interface {
 
 type Encrypted struct {
 	Msg         []byte
-	MsgID       int64
+	MsgID       mtproto.MsgID
 	AuthKeyHash []byte
 
 	Salt      int64
@@ -82,7 +83,7 @@ func DeserializeEncrypted(data, authKey []byte) (*Encrypted, error) {
 	}
 	msg.Salt = d.PopLong()
 	msg.SessionID = d.PopLong()
-	msg.MsgID = d.PopLong()
+	msg.MsgID = mtproto.MsgID(d.PopLong())
 	msg.SeqNo = d.PopInt()
 	messageLen := d.PopInt()
 
@@ -119,7 +120,7 @@ func (msg *Encrypted) GetSeqNo() int {
 
 type Unencrypted struct {
 	Msg   []byte
-	MsgID int64
+	MsgID mtproto.MsgID
 }
 
 func (msg *Unencrypted) Serialize(client MessageInformator) ([]byte, error) {
@@ -127,7 +128,7 @@ func (msg *Unencrypted) Serialize(client MessageInformator) ([]byte, error) {
 	e := tl.NewEncoder(buf)
 	// authKeyHash, always 0 if unencrypted
 	e.PutLong(0)
-	e.PutLong(msg.MsgID)
+	e.PutLong(int64(msg.MsgID))
 	e.PutInt(int32(len(msg.Msg)))
 	e.PutRawBytes(msg.Msg)
 	return buf.Bytes(), nil
@@ -138,7 +139,7 @@ func DeserializeUnencrypted(data []byte) (*Unencrypted, error) {
 	d, _ := tl.NewDecoder(bytes.NewBuffer(data))
 	_ = d.PopRawBytes(tl.LongLen) // authKeyHash, always 0 if unencrypted
 
-	msg.MsgID = d.PopLong()
+	msg.MsgID = mtproto.MsgID(d.PopLong())
 
 	mod := msg.MsgID & 3
 	if mod != 1 && mod != 3 {
@@ -183,7 +184,7 @@ type MessageInformator interface {
 	GetAuthKey() []byte
 }
 
-func serializePacket(client MessageInformator, msg []byte, messageID int64, requireToAck bool) []byte {
+func serializePacket(client MessageInformator, msg []byte, id mtproto.MsgID, requireToAck bool) []byte {
 	buf := bytes.NewBuffer(nil)
 	d := tl.NewEncoder(buf)
 
@@ -191,7 +192,7 @@ func serializePacket(client MessageInformator, msg []byte, messageID int64, requ
 	binary.LittleEndian.PutUint64(saltBytes, uint64(client.GetServerSalt()))
 	d.PutRawBytes(saltBytes)
 	d.PutLong(client.GetSessionID())
-	d.PutLong(messageID)
+	d.PutLong(int64(id))
 	if requireToAck { // не спрашивай, как это работает
 		d.PutInt(client.GetSeqNo() | 1) // почему тут добавляется бит не ебу
 	} else {

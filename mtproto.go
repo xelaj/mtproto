@@ -53,8 +53,6 @@ type MTProto struct {
 	// идентификаторы сообщений, нужны что бы посылать и принимать сообщения.
 	seqNoMutex sync.Mutex
 	seqNo      int32
-	lastMessageIDMutex sync.Mutex
-	lastMessageID      int64
 
 	// айдишники DC для КОНКРЕТНОГО Приложения и клиента. Может меняться, но фиксирована для
 	// связки приложение+клиент
