@@ -7,6 +7,12 @@
 [![chat telegram](https://img.shields.io/badge/chat-telegram-0088cc)](https://bit.ly/2xlsVsQ)
 ![version v1.0.0](https://img.shields.io/badge/version-v1.0.0-success)
 ![unstable](https://img.shields.io/badge/stability-stable-success)
+<a href="https://www.upwork.com/o/companies/~01e5f1563365e3c1b5/" alt="r3dev">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://r3-dev.github.io/brand/badge-light.svg">
+    <img src="https://r3-dev.github.io/brand/badge-dark.svg" />
+  </picture>
+</a>
 <!--
 code quality
 golangci
