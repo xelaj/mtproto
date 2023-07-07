@@ -37,8 +37,8 @@ func main() {
 		ServerHost: "149.154.167.50:443",
 		// public keys file is path to file with public keys, which you must get from https://my.telegram.org
 		PublicKeysFile:  publicKeys,
-		AppID:           94575,                              // app id, could be find at https://my.telegram.org
-		AppHash:         "a3406de8d171bb422bb6ddf3bbd800e2", // app hash, could be find at https://my.telegram.org
+		AppID:           94575,                              // app id, could be found at https://my.telegram.org
+		AppHash:         "a3406de8d171bb422bb6ddf3bbd800e2", // app hash, could be found at https://my.telegram.org
 		InitWarnChannel: true,                               // if we want to get errors, otherwise, client.Warnings will be set nil
 	})
 	dry.PanicIfErr(err)
@@ -61,7 +61,7 @@ func main() {
 	)
 
 	// this part shows how to deal with errors (if you want of course. No one
-	// like errors, but the can be return sometimes)
+	// likes errors, but there can be return sometimes)
 	if err != nil {
 		errResponse := &mtproto.ErrResponseCode{}
 		if !errors.As(err, &errResponse) {
