@@ -1,4 +1,4 @@
-module github.com/xelaj/mtproto
+module github.com/xelaj/mtproto/v2
 
 go 1.21
 
