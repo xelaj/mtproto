@@ -4,8 +4,6 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/k0kubun/pp"
-	"github.com/xelaj/go-dry"
 	"github.com/xelaj/mtproto/telegram"
 
 	utils "github.com/xelaj/mtproto/examples/example_utils"
@@ -31,7 +29,7 @@ func main() {
 		InitWarnChannel: true,                               // if we want to get errors, otherwise, client.Warnings will be set nil
 	})
 	utils.ReadWarningsToStdErr(client.Warnings)
-	dry.PanicIfErr(err)
+	check(err)
 
 	client.AddCustomServerRequestHandler(func(i interface{}) bool {
 		pp.Println(i)
@@ -40,11 +38,16 @@ func main() {
 
 	// we need to call updates.getState, after that telegram server will send you updates
 	state, err := client.UpdatesGetState()
-	dry.PanicIfErr(err)
+	check(err)
 	// this state could be useful, if you want to get old unread updates
-	pp.Println(state)
 
 	var wg sync.WaitGroup
 	wg.Add(1)
 	wg.Wait()
+}
+
+func check(err error) {
+	if err != nil {
+		panic(err)
+	}
 }

@@ -1,5 +1,5 @@
 // also why gocritic detects false positive, but if i write explanation, golangci-lint throws error that description expected as lintrer??? //TODO
-//nolint: lll
+// nolint: lll
 package mtproto
 
 import (
@@ -10,7 +10,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/xelaj/mtproto/internal/mtproto/objects"
+	"github.com/xelaj/mtproto/internal/objects"
 )
 
 type ErrResponseCode struct {
@@ -20,7 +20,7 @@ type ErrResponseCode struct {
 	AdditionalInfo any // some errors has additional data like timeout seconds, dc id etc.
 }
 
-func RpcErrorToNative(r *objects.RpcError) error {
+func rpcErrorToNative(r objects.RpcError) error {
 	nativeErrorName, additionalData := TryExpandError(r.ErrorMessage)
 
 	desc, ok := errorMessages[nativeErrorName]
@@ -32,7 +32,7 @@ func RpcErrorToNative(r *objects.RpcError) error {
 		desc = fmt.Sprintf(desc, additionalData)
 	}
 
-	return &ErrResponseCode{
+	return ErrResponseCode{
 		Code:           int(r.ErrorCode),
 		Message:        nativeErrorName,
 		Description:    desc,
@@ -97,7 +97,7 @@ func TryExpandError(errStr string) (nativeErrorName string, additionalData any) 
 	return nativeErrorName, additionalData
 }
 
-func (e *ErrResponseCode) Error() string {
+func (e ErrResponseCode) Error() string {
 	return fmt.Sprintf("%s (code %d)", e.Description, e.Code)
 }
 
@@ -506,7 +506,7 @@ func BadMsgErrorFromNative(in *objects.BadMsgNotification) *BadMsgError {
 }
 
 func (e *BadMsgError) Error() string {
-	return fmt.Sprintf("%v (code %v)", e.Description, e.Code)
+	return fmt.Sprintf("%v (code %v, msg_id 0x%016x)", e.Description, e.Code, e.BadMsgID)
 }
 
 // https://core.telegram.org/mtproto/service_messages_about_messages#notice-of-ignored-error-message
@@ -540,15 +540,3 @@ const (
 	ErrBadMsgServerSaltIncorrect BadSystemMessageCode = 48
 	ErrBadMsgInvalidContainer    BadSystemMessageCode = 64
 )
-
-// internal errors for internal purposes
-
-type errorSessionConfigsChanged null
-
-func (*errorSessionConfigsChanged) Error() string {
-	return "session configuration was changed, need to repeat request"
-}
-
-func (*errorSessionConfigsChanged) CRC() uint32 {
-	panic("makes no sense")
-}

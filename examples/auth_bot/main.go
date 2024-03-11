@@ -6,9 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/xelaj/go-dry"
-
-	"github.com/k0kubun/pp"
 	"github.com/xelaj/mtproto/telegram"
 
 	utils "github.com/xelaj/mtproto/examples/example_utils"
@@ -41,7 +38,7 @@ func main() {
 		InitWarnChannel: true,    // if we want to get errors, otherwise, client.Warnings will be set nil
 	})
 	utils.ReadWarningsToStdErr(client.Warnings)
-	dry.PanicIfErr(err)
+	check(err)
 
 	// Trying to auth as bot with our bot token
 	_, err = client.AuthImportBotAuthorization(
@@ -78,6 +75,10 @@ func main() {
 	}
 
 	user := uname.Users[0].(*telegram.UserObj)
+}
 
-	pp.Println(user)
+func check(err error) {
+	if err != nil {
+		panic(err)
+	}
 }

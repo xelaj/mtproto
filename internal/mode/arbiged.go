@@ -1,23 +1,40 @@
 package mode
 
 import (
+	"context"
 	"encoding/binary"
 	"fmt"
 	"io"
 
-	"github.com/xelaj/mtproto/internal/encoding/tl"
+	"github.com/xelaj/tl"
 )
 
+func Abridged(conn io.ReadWriteCloser, announce bool) (Mode, error) {
+	if conn == nil {
+		return nil, ErrInterfaceIsNil
+	}
+
+	mode := &abridged{conn: conn}
+	if announce {
+		if err := mode.announce(); err != nil {
+			return nil, err
+		}
+	}
+
+	return mode, nil
+}
+
 type abridged struct {
-	conn io.ReadWriter
+	conn io.ReadWriteCloser
 }
 
 var _ Mode = (*abridged)(nil)
 
 var transportModeAbridged = [...]byte{0xef} // meta:immutable
 
-func (*abridged) getModeAnnouncement() []byte {
-	return transportModeAbridged[:]
+func (m *abridged) announce() error {
+	_, err := m.conn.Write(transportModeAbridged[:])
+	return err
 }
 
 const (
@@ -55,7 +72,13 @@ func (m *abridged) WriteMsg(msg []byte) error {
 	return nil
 }
 
-func (m *abridged) ReadMsg() ([]byte, error) {
+func (m *abridged) ReadMsg(ctx context.Context) ([]byte, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
+
 	sizeBuf := make([]byte, 1)
 	n, err := m.conn.Read(sizeBuf)
 	if err != nil {
@@ -96,3 +119,5 @@ func (m *abridged) ReadMsg() ([]byte, error) {
 
 	return msg, nil
 }
+
+func (m *abridged) Close() error { return m.conn.Close() }

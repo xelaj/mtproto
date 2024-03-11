@@ -6,93 +6,96 @@
 package mtproto
 
 import (
-	"reflect"
-	"strconv"
+	"context"
+	"encoding/binary"
+	"errors"
+	"fmt"
 
-	"github.com/pkg/errors"
-	"github.com/xelaj/errs"
+	"github.com/xelaj/tl"
 
-	"github.com/xelaj/mtproto/internal/encoding/tl"
-	"github.com/xelaj/mtproto/internal/mtproto/messages"
-	"github.com/xelaj/mtproto/internal/mtproto/objects"
-	"github.com/xelaj/mtproto/internal/utils"
+	"github.com/xelaj/mtproto/internal/objects"
+	"github.com/xelaj/mtproto/internal/payload"
 )
 
-func (m *MTProto) sendPacket(request tl.Object, expectedTypes ...reflect.Type) (chan tl.Object, error) {
-	msg, err := tl.Marshal(request)
-	if err != nil {
-		return nil, errors.Wrap(err, "encoding request message")
-	}
-
-	var (
-		data  messages.Common
-		msgID = utils.GenerateMessageId()
-	)
-
-	// adding types for parser if required
-	if len(expectedTypes) > 0 {
-		m.expectedTypes.Add(int(msgID), expectedTypes)
-	}
-
-	// dealing with response channel
-	resp := m.getRespChannel()
-	if isNullableResponse(request) {
-		go func() { resp <- &objects.Null{} }() // goroutine cuz we don't read from it RIGHT NOW
-	} else {
-		m.responseChannels.Add(int(msgID), resp)
-	}
-
-	if m.encrypted {
-		data = &messages.Encrypted{
-			Msg:         msg,
-			MsgID:       msgID,
-			AuthKeyHash: m.authKeyHash,
+func (m *MTProto) makeRequest(ctx context.Context, msg []byte) (resp []byte, err error) {
+	for resp == nil {
+		resp, err = m.sendPacket(ctx, msg, true)
+		if errors.Is(err, errRetryRequest) {
+			continue
+		} else if err != nil {
+			return nil, fmt.Errorf("sending message: %w", err)
 		}
-	} else {
-		data = &messages.Unencrypted{ //nolint: errcheck нешифрованое не отправляет ошибки
-			Msg:   msg,
-			MsgID: msgID,
-		}
-	}
-
-	// must write synchroniously, cuz seqno must be upper each request
-	m.seqNoMutex.Lock()
-	defer m.seqNoMutex.Unlock()
-
-	err = m.transport.WriteMsg(data, MessageRequireToAck(request))
-	if err != nil {
-		return nil, errors.Wrap(err, "sending request")
-	}
-
-	if m.encrypted {
-		// since we sending this message, we are incrementing the seqno BUT ONLY when we
-		// are sending an encrypted message. why? I don’t know. But the fact remains:
-		// we must to block seqno, cause messages with a bigger seqno can go faster than
-		// messages with a smaller one.
-		m.seqNo += 2
 	}
 
 	return resp, nil
 }
 
-func (m *MTProto) writeRPCResponse(msgID int, data tl.Object) error {
-	v, ok := m.responseChannels.Get(msgID)
-	if !ok {
-		return errs.NotFound("msgID", strconv.Itoa(msgID))
+func (m *MTProto) sendPacket(ctx context.Context, msg []byte, expectAnswer bool) ([]byte, error) {
+	id, err := m.transport.WriteMsg(ctx, msg, payload.InitiatorClient)
+	if err != nil {
+		return nil, err
 	}
 
-	v <- data
+	if expectAnswer {
+		ch := m.expectAnswer(id)
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case r := <-ch:
+			return r.data, r.err
+		}
+	}
 
-	m.responseChannels.Delete(msgID)
-	m.expectedTypes.Delete(msgID)
-	return nil
+	return nil, nil
 }
 
-func (m *MTProto) getRespChannel() chan tl.Object {
-	if m.serviceModeActivated {
-		return m.serviceChannel
+func (m *MTProto) expectAnswer(msgID payload.MsgID) <-chan responseChanMsg {
+	resp := make(chan responseChanMsg, 1)
+	m.chanMux.Lock()
+	defer m.chanMux.Unlock()
+	m.responseChannels[msgID] = resp
+
+	return resp
+}
+
+func (m *MTProto) writeRPCResponse(msgID payload.MsgID, data []byte) bool {
+	m.chanMux.Lock()
+	v, ok := m.responseChannels[msgID]
+	if ok {
+		delete(m.responseChannels, msgID)
 	}
-	return make(chan tl.Object)
+	m.chanMux.Unlock()
+
+	if ok {
+		if len(data) > tl.WordLen && binary.LittleEndian.Uint32(data) == objects.CrcRpcError {
+			var e objects.RpcError
+			if err := objects.Unmarshal(data, &e); err != nil {
+				e = objects.RpcError{
+					ErrorCode:    -1,
+					ErrorMessage: fmt.Sprintf("can't unmarshal error: %v, data: %v", err, data),
+				}
+			}
+
+			v <- responseChanMsg{err: rpcErrorToNative(e)}
+		} else {
+			v <- responseChanMsg{data: data}
+		}
+
+		close(v)
+	}
+
+	return ok
+}
+
+func (m *MTProto) rejectAllRequests(err error) {
+	m.chanMux.Lock()
+	defer m.chanMux.Unlock()
+
+	for k, v := range m.responseChannels {
+		delete(m.responseChannels, k)
+		v <- responseChanMsg{err: err}
+		close(v)
+	}
 }
 
 // проверяет, надо ли ждать от сервера пинга

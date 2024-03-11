@@ -8,52 +8,38 @@ import (
 	"os/user"
 	"path/filepath"
 
-	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
-	"github.com/xelaj/go-dry"
 )
 
 const (
-	//! WARNING: please, DO NOT use this key downloading in production apps, THIS IS ABSOLUTELY INSECURE!
-	//! I mean, seriously, this way used just for examples, we can't create most secured app just for
-	//! these examples
+	// WARNING: please, DO NOT use this key downloading in production apps,
+	// THIS IS ABSOLUTELY INSECURE! I mean, seriously, this way used just for
+	// examples, we can't create most secured app just for these examples
 	publicKeysForExamplesURL = "https://git.io/JtImk"
 )
 
-func ReadWarningsToStdErr(err chan error) {
-	go func() {
-		for {
-			pp.Fprintln(os.Stderr, <-err)
-		}
-	}()
-}
-
 func PrepareAppStorageForExamples() (appStoragePath string) {
 	appStorage, err := GetAppStorage("mtproto-example", NamespaceUser)
-	dry.PanicIfErr(err)
+	check(err)
 
-	if !dry.FileExists(appStorage) {
-		if !dry.PathIsWritable(appStorage) {
-			fmt.Printf("cant create app local storage at %v\n", appStorage)
-			os.Exit(1)
-		}
+	if !fileExists(appStorage) {
 		err := os.MkdirAll(appStorage, 0755)
-		dry.PanicIfErr(err)
+		check(err)
 	}
 	publicKeys := filepath.Join(appStorage, "tg_public_keys.pem")
-	if !dry.FileExists(publicKeys) {
+	if !fileExists(publicKeys) {
 		fmt.Printf("Downloading public keys from %v, this can be insecure\n", publicKeysForExamplesURL)
 
 		resp, err := http.Get(publicKeysForExamplesURL)
-		dry.PanicIfErr(errors.Wrap(err, "can't download public keys"))
+		check(errors.Wrap(err, "can't download public keys"))
 		defer resp.Body.Close()
 
 		out, err := os.Create(publicKeys)
-		dry.PanicIfErr(errors.Wrap(err, "can't download public keys"))
+		check(errors.Wrap(err, "can't download public keys"))
 
 		defer out.Close()
 		_, err = io.Copy(out, resp.Body)
-		dry.PanicIfErr(errors.Wrap(err, "can't download public keys"))
+		check(errors.Wrap(err, "can't download public keys"))
 	}
 
 	return appStorage
@@ -95,4 +81,15 @@ func GetUserNamespaceDir(username string) (string, error) {
 	}
 
 	return filepath.Join(u.HomeDir, ".local"), nil
+}
+
+func check(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
+func fileExists(filename string) bool {
+	_, err := os.Stat(filename)
+	return err == nil
 }

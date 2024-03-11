@@ -16,9 +16,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
-	"github.com/xelaj/errs"
 
 	"github.com/xelaj/mtproto/telegram/internal/calls"
 )
@@ -317,7 +315,7 @@ func (c *Client) GetChatByID(chatID int) (Chat, error) {
 		}
 	}
 
-	return nil, errs.NotFound("chatID", strconv.Itoa(chatID))
+	return nil, fmt.Errorf("chatID %v not found", chatID)
 }
 
 // returning all user ids in specific SUPERGROUP. Note that, SUPERGROUP IS NOT CHANNEL! Major difference in how

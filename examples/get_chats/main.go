@@ -3,8 +3,6 @@ package main
 import (
 	"path/filepath"
 
-	"github.com/k0kubun/pp"
-	"github.com/xelaj/go-dry"
 	"github.com/xelaj/mtproto/telegram"
 
 	utils "github.com/xelaj/mtproto/examples/example_utils"
@@ -30,7 +28,11 @@ func main() {
 		InitWarnChannel: true,                               // if we want to get errors, otherwise, client.Warnings will be set nil
 	})
 	utils.ReadWarningsToStdErr(client.Warnings)
-	dry.PanicIfErr(err)
+	check(err)
+}
 
-	pp.Println(client.AllUsersInChannel(-1001224870613))
+func check(err error) {
+	if err != nil {
+		panic(err)
+	}
 }

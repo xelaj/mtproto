@@ -3,8 +3,6 @@ package main
 import (
 	"path/filepath"
 
-	"github.com/k0kubun/pp"
-	"github.com/xelaj/go-dry"
 	"github.com/xelaj/mtproto/telegram"
 
 	utils "github.com/xelaj/mtproto/examples/example_utils"
@@ -30,12 +28,12 @@ func main() {
 		InitWarnChannel: true,                               // if we want to get errors, otherwise, client.Warnings will be set nil
 	})
 	utils.ReadWarningsToStdErr(client.Warnings)
-	dry.PanicIfErr(err)
+	check(err)
 
 	resp, err := client.AccountInitTakeoutSession(&telegram.AccountInitTakeoutSessionParams{
 		Contacts: true,
 	})
-	dry.PanicIfErr(err)
+	check(err)
 
 	res, err := client.MakeRequest(
 		&telegram.InvokeWithTakeoutParams{
@@ -44,10 +42,12 @@ func main() {
 		},
 	)
 
-	pp.Sprintln(res, err)
-
 	contacts, err := client.ContactsGetContacts(0)
-	dry.PanicIfErr(err)
-	c := contacts.(*telegram.ContactsContactsObj)
-	pp.Println(int(c.SavedCount), len(c.Users), len(c.Contacts))
+	check(err)
+}
+
+func check(err error) {
+	if err != nil {
+		panic(err)
+	}
 }

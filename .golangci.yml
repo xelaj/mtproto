@@ -4,15 +4,25 @@ run:
 
 linters-settings:
   depguard:
-    list-type: blacklist
-    packages:
-      - github.com/sirupsen/logrus
-      - log
+    rules:
+      bad-loggers:
+        deny:
+          - pkg: github.com/sirupsen/logrus
+            desc: it large and sucks.
+          - pkg: log
   dupl:
     threshold: 100
   funlen:
     lines: 100
     statements: 50
+  gci:
+    sections:
+      - standard # Standard section: captures all standard packages.
+      - default # Default section: contains all imports that could not be matched to another section type.
+      - prefix(github.com/org/project) # Custom section: groups all imports with the specified Prefix.
+      - blank # Blank section: contains all blank imports. This section is not present unless explicitly enabled.
+      - dot # Dot section: contains all dot imports. This section is not present unless explicitly enabled.
+    skip-generated: false
   goconst:
     min-len: 3
     min-occurrences: 2
@@ -47,7 +57,7 @@ linters-settings:
   goheader:
     values:
       const:
-        OWNER_COMPANY: KHS Films
+        OWNER_COMPANY: Xelaj Software
         MAINTAINER_COMPANY: Xelaj Software
         LICENSE_URL: https://github.com/xelaj/mtproto/blob/master/LICENSE
     template-path: docs/.license_header.txt
@@ -110,6 +120,8 @@ issues:
         - gosec
         - gomnd
         - errcheck
+        - maligned
+        - hugeparam
 
 # golangci.com configuration
 # https://github.com/golangci/golangci/wiki/Configuration

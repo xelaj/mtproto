@@ -2,6 +2,8 @@ package mode_test
 
 import (
 	"bytes"
+	"context"
+	"io"
 	"math/rand"
 	"testing"
 
@@ -49,7 +51,7 @@ func TestModeEncode(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 
-			m, err := mode.New(tt.mode, buf)
+			m, err := tt.mode(NopCloser(buf), true)
 			require.NoError(t, err)
 
 			err = m.WriteMsg(tt.in)
@@ -100,16 +102,22 @@ func TestModeDecode(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			buf := bytes.NewBuffer(tt.in)
 
-			m, err := mode.Detect(buf)
+			m, err := mode.Detect(NopCloser(buf))
 			require.NoError(t, err)
 
-			variant, err := mode.GetVariant(m)
-			require.NoError(t, err)
-			require.Equal(t, tt.mode, variant)
-
-			got, err := m.ReadMsg()
+			got, err := m.ReadMsg(context.Background())
 			require.NoError(t, err)
 			require.Equal(t, tt.expect, got)
 		})
 	}
 }
+
+func NopCloser(r io.ReadWriter) io.ReadWriteCloser {
+	return nopCloser{r}
+}
+
+type nopCloser struct {
+	io.ReadWriter
+}
+
+func (nopCloser) Close() error { return nil }

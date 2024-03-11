@@ -4,8 +4,6 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/k0kubun/pp"
-	"github.com/xelaj/go-dry"
 	"github.com/xelaj/mtproto/telegram"
 
 	utils "github.com/xelaj/mtproto/examples/example_utils"
@@ -31,25 +29,25 @@ func main() {
 		InitWarnChannel: true,                               // if we want to get errors, otherwise, client.Warnings will be set nil
 	})
 	utils.ReadWarningsToStdErr(client.Warnings)
-	dry.PanicIfErr(err)
+	check(err)
 
 	// get this hash from channel invite link (after t.me/join/<HASH>)
 	hash := "AAAAAEkCCtoerhjfii34iiii" // add here any link that you are ADMINISTRATING cause participants can be viewed only by admins
 	// syntax sugared method, more easy to read than default ways to solve some troubles
 	peer, err := client.GetChatInfoByHashLink(hash)
-	dry.PanicIfErr(err)
+	check(err)
 
 	total, err := client.GetPossibleAllParticipantsOfGroup(&telegram.InputChannelObj{
 		ChannelID:  peer.(*telegram.Channel).ID,
 		AccessHash: peer.(*telegram.Channel).AccessHash,
 	})
 
-	dry.PanicIfErr(err)
+	check(err)
 	pp.Println(total, len(total))
 	println("this is partial users in CHANNEL. In supergroup you can use more easy way to find, see below")
 
 	resolved, err := client.ContactsResolveUsername("gogolang")
-	dry.PanicIfErr(err)
+	check(err)
 
 	channel := resolved.Chats[0].(*telegram.Channel)
 	inCh := telegram.InputChannel(&telegram.InputChannelObj{
@@ -68,7 +66,7 @@ func main() {
 			int32(offset),
 			0,
 		)
-		dry.PanicIfErr(err)
+		check(err)
 		data := resp.(*telegram.ChannelsChannelParticipantsObj)
 		totalCount = int(data.Count)
 		for _, participant := range data.Participants {
@@ -88,7 +86,6 @@ func main() {
 		}
 
 		offset += 100
-		pp.Println(offset, totalCount)
 	}
 
 	total = make([]int, 0, len(res))
@@ -97,6 +94,10 @@ func main() {
 	}
 
 	sort.Ints(total)
+}
 
-	pp.Println(total, len(total))
+func check(err error) {
+	if err != nil {
+		panic(err)
+	}
 }

@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-	"github.com/xelaj/mtproto/internal/encoding/tl"
 )
 
 var (
@@ -26,7 +25,7 @@ func (e ErrNotMultiple) Error() string {
 }
 
 func checkMsgSize(msg []byte) error {
-	if len(msg)%tl.WordLen != 0 {
+	if len(msg)%4 != 0 {
 		return &ErrNotMultiple{Len: len(msg)}
 	}
 	return nil

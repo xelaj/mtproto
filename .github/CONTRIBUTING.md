@@ -45,6 +45,34 @@ We love to add new features! Use the New Feature issues template and fill in all
 
 Here it is up to you, the only thing is: we are more willing to take pull requests based on a specific issue (i.e., created pull request based on issue #100500 or something like this) This will help us understand what problem your request solves.
 
+### What if you know some languages? 🤔
+
+> [!NOTE]
+> The localization for documentation currently is not accepting, however, we want to continue this practice. See explaination in the spoiler.
+> <details>
+>  <summary>Why we did that:</summary>
+> We are working hard on adding localization features to applications and
+> services, however, the process of translating documentation is stopped for
+> now. The reason for the delete previous translations is very simple: we do not
+> have a suitable system to keep translations up to date for markdown files.
+>
+> The reason lies in the fact that markdown is very difficult to structure, and
+> the documentation is updated very often. The previous pipeline was like this:
+> 1. the document is updated in English
+> 2. the required block is manually found, using diff to send for translation
+> 3. a separate (!!) pull request is created to update the translations
+> 4. PR with translation is merged into PR with comments
+> 5. and only after that everything is merged into the master.
+>
+> We are pleased with the idea that documentation can be manually translated and
+> be more useful than auto-translation, but we do not yet have a suitable tool
+> that would allow 1) structuring markdown files to clearly understand the
+> differences between versions of translations, 2) working with git 3) work with
+> github 4) don't be a pain in the ass.
+>
+> **If you know the tool which will help us — please, let us know. 🙏**
+> </details>
+
 ## Styleguide
 
 ### commit comments

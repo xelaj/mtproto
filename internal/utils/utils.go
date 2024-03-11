@@ -3,21 +3,37 @@
 // This file is a part of mtproto package.
 // See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
 
-// утилитарные функии, которые не сильно зависят от объявленых структур, но при этом много где используются
+// utility functions that do not depend much on declared structures, but are
+// used in many places.
 
 package utils
 
 import (
+	"crypto/rand"
 	"crypto/sha1"
-	"fmt"
-	"math/rand"
-	"os"
-	"runtime"
+	"encoding/binary"
 	"time"
 )
 
-// GenerateMessageId отдает по сути unix timestamp но ужасно специфическим образом
-// TODO: нахуя нужно битовое и на -4??
+// GenerateMessageId essentially gives unix timestamp, but in a horribly
+// specific way
+//
+// Scheme of message_id (showed):
+//
+//	|1-31|32-61|62|63|
+//	|A   |B    |C |D |
+//
+// Where:
+//
+//   - A: Approximately equal curent unix time
+//   - B: Any random unique 30-bit number
+//   - C: Indicates the message initiator: 0 — for client-initiated (request or
+//     server response), 1 — for server-initiated (notification or client
+//     response to server request).
+//   - D: message side (0 means client sent message, 1 means server did)
+//
+// More info:
+// https://core.telegram.org/mtproto/description#message-identifier-msg-id
 func GenerateMessageId() int64 {
 	const billion = 1000 * 1000 * 1000
 	unixnano := time.Now().UnixNano()
@@ -26,27 +42,12 @@ func GenerateMessageId() int64 {
 	return (seconds << 32) | (nanoseconds & -4)
 }
 
-func AuthKeyHash(key []byte) []byte {
-	return Sha1Byte(key)[12:20]
+func GenerateSessionID() uint64 {
+	var raw [8]byte
+	rand.Read(raw[:])
+
+	return binary.LittleEndian.Uint64(raw[:])
 }
 
-func GenerateSessionID() int64 {
-	rand.Seed(time.Now().UnixNano())
-	return rand.Int63() // nolint: gosec потому что начерта?
-}
-
-func FullStack() {
-	buf := make([]byte, 1024)
-	for {
-		n := runtime.Stack(buf, true)
-		if n < len(buf) {
-			fmt.Fprintln(os.Stderr, string(buf[:n]))
-		}
-		buf = make([]byte, 2*len(buf))
-	}
-}
-
-func Sha1Byte(input []byte) []byte {
-	r := sha1.Sum(input)
-	return r[:]
-}
+func AuthKeyHash(key []byte) []byte { return Sha1Byte(key)[12:20] }
+func Sha1Byte(input []byte) []byte  { r := sha1.Sum(input); return r[:] }

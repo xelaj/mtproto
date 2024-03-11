@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/xelaj/mtproto/internal/encoding/tl"
+	"github.com/xelaj/tl"
 )
 
 type SyncSetInt struct {

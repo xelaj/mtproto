@@ -1,33 +1,44 @@
-# MTProto
+# <p align="center">MTProto 2.0</p>
 
-[![godoc reference](https://pkg.go.dev/badge/github.com/xelaj/mtproto?status.svg)](https://pkg.go.dev/github.com/xelaj/mtproto)
-[![Go Report Card](https://goreportcard.com/badge/github.com/xelaj/mtproto)](https://goreportcard.com/report/github.com/xelaj/mtproto)
-[![codecov](https://codecov.io/gh/xelaj/mtproto/branch/master/graph/badge.svg)](https://codecov.io/gh/xelaj/mtproto)
-[![license MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/xelaj/mtproto/blob/main/README.md)
-[![chat telegram](https://img.shields.io/badge/chat-telegram-0088cc)](https://bit.ly/2xlsVsQ)
-![version v1.0.0](https://img.shields.io/badge/version-v1.0.0-success)
-![unstable](https://img.shields.io/badge/stability-stable-success)
-<a href="https://www.upwork.com/o/companies/~01e5f1563365e3c1b5/" alt="r3dev">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://r3-dev.github.io/brand/badge-light.svg">
-    <img src="https://r3-dev.github.io/brand/badge-dark.svg" />
-  </picture>
+<p align="center">
+<img src="https://i.ibb.co/yYsPxhW/Muffin-Man-Ag-ADRAADO2-Ak-FA.gif" width="300"/>
+</p>
+
+<p align="center">
+<a href="https://pkg.go.dev/github.com/xelaj/mtproto">
+<img src="https://gist.githubusercontent.com/quenbyako/9aae4a4ad4ff0f9bab9097f316ce475f/raw/go_reference.svg">
 </a>
+<a href="https://goreportcard.com/report/github.com/xelaj/mtproto">
+<img src="https://img.shields.io/static/v1?label=go+report&message=A%2b&color=success&labelColor=27303B&style=for-the-badge">
+</a>
+<a href="https://codecov.io/gh/xelaj/mtproto">
+<img src="https://img.shields.io/codecov/c/gh/xelaj/mtproto?labelColor=27303B&label=cover&logo=codecov&style=for-the-badge">
+</a>
+<a href="https://bit.ly/2xlsVsQ">
+<img src="https://img.shields.io/badge/chat-telegram-0088cc?labelColor=27303B&logo=telegram&style=for-the-badge">
+</a>
+<br/>
+<a href="https://github.com/xelaj/mtproto/releases">
+<img src="https://img.shields.io/github/v/tag/xelaj/mtproto?labelColor=27303B&label=version&sort=semver&style=for-the-badge">
+</a>
+<img src="https://img.shields.io/static/v1?label=stability&message=stable&labelColor=27303B&color=success&style=for-the-badge">
+<a href="https://github.com/xelaj/mtproto/blob/main/LICENSE.md">
+<img src="https://img.shields.io/badge/license-MIT%20(no%20🇷🇺)-green?labelColor=27303B&style=for-the-badge">
+</a>
+<img src="https://img.shields.io/static/v1?label=%d1%81%d0%bb%d0%b0%d0%b2%d0%b0&message=%d0%a3%d0%ba%d1%80%d0%b0%d1%97%d0%bd%d1%96&color=ffd700&labelColor=0057b7&style=for-the-badge">
 <!--
 code quality
 golangci
 contributors
-go version
-gitlab pipelines
 -->
+</p>
 
-![FINALLY!](/docs/assets/finally.jpg) Full-native implementation of MTProto protocol on Golang!
+<p align="center">
+<img src="./docs/assets/finally.jpg", alt="FINALLY!"> Full-native implementation of MTProto protocol on Golang!
+</p>
 
 **english** [русский](https://github.com/xelaj/mtproto/blob/main/docs/ru_RU/README.md) [简体中文](https://github.com/xelaj/mtproto/blob/main/docs/zh_CN/README.md)
 
-<p align="center">
-<img src="https://i.ibb.co/yYsPxhW/Muffin-Man-Ag-ADRAADO2-Ak-FA.gif"/>
-</p>
 
 ## <p align="center">Features</p>
 
@@ -39,7 +50,7 @@ All code, from sending requests to encryption serialization is written on pure g
 </div>
 
 <div align="left">
-<h3>Latest API version (117+)</h3>
+<h3>Latest API version (169+)</h3>
 <img src="https://i.ibb.co/nw84W4h/ezgif-3-19ced73bc71f.gif" align="left"/>
 Lib is supports all the API and MTProto features, including video calls and post comments. You can create additional pull request to push api updates!
 <br/><br/><br/><br/><br/><br/><br/>
@@ -66,7 +77,10 @@ You can use more than 10 accounts at same time! <i>xelaj/MTProto</i> doesn't cre
 <br/><br/><br/><br/><br/>
 </div>
 
-## How to use
+## Getting started
+
+> [!CAUTION]
+> Be sure that you are using `github.com/xelaj/mtproto/v2` version: there are a lot of changes since first version, and **first version is deprecated.**
 
 <!--
 TODO: **HERE GOES asciinema DEMO**
@@ -115,6 +129,17 @@ You do not need to think about encryption, key exchange, saving and restoring se
 **Code examples are [here](https://github.com/xelaj/mtproto/blob/main/examples)**
 
 **Full docs are [here](https://pkg.go.dev/github.com/xelaj/mtproto)**
+
+## Protocol implementation vs. Telegram client
+
+> [!IMPORTANT]
+> **TL;DR, what is `mtproto` library:** It's just an implementation of MTProto protocol, encryption, handshake, rpc routing, etc. **it doesn't rely on, but really good adapter for Telegram API.** If you want to have great experience out-of-the-box, [restogram][restogram] is a great tool to do that.
+
+Unlike TDLib, or gotd, mtproto package implements only one exact thing: mtproto protocol used by Telegram Messenger. That means, it doesn't contain Telegram business logic, like authorization, data caching, and much more things.
+
+If you want **real** telegram client, but for scripting purposes, [restogram][restogram] is good enough solution for you: it's a Telegram API RESTful proxy, which works just like Bot API, but just for normal client, instead of bots.
+
+Other good library for using telegram out-of box is [gotd][gotd], which updates pretty frequently, and implements some business logic of Telegram.
 
 ## Getting started
 
@@ -229,40 +254,39 @@ Please read [contributing guide](https://github.com/xelaj/mtproto/blob/main/.git
 
 Please, don't create issue which describes security bug, this can be too offensive! Instead, please read [this notification](https://github.com/xelaj/mtproto/blob/main/.github/SECURITY.md) and follow that steps to notify us about problem.
 
-## TODO
-
-- [x] Basic MTProto implementation
-- [x] Implement all Methods for latest layer
-- [x] Make TL Encoder/Decoder
-- [x] Get away from panics in parsing TL
-- [ ] Support MTProxy
-- [ ] Support socks5 as well
-- [ ] Multiple tests
-- [ ] Write amazing docs
-
 ## Authors
 
-* **Richard Cooper** <[rcooper.xelaj@protonmail.com](mailto:rcooper.xelaj@protonmail.com)>
-* **Anton Larionov** <[Anton.Larionov@infobip.com](mailto:Anton.Larionov@infobip.com)>
-* **Arthur Petukhovsky** <[petuhovskiy@yandex.ru](mailto:petuhovskiy@yandex.ru)>
-* **Roman Timofeev** <[timofeev@uteka.ru](mailto:timofeev@uteka.ru)>
-* **Artem** <[webgutar@gmail.com](mailto:webgutar@gmail.com)>
-* **Bo-Yi Wu** <[appleboy.tw@gmail.com](mailto:appleboy.tw@gmail.com)>
-* **0xflotus** <[0xflotus@gmail.com](mailto:0xflotus@gmail.com)>
-* **Luclu7** <[me@luclu7.fr](mailto:me@luclu7.fr)>
-* **Vladimir Stolyarov** <[xakep6666@gmail.com](mailto:xakep6666@gmail.com)>
-* **grinrill** [@grinrill](https://github.com/grinrill)
-* **kulallador** <[ilyastalk@bk.ru](ilyastalk@bk.ru)>
-* **rs** <[yuiop1955@mail.ru](mailto:yuiop1955@mail.ru)>
+- **Richard Cooper** <[rcooper.xelaj@protonmail.com](mailto:rcooper.xelaj@protonmail.com)>
+- **Anton Larionov** <[Anton.Larionov@infobip.com](mailto:Anton.Larionov@infobip.com)>
+- **Arthur Petukhovsky** <[petuhovskiy@yandex.ru](mailto:petuhovskiy@yandex.ru)>
+- **Roman Timofeev** <[timofeev@uteka.ru](mailto:timofeev@uteka.ru)>
+- **Artem** <[webgutar@gmail.com](mailto:webgutar@gmail.com)>
+- **Bo-Yi Wu** <[appleboy.tw@gmail.com](mailto:appleboy.tw@gmail.com)>
+- **0xflotus** <[0xflotus@gmail.com](mailto:0xflotus@gmail.com)>
+- **Luclu7** <[me@luclu7.fr](mailto:me@luclu7.fr)>
+- **Vladimir Stolyarov** <[xakep6666@gmail.com](mailto:xakep6666@gmail.com)>
+- **grinrill** [@grinrill](https://github.com/grinrill)
+- **kulallador** <[ilyastalk@bk.ru](ilyastalk@bk.ru)>
+- **rs** <[yuiop1955@mail.ru](mailto:yuiop1955@mail.ru)>
 
 ## License
 
-<b style="color:red">WARNING!</b> This project is only maintained by Xelaj inc., however copyright of this source code **IS NOT** owned by Xelaj inc. at all. If you want to connect with code owners, write mail to <a href="mailto:up@khsfilms.ru">this email</a>. For all other questions like any issues, PRs, questions, etc. Use GitHub issues, or find email on official website.
-
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/xelaj/mtproto/blob/main/LICENSE.md) file for details
 
-<!--
+## One important thing
 
+Even that maintainers of this project are generally from russia, we still stand
+up with Ukraine, and from beginning of war, decided to stop paying any taxes, or
+cooperate in any case with government, and companies, connected with government.
+This is absolutely nothing compared to how much pain putin brought to the
+fraternal country. And we are responsible for our inaction, and the only thing
+we can do is to take at least any actions that harm putin’s regime, and help the
+victims of regime using all resources available for us.
+<img src="./docs/assets/by_flag.svg" height="16">
+<img src="./docs/assets/ru_flag.svg" height="16">
+<img src="./docs/assets/ua_flag.svg" height="16">
+
+<!--
 V2UndmUga25vd24gZWFjaCBvdGhlciBmb3Igc28gbG9uZwpZb3
 VyIGhlYXJ0J3MgYmVlbiBhY2hpbmcgYnV0IHlvdSdyZSB0b28g
 c2h5IHRvIHNheSBpdApJbnNpZGUgd2UgYm90aCBrbm93IHdoYX
@@ -270,5 +294,13 @@ QncyBiZWVuIGdvaW5nIG9uCldlIGtub3cgdGhlIGdhbWUgYW5k
 IHdlJ3JlIGdvbm5hIHBsYXkgaXQKQW5kIGlmIHlvdSBhc2sgbW
 UgaG93IEknbSBmZWVsaW5nCkRvbid0IHRlbGwgbWUgeW91J3Jl
 IHRvbyBibGluZCB0byBzZWU=
-
 -->
+
+--------------------------------------------------------------------------------
+
+<p align=center><sub><sub>
+Created with love 💜 and magic 🦄 </br> Xelaj Software, 2021-2024
+</sub></sub></p>
+
+[gotd]:      https://github.com/gotd/td
+[restogram]: https://github.com/xelaj/restogram

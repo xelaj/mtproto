@@ -8,9 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
-	"github.com/xelaj/go-dry"
 	"github.com/xelaj/mtproto"
 	"github.com/xelaj/mtproto/telegram"
 
@@ -41,7 +39,7 @@ func main() {
 		AppHash:         "a3406de8d171bb422bb6ddf3bbd800e2", // app hash, could be find at https://my.telegram.org
 		InitWarnChannel: true,                               // if we want to get errors, otherwise, client.Warnings will be set nil
 	})
-	dry.PanicIfErr(err)
+	check(err)
 	client.Warnings = make(chan error) // required to initialize, if we want to get errors
 	utils.ReadWarningsToStdErr(client.Warnings)
 
@@ -82,7 +80,6 @@ func main() {
 				println("Repeat after " + timeoutDuration.String())
 			} else {
 				println("Oh crap! Got strange error:")
-				pp.Println(errResponse)
 			}
 
 			os.Exit(1)
@@ -99,8 +96,6 @@ func main() {
 		code,
 	)
 	if err == nil {
-		pp.Println(auth)
-
 		fmt.Println("Success! You've signed in!")
 		return
 	}
@@ -124,15 +119,21 @@ func main() {
 	password = strings.ReplaceAll(password, "\n", "")
 
 	accountPassword, err := client.AccountGetPassword()
-	dry.PanicIfErr(err)
+	check(err)
 
 	// GetInputCheckPassword is fast response object generator
 	inputCheck, err := telegram.GetInputCheckPassword(password, accountPassword)
-	dry.PanicIfErr(err)
+	check(err)
 
 	auth, err = client.AuthCheckPassword(inputCheck)
-	dry.PanicIfErr(err)
+	check(err)
 
 	pp.Println(auth)
 	fmt.Println("Success! You've signed in!")
+}
+
+func check(err error) {
+	if err != nil {
+		panic(err)
+	}
 }

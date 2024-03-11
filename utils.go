@@ -7,18 +7,16 @@ package mtproto
 
 import (
 	"context"
+	"errors"
 	"io"
-
-	"github.com/xelaj/mtproto/internal/encoding/tl"
-	"github.com/xelaj/mtproto/internal/mtproto/objects"
 )
 
-type any = interface{}
 type null = struct{}
 
-// это неофициальная информация, но есть подозрение, что список датацентров АБСОЛЮТНО идентичный для всех
-// приложений. Несмотря на это, любой клиент ОБЯЗАН явно указывать список датацентров, ради надежности.
-// данный список лишь эксперементальный и не является частью протокола.
+// this is unofficial information, but it is suspected that the list of data
+// centers is ABSOLUTELY identical for all the applications. Nevertheless, any
+// client MUST explicitly specify the list of DCs, for the sake of reliability.
+// this list is only experimental and is not part of the protocol.
 func defaultDCList() map[int]string {
 	return map[int]string{
 		1: "149.154.175.58:443",
@@ -29,24 +27,24 @@ func defaultDCList() map[int]string {
 	}
 }
 
-func MessageRequireToAck(msg tl.Object) bool {
-	switch msg.(type) {
-	case /**objects.Ping,*/ *objects.MsgsAck:
-		return false
-	default:
-		return true
-	}
-}
-
-func CloseOnCancel(ctx context.Context, c io.Closer) {
-	go func() {
-		<-ctx.Done()
-		c.Close()
-	}()
-}
-
 func check(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func omitEOFErr(err error) error {
+	if errors.Is(err, io.EOF) {
+		return nil
+	}
+
+	return err
+}
+
+func omitContextErr(err error) error {
+	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		return nil
+	}
+
+	return err
 }

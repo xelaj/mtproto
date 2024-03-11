@@ -6,17 +6,16 @@
 package telegram
 
 import (
+	"context"
 	"net"
 	"reflect"
 	"runtime"
 	"strconv"
 
 	"github.com/pkg/errors"
-	"github.com/xelaj/errs"
-	dry "github.com/xelaj/go-dry"
 
 	"github.com/xelaj/mtproto"
-	"github.com/xelaj/mtproto/internal/keys"
+	"github.com/xelaj/mtproto/internal/session"
 )
 
 type Client struct {
@@ -42,16 +41,6 @@ const (
 )
 
 func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not ptr cause we call
-	//                                                               it only once, don't care
-	//                                                               about copying big args.
-	if !dry.FileExists(c.PublicKeysFile) {
-		return nil, errs.NotFound("file", c.PublicKeysFile)
-	}
-
-	if !dry.PathIsWritable(c.SessionFile) {
-		return nil, errs.Permission(c.SessionFile).Scope("write")
-	}
-
 	if c.DeviceModel == "" {
 		c.DeviceModel = "Unknown"
 	}
@@ -69,23 +58,20 @@ func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not 
 		return nil, errors.Wrap(err, "reading public keys")
 	}
 
-	m, err := mtproto.NewMTProto(mtproto.Config{
-		AuthKeyFile: c.SessionFile,
-		ServerHost:  c.ServerHost,
-		PublicKey:   publicKeys[0],
+	m := mtproto.New(mtproto.Config{
+		SessionStorage: session.NewCached(session.NewFromFile(c.SessionFile)),
+		PublicKey:      publicKeys[0],
 	})
-	if err != nil {
-		return nil, errors.Wrap(err, "setup common MTProto client")
-	}
 
 	if c.InitWarnChannel {
 		m.Warnings = make(chan error, warnChannelDefaultCapacity)
 	}
 
-	err = m.CreateConnection()
-	if err != nil {
-		return nil, errors.Wrap(err, "creating connection")
-	}
+	go func() {
+		if err := m.Connect(context.Background(), c.ServerHost); err != nil {
+			panic("connecting")
+		}
+	}()
 
 	client := &Client{
 		MTProto: m,
@@ -94,7 +80,7 @@ func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not 
 
 	//client.AddCustomServerRequestHandler(client.handleSpecialRequests())
 
-	resp, err := client.InvokeWithLayer(ApiVersion, &InitConnectionParams{
+	resp, err := client.InvokeWithLayer(ApiVersion, &InitConnectionParams[*HelpGetConfigParams]{
 		ApiID:          int32(c.AppID),
 		DeviceModel:    c.DeviceModel,
 		SystemVersion:  c.SystemVersion,
@@ -132,8 +118,8 @@ func (m *Client) IsSessionRegistred() (bool, error) {
 	if err == nil {
 		return true, nil
 	}
-	var errCode *mtproto.ErrResponseCode
-	if errors.As(err, &errCode) {
+
+	if e := new(mtproto.ErrResponseCode); errors.As(err, &errCode) {
 		if errCode.Message == "AUTH_KEY_UNREGISTERED" {
 			return false, nil
 		}
