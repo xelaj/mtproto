@@ -15,7 +15,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xelaj/mtproto/internal/session"
+
+	. "github.com/xelaj/mtproto/v2/internal/session"
 )
 
 const keyStr = "qgelGXIGnuXOWfx8ZfTV8RhcAhxInOxGiBbYA6H7edSVc49AYi1Y/rc+/dLA5" +
@@ -32,8 +33,8 @@ func TestMTProto_SaveSession(t *testing.T) {
 
 	os.Remove(storePath)
 
-	storage := session.NewFromFile(storePath)
-	err := storage.Store(session.Session{
+	storage := NewFromFile(storePath)
+	err := storage.Store(Session{
 		Key:  key,
 		Salt: 0,
 	})
@@ -51,12 +52,12 @@ func TestMTProto_LoadSession(t *testing.T) {
 	ioutil.WriteFile(storePath, []byte(tmpData), 0666)
 	defer os.Remove(storePath)
 
-	storage := session.NewFromFile(storePath)
+	storage := NewFromFile(storePath)
 
 	sess, err := storage.Load()
 	require.NoError(t, err)
 
-	assert.Equal(t, session.Session{
+	assert.Equal(t, Session{
 		Key:  key,
 		Salt: 0,
 	}, sess)

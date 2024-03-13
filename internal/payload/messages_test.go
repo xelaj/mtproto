@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	. "github.com/xelaj/mtproto/internal/payload"
+	. "github.com/xelaj/mtproto/v2/internal/payload"
 )
 
 func TestSerializeUnencryptedMessage(t *testing.T) {

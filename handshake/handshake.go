@@ -14,8 +14,10 @@ import (
 	"time"
 
 	"github.com/go-faster/xor"
-	"github.com/xelaj/mtproto/internal/transport"
 	"github.com/xelaj/tl"
+
+	"github.com/xelaj/mtproto/v2/internal/mode"
+	"github.com/xelaj/mtproto/v2/internal/transport"
 )
 
 // `expiration` param defines how long session will be stored on server side.
@@ -23,8 +25,8 @@ import (
 // more. According to the documentation, "The server is free to discard its copy
 // earlier". Zero value means permanent session, so if keys will leak, someone
 // might use them to use authorized session.
-func Perform(ctx context.Context, t transport.Transport, keys []*rsa.PublicKey, dc int, expiration time.Duration) ([256]byte, uint64, error) {
-	return perform(ctx, t, rand.Reader, keys, dc, expiration)
+func Perform(ctx context.Context, conn mode.Mode, keys []*rsa.PublicKey, dc int, expiration time.Duration) ([256]byte, uint64, error) {
+	return perform(ctx, transport.NewUnencrypted(conn), rand.Reader, keys, dc, expiration)
 }
 
 func perform(ctx context.Context, t transport.Transport, rand io.Reader, keys []*rsa.PublicKey, dc int, expiration time.Duration) (authKey [256]byte, salt uint64, err error) {
@@ -48,8 +50,8 @@ func initHandshake(
 	rand io.Reader,
 	keys []*rsa.PublicKey,
 ) (
-	nonce [16]byte,
-	serverNonce [16]byte,
+	nonce Int128,
+	serverNonce Int128,
 	pq uint64,
 	key *rsa.PublicKey,
 	err error,
@@ -58,11 +60,11 @@ func initHandshake(
 
 	resp, err := reqPQMulti(ctx, t, nonce)
 	if err != nil {
-		return [16]byte{}, [16]byte{}, 0, nil, err
+		return Int128{}, Int128{}, 0, nil, err
 	}
 
 	if resp.Nonce != nonce {
-		return [16]byte{}, [16]byte{}, 0, nil, errors.New("server returned wrong client nonce")
+		return Int128{}, Int128{}, 0, nil, errors.New("server returned wrong client nonce")
 	}
 
 	pqRaw := big.NewInt(0).SetBytes(resp.Pq)
@@ -71,12 +73,12 @@ func initHandshake(
 		// be bigger, but in real world no one was reported about that. In
 		// addition, pq between 2^32 and 2^64 is big enough to make secure
 		// handshake.
-		return [16]byte{}, [16]byte{}, 0, nil, errors.New("server returned wrong pq")
+		return Int128{}, Int128{}, 0, nil, errors.New("server returned wrong pq")
 	}
 
 	i := lookupForKeys(keys, resp.Fingerprints)
 	if i < 0 {
-		return [16]byte{}, [16]byte{}, 0, nil, errors.New("server returned unknown key fingerprints")
+		return Int128{}, Int128{}, 0, nil, errors.New("server returned unknown key fingerprints")
 	}
 
 	return nonce, resp.ServerNonce, pqRaw.Uint64(), keys[i], nil
@@ -88,8 +90,8 @@ func makeProofOfWork(
 	rand io.Reader,
 	key *rsa.PublicKey,
 	pq uint64,
-	nonce [16]byte,
-	serverNonce [16]byte,
+	nonce Int128,
+	serverNonce Int128,
 	dc int,
 	expiration time.Duration,
 ) (
@@ -183,7 +185,7 @@ func makeProofOfWork(
 	return authKey, ServerSalt(newNonce, serverNonce), nil
 }
 
-func ServerSalt(newNonce [32]byte, serverNonce [16]byte) (salt uint64) {
+func ServerSalt(newNonce Int256, serverNonce Int128) (salt uint64) {
 	var serverSalt [8]byte
 	copy(serverSalt[:], newNonce[:8])
 	xor.Bytes(serverSalt[:], serverSalt[:], serverNonce[:8])
@@ -192,7 +194,7 @@ func ServerSalt(newNonce [32]byte, serverNonce [16]byte) (salt uint64) {
 
 // nonceHash computes nonce_hash_1.
 // See https://core.telegram.org/mtproto/auth_key#dh-key-exchange-complete.
-func nonceHash(newNonce [32]byte, key [256]byte) (r [16]byte) {
+func nonceHash(newNonce Int256, key [256]byte) (r Int128) {
 	var buf []byte
 	buf = append(buf, newNonce[:]...)
 	buf = append(buf, 1)

@@ -8,7 +8,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	. "github.com/xelaj/mtproto/internal/session"
+
+	. "github.com/xelaj/mtproto/v2/internal/session"
 )
 
 func TestDecodeBool(t *testing.T) {

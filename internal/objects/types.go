@@ -16,7 +16,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/xelaj/tl"
 
-	"github.com/xelaj/mtproto/internal/payload"
+	"github.com/xelaj/mtproto/v2/internal/payload"
 )
 
 // TYPES

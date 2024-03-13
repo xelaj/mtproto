@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	. "github.com/xelaj/mtproto/handshake"
+	. "github.com/xelaj/mtproto/v2/handshake"
 )
 
 func TestDecomposePQ(t *testing.T) {

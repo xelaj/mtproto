@@ -17,11 +17,11 @@ import (
 	"github.com/quenbyako/ext/slices"
 	"github.com/xelaj/tl"
 
-	"github.com/xelaj/mtproto/internal/mode"
-	"github.com/xelaj/mtproto/internal/objects"
-	"github.com/xelaj/mtproto/internal/payload"
-	"github.com/xelaj/mtproto/internal/transport"
-	"github.com/xelaj/mtproto/internal/utils"
+	"github.com/xelaj/mtproto/v2/internal/mode"
+	"github.com/xelaj/mtproto/v2/internal/objects"
+	"github.com/xelaj/mtproto/v2/internal/payload"
+	"github.com/xelaj/mtproto/v2/internal/transport"
+	"github.com/xelaj/mtproto/v2/internal/utils"
 )
 
 type responseChanMsg struct {
@@ -42,15 +42,7 @@ type MTProto struct {
 
 type customHandlerFunc = func(i []byte) error
 
-func NewUnencryptedTransport(m mode.Mode) transport.Transport {
-	return transport.NewUnencrypted(m)
-}
-
-func NewEncryptedTransport(m mode.Mode, key [256]byte, salt uint64) transport.Transport {
-	return transport.NewTransport(m, key, salt)
-}
-
-func NewMode(host string) (mode.Mode, error) {
+func Dial(host string) (mode.Mode, error) {
 	t, err := transport.NewTCP(host)
 	if err != nil {
 		return nil, err
@@ -59,9 +51,9 @@ func NewMode(host string) (mode.Mode, error) {
 	return mode.Intermediate(t, true)
 }
 
-func New(t transport.Transport) (m *MTProto, err error) {
+func New(conn mode.Mode, key [256]byte, salt uint64) (m *MTProto, err error) {
 	m = &MTProto{
-		transport:        t,
+		transport:        transport.NewTransport(conn, key, salt),
 		responseChannels: make(map[payload.MsgID]chan<- responseChanMsg),
 	}
 
@@ -76,8 +68,8 @@ func New(t transport.Transport) (m *MTProto, err error) {
 // worth it to manually call client.Run, cause you will have more control and
 // code will look less implicit (obscurity was a giant problem of xelaj/mtproto
 // 1.0, don't repeat our mistakes please 🙏)
-func NewAndRun(ctx context.Context, t transport.Transport, serverRequestHandler customHandlerFunc, finalize func(err error)) (m *MTProto, err error) {
-	client, err := New(t)
+func NewAndRun(ctx context.Context, conn mode.Mode, key [256]byte, salt uint64, serverRequestHandler customHandlerFunc, finalize func(err error)) (m *MTProto, err error) {
+	client, err := New(conn, key, salt)
 	if err != nil {
 		return nil, err
 	}

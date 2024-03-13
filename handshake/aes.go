@@ -17,7 +17,7 @@ import (
 // See https://core.telegram.org/mtproto/auth_key#6-server-responds-with
 //
 // tmp_aes_key := SHA1(new_nonce + server_nonce) + substr (SHA1(server_nonce + new_nonce), 0, 12);
-func TempAESKeys(newNonce [32]byte, serverNonce [16]byte) (key, iv [32]byte) {
+func TempAESKeys(newNonce Int256, serverNonce Int128) (key, iv Int256) {
 	// n is newNonce, s is serverNonce
 	ns := sha1.Sum(append(newNonce[:], serverNonce[:]...))
 	sn := sha1.Sum(append(serverNonce[:], newNonce[:]...))
@@ -27,7 +27,7 @@ func TempAESKeys(newNonce [32]byte, serverNonce [16]byte) (key, iv [32]byte) {
 }
 
 // tmp_aes_key := SHA1(new_nonce + server_nonce) + substr (SHA1(server_nonce + new_nonce), 0, 12);
-func tempAESKey(ns, sn [sha1.Size]byte) (key [32]byte) {
+func tempAESKey(ns, sn [sha1.Size]byte) (key Int256) {
 	// SHA1(new_nonce + server_nonce)
 	copy(key[:20], ns[:])
 
@@ -38,7 +38,7 @@ func tempAESKey(ns, sn [sha1.Size]byte) (key [32]byte) {
 }
 
 // tmp_aes_iv := substr(SHA1(server_nonce + new_nonce), 12, 8) + SHA1(new_nonce + new_nonce) + substr (new_nonce, 0, 4);
-func tempAESIV(sn, nn [sha1.Size]byte, newNonce [32]byte) (iv [32]byte) {
+func tempAESIV(sn, nn [sha1.Size]byte, newNonce Int256) (iv Int256) {
 	// substr(SHA1(server_nonce + new_nonce), 12, 8)
 	copy(iv[0:8], sn[12:12+8])
 
@@ -51,7 +51,7 @@ func tempAESIV(sn, nn [sha1.Size]byte, newNonce [32]byte) (iv [32]byte) {
 	return iv
 }
 
-func encryptHandshake(rand io.Reader, key, iv [32]byte, data []byte) ([]byte, error) {
+func encryptHandshake(rand io.Reader, key, iv Int256, data []byte) ([]byte, error) {
 	cipher, err := aes.NewCipher(key[:])
 	if err != nil {
 		return nil, fmt.Errorf("create aes cipher: %w", err)
@@ -79,7 +79,7 @@ func DataWithHash(data []byte, rand io.Reader) []byte {
 
 func pad(l, n int) int { return (n - l%n) % n }
 
-func decryptHandshake(key, iv [32]byte, data []byte) ([]byte, error) {
+func decryptHandshake(key, iv Int256, data []byte) ([]byte, error) {
 	if data == nil {
 		// Most common cause of this error is invalid crypto implementation,
 		// i.e. invalid keys are used to decrypt payload which lead to

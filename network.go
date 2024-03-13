@@ -13,8 +13,8 @@ import (
 
 	"github.com/xelaj/tl"
 
-	"github.com/xelaj/mtproto/internal/objects"
-	"github.com/xelaj/mtproto/internal/payload"
+	"github.com/xelaj/mtproto/v2/internal/objects"
+	"github.com/xelaj/mtproto/v2/internal/payload"
 )
 
 func (m *MTProto) makeRequest(ctx context.Context, msg []byte) (resp []byte, err error) {

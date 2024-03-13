@@ -7,7 +7,7 @@ import (
 
 	"github.com/gotd/ige"
 
-	. "github.com/xelaj/mtproto/handshake"
+	. "github.com/xelaj/mtproto/v2/handshake"
 )
 
 func TestTempAESKeys(t *testing.T) {
@@ -71,7 +71,7 @@ func TestTempAESKeys(t *testing.T) {
 	}
 }
 
-func hexInt128(r string) (res [16]byte) {
+func hexInt128(r string) (res Int128) {
 	raw := Hexed(r)
 	if len(raw) != 16 {
 		panic("invalid length")
@@ -82,7 +82,7 @@ func hexInt128(r string) (res [16]byte) {
 	return res
 }
 
-func hexInt256(r string) (res [32]byte) {
+func hexInt256(r string) (res Int256) {
 	raw := Hexed(r)
 	if len(raw) != 32 {
 		panic("invalid length")

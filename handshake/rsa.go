@@ -81,7 +81,7 @@ func RSAPad(data []byte, key *rsa.PublicKey, randomSource io.Reader) ([]byte, er
 			if err != nil {
 				return nil, fmt.Errorf("create cipher: %w", err)
 			}
-			var zeroIV [32]byte
+			var zeroIV Int256
 			ige.EncryptBlocks(aesBlock, zeroIV[:], aesEncrypted, dataWithHash)
 		}
 
@@ -140,7 +140,7 @@ func DecodeRSAPad(data []byte, key *rsa.PrivateKey) ([]byte, error) {
 		if err != nil {
 			return nil, fmt.Errorf("create cipher: %w", err)
 		}
-		var zeroIV [32]byte
+		var zeroIV Int256
 		ige.DecryptBlocks(aesBlock, zeroIV[:], dataWithHash, aesEncrypted)
 	}
 

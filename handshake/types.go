@@ -7,7 +7,7 @@ import (
 	"github.com/xelaj/tl"
 )
 
-func serializePQInnerData(pq, p, q uint64, nonce, serverNonce [16]byte, newNonce [32]byte, dc int, expiration time.Duration) (res []byte) {
+func serializePQInnerData(pq, p, q uint64, nonce, serverNonce Int128, newNonce Int256, dc int, expiration time.Duration) (res []byte) {
 	//! IMPORTANT: values here are big endian, unlike in whole mtproto
 	//  protocol. This is described in handshake documentation.
 	//
@@ -50,6 +50,9 @@ func serializePQInnerData(pq, p, q uint64, nonce, serverNonce [16]byte, newNonce
 	return res
 }
 
+type Int128 = [16]byte
+type Int256 = [32]byte
+
 type PQInnerData interface {
 	tl.Object
 	_PQInnerData()
@@ -59,9 +62,9 @@ type PQInnerDataObj struct {
 	Pq          []byte
 	P           []byte
 	Q           []byte
-	Nonce       [16]byte
-	ServerNonce [16]byte
-	NewNonce    [32]byte
+	Nonce       Int128
+	ServerNonce Int128
+	NewNonce    Int256
 }
 
 func (*PQInnerDataObj) CRC() uint32 { return 0x83c95aec }
@@ -70,9 +73,9 @@ type PQInnerDataDC struct {
 	Pq          []byte
 	P           []byte
 	Q           []byte
-	Nonce       [16]byte
-	ServerNonce [16]byte
-	NewNonce    [32]byte
+	Nonce       Int128
+	ServerNonce Int128
+	NewNonce    Int256
 	DC          int32
 }
 
@@ -83,9 +86,9 @@ type PQInnerDataTempDC struct {
 	Pq          []byte
 	P           []byte
 	Q           []byte
-	Nonce       [16]byte
-	ServerNonce [16]byte
-	NewNonce    [32]byte
+	Nonce       Int128
+	ServerNonce Int128
+	NewNonce    Int256
 	DC          int32
 	ExpiresIn   int32
 }
@@ -94,8 +97,8 @@ func (*PQInnerDataTempDC) _PQInnerData() {}
 func (*PQInnerDataTempDC) CRC() uint32   { return 0x56fddf88 }
 
 type ServerDHInnerData struct {
-	Nonce       [16]byte
-	ServerNonce [16]byte
+	Nonce       Int128
+	ServerNonce Int128
 	G           int32
 	DhPrime     []byte
 	GA          []byte
@@ -105,8 +108,8 @@ type ServerDHInnerData struct {
 func (*ServerDHInnerData) CRC() uint32 { return 0xb5890dba }
 
 type ClientDHInnerData struct {
-	Nonce       [16]byte
-	ServerNonce [16]byte
+	Nonce       Int128
+	ServerNonce Int128
 	Retry       int64
 	GB          []byte
 }

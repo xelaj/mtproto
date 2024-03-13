@@ -5,10 +5,10 @@
 </p>
 
 <p align="center">
-<a href="https://pkg.go.dev/github.com/xelaj/mtproto">
+<a href="https://pkg.go.dev/github.com/xelaj/mtproto/v2">
 <img src="https://gist.githubusercontent.com/quenbyako/9aae4a4ad4ff0f9bab9097f316ce475f/raw/go_reference.svg">
 </a>
-<a href="https://goreportcard.com/report/github.com/xelaj/mtproto">
+<a href="https://goreportcard.com/report/github.com/xelaj/mtproto/v2">
 <img src="https://img.shields.io/static/v1?label=go+report&message=A%2b&color=success&labelColor=27303B&style=for-the-badge">
 </a>
 <a href="https://codecov.io/gh/xelaj/mtproto">
@@ -130,18 +130,7 @@ You do not need to think about encryption, key exchange, saving and restoring se
 
 **Full docs are [here](https://pkg.go.dev/github.com/xelaj/mtproto)**
 
-## Protocol implementation vs. Telegram client
-
-> [!IMPORTANT]
-> **TL;DR, what is `mtproto` library:** It's just an implementation of MTProto protocol, encryption, handshake, rpc routing, etc. **it doesn't rely on, but really good adapter for Telegram API.** If you want to have great experience out-of-the-box, [restogram][restogram] is a great tool to do that.
-
-Unlike TDLib, or gotd, mtproto package implements only one exact thing: mtproto protocol used by Telegram Messenger. That means, it doesn't contain Telegram business logic, like authorization, data caching, and much more things.
-
-If you want **real** telegram client, but for scripting purposes, [restogram][restogram] is good enough solution for you: it's a Telegram API RESTful proxy, which works just like Bot API, but just for normal client, instead of bots.
-
-Other good library for using telegram out-of box is [gotd][gotd], which updates pretty frequently, and implements some business logic of Telegram.
-
-## Getting started
+## 🏎️ Getting started
 
 ### Simple How-To
 
@@ -242,13 +231,37 @@ Technically — yes. In practice — components don't require specific architect
 
 Well... Read [this issue](https://github.com/ton-blockchain/ton/issues/31) about TON source code. Use google translate, this issue will answer to all your questions.
 
-## Who use it
+## 🧶 Protocol implementation vs. Telegram client
 
-## Contributing
+> [!IMPORTANT]
+> **TL;DR, what is `mtproto` library:** It's just an implementation of MTProto protocol, encryption, handshake, rpc routing, etc. **it doesn't rely on, but really good adapter for Telegram API.** If you want to have great experience out-of-the-box, [restogram][restogram] is a great tool to do that.
+
+Unlike TDLib, or gotd, mtproto package implements only one exact thing: mtproto protocol used by Telegram Messenger. That means, it doesn't contain Telegram business logic, like authorization, data caching, and much more things.
+
+If you want **real** telegram client, but for scripting purposes, [restogram][restogram] is good enough solution for you: it's a Telegram API RESTful proxy, which works just like Bot API, but just for normal client, instead of bots.
+
+Other good library for using telegram out-of box is [gotd][gotd], which updates pretty frequently, and implements some business logic of Telegram.
+
+## 🤔 Who use it
+
+- **[Restogram](restogram.xelaj.org)** — Missed Rest API for Telegram
+- **[You? 😉][mtproto_issues]**
+
+## 🤗 Contributing
 
 Please read [contributing guide](https://github.com/xelaj/mtproto/blob/main/.github/CONTRIBUTING.md) if you want to help. And the help is very necessary!
 
 **Don't want code?** Read [this](https://github.com/xelaj/mtproto/blob/main/.github/SUPPORT.md) page! We love nocoders!
+
+## ✅ TODO
+
+- [x] Client MTProto implementation
+- [x] Implement all Methods for latest layer
+- [x] Make TL Encoder/Decoder
+- [x] Get away from panics in parsing TL
+- [ ] Write MTProto RFC specification
+- [ ] Server MTProto implementation
+- [ ] Write amazing docs
 
 ## Security bugs?
 
@@ -304,3 +317,5 @@ Created with love 💜 and magic 🦄 </br> Xelaj Software, 2021-2024
 
 [gotd]:      https://github.com/gotd/td
 [restogram]: https://github.com/xelaj/restogram
+
+[mtproto_issues]: https://github.com/xelaj/mtproto/issues/new/choose

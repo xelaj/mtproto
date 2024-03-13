@@ -8,7 +8,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	mode "github.com/xelaj/mtproto/internal/mode"
+
+	. "github.com/xelaj/mtproto/v2/internal/mode"
 )
 
 func TestModeEncode(t *testing.T) {
@@ -18,13 +19,13 @@ func TestModeEncode(t *testing.T) {
 	for _, tt := range []struct {
 		name   string
 		in     []byte
-		mode   mode.Variant
+		mode   Variant
 		expect []byte
 	}{
 		{
 			name: "intermediate, main mode",
 			in:   []byte("test message"),
-			mode: mode.Intermediate,
+			mode: Intermediate,
 			expect: []byte{
 				0xee, 0xee, 0xee, 0xee, 0x0c, 0x00, 0x00, 0x00,
 				0x74, 0x65, 0x73, 0x74, 0x20, 0x6d, 0x65, 0x73,
@@ -34,7 +35,7 @@ func TestModeEncode(t *testing.T) {
 		{
 			name: "arbiged, most unstable",
 			in:   []byte("test message"),
-			mode: mode.Abridged,
+			mode: Abridged,
 			expect: []byte{
 				0xef, 0x03, 0x74, 0x65, 0x73, 0x74, 0x20, 0x6d,
 				0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
@@ -43,7 +44,7 @@ func TestModeEncode(t *testing.T) {
 		{
 			name: "arbiged, but huge message",
 			in:   randomBigByteset,
-			mode: mode.Abridged,
+			mode: Abridged,
 			expect: append([]byte{
 				0xef, 0x7f, 0x74, 0x01, 0x00}, randomBigByteset...),
 		},
@@ -69,7 +70,7 @@ func TestModeDecode(t *testing.T) {
 	for _, tt := range []struct {
 		name   string
 		in     []byte
-		mode   mode.Variant
+		mode   Variant
 		expect []byte
 	}{
 		{
@@ -79,7 +80,7 @@ func TestModeDecode(t *testing.T) {
 				0x74, 0x65, 0x73, 0x74, 0x20, 0x6d, 0x65, 0x73,
 				0x73, 0x61, 0x67, 0x65,
 			},
-			mode:   mode.Intermediate,
+			mode:   Intermediate,
 			expect: []byte("test message"),
 		},
 		{
@@ -88,21 +89,21 @@ func TestModeDecode(t *testing.T) {
 				0xef, 0x03, 0x74, 0x65, 0x73, 0x74, 0x20, 0x6d,
 				0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
 			},
-			mode:   mode.Abridged,
+			mode:   Abridged,
 			expect: []byte("test message"),
 		},
 		{
 			name: "arbiged, but huge message",
 			in: append([]byte{
 				0xef, 0x7f, 0x74, 0x01, 0x00}, randomBigByteset...),
-			mode:   mode.Abridged,
+			mode:   Abridged,
 			expect: randomBigByteset,
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			buf := bytes.NewBuffer(tt.in)
 
-			m, err := mode.Detect(NopCloser(buf))
+			m, err := Detect(NopCloser(buf))
 			require.NoError(t, err)
 
 			got, err := m.ReadMsg(context.Background())
